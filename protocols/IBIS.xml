@@ -1,0 +1,222 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ProtocalSettings>
+    <entry parameter="ReportFileName">
+        <value>*_Report.txt</value>
+    </entry>
+    <entry parameter="Image">
+        <value>Yes</value>
+        <entry parameter="space">
+            <value>left-posterior-superior</value>
+        </entry>
+        <entry parameter="space directions">
+            <value>1.000 0.000 0.000</value>
+            <value>0.000 1.000 0.000</value>
+            <value>0.000 0.000 1.000</value>
+        </entry>
+        <entry parameter="sizes">
+            <value>96</value>
+            <value>96</value>
+            <value>81</value>
+        </entry>
+        <entry parameter="spacing">
+            <value>1.97917</value>
+            <value>1.97917</value>
+            <value>2.0</value>
+        </entry>
+        <entry parameter="origin">
+            <value>0.0</value>
+            <value>0.0</value>
+            <value>0.0</value>
+        </entry>
+    </entry>
+    <entry parameter="Diffusion">
+        <value>Yes</value>
+        <entry parameter="measurement frame">
+            <value>-1 0 0</value>
+            <value>0 1 0</value>
+            <value>0 0 1</value>
+        </entry>
+        <entry parameter="DWMRI_b-value">
+            <value>1000</value>
+        </entry>
+        <entry parameter="DWMRI_gradient_0000">
+            <value>0.000000 0.000000 0.000000</value>
+        </entry>
+        <entry parameter="DWMRI_gradient_0001">
+            <value>-0.200000 0.000000 0.000000</value>
+        </entry>
+        <entry parameter="DWMRI_gradient_0002">
+            <value>-0.457663 0.000000 -0.174796</value>
+        </entry>
+        <entry parameter="DWMRI_gradient_0003">
+            <value>-0.619678 0.000000 0.236674</value>
+        </entry>
+        <entry parameter="DWMRI_gradient_0004">
+            <value>-0.647200 -0.420560 0.210320</value>
+        </entry>
+        <entry parameter="DWMRI_gradient_0005">
+            <value>-0.529196 -0.529196 -0.529196</value>
+        </entry>
+        <entry parameter="DWMRI_gradient_0006">
+            <value>-0.163313 0.163313 -0.163313</value>
+        </entry>
+        <entry parameter="DWMRI_gradient_0007">
+            <value>-0.305531 0.305531 0.305531</value>
+        </entry>
+        <entry parameter="DWMRI_gradient_0008">
+            <value>-0.346410 0.589382 0.112583</value>
+        </entry>
+        <entry parameter="DWMRI_gradient_0009">
+            <value>-0.294225 -0.770361 0.000000</value>
+        </entry>
+        <entry parameter="DWMRI_gradient_0010">
+            <value>-0.334708 -0.876353 0.000000</value>
+        </entry>
+        <entry parameter="DWMRI_gradient_0011">
+            <value>-0.107041 -0.294691 0.147328</value>
+        </entry>
+        <entry parameter="DWMRI_gradient_0012">
+            <value>-0.174797 0.000000 -0.538023</value>
+        </entry>
+        <entry parameter="DWMRI_gradient_0013">
+            <value>-0.222823 0.000000 0.685848</value>
+        </entry>
+        <entry parameter="DWMRI_gradient_0014">
+            <value>0.000000 -0.446071 0.721758</value>
+        </entry>
+        <entry parameter="DWMRI_gradient_0015">
+            <value>0.000000 -0.815963 -0.504234</value>
+        </entry>
+        <entry parameter="DWMRI_gradient_0016">
+            <value>0.000000 -0.142720 -0.373680</value>
+        </entry>
+        <entry parameter="DWMRI_gradient_0017">
+            <value>0.000000 0.214080 -0.560520</value>
+        </entry>
+        <entry parameter="DWMRI_gradient_0018">
+            <value>0.231234 -0.636606 0.318265</value>
+        </entry>
+        <entry parameter="DWMRI_gradient_0019">
+            <value>0.435890 -0.458295 -0.599959</value>
+        </entry>
+        <entry parameter="DWMRI_gradient_0020">
+            <value>0.489898 0.515079 0.674296</value>
+        </entry>
+        <entry parameter="DWMRI_gradient_0021">
+            <value>0.223607 0.380445 0.072672</value>
+        </entry>
+        <entry parameter="DWMRI_gradient_0022">
+            <value>0.365180 0.365180 -0.365180</value>
+        </entry>
+        <entry parameter="DWMRI_gradient_0023">
+            <value>0.626649 -0.407205 0.203641</value>
+        </entry>
+        <entry parameter="DWMRI_gradient_0024">
+            <value>0.723592 0.000000 -0.525744</value>
+        </entry>
+        <entry parameter="DWMRI_gradient_0025">
+            <value>0.809004 0.000000 0.587803</value>
+        </entry>
+    </entry>
+    <entry parameter="QC Check">
+        <value>No</value>
+        <entry parameter="QCOutputFileName">
+            <value>*_QC_Output.nhdr</value>
+        </entry>
+        <entry parameter="slice wise threshold">
+            <value>Yes</value>
+            <entry parameter="slice correlation">
+                <value>0.6</value>
+            </entry>
+            <entry parameter="slice correlation deviation">
+                <value>2.5</value>
+            </entry>
+            <entry parameter="bad slice percentage tolerance">
+                <value>0.1</value>
+            </entry>
+        </entry>
+        <entry parameter="interlace wise threshold">
+            <value>No</value>
+            <entry parameter="interlace correlation baseline">
+                <value>0.9</value>
+            </entry>
+            <entry parameter="interlace correlation gradient">
+                <value>0.8</value>
+            </entry>
+            <entry parameter="interlace translation">
+                <value>1.0</value>
+            </entry>
+            <entry parameter="interlace rotation">
+                <value>0.5</value>
+            </entry>
+        </entry>
+        <entry parameter="gradient wise threshold">
+            <value>No</value>
+            <entry parameter="gradient translation">
+                <value>1.0</value>
+            </entry>
+            <entry parameter="gradient rotation">
+                <value>0.5</value>
+            </entry>
+        </entry>
+    </entry>
+    <entry parameter="Eddy Motion Correction">
+        <value>No</value>
+        <entry parameter="Eddy Motion Correction Command">
+            <value>/tools/linux_bin64/eddymotionCorrect</value>
+        </entry>
+        <entry parameter="EddyMotionInputFileName">
+            <value>*_QC_Output.nhdr</value>
+        </entry>
+        <entry parameter="EddyMotionOutputFileName">
+            <value>*_EddyMotion_Output.nhdr</value>
+        </entry>
+    </entry>
+    <entry parameter="DTI Computing">
+        <value>No</value>
+        <entry parameter="dtiestim Command">
+            <value>/tools/linux_bin64/dtiestim</value>
+        </entry>
+        <entry parameter="dtiprocess Command">
+            <value>/tools/linux_bin64/dtiprocess</value>
+        </entry>
+        <entry parameter="method">
+            <value>wls</value>
+        </entry>
+        <entry parameter="baseline threshold">
+            <value>100</value>
+        </entry>
+        <entry parameter="mask file">
+            <value>*_mask.nhdr</value>
+        </entry>
+        <entry parameter="tensor file">
+            <value>*_tensor.nhdr</value>
+        </entry>
+        <entry parameter="scalar measurements">
+            <entry parameter="baseline">
+                <value>Yes</value>
+                <value>*_baseline.mha</value>
+            </entry>
+            <entry parameter="idwi">
+                <value>Yes</value>
+                <value>*_idwi.mha</value>
+            </entry>
+            <entry parameter="fa">
+                <value>Yes</value>
+                <value>*_fa.mha</value>
+            </entry>
+            <entry parameter="md">
+                <value>Yes</value>
+                <value>*_md.mha</value>
+            </entry>
+            <entry parameter="colored fa">
+                <value>Yes</value>
+                <value>*_color-fa.mha</value>
+            </entry>
+            <entry parameter="frobenius norm">
+                <value>Yes</value>
+                <value>*_frobeniusnorm.mha</value>
+            </entry>
+        </entry>
+    </entry>
+</ProtocalSettings>
