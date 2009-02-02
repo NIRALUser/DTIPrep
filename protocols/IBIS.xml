@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ProtocalSettings>
     <entry parameter="ReportFileName">
-        <value>*_Report.txt</value>
+        <value>_Report.txt</value>
     </entry>
     <entry parameter="Image">
         <value>Yes</value>
@@ -119,9 +119,9 @@
         </entry>
     </entry>
     <entry parameter="QC Check">
-        <value>No</value>
+        <value>yes</value>
         <entry parameter="QCOutputFileName">
-            <value>*_QC_Output.nhdr</value>
+            <value>_QC_Output.nhdr</value>
         </entry>
         <entry parameter="slice wise threshold">
             <value>Yes</value>
@@ -136,12 +136,12 @@
             </entry>
         </entry>
         <entry parameter="interlace wise threshold">
-            <value>No</value>
+            <value>Yes</value>
             <entry parameter="interlace correlation baseline">
                 <value>0.9</value>
             </entry>
             <entry parameter="interlace correlation gradient">
-                <value>0.8</value>
+                <value>0.85</value>
             </entry>
             <entry parameter="interlace translation">
                 <value>1.0</value>
@@ -151,34 +151,34 @@
             </entry>
         </entry>
         <entry parameter="gradient wise threshold">
-            <value>No</value>
+            <value>Yes</value>
             <entry parameter="gradient translation">
-                <value>1.0</value>
+                <value>5.0</value>
             </entry>
             <entry parameter="gradient rotation">
-                <value>0.5</value>
+                <value>2.0</value>
             </entry>
         </entry>
     </entry>
     <entry parameter="Eddy Motion Correction">
-        <value>No</value>
+        <value>Yes</value>
         <entry parameter="Eddy Motion Correction Command">
-            <value>/tools/linux_bin64/eddymotionCorrect</value>
+            <value>/tools/bin_linux64/eddymotionCorrect</value>
         </entry>
         <entry parameter="EddyMotionInputFileName">
-            <value>*_QC_Output.nhdr</value>
+            <value>_QC_Output.nhdr</value>
         </entry>
         <entry parameter="EddyMotionOutputFileName">
-            <value>*_EddyMotion_Output.nhdr</value>
+            <value>_EddyMotion_Output.nhdr</value>
         </entry>
     </entry>
     <entry parameter="DTI Computing">
-        <value>No</value>
+        <value>Yes</value>
         <entry parameter="dtiestim Command">
-            <value>/tools/linux_bin64/dtiestim</value>
+            <value>/tools/bin_linux64/dtiestim</value>
         </entry>
         <entry parameter="dtiprocess Command">
-            <value>/tools/linux_bin64/dtiprocess</value>
+            <value>/tools/bin_linux64/dtiprocess</value>
         </entry>
         <entry parameter="method">
             <value>wls</value>
@@ -187,35 +187,35 @@
             <value>100</value>
         </entry>
         <entry parameter="mask file">
-            <value>*_mask.nhdr</value>
+            <value>mask.nhdr</value>
         </entry>
         <entry parameter="tensor file">
-            <value>*_tensor.nhdr</value>
+            <value>_tensor.nhdr</value>
         </entry>
         <entry parameter="scalar measurements">
             <entry parameter="baseline">
                 <value>Yes</value>
-                <value>*_baseline.mha</value>
+                <value>_baseline.mha</value>
             </entry>
             <entry parameter="idwi">
                 <value>Yes</value>
-                <value>*_idwi.mha</value>
+                <value>_idwi.mha</value>
             </entry>
             <entry parameter="fa">
                 <value>Yes</value>
-                <value>*_fa.mha</value>
+                <value>_fa.mha</value>
             </entry>
             <entry parameter="md">
                 <value>Yes</value>
-                <value>*_md.mha</value>
+                <value>_md.mha</value>
             </entry>
             <entry parameter="colored fa">
                 <value>Yes</value>
-                <value>*_color-fa.mha</value>
+                <value>_color-fa.mha</value>
             </entry>
             <entry parameter="frobenius norm">
                 <value>Yes</value>
-                <value>*_frobeniusnorm.mha</value>
+                <value>_frobeniusnorm.mha</value>
             </entry>
         </entry>
     </entry>

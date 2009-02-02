@@ -9,7 +9,7 @@
   <description>
   Converts diffusion weighted MR images in dicom series into Nrrd format.
   </description>
-  <version>0.1.0.$Revision: 1.1.1.1 $(alpha)</version>
+  <version>0.1.0.$Revision: 1.2 $(alpha)</version>
   <documentation-url></documentation-url>
   <license></license>
   <contributor>Xiaodong Tao</contributor>

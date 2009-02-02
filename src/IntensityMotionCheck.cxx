@@ -19,7 +19,6 @@
 #include <string>
 #include <math.h>
 
-
 CIntensityMotionCheck::CIntensityMotionCheck(std::string filename,std::string reportFile)
 {
 	DwiFileName = filename;
@@ -1325,6 +1324,12 @@ bool CIntensityMotionCheck::DiffusionCheck()
 
 bool CIntensityMotionCheck::DTIComputing()
 {
+	if(!protocal->GetDTIProtocal().bCompute)
+	{
+		std::cout<< "DTI computing not set" <<std::endl;
+		return true;
+	}
+
 	if(!bDwiLoaded  ) LoadDwiImage();
 	if(!bDwiLoaded  )
 	{
@@ -1332,65 +1337,105 @@ bool CIntensityMotionCheck::DTIComputing()
 		bGetGridentDirections=false;
 		return false;
 	}
-
+// dtiestim
 	std::string str;
 	str.append(protocal->GetDTIProtocal().dtiestimCommand); 
 	str.append(" ");
-	str.append(protocal->GetDTIProtocal().tensor); 
+
+	std::string OutputTensor;
+	OutputTensor=DwiFileName.substr(0,DwiFileName.find_last_of('.') );
+	OutputTensor.append(protocal->GetDTIProtocal().tensor);
+	
+	str.append(OutputTensor); 
 	
 	if(protocal->GetDTIProtocal().method == Protocal::METHOD_WLS )
-		str.append("-m wls");
+		str.append(" -m wls ");
 	else if(protocal->GetDTIProtocal().method == Protocal::METHOD_ML)
-		str.append("-m ml");
+		str.append(" -m ml ");
+	else if(protocal->GetDTIProtocal().method == Protocal::METHOD_NLS)
+		str.append(" -m nls ");
 	else
-		str.append("-m lls");
+		str.append(" -m lls ");
 
 	if(protocal->GetDTIProtocal().mask.length()>0)
 	{
-		str.append("-mask ");
+		str.append(" -M ");
 		str.append( protocal->GetDTIProtocal().mask );
 	}
 
-	str.append("-t ");
-	//str.append("-t ");  itoa()  protocal->GetDTIProtocal().baselineThreshold
-	//system(str.c_str());
+	str.append(" -t ");
+	char buffer [10]; 
+	sprintf( buffer, "%d", protocal->GetDTIProtocal().baselineThreshold );
+	str.append(buffer);
 	
 	
+
+	if( protocal->GetDTIProtocal().bidwi)
+	{
+		str.append(" --idwi "); 
+		std::string idwi;
+		idwi=DwiFileName.substr(0,DwiFileName.find_last_of('.') );
+		idwi.append(protocal->GetDTIProtocal().idwi);
+		str.append(idwi);
+	}
+
+	if( protocal->GetDTIProtocal().bbaseline)
+	{
+		str.append(" --B0 "); 
+		std::string baseline;
+		baseline=DwiFileName.substr(0,DwiFileName.find_last_of('.') );
+		baseline.append(protocal->GetDTIProtocal().baseline);
+		str.append(baseline);
+	}
+
+	std::cout<< "dtiestim command: "<< str.c_str() << std::endl;
+	system(str.c_str());
+	
+// dtiprocess
 	std::string string;
 	string.append(protocal->GetDTIProtocal().dtiprocessCommand); 
+	string.append(" "); 
+
+	string.append(OutputTensor);	
 
 	if( protocal->GetDTIProtocal().bfa)
 	{
-		string.append(" -f "); 
-		string.append(protocal->GetDTIProtocal().fa); 
+		string.append(" -f ");
+		std::string fa;
+		fa=DwiFileName.substr(0,DwiFileName.find_last_of('.') );
+		fa.append(protocal->GetDTIProtocal().fa);
+		string.append(fa); 
 	}
 
 	if( protocal->GetDTIProtocal().bmd)
 	{
 		string.append(" -m "); 
-		string.append(protocal->GetDTIProtocal().md); 
+		std::string md;
+		md=DwiFileName.substr(0,DwiFileName.find_last_of('.') );
+		md.append(protocal->GetDTIProtocal().md);
+		string.append(md); 
 	}
 
 	if( protocal->GetDTIProtocal().bcoloredfa)
 	{
 		string.append(" -c "); 
-		string.append(protocal->GetDTIProtocal().coloredfa); 
+		std::string cfa;
+		cfa=DwiFileName.substr(0,DwiFileName.find_last_of('.') );
+		cfa.append(protocal->GetDTIProtocal().coloredfa);
+		string.append(cfa); 
 	}
 
-	if( protocal->GetDTIProtocal().bidwi)
+	if( protocal->GetDTIProtocal().bfrobeniusnorm)
 	{
-		string.append(" -idwi "); 
-		string.append(protocal->GetDTIProtocal().idwi); 
+		string.append(" --frobenius-norm-output "); 
+		std::string fn;
+		fn=DwiFileName.substr(0,DwiFileName.find_last_of('.') );
+		fn.append(protocal->GetDTIProtocal().frobeniusnorm);
+		string.append(fn); 
 	}
 
-//	if( protocal->GetDTIProtocal().bbaseline)
-//	{
-//		string.append(" -b "); 
-//		string.append(protocal->GetDTIProtocal().baseline); 
-//	}
-
-	string.append("dtiprocess "); 
-	//system(string.c_str());
+	std::cout<< "dtiprocess command: "<< string.c_str() << std::endl;
+	system(string.c_str());
 
 	return true;
 }
@@ -1444,16 +1489,19 @@ void CIntensityMotionCheck::GenerateCheckOutputImage()
  
 	while (!oit.IsAtEnd())
 	{
+		int element = 0;
 		for( int i = 0 ; i < qcResult->GetGradientProcess().size(); i++ )
 		{
 			if(qcResult->GetGradientProcess()[i] == QCResult::GRADIENT_INCLUDE)
-				value.SetElement( i , oit.Get()[i] ) ;
+			{
+				value.SetElement( element , oit.Get()[i] ) ;
+				element++;
+			}
 		}
 		nit.Set(value);	
 		++oit;
 		++nit;
 	}
-
 
 	std::string OutputFileName;
 	OutputFileName=DwiFileName.substr(0,DwiFileName.find_last_of('.') );
@@ -1591,26 +1639,64 @@ void CIntensityMotionCheck::GenerateCheckOutputImage()
 
 void CIntensityMotionCheck::EddyMotionCorrection()
 {
-//	if(protocal->GetEddyMotionCorrectionProtocal().bCorrect)
-//		system("EddyMotionCorrection");
+	if(!protocal->GetEddyMotionCorrectionProtocal().bCorrect)
+	{
+		return ;
+	}
+
+	std::string string;
+	string.append(protocal->GetEddyMotionCorrectionProtocal().EddyMotionCommand); 
+	string.append(" ");
+
+	string.append(" -i ");
+	std::string input;
+	input=DwiFileName.substr(0,DwiFileName.find_last_of('.') );
+	input.append(protocal->GetEddyMotionCorrectionProtocal().InputFileName);
+	string.append(input); 
+
+	string.append(" -o ");
+	std::string output;
+	output=DwiFileName.substr(0,DwiFileName.find_last_of('.') );
+	output.append(protocal->GetEddyMotionCorrectionProtocal().OutputFileName);
+	string.append(output); 
+
+	std::cout<<"EddyMotionCorrection command: "<<string<<std::endl;
+//	system("EddyMotionCorrection");
 }
 
 bool CIntensityMotionCheck::CheckByProtocal()
 {
+	std::cout<<"ImageCheck ... ";
 	ImageCheck();
-	std::cout<<"ImageCheck"<<std::endl;
+	std::cout<<"ImageCheck DONE"<<std::endl;
+
+	std::cout<<"DiffusionCheck ... ";
 	DiffusionCheck();
-	std::cout<<"DiffusionCheck"<<std::endl;
+	std::cout<<"DiffusionCheck DONE"<<std::endl;
+
+	std::cout<<"IntraCheck ... ";
 	IntraCheck();
-	std::cout<<"IntraCheck"<<std::endl;
+	std::cout<<"IntraCheck DONE"<<std::endl;
+
+	std::cout<<"InterlaceCheck ... ";
 	InterlaceCheck();
-	std::cout<<"InterlaceCheck"<<std::endl;
+	std::cout<<"nterlaceCheck DONE"<<std::endl;
+
+	std::cout<<"InterCheck ... ";
 	InterCheck();
-	std::cout<<"InterCheck"<<std::endl;
+	std::cout<<"nterCheck DONE"<<std::endl;
+
+	std::cout<<"GenerateCheckOutputImage ... ";
 	GenerateCheckOutputImage();
-	std::cout<<"GenerateCheckOutputImage"<<std::endl;
+	std::cout<<"GenerateCheckOutputImage DONE"<<std::endl;
+
+	std::cout<<"EddyMotionCorrection ... ";
+	EddyMotionCorrection();
+	std::cout<<"EddyMotionCorrection DONE"<<std::endl;
+
+	std::cout<<"DTIComputing ... ";
 	DTIComputing();
-	std::cout<<"DTIComputing"<<std::endl;
+	std::cout<<"DTIComputing DONE"<<std::endl;
 
 	/*
 	return (	ImageCheck()		&&

@@ -3,8 +3,8 @@
 Program:   ReconstructTensor
 Module:    $RCSfile: DicomToNrrdConverter.cxx,v $
 Language:  C++
-Date:      $Date: 2009-01-30 20:31:53 $
-Version:   $Revision: 1.1.1.1 $
+Date:      $Date: 2009-02-02 15:14:37 $
+Version:   $Revision: 1.2 $
 
 Copyright (c) General Electric Global Research. All rights reserved.
 
@@ -181,7 +181,7 @@ int main(int argc, char* argv[])
     if (i == std::string::npos)
       {
         std::cerr << "Output file must be a nrrd header file.\n";
-        std::cerr << "Version:   $Revision: 1.1.1.1 $" << std::endl;
+        std::cerr << "Version:   $Revision: 1.2 $" << std::endl;
         return EXIT_FAILURE;
       }
     dataname = nhdrname.substr(0, i) + ".raw";

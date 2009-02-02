@@ -118,6 +118,7 @@ public:
 	enum {	METHOD_WLS = 0,
 			METHOD_LLS,
 			METHOD_ML,
+			METHOD_NLS,
 			METHOD_UNKNOWN,
 	};
 

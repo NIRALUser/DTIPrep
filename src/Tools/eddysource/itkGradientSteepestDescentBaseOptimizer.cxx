@@ -3,8 +3,8 @@
   Program:   Insight Segmentation & Registration Toolkit
   Module:    $RCSfile: itkGradientSteepestDescentBaseOptimizer.cxx,v $
   Language:  C++
-  Date:      $Date: 2009-01-30 20:31:52 $
-  Version:   $Revision: 1.1.1.1 $
+  Date:      $Date: 2009-02-02 15:14:37 $
+  Version:   $Revision: 1.2 $
 
   Copyright (c) Insight Software Consortium. All rights reserved.
   See ITKCopyright.txt or http://www.itk.org/HTML/Copyright.htm for details.
