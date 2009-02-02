@@ -56,8 +56,8 @@ int main ( int argc, char ** argv )
 		string DWIFileName	= command.GetValueAsString("DWIFileName","DWIFileName");
 
 		string InputDicomDir	= command.GetValueAsString("Dicom2Nrrd","InputDicomDir");
-		string OutputDir		= DWIFileName.substr(0,DWIFileName.find_last_of('\\') );
-		string OutputFileName	= DWIFileName.substr(DWIFileName.find_last_of('\\')+1,string::npos );
+		string OutputDir		= DWIFileName.substr(0,DWIFileName.find_last_of('/') );
+		string OutputFileName	= DWIFileName.substr(DWIFileName.find_last_of('/')+1,string::npos );
 
 		string xmlFileName		= command.GetValueAsString("xmlSetting","xmlFileName");
 		cout<<"xmlFileName "<<xmlFileName<<endl;
@@ -66,7 +66,8 @@ int main ( int argc, char ** argv )
 		if(command.GetOptionWasSet("Dicom2Nrrd") && InputDicomDir.length()!=0 && OutputDir.length()!=0 && OutputFileName.length()!=0 )
 		{
 			std::string str,str1,str2;
-			str += string("/tools/devel/linux/Slicer3_linux/Slicer3-build/lib/Slicer3/Plugins/DicomToNrrdConverter") ;
+			str += string("DicomToNrrdConverter") ;
+			//str += string("/tools/Slicer3/Slicer3-3.3-alpha-2009-01-27-linux-x86/lib/Slicer3/Plugins/DicomToNrrdConverter") ;
 			str += string("  ");
 			str += InputDicomDir;
 			str += string("  ");
@@ -74,8 +75,9 @@ int main ( int argc, char ** argv )
 			str += string("  ");
 			str += OutputFileName;
 
-			system(const_cast<char *>(str.c_str())); 
 			cout<<"DicomToNrrd "<<InputDicomDir<<" "<<OutputDir<<" "<<OutputFileName<<endl;
+			system(const_cast<char *>(str.c_str())); 
+
 		}
 
 

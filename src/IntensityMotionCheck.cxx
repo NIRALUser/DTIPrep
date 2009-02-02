@@ -1342,10 +1342,24 @@ bool CIntensityMotionCheck::DTIComputing()
 	str.append(protocal->GetDTIProtocal().dtiestimCommand); 
 	str.append(" ");
 
+	std::string OutputDwiFileName;
+	if(protocal->GetEddyMotionCorrectionProtocal().bCorrect)
+	{
+		OutputDwiFileName=DwiFileName.substr(0,DwiFileName.find_last_of('.') );
+		OutputDwiFileName.append(protocal->GetEddyMotionCorrectionProtocal().OutputFileName);	
+	}
+	else
+	{
+		OutputDwiFileName=DwiFileName.substr(0,DwiFileName.find_last_of('.') );
+		OutputDwiFileName.append(protocal->GetIntensityMotionCheckProtocal().OutputFileName);	
+	}
+
+	str.append(OutputDwiFileName);
+	str.append(" ");
+
 	std::string OutputTensor;
 	OutputTensor=DwiFileName.substr(0,DwiFileName.find_last_of('.') );
 	OutputTensor.append(protocal->GetDTIProtocal().tensor);
-	
 	str.append(OutputTensor); 
 	
 	if(protocal->GetDTIProtocal().method == Protocal::METHOD_WLS )
@@ -1661,7 +1675,7 @@ void CIntensityMotionCheck::EddyMotionCorrection()
 	string.append(output); 
 
 	std::cout<<"EddyMotionCorrection command: "<<string<<std::endl;
-//	system("EddyMotionCorrection");
+	system("EddyMotionCorrection");
 }
 
 bool CIntensityMotionCheck::CheckByProtocal()
