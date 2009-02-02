@@ -1675,7 +1675,7 @@ void CIntensityMotionCheck::EddyMotionCorrection()
 	string.append(output); 
 
 	std::cout<<"EddyMotionCorrection command: "<<string<<std::endl;
-	system("EddyMotionCorrection");
+	system(string.c_str());
 }
 
 bool CIntensityMotionCheck::CheckByProtocal()

@@ -163,7 +163,7 @@
     <entry parameter="Eddy Motion Correction">
         <value>Yes</value>
         <entry parameter="Eddy Motion Correction Command">
-            <value>/tools/bin_linux64/eddymotionCorrect</value>
+            <value>/home/zhliu/Desktop/DTIPrep/DTIPrep/src/Tools/eddysource/EddyMotionCorrector</value>
         </entry>
         <entry parameter="EddyMotionInputFileName">
             <value>_QC_Output.nhdr</value>
@@ -187,7 +187,7 @@
             <value>100</value>
         </entry>
         <entry parameter="mask file">
-            <value>mask.nhdr</value>
+            <value></value>
         </entry>
         <entry parameter="tensor file">
             <value>_tensor.nhdr</value>
