@@ -8,8 +8,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1286</width>
-    <height>687</height>
+    <width>1064</width>
+    <height>678</height>
    </rect>
   </property>
   <property name="windowTitle" >
@@ -30,8 +30,8 @@
     <rect>
      <x>0</x>
      <y>55</y>
-     <width>1286</width>
-     <height>613</height>
+     <width>1064</width>
+     <height>604</height>
     </rect>
    </property>
    <layout class="QVBoxLayout" name="verticalLayout" >
@@ -53,7 +53,7 @@
        <enum>QTabWidget::Rounded</enum>
       </property>
       <property name="currentIndex" >
-       <number>1</number>
+       <number>0</number>
       </property>
       <property name="elideMode" >
        <enum>Qt::ElideNone</enum>
@@ -63,8 +63,8 @@
         <rect>
          <x>0</x>
          <y>0</y>
-         <width>1262</width>
-         <height>566</height>
+         <width>1040</width>
+         <height>557</height>
         </rect>
        </property>
        <attribute name="title" >
@@ -94,65 +94,6 @@
         </item>
        </layout>
       </widget>
-      <widget class="QWidget" name="tab_Info" >
-       <property name="geometry" >
-        <rect>
-         <x>0</x>
-         <y>0</y>
-         <width>1262</width>
-         <height>566</height>
-        </rect>
-       </property>
-       <attribute name="title" >
-        <string>Results</string>
-       </attribute>
-       <attribute name="icon" >
-        <iconset>
-         <normalon>C:/Documents and Settings/Administrator/My Documents/My QQ Files/u=2279432988,2871392891&amp;fm=0&amp;gp=10.jpg</normalon>
-        </iconset>
-       </attribute>
-       <layout class="QVBoxLayout" name="verticalLayout_3" >
-        <item>
-         <widget class="QSplitter" name="splitter" >
-          <property name="orientation" >
-           <enum>Qt::Vertical</enum>
-          </property>
-          <widget class="QTreeWidget" name="treeWidget" >
-           <property name="sizePolicy" >
-            <sizepolicy vsizetype="Preferred" hsizetype="Expanding" >
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
-           </property>
-           <property name="toolTip" >
-            <string>Check Results</string>
-           </property>
-           <property name="editTriggers" >
-            <set>QAbstractItemView::AllEditTriggers</set>
-           </property>
-           <property name="alternatingRowColors" >
-            <bool>true</bool>
-           </property>
-           <column>
-            <property name="text" >
-             <string>Type</string>
-            </property>
-           </column>
-           <column>
-            <property name="text" >
-             <string>Result</string>
-            </property>
-           </column>
-           <column>
-            <property name="text" >
-             <string>Processing</string>
-            </property>
-           </column>
-          </widget>
-         </widget>
-        </item>
-       </layout>
-      </widget>
      </widget>
     </item>
    </layout>
@@ -162,7 +103,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1286</width>
+     <width>1064</width>
      <height>21</height>
     </rect>
    </property>
@@ -213,8 +154,8 @@
    <property name="geometry" >
     <rect>
      <x>0</x>
-     <y>668</y>
-     <width>1286</width>
+     <y>659</y>
+     <width>1064</width>
      <height>19</height>
     </rect>
    </property>
@@ -245,7 +186,7 @@
     <rect>
      <x>55</x>
      <y>21</y>
-     <width>1231</width>
+     <width>1009</width>
      <height>34</height>
     </rect>
    </property>

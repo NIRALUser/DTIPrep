@@ -119,7 +119,7 @@
         </entry>
     </entry>
     <entry parameter="QC Check">
-        <value>yes</value>
+        <value>Yes</value>
         <entry parameter="QCOutputFileName">
             <value>_QC_Output.nhdr</value>
         </entry>
@@ -136,7 +136,7 @@
             </entry>
         </entry>
         <entry parameter="interlace wise threshold">
-            <value>Yes</value>
+            <value>No</value>
             <entry parameter="interlace correlation baseline">
                 <value>0.9</value>
             </entry>
@@ -151,7 +151,7 @@
             </entry>
         </entry>
         <entry parameter="gradient wise threshold">
-            <value>Yes</value>
+            <value>No</value>
             <entry parameter="gradient translation">
                 <value>5.0</value>
             </entry>
@@ -161,7 +161,7 @@
         </entry>
     </entry>
     <entry parameter="Eddy Motion Correction">
-        <value>Yes</value>
+        <value>No</value>
         <entry parameter="Eddy Motion Correction Command">
             <value>/home/zhliu/Desktop/DTIPrep/DTIPrep/src/Tools/eddysource/EddyMotionCorrector</value>
         </entry>
@@ -173,7 +173,7 @@
         </entry>
     </entry>
     <entry parameter="DTI Computing">
-        <value>Yes</value>
+        <value>No</value>
         <entry parameter="dtiestim Command">
             <value>/tools/bin_linux64/dtiestim</value>
         </entry>
@@ -186,9 +186,7 @@
         <entry parameter="baseline threshold">
             <value>100</value>
         </entry>
-        <entry parameter="mask file">
-            <value></value>
-        </entry>
+        <entry parameter="mask file"></entry>
         <entry parameter="tensor file">
             <value>_tensor.nhdr</value>
         </entry>

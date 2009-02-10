@@ -93,7 +93,7 @@
            <cursorShape>ArrowCursor</cursorShape>
           </property>
           <property name="currentIndex" >
-           <number>1</number>
+           <number>0</number>
           </property>
           <widget class="QWidget" name="tab_Protocal" >
            <property name="geometry" >
@@ -154,7 +154,7 @@
                    <bool>true</bool>
                   </property>
                   <property name="text" >
-                   <string>Save</string>
+                   <string>Save &amp;&amp; Update</string>
                   </property>
                   <property name="default" >
                    <bool>false</bool>
@@ -198,7 +198,7 @@
              </widget>
             </item>
             <item>
-             <widget class="QGroupBox" name="groupBox_3" >
+             <widget class="QGroupBox" name="groupBox_Progress" >
               <property name="title" >
                <string>Progress</string>
               </property>
@@ -1212,6 +1212,40 @@
             </item>
             <item>
              <layout class="QHBoxLayout" name="horizontalLayout_7" />
+            </item>
+           </layout>
+          </widget>
+          <widget class="QWidget" name="标签页" >
+           <property name="geometry" >
+            <rect>
+             <x>0</x>
+             <y>0</y>
+             <width>200</width>
+             <height>469</height>
+            </rect>
+           </property>
+           <attribute name="title" >
+            <string>QCResults</string>
+           </attribute>
+           <layout class="QVBoxLayout" name="verticalLayout_2" >
+            <item>
+             <widget class="QTreeWidget" name="treeWidget_Results" >
+              <column>
+               <property name="text" >
+                <string>Type</string>
+               </property>
+              </column>
+              <column>
+               <property name="text" >
+                <string>Parameter</string>
+               </property>
+              </column>
+              <column>
+               <property name="text" >
+                <string>Processing</string>
+               </property>
+              </column>
+             </widget>
             </item>
            </layout>
           </widget>

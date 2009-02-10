@@ -63,7 +63,11 @@
           </property>
           <layout class="QHBoxLayout" name="horizontalLayout_4" >
            <item>
-            <widget class="QLineEdit" name="lineEdit_DicomToNrrdConverterCommand" />
+            <widget class="QLineEdit" name="lineEdit_DicomToNrrdConverterCommand" >
+             <property name="text" >
+              <string>DicomToNrrdConverter</string>
+             </property>
+            </widget>
            </item>
            <item>
             <widget class="QToolButton" name="toolButton_DicomToNrrdConverterCommand" >

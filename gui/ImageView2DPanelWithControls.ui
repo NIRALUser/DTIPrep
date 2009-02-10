@@ -34,20 +34,9 @@
    <string>2D View</string>
   </property>
   <widget class="QWidget" name="dockWidgetContents" >
-   <property name="geometry" >
-    <rect>
-     <x>0</x>
-     <y>23</y>
-     <width>258</width>
-     <height>311</height>
-    </rect>
-   </property>
    <layout class="QVBoxLayout" name="verticalLayout" >
     <item>
      <widget class="QFrame" name="frame" >
-      <property name="windowModality" >
-       <enum>Qt::NonModal</enum>
-      </property>
       <property name="enabled" >
        <bool>true</bool>
       </property>
@@ -301,16 +290,6 @@
                <string>DWI</string>
               </property>
              </item>
-             <item>
-              <property name="text" >
-               <string>FA</string>
-              </property>
-             </item>
-             <item>
-              <property name="text" >
-               <string>MD</string>
-              </property>
-             </item>
             </widget>
            </item>
            <item row="2" column="2" >
@@ -396,11 +375,6 @@
              <item>
               <property name="text" >
                <string>Coronal</string>
-              </property>
-             </item>
-             <item>
-              <property name="text" >
-               <string>Reformat</string>
               </property>
              </item>
             </widget>
@@ -523,7 +497,7 @@
      </widget>
     </item>
     <item>
-     <widget class="QVTKWidget" native="1" name="qvtkWidget" >
+     <widget class="QVTKWidget" name="qvtkWidget" >
       <property name="toolTip" >
        <string>2D Image</string>
       </property>
