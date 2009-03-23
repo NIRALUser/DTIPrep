@@ -27,6 +27,7 @@ struct GradientIntensityMotionCheckResult
 {
 	std::vector< double > sliceCorrelation;
 	//std::vector< SliceCorrelation > sliceCorrelation;
+	bool bSliceCheckOK;
 
 	double interlaceCorrelation;
 	double interlaceRotationX;
@@ -35,6 +36,7 @@ struct GradientIntensityMotionCheckResult
 	double interlaceTranslationX;
 	double interlaceTranslationY;
 	double interlaceTranslationZ;
+	bool bInterlaceCheckOK;
 
 	double gradientRotationX;
 	double gradientRotationY;
@@ -42,6 +44,8 @@ struct GradientIntensityMotionCheckResult
 	double gradientTranslationX;
 	double gradientTranslationY;
 	double gradientTranslationZ;
+	bool bGradientCheckOK;
+
 
 	int processing;
 };
@@ -62,6 +66,12 @@ enum {
 	struct DiffusionInformationCheckResult			  &GetDiffusionInformationCheckResult(){	return 	diffusionInformationCheckResult;};
 	std::vector<GradientIntensityMotionCheckResult>   &GetIntensityMotionCheckResult(){		return 	intensityMotionCheckResult;};
 	std::vector< int >								  &GetGradientProcess(){ return GradientProcess;};
+
+	void Clear()
+	{
+		intensityMotionCheckResult.clear();
+		GradientProcess.clear();
+	}
 
 private:
 	ImageInformationCheckResult		imageInformationCheckResult;

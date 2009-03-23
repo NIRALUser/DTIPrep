@@ -32,7 +32,6 @@ private slots:
 
 //	void on_comboBox_Protocal_currentIndexChanged(QString protocalName);
 
-	void UpdateProgressBar(const int pos);
 
 	void on_treeWidget_itemDoubleClicked(QTreeWidgetItem * item, int column) ;
 	void on_treeWidget_itemChanged(QTreeWidgetItem * item, int column) ;
@@ -82,6 +81,10 @@ private slots:
 //treeWidget
 //comboBox_Protocal
 
+	void ResultUpdate();
+	void UpdateProgressBar(const int pos);
+
+
 private:
  	CThreadIntensityMotionCheck  *ThreadIntensityMotionCheck;
 
@@ -102,13 +105,15 @@ public:
 	bool GetGridentDirections();
 	bool LoadDwiImage();
 
-	QCResult GetQCResult(){ return qcResult;};
+	QCResult &GetQCResult(){ return qcResult;};
+	Protocal &GetProtocal(){ return protocal;};
 
 	void UpdatePanelDWI( DwiImageType::Pointer DwiImage );
 
 	void SetDWIImage(DwiImageType::Pointer WWIImage) { DwiImage = WWIImage; };
 private:
 
+	bool bProtocol;
 	Protocal protocal;
 	QCResult qcResult;
 

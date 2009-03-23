@@ -153,8 +153,27 @@ struIntra2DResults CIntraGradientRigidRegistration::Run( bool bRegister )
 			++cit1;
 			++cit2;
 		}
-		results.Correlation=sAB/sqrt(sA2*sB2);
+
+		if( sA2*sB2 == 0 )
+		{
+			//if(sA2==sB2)
+			//	results.Correlation = 1;
+			//else
+			//	results.Correlation = 0;
+			results.Correlation = 1;
+		}
+		else
+			results.Correlation=sAB/sqrt(sA2*sB2);
+
 		std::cout << " Metric value  = " << results.Correlation << std::endl;
+		//if(1)
+		//{
+		//	std::cout << " sAB  = " << sAB << std::endl;
+		//	std::cout << " sA2  = " << sA2 << std::endl;
+		//	std::cout << " sB2  = " << sB2 << std::endl;
+		//	std::cout << " sqrt(sA2*sB2)  = " << sqrt(sA2*sB2) << std::endl;
+		//	std::cout << " sAB/sqrt(sA2*sB2)  = " << sAB/sqrt(sA2*sB2) << std::endl;
+		//}
 	}
 	return results;
 

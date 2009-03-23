@@ -27,59 +27,50 @@ int main ( int argc, char ** argv )
 	if(argc==1)
 	{
 		QApplication app (argc, argv);
-		//app.setStyle(QStyleFactory::create("Windows") );
 		GMainWindow *MainWindow = new GMainWindow;
 		MainWindow ->show();
 		return app.exec();
-	}else
+	}
+	else
 	{
 		MetaCommand command;
 
 		// input
 		command.SetOption(			"DWIFileName", "w", true,"DWI file name to convert dicom image series into or to be checked (nhdr)");
-		command.SetOptionLongTag(	"DWIFileName","DwiFile");
+		command.SetOptionLongTag(	"DWIFileName","DWINrrdFile");
 		command.AddOptionField(		"DWIFileName","DWIFileName",MetaCommand::STRING, true);
 
 		// dicom to nrrd
-		command.SetOption(			"Dicom2Nrrd", "c", false,"Directory containing dicom images to be converted");
-		command.SetOptionLongTag(	"Dicom2Nrrd","dicom2nrrd");
+		command.SetOption(			"Dicom2Nrrd", "d", false,"Directory containing dicom images to be converted");
+		command.SetOptionLongTag(	"Dicom2Nrrd","DicomDirectory");
 		command.AddOptionField(		"Dicom2Nrrd","InputDicomDir",MetaCommand::STRING,true);
 
 		// xml based check
-		command.SetOption(			"xmlSetting","p", false,"xml-based parameter check");
-		command.SetOptionLongTag(	"xmlSetting","xml");
+		command.SetOption(			"xmlSetting","p", false,"protocol xml file");
+		command.SetOptionLongTag(	"xmlSetting","xmlProtocol");
 		command.AddOptionField(		"xmlSetting","xmlFileName",MetaCommand::STRING, true);
 	
 		if( !command.Parse(argc,argv) )
 			return EXIT_FAILURE;
 
 		string DWIFileName	= command.GetValueAsString("DWIFileName","DWIFileName");
-
 		string InputDicomDir	= command.GetValueAsString("Dicom2Nrrd","InputDicomDir");
-		string OutputDir		= DWIFileName.substr(0,DWIFileName.find_last_of('/') );
-		string OutputFileName	= DWIFileName.substr(DWIFileName.find_last_of('/')+1,string::npos );
+		string xmlFileName	= command.GetValueAsString("xmlSetting","xmlFileName");
 
-		string xmlFileName		= command.GetValueAsString("xmlSetting","xmlFileName");
 		cout<<"xmlFileName "<<xmlFileName<<endl;
-
 // convert
-		if(command.GetOptionWasSet("Dicom2Nrrd") && InputDicomDir.length()!=0 && OutputDir.length()!=0 && OutputFileName.length()!=0 )
+		if(command.GetOptionWasSet("Dicom2Nrrd") && InputDicomDir.length()!=0 && DWIFileName.length()!=0  )
 		{
 			std::string str,str1,str2;
-			str += string("DicomToNrrdConverter") ;
-			//str += string("/tools/Slicer3/Slicer3-3.3-alpha-2009-01-27-linux-x86/lib/Slicer3/Plugins/DicomToNrrdConverter") ;
+			str += string("DicomToNrrdConverter");			
 			str += string("  ");
 			str += InputDicomDir;
 			str += string("  ");
-			str += OutputDir;
-			str += string("  ");
-			str += OutputFileName;
-
-			cout<<"DicomToNrrd "<<InputDicomDir<<" "<<OutputDir<<" "<<OutputFileName<<endl;
+			str += DWIFileName;
+			
+			cout<<"DicomToNrrd "<<InputDicomDir<<" "<<DWIFileName<<endl;
 			system(const_cast<char *>(str.c_str())); 
-
 		}
-
 
 // check
 		CIntensityMotionCheck IntensityMotionCheck( DWIFileName );

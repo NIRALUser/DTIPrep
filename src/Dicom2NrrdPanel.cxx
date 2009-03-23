@@ -40,34 +40,9 @@ void Dicom2NrrdPanel::on_dicomDirectoryBrowseButton_clicked( )
 
 	 return;
 	
-
-
 	//fileName = QFileDialog::getOpenFileName(this,
     //   tr("Open Image"), "/home/jana", tr("Image Files (*.png *.jpg *.bmp)"));
 
-   /* if (!fileName.isEmpty()) {
-        MainWindow *existing = findMainWindow(fileName);
-        if (existing) {
-            existing->show();
-            existing->raise();
-            existing->activateWindow();
-            return;
-        }
-
-        if (isUntitled && textEdit->document()->isEmpty()
-                && !isWindowModified()) {
-            loadFile(fileName);
-        } else {
-            MainWindow *other = new MainWindow(fileName);
-            if (other->isUntitled) {
-                delete other;
-                return;
-            }
-            other->move(x() + 40, y() + 40);
-            other->show();
-        }
-    }
-*/
 }
 
 void Dicom2NrrdPanel::on_toolButton_DicomToNrrdConverterCommand_clicked()
@@ -104,11 +79,18 @@ void Dicom2NrrdPanel::on_nrrdFileBrowseButton_clicked( )
 void Dicom2NrrdPanel::on_pushButton_Convert_clicked()
 {
 
+	if (lineEdit_DicomToNrrdConverterCommand->text().isEmpty()) 
+	 {
+		 std::cout<<QString(tr("DicomToNrrdConverter Command Empty!")).toStdString()<<std::endl;
+		 return;
+	 }
+
 	if (dicomDirectoryEdit->text().isEmpty()) 
 	 {
 		 std::cout<<QString(tr("Dicom Directory Empty!")).toStdString()<<std::endl;
 		 return;
 	 }
+
 	 if(nrrdFileName->text().isEmpty())
 	 {
 		 std::cout<<QString(tr("nrrd File Name Empty!")).toStdString()<<std::endl;
@@ -117,23 +99,18 @@ void Dicom2NrrdPanel::on_pushButton_Convert_clicked()
 	 
 	std::cout<<QString(tr("Dicom to Nrrd converting ...")).toStdString()<<std::endl;
 
-	QString str,str1,str2;
-
-	str +=	QString(tr("/tools/devel/linux/Slicer3_linux/Slicer3-build/lib/Slicer3/Plugins/DicomToNrrdConverter ")) ;
-	str +=	dicomDirectoryEdit->text();
-	
-	str1 =	nrrdFileName->text().section('/', -1);
-	str2 =	nrrdFileName->text().left(nrrdFileName->text().length()-str1.length());
-	str+=QString(tr("  "));
-	str+=str2;
-	str+=QString(tr("  "));
-	str+=str1;
-
-
-	ThreadDicomToNrrd.DicomToNrrdCmd= QString(tr("/tools/devel/linux/Slicer3_linux/Slicer3-build/lib/Slicer3/Plugins/DicomToNrrdConverter "));
+	//ThreadDicomToNrrd.D.DicomToNrrdCmd= QString(tr("/tools/devel/linux/Slicer3_linux/Slicer3-build/lib/Slicer3/Plugins/DicomToNrrdConverter "));
+	ThreadDicomToNrrd.DicomToNrrdCmd= lineEdit_DicomToNrrdConverterCommand->text();
 	ThreadDicomToNrrd.DicomDir=dicomDirectoryEdit->text();
-	ThreadDicomToNrrd.NrrdDir=str2;
-	ThreadDicomToNrrd.NrrdFileName=str1;
+	ThreadDicomToNrrd.NrrdFileName=nrrdFileName->text();
+
+	QString str;
+	str.append(lineEdit_DicomToNrrdConverterCommand->text());
+	str.append( QString(tr(" ")));
+	str.append(dicomDirectoryEdit->text());
+	str.append( QString(tr(" ")));
+	str.append(nrrdFileName->text());	
+	std::cout<<str.toStdString()<<std::endl;
 
 	ThreadDicomToNrrd.start(QThread::LowPriority);
 }

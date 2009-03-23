@@ -24,8 +24,6 @@ void CThreadDicomToNrrd::run()
 	str+=QString(tr("  "));
 	str+=DicomDir;
 	str+=QString(tr("  "));
-	str+=NrrdDir;
-	str+=QString(tr("  "));
 	str+=NrrdFileName;	
 
 	//for(int i=0;i< 10000;i++)

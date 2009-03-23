@@ -10,9 +10,11 @@
 
 #include <iostream>
 #include <string>
-
-class CIntensityMotionCheck
+//#include <QObject>
+class CIntensityMotionCheck //: public QObject
 {
+	//Q_OBJECT
+
 public:
 	CIntensityMotionCheck(std::string filename,std::string ReportFileName="");
 	CIntensityMotionCheck(void);
@@ -53,7 +55,8 @@ public:
 	void SetProtocal(Protocal *p) { protocal = p;};
 	void SetQCResult(QCResult *r) { qcResult = r;};
 
-	
+//signals:
+ //   void Progress( int );
 
 	
 private:

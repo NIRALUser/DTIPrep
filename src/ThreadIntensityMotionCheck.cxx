@@ -7,14 +7,19 @@
 CThreadIntensityMotionCheck::CThreadIntensityMotionCheck(QObject *parent)
      : QThread(parent)
 {
-  	//IntensityMotionCheck = new CIntensityMotionCheck("D:\\Liuzx\\DTIdeveloping\	\DataForTest\\DTI03\\DTI3_128x128x79x7.nhdr", "report.txt");//
 	DWINrrdFilename="";
+
+	//IntensityMotionCheck = new CIntensityMotionCheck;//
+	//IntensityMotionCheck->SetProtocal( protocal);
+	//IntensityMotionCheck->SetQCResult( qcResult);
+
 
 
 }
 
 CThreadIntensityMotionCheck::~CThreadIntensityMotionCheck()
 {
+	//delete IntensityMotionCheck;
 }
 
 void CThreadIntensityMotionCheck::run()
@@ -27,11 +32,19 @@ void CThreadIntensityMotionCheck::run()
 
 	emit allDone("checking ...");
 
+	qcResult->Clear();
 	CIntensityMotionCheck IntensityMotionCheck(DWINrrdFilename);//,"report.txt");//
+//	emit kkk(5);//emit QQQ(10);
 	IntensityMotionCheck.SetProtocal( protocal);
+//	emit kkk(10);//emit QQQ(10);
 	IntensityMotionCheck.SetQCResult( qcResult);
+//	emit kkk(15);//emit QQQ(10);
+	IntensityMotionCheck.SetFileName(DWINrrdFilename);//,"report.txt");//
 	IntensityMotionCheck.GetImagesInformation();
+	//emit kkk(60);//emit QQQ(10);
+	std::cout<<"begin check"<<std::endl;
 	IntensityMotionCheck.CheckByProtocal();
+	//emit kkk(100);//emit QQQ(10);
 
 	emit allDone("check ended");
 	emit ResultUpdate();

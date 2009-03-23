@@ -29,6 +29,7 @@ IntensityMotionCheckPanel::IntensityMotionCheckPanel(QMainWindow *parent):QDockW
 	DwiImage= NULL ;
 	protocal.clear();
 	bDwiLoaded = false;
+	bProtocol = false;
 
 	QStringList labels;
 	labels << tr("Parameter") << tr("Value");
@@ -36,7 +37,23 @@ IntensityMotionCheckPanel::IntensityMotionCheckPanel(QMainWindow *parent):QDockW
 	treeWidget->setHeaderLabels(labels);
 			
 	ThreadIntensityMotionCheck = new CThreadIntensityMotionCheck;
+	//ThreadIntensityMotionCheck->SetProtocal( &protocal);
+	//ThreadIntensityMotionCheck->SetQCResult(&qcResult);
+
+	//connect(ThreadIntensityMotionCheck, SIGNAL(QQQ(int )), this, SLOT(UpdateProgressBar(const int )) );
+
 	connect(ThreadIntensityMotionCheck, SIGNAL(kkk(int )), this, SLOT(UpdateProgressBar(const int )) );
+
+	connect( this->ThreadIntensityMotionCheck, 
+		SIGNAL(ResultUpdate()),
+		this,
+		SLOT(ResultUpdate()) );
+
+	//connect( this->ThreadIntensityMotionCheck->IntensityMotionCheck, 
+	//	SIGNAL(Progress(int )),
+	//	this,
+	//	SLOT(UpdateProgressBar(const int ))  );
+
 }
 
 void IntensityMotionCheckPanel::on_treeWidget_itemDoubleClicked(QTreeWidgetItem* item,int col)
@@ -53,6 +70,7 @@ void IntensityMotionCheckPanel::on_treeWidget_currentItemChanged( QTreeWidgetIte
   
 IntensityMotionCheckPanel::~IntensityMotionCheckPanel(void)
 {
+	delete ThreadIntensityMotionCheck;
 }
 
 void IntensityMotionCheckPanel::on_pushButton_RunPipeline_clicked( )
@@ -62,10 +80,17 @@ void IntensityMotionCheckPanel::on_pushButton_RunPipeline_clicked( )
 	//IntensityMotionCheck.SetQCResult(&qcResult);
 	//IntensityMotionCheck.GetImagesInformation();
 	//IntensityMotionCheck.CheckByProtocal();
+	if(!bProtocol)
+	{
+		std::cout << "Protocol NOT set. Load prorocol file first!"<<std::endl;
+		return;
+	}
 
+	qcResult.Clear();
+	//std::cout << "ThreadIntensityMotionCheck->SetFileName(lineEdit_DWIFileName->text().toStdString());"<<std::endl;
 	ThreadIntensityMotionCheck->SetFileName(lineEdit_DWIFileName->text().toStdString());
 	ThreadIntensityMotionCheck->SetProtocal( &protocal);
-	ThreadIntensityMotionCheck->SetQCResult(&qcResult);
+	ThreadIntensityMotionCheck->SetQCResult(&qcResult);	
 	ThreadIntensityMotionCheck->start();
 }
 
@@ -106,6 +131,8 @@ void IntensityMotionCheckPanel::on_toolButton_ProtocalFileOpen_clicked( )
 	XmlReader.setProtocal( &protocal);
 	XmlReader.readFile(xmlFile, XmlStreamReader::TreeWise);
 	XmlReader.readFile(xmlFile, XmlStreamReader::ProtocalWise);
+
+	bProtocol=true;
 
 /*
 	lineEdit_ReportFile->setText( QString::fromStdString(protocal.GetReportFileName()));
@@ -286,6 +313,14 @@ void IntensityMotionCheckPanel::on_pushButton_Save_clicked( )
 	{
 		XmlStreamWriter XmlWriter(treeWidget);
 		XmlWriter.writeXml(lineEdit_Protocal->text());
+
+		//treeWidget->clear();
+		protocal.clear();
+
+		XmlStreamReader XmlReader(treeWidget);
+		XmlReader.setProtocal( &protocal);
+		//XmlReader.readFile(lineEdit_Protocal->text(), XmlStreamReader::TreeWise);
+		XmlReader.readFile(lineEdit_Protocal->text(), XmlStreamReader::ProtocalWise);
 	}
 	else
 	{
@@ -295,8 +330,19 @@ void IntensityMotionCheckPanel::on_pushButton_Save_clicked( )
 			lineEdit_Protocal->setText(xmlFile);
 			XmlStreamWriter XmlWriter(treeWidget);
 			XmlWriter.writeXml(xmlFile);
+
+			//treeWidget->clear();
+			protocal.clear();
+
+			XmlStreamReader XmlReader(treeWidget);
+			XmlReader.setProtocal( &protocal);
+			//XmlReader.readFile(xmlFile, XmlStreamReader::TreeWise);
+			XmlReader.readFile(xmlFile, XmlStreamReader::ProtocalWise);
+
 		 }
 	}
+
+	bProtocol = true;
 /*	if(comboBox_Protocal->currentText()!=tr("none"))
 	{
 		QString str;
@@ -674,3 +720,205 @@ void IntensityMotionCheckPanel::on_pushButton_DTICompute_clicked( )
 
 }
 */
+
+void IntensityMotionCheckPanel::ResultUpdate()
+{
+	QStringList labels;
+	labels << tr("type") << tr("result")<<tr("processing");
+	//treeWidget->header()->setResizeMode(QHeaderView::Stretch);
+	treeWidget_Results->setHeaderLabels(labels);
+	treeWidget_Results->clear();
+
+	if(protocal.GetImageProtocal().bCheck)
+	{
+		// ImageInformationCheckResult
+		QTreeWidgetItem *itemImageInformation = new QTreeWidgetItem(treeWidget_Results);
+		itemImageInformation->setText(0, tr("ImageInformation"));
+
+		//	QTreeWidgetItem *dimension = new QTreeWidgetItem(itemImageInformation);
+		//	dimension->setText(0, tr("dimension"));
+		//	if(result.GetImageInformationCheckResult().dimension)
+		//		dimension->setText(1, tr("Pass"));
+		//	else
+		//		dimension->setText(1, tr("Failed"));
+
+		QTreeWidgetItem *origin = new QTreeWidgetItem(itemImageInformation);
+		origin->setText(0, tr("origin"));
+		if(qcResult.GetImageInformationCheckResult().origin)
+			origin->setText(1, tr("Pass"));
+		else
+			origin->setText(1, tr("Failed"));
+
+		QTreeWidgetItem *size = new QTreeWidgetItem(itemImageInformation);
+		size->setText(0, tr("size"));
+		if(qcResult.GetImageInformationCheckResult().size)
+			size->setText(1, tr("Pass"));
+		else
+			size->setText(1, tr("Failed"));
+
+		QTreeWidgetItem *space = new QTreeWidgetItem(itemImageInformation);
+		space->setText(0, tr("space"));
+		if(qcResult.GetImageInformationCheckResult().space)
+			space->setText(1, tr("Pass"));
+		else
+			space->setText(1, tr("Failed"));
+
+		QTreeWidgetItem *spacedirection = new QTreeWidgetItem(itemImageInformation);
+		spacedirection->setText(0, tr("spacedirection"));
+		if(qcResult.GetImageInformationCheckResult().spacedirection)
+			spacedirection->setText(1, tr("Pass"));
+		else
+			spacedirection->setText(1, tr("Failed"));
+
+		QTreeWidgetItem *spacing = new QTreeWidgetItem(itemImageInformation);
+		spacing->setText(0, tr("spacing"));
+		if(qcResult.GetImageInformationCheckResult().spacing)
+			spacing->setText(1, tr("Pass"));
+		else
+			spacing->setText(1, tr("Failed"));
+	}
+
+	if(protocal.GetDiffusionProtocal().bCheck)
+	{
+		// DiffusionInformationCheckResult
+		QTreeWidgetItem *itemDiffusionInformation = new QTreeWidgetItem(treeWidget_Results);
+		itemDiffusionInformation->setText(0, tr("DiffusionInformation"));
+
+		QTreeWidgetItem *b = new QTreeWidgetItem(itemDiffusionInformation);
+		b->setText(0, tr("b value"));
+		if(qcResult.GetDiffusionInformationCheckResult().b)
+			b->setText(1, tr("Pass"));
+		else
+			b->setText(1, tr("Failed"));
+
+		QTreeWidgetItem *gradient = new QTreeWidgetItem(itemDiffusionInformation);
+		gradient->setText(0, tr("gradient"));
+		if(qcResult.GetDiffusionInformationCheckResult().gradient)
+			gradient->setText(1, tr("Pass"));
+		else
+			gradient->setText(1, tr("Failed"));
+
+		QTreeWidgetItem *measurementFrame = new QTreeWidgetItem(itemDiffusionInformation);
+		measurementFrame->setText(0, tr("measurementFrame"));
+		if(qcResult.GetDiffusionInformationCheckResult().measurementFrame)
+			measurementFrame->setText(1, tr("Pass"));
+		else
+			measurementFrame->setText(1, tr("Failed"));
+	}
+
+	// QC MotionCheckResult
+	if( protocal.GetIntensityMotionCheckProtocal().bCheck && (
+		protocal.GetIntensityMotionCheckProtocal().bSliceCheck ||
+		protocal.GetIntensityMotionCheckProtocal().bInterlaceCheck ||
+		protocal.GetIntensityMotionCheckProtocal().bGradientCheck)     )
+	{
+		QTreeWidgetItem *itemIntensityMotionInformation = new QTreeWidgetItem(treeWidget_Results);
+		itemIntensityMotionInformation->setText(0, tr("IntensityMotion"));
+
+
+		//std::cout<< "in panel qcResult.GetGradientProcess().size(): "<< qcResult.GetGradientProcess().size() <<std::endl;
+		for(int i=0;i<qcResult.GetIntensityMotionCheckResult().size();i++ )
+		{
+
+			// gradient 
+			QTreeWidgetItem *gradient = new QTreeWidgetItem(itemIntensityMotionInformation);
+
+			gradient->setText(0, tr("gradient ")+QString::number(i));
+
+			//std::cout<<"1:ResultUpdate()"<<std::endl;
+			if(qcResult.GetGradientProcess()[i] == QCResult::GRADIENT_EXCLUDE)
+				gradient->setText(2, tr("EXCLUDE"));
+			else if(qcResult.GetGradientProcess()[i] == QCResult::GRADIENT_INCLUDE)
+				gradient->setText(2, tr(""));
+			else
+				;
+
+			// slice wise
+			//std::cout<<"2:ResultUpdate()"<<std::endl;
+			QTreeWidgetItem *slice = new QTreeWidgetItem(gradient);
+			slice->setText(0, tr("slice check"));
+			if( !qcResult.GetIntensityMotionCheckResult()[i].bSliceCheckOK )
+				slice->setText(1, tr("failed"));
+			else
+				slice->setText(1, tr("pass"));
+
+			for(int j=0; j<qcResult.GetIntensityMotionCheckResult()[i].sliceCorrelation.size();j++)
+			{
+				QTreeWidgetItem *subslice = new QTreeWidgetItem(slice);
+				subslice->setText(0,  tr(" slice Correlation ")+QString::number(j+1));
+				subslice->setText(1, QString::number ( qcResult.GetIntensityMotionCheckResult()[i].sliceCorrelation[j], 'f', 3 ) );
+			}
+			//std::cout<<"3:ResultUpdate()"<<std::endl;
+			// interlace wise
+			QTreeWidgetItem *interlacewise = new QTreeWidgetItem(gradient);
+			interlacewise->setText(0, tr("interlace check"));
+			if( !qcResult.GetIntensityMotionCheckResult()[i].bInterlaceCheckOK )
+				interlacewise->setText(1, tr("failed"));
+			else
+				interlacewise->setText(1, tr("pass"));
+
+			QTreeWidgetItem *Correlation = new QTreeWidgetItem(interlacewise);
+			Correlation->setText(0, tr("Correlation"));
+			Correlation->setText(1,  QString::number ( qcResult.GetIntensityMotionCheckResult()[i].interlaceCorrelation, 'f', 3 ));
+
+			QTreeWidgetItem *RotationX = new QTreeWidgetItem(interlacewise);
+			RotationX->setText(0, tr("RotationX"));
+			RotationX->setText(1,  QString::number ( qcResult.GetIntensityMotionCheckResult()[i].interlaceRotationX, 'f', 3 ));
+
+			QTreeWidgetItem *RotationY = new QTreeWidgetItem(interlacewise);
+			RotationY->setText(0, tr("RotationY"));
+			RotationY->setText(1,  QString::number ( qcResult.GetIntensityMotionCheckResult()[i].interlaceRotationY, 'f', 3 ));
+
+			QTreeWidgetItem *RotationZ = new QTreeWidgetItem(interlacewise);
+			RotationZ->setText(0, tr("RotationZ"));
+			RotationZ->setText(1,  QString::number ( qcResult.GetIntensityMotionCheckResult()[i].interlaceRotationZ, 'f', 3 ));
+
+			QTreeWidgetItem *TranslationX = new QTreeWidgetItem(interlacewise);
+			TranslationX->setText(0, tr("TranslationX"));
+			TranslationX->setText(1,  QString::number ( qcResult.GetIntensityMotionCheckResult()[i].interlaceTranslationX, 'f', 3 ));
+
+			QTreeWidgetItem *TranslationY = new QTreeWidgetItem(interlacewise);
+			TranslationY->setText(0, tr("TranslationY"));
+			TranslationY->setText(1,  QString::number ( qcResult.GetIntensityMotionCheckResult()[i].interlaceTranslationY, 'f', 3 ));
+
+			QTreeWidgetItem *TranslationZ = new QTreeWidgetItem(interlacewise);
+			TranslationZ->setText(0, tr("TranslationZ"));
+			TranslationZ->setText(1,  QString::number ( qcResult.GetIntensityMotionCheckResult()[i].interlaceTranslationZ, 'f', 3 ));
+
+			// gradient wise
+			QTreeWidgetItem *gradientwise = new QTreeWidgetItem(gradient);
+			gradientwise->setText(0, tr("gradient check"));
+			if( !qcResult.GetIntensityMotionCheckResult()[i].bGradientCheckOK )
+				gradientwise->setText(1, tr("failed"));
+			else
+				gradientwise->setText(1, tr("pass"));
+
+			QTreeWidgetItem *gradientRotationX = new QTreeWidgetItem(gradientwise);
+			gradientRotationX->setText(0, tr("RotationX"));
+			gradientRotationX->setText(1,  QString::number ( qcResult.GetIntensityMotionCheckResult()[i].gradientRotationX, 'f', 3 ));
+
+			QTreeWidgetItem *gradientRotationY = new QTreeWidgetItem(gradientwise);
+			gradientRotationY->setText(0, tr("RotationY"));
+			gradientRotationY->setText(1,  QString::number ( qcResult.GetIntensityMotionCheckResult()[i].gradientRotationY, 'f', 3 ));
+
+			QTreeWidgetItem *gradientRotationZ = new QTreeWidgetItem(gradientwise);
+			gradientRotationZ->setText(0, tr("RotationZ"));
+			gradientRotationZ->setText(1,  QString::number ( qcResult.GetIntensityMotionCheckResult()[i].gradientRotationZ, 'f', 3 ));
+
+			QTreeWidgetItem *gradientTranslationX = new QTreeWidgetItem(gradientwise);
+			gradientTranslationX->setText(0, tr("TranslationX"));
+			gradientTranslationX->setText(1,  QString::number ( qcResult.GetIntensityMotionCheckResult()[i].gradientTranslationX, 'f', 3 ));
+
+			QTreeWidgetItem *gradientTranslationY = new QTreeWidgetItem(gradientwise);
+			gradientTranslationY->setText(0, tr("TranslationY"));
+			gradientTranslationY->setText(1,  QString::number ( qcResult.GetIntensityMotionCheckResult()[i].gradientTranslationY, 'f', 3 ));
+
+			QTreeWidgetItem *gradientTranslationZ = new QTreeWidgetItem(gradientwise);
+			gradientTranslationZ->setText(0, tr("TranslationZ"));
+			gradientTranslationZ->setText(1,  QString::number ( qcResult.GetIntensityMotionCheckResult()[i].gradientTranslationZ, 'f', 3 ));
+		}
+	}
+	//std::cout<<"4:ResultUpdate()"<<std::endl;
+
+	return ;
+}

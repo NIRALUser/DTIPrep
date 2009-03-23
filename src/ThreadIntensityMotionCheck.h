@@ -22,7 +22,7 @@ public:
 signals:
     void allDone(const QString &);
     void ResultUpdate();
-    void QQQ();
+    void QQQ(int);
     void kkk( int );
 
 
@@ -33,6 +33,8 @@ private:
    std::string DWINrrdFilename;
    Protocal *protocal;
    QCResult *qcResult;
+
+public:
    //CIntensityMotionCheck* IntensityMotionCheck;
 };
 

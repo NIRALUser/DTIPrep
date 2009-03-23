@@ -100,7 +100,7 @@ void Protocal::print()
 			std::cout<<diffusionProtocal.measurementFrame[i][j]<<" ";
 	std::cout<<std::endl;
 	std::cout<<"    "<<"DWMRI_b-value: "<<diffusionProtocal.b<<std::endl;
-	for(int i=0;i<diffusionProtocal.gradients.size();i++)
+	for(unsigned int i=0;i<diffusionProtocal.gradients.size();i++)
 	{
 		std::vector<double> vect;
 		vect  = diffusionProtocal.gradients[i];

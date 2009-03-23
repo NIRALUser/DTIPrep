@@ -13,7 +13,6 @@ public:
 
 	QString DicomToNrrdCmd;
 	QString DicomDir;
-	QString NrrdDir;
 	QString NrrdFileName;
 
 signals:
