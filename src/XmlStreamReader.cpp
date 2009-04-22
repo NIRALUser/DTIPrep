@@ -1,9 +1,6 @@
 #include "XmlStreamReader.h"
 #include <QtGui>
-
 #include <iostream>
-
-
 
 XmlStreamReader::XmlStreamReader(QTreeWidget *tree)
 {
@@ -100,7 +97,7 @@ void XmlStreamReader::parseparametersToProtocal()
 	QStringList subvalues;
 	for(unsigned int i=0;i<paremeters.size();i++)
 	{
-		std::cout<<paremeters[i].parameter.toStdString()<<"    "<<paremeters[i].value.toStdString()<<std::endl;
+		//std::cout<<paremeters[i].parameter.toStdString()<<"    "<<paremeters[i].value.toStdString()<<std::endl;
 		if(paremeters[i].parameter.left(14)==QObject::tr("DWMRI_gradient"))
 		{
 			std::vector<double> vect;
@@ -120,7 +117,7 @@ void XmlStreamReader::parseparametersToProtocal()
 				break;
 
 			case ev_Image:
-				if(paremeters[i].value.toStdString()=="Yes" || paremeters[i].value.toStdString()=="YES" ||paremeters[i].value.toStdString()=="yes")
+				if(paremeters[i].value.toLower().toStdString()=="yes")
 				{
 					protocal->GetImageProtocal().bCheck = true;
 					
@@ -204,7 +201,7 @@ void XmlStreamReader::parseparametersToProtocal()
 				}				
 				break;
 			case ev_Diffusion:
-				if(paremeters[i].value.toStdString()=="Yes" || paremeters[i].value.toStdString()=="YES" ||paremeters[i].value.toStdString()=="yes")
+				if(paremeters[i].value.toLower().toStdString()=="yes")
 					protocal->GetDiffusionProtocal().bCheck = true;
 				else
 					protocal->GetDiffusionProtocal().bCheck = false;
@@ -223,12 +220,12 @@ void XmlStreamReader::parseparametersToProtocal()
 				}				
 				break;
 			case ev_bvalue:
-				protocal->GetDiffusionProtocal().b=  paremeters[i].value.toInt();
+				protocal->GetDiffusionProtocal().b=  paremeters[i].value.toDouble();
 				break;
 			//case ev_DWMRI_gradient:
 			//	break;
 			case ev_QCCheck:
-				if(paremeters[i].value.toStdString()=="Yes" || paremeters[i].value.toStdString()=="YES" ||paremeters[i].value.toStdString()=="yes")
+				if(paremeters[i].value.toLower().toStdString()=="yes")
 					protocal->GetIntensityMotionCheckProtocal().bCheck = true;
 				else
 					protocal->GetIntensityMotionCheckProtocal().bCheck = false;
@@ -236,11 +233,27 @@ void XmlStreamReader::parseparametersToProtocal()
 			case ev_QCOutputFileName:
 				protocal->GetIntensityMotionCheckProtocal().OutputFileName =  paremeters[i].value.toStdString();
 				break;
+			case ev_badGradientPercentageTolerance:
+				protocal->GetIntensityMotionCheckProtocal().badGradientPercentageTolerance =  paremeters[i].value.toDouble();
+				break;
 			case ev_SliceWiseCheck:
-				if(paremeters[i].value.toStdString()=="Yes" || paremeters[i].value.toStdString()=="YES" ||paremeters[i].value.toStdString()=="yes")
+				if(paremeters[i].value.toLower().toStdString()=="yes")
 					protocal->GetIntensityMotionCheckProtocal().bSliceCheck = true;
 				else
 					protocal->GetIntensityMotionCheckProtocal().bSliceCheck = false;
+				break;
+
+			case ev_headSkipSlicePercentage:
+				protocal->GetIntensityMotionCheckProtocal().headSkipSlicePercentage = paremeters[i].value.toDouble(); 
+				break;
+			case ev_tailSkipSlicePercentage:
+				protocal->GetIntensityMotionCheckProtocal().tailSkipSlicePercentage = paremeters[i].value.toDouble(); 
+				break;
+			case ev_baselineCorrelationThreshold:
+				protocal->GetIntensityMotionCheckProtocal().baselineCorrelationThreshold = paremeters[i].value.toDouble(); 
+				break;
+			case ev_baselineCorrelationDeviationThreshold:
+				protocal->GetIntensityMotionCheckProtocal().baselineCorrelationDeviationThreshold = paremeters[i].value.toDouble(); 
 				break;
 			case ev_sliceCorrelationThreshold:
 				protocal->GetIntensityMotionCheckProtocal().sliceCorrelationThreshold = paremeters[i].value.toDouble(); 
@@ -252,7 +265,7 @@ void XmlStreamReader::parseparametersToProtocal()
 				protocal->GetIntensityMotionCheckProtocal().badSlicePercentageTolerance = paremeters[i].value.toDouble(); 
 				break;
 			case ev_InterlaceWiseCheck:
-				if(paremeters[i].value.toStdString()=="Yes" || paremeters[i].value.toStdString()=="YES" ||paremeters[i].value.toStdString()=="yes")
+				if(paremeters[i].value.toLower().toStdString()=="yes")
 					protocal->GetIntensityMotionCheckProtocal().bInterlaceCheck = true;
 				else
 					protocal->GetIntensityMotionCheckProtocal().bInterlaceCheck = false;
@@ -269,8 +282,14 @@ void XmlStreamReader::parseparametersToProtocal()
 			case ev_interlaceCorrelationThresholdGradient:
 				protocal->GetIntensityMotionCheckProtocal().interlaceCorrelationThresholdGradient = paremeters[i].value.toDouble(); 
 				break;
+			case ev_interlaceCorrelationDeviationBaseline:
+				protocal->GetIntensityMotionCheckProtocal().interlaceCorrelationDeviationBaseline = paremeters[i].value.toDouble(); 
+				break;
+			case ev_interlaceCorrelationDeviationGradient:
+				protocal->GetIntensityMotionCheckProtocal().interlaceCorrelationDeviationGradient = paremeters[i].value.toDouble(); 
+				break;				
 			case ev_GradientWiseCheck:
-				if(paremeters[i].value.toStdString()=="Yes" || paremeters[i].value.toStdString()=="YES" ||paremeters[i].value.toStdString()=="yes")
+				if(paremeters[i].value.toLower().toStdString()=="yes")
 					protocal->GetIntensityMotionCheckProtocal().bGradientCheck = true;
 				else
 					protocal->GetIntensityMotionCheckProtocal().bGradientCheck = false;
@@ -283,7 +302,7 @@ void XmlStreamReader::parseparametersToProtocal()
 				break;
 ///
 			case ev_EddyMotionCorrection:
-				if(paremeters[i].value.toStdString()=="Yes")
+				if(paremeters[i].value.toLower().toStdString()=="yes")
 					protocal->GetEddyMotionCorrectionProtocal().bCorrect = true;
 				else
 					protocal->GetEddyMotionCorrectionProtocal().bCorrect = false;
@@ -301,19 +320,20 @@ void XmlStreamReader::parseparametersToProtocal()
 				break;
 ///
 			case ev_DTIComputing:
-				if(paremeters[i].value.toStdString()=="Yes")
+				if(paremeters[i].value.toLower().toStdString()=="yes")
 					protocal->GetDTIProtocal().bCompute = true;
 				else
 					protocal->GetDTIProtocal().bCompute = false;
 				break;
-
 			case ev_dtiestimCommand:
 				protocal->GetDTIProtocal().dtiestimCommand =  paremeters[i].value.toStdString();
 				break;
 			case ev_dtiprocessCommand:
 				protocal->GetDTIProtocal().dtiprocessCommand =  paremeters[i].value.toStdString();
 				break;
-
+			case ev_dtiPaddingCommand:
+				protocal->GetDTIProtocal().dtiPaddingCommand =  paremeters[i].value.toStdString();
+				break;
 			case ev_DTIMethod:
 				if(paremeters[i].value.toStdString()=="wls")
 					protocal->GetDTIProtocal().method = Protocal::METHOD_WLS;
@@ -333,22 +353,37 @@ void XmlStreamReader::parseparametersToProtocal()
 			case ev_tensor:
 				protocal->GetDTIProtocal().tensor = paremeters[i].value.toStdString();
 				break;
+			case ev_Padding:
+				if(paremeters[i].value.toLower().toStdString()=="yes")
+					protocal->GetDTIProtocal().bPadding = true;
+				else
+					protocal->GetDTIProtocal().bPadding = false;
+				break;
+
+// 			case ev_tensorPadded:
+// 				protocal->GetDTIProtocal().tensorPadded = paremeters[i].value.toStdString();
+// 				break;
+// 			case ev_tensorPaddingParameters:
+// 				values = paremeters[i].value.split(" ");
+// 				temp=0;
+// 				foreach (QString value, values)
+// 				{
+// 					protocal->GetDTIProtocal().paddingParameters[temp]= value.toInt();
+// 					temp++;
+// 				}				
+// 				break;
 			case ev_fa:
 				values = paremeters[i].value.split(", ");
 				protocal->GetDTIProtocal().fa = values[1].toStdString();
-				if(values[0].toStdString()=="Yes")
-				{
+				if(values[0].toLower().toStdString()=="yes")
 					protocal->GetDTIProtocal().bfa = true;
-				}
 				else
-				{
 					protocal->GetDTIProtocal().bfa = false;
-				}
 				break;
 			case ev_md:
 				values = paremeters[i].value.split(", ");
 					protocal->GetDTIProtocal().md = values[1].toStdString();
-				if(values[0].toStdString()=="Yes")
+				if(values[0].toLower().toStdString()=="yes")
 					protocal->GetDTIProtocal().bmd = true;
 				else
 					protocal->GetDTIProtocal().bmd = false;
@@ -356,7 +391,7 @@ void XmlStreamReader::parseparametersToProtocal()
 			case ev_colorfa:
 				values = paremeters[i].value.split(", ");
 				protocal->GetDTIProtocal().coloredfa = values[1].toStdString();
-				if(values[0].toStdString()=="Yes")
+				if(values[0].toLower().toStdString()=="yes")
 					protocal->GetDTIProtocal().bcoloredfa= true;
 				else
 					protocal->GetDTIProtocal().bcoloredfa= false;
@@ -366,7 +401,7 @@ void XmlStreamReader::parseparametersToProtocal()
 			case ev_idwi:
 				values = paremeters[i].value.split(", ");
 				protocal->GetDTIProtocal().idwi  = values[1].toStdString();
-				if(values[0].toStdString()=="Yes")
+				if(values[0].toLower().toStdString()=="yes")
 					protocal->GetDTIProtocal().bidwi = true;
 				else
 					protocal->GetDTIProtocal().bidwi = false;
@@ -375,7 +410,7 @@ void XmlStreamReader::parseparametersToProtocal()
 			case ev_frobeniusnorm:
 				values = paremeters[i].value.split(", ");
 				protocal->GetDTIProtocal().frobeniusnorm = values[1].toStdString();
-				if(values[0].toStdString()=="Yes")
+				if(values[0].toLower().toStdString()=="yes")
 					protocal->GetDTIProtocal().bfrobeniusnorm = true;
 				else
 					protocal->GetDTIProtocal().bfrobeniusnorm = false;
@@ -384,7 +419,7 @@ void XmlStreamReader::parseparametersToProtocal()
 			case ev_baseline:
 				values = paremeters[i].value.split(", ");
 				protocal->GetDTIProtocal().baseline  = values[1].toStdString();
-				if(values[0].toStdString()=="Yes")
+				if(values[0].toLower().toStdString()=="yes")
 					protocal->GetDTIProtocal().bbaseline = true;
 				else
 					protocal->GetDTIProtocal().bbaseline = false;
@@ -395,13 +430,8 @@ void XmlStreamReader::parseparametersToProtocal()
 			default:
 				break;
 			}
-
-
-		}
-
-	
+		}	
 	}
-
 }
 
 

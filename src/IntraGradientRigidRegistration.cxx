@@ -131,7 +131,32 @@ struIntra2DResults CIntraGradientRigidRegistration::Run( bool bRegister )
 		results.Angle = finalAngleInDegrees;
 		results.TranslationX=finalTranslationX;
 		results.TranslationY=finalTranslationY;
-		results.Correlation=-bestValue;
+		//results.Correlation=-bestValue;
+
+		typedef itk::ImageRegionConstIterator<ImageType>  citType;
+		citType cit1(fixedImage, fixedImage ->GetBufferedRegion() );
+		citType cit2(movingImage,movingImage->GetBufferedRegion() );
+
+		cit1.GoToBegin();
+		cit2.GoToBegin();
+
+		double sAB=0.0,sA2=0.0,sB2=0.0;
+		while (!cit1.IsAtEnd())
+		{
+			sAB+=cit1.Get()*cit2.Get();
+			sA2+=cit1.Get()*cit1.Get();
+			sB2+=cit2.Get()*cit2.Get();
+			++cit1;
+			++cit2;
+		}
+
+		if( sA2*sB2 == 0 )
+		{
+			results.Correlation = 1;
+		}
+		else
+			results.Correlation=sAB/sqrt(sA2*sB2);
+		std::cout << " Metric value  = " << results.Correlation << std::endl;
 	}
 	else
 	{
@@ -165,7 +190,7 @@ struIntra2DResults CIntraGradientRigidRegistration::Run( bool bRegister )
 		else
 			results.Correlation=sAB/sqrt(sA2*sB2);
 
-		std::cout << " Metric value  = " << results.Correlation << std::endl;
+// 		std::cout << " Metric value  = " << results.Correlation << std::endl;
 		//if(1)
 		//{
 		//	std::cout << " sAB  = " << sAB << std::endl;

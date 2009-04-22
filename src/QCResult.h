@@ -17,16 +17,10 @@ struct DiffusionInformationCheckResult
 	bool measurementFrame;
 };
 
-struct SliceCorrelation
-{
-	double pre;
-	double post;
-};
 
 struct GradientIntensityMotionCheckResult
 {
 	std::vector< double > sliceCorrelation;
-	//std::vector< SliceCorrelation > sliceCorrelation;
 	bool bSliceCheckOK;
 
 	double interlaceCorrelation;
@@ -45,7 +39,6 @@ struct GradientIntensityMotionCheckResult
 	double gradientTranslationY;
 	double gradientTranslationZ;
 	bool bGradientCheckOK;
-
 
 	int processing;
 };
@@ -71,13 +64,22 @@ enum {
 	{
 		intensityMotionCheckResult.clear();
 		GradientProcess.clear();
+
+		imageInformationCheckResult.origin = true;
+		imageInformationCheckResult.size = true;
+		imageInformationCheckResult.space = true;
+		imageInformationCheckResult.spacedirection = true;
+		imageInformationCheckResult.spacing = true;
+
+		diffusionInformationCheckResult.b = true;
+		diffusionInformationCheckResult.gradient = true;
+		diffusionInformationCheckResult.measurementFrame = true;
 	}
 
 private:
 	ImageInformationCheckResult		imageInformationCheckResult;
 	DiffusionInformationCheckResult diffusionInformationCheckResult;
 	std::vector< GradientIntensityMotionCheckResult > intensityMotionCheckResult;
-
 	std::vector< int > GradientProcess;
 
 };

@@ -17,7 +17,7 @@
   </property>
   <property name="windowIcon" >
    <iconset>
-    <normaloff>C:/Documents and Settings/Administrator/My Documents/My Skype Pictures/Empire Skype.png</normaloff>C:/Documents and Settings/Administrator/My Documents/My Skype Pictures/Empire Skype.png</iconset>
+    <normaloff>../../DTIPrep_bin/Release/images/logo.png</normaloff>../../DTIPrep_bin/Release/images/logo.png</iconset>
   </property>
   <property name="locale" >
    <locale country="UnitedStates" language="English" />
@@ -26,14 +26,6 @@
    <set>QMainWindow::AllowNestedDocks|QMainWindow::AllowTabbedDocks|QMainWindow::AnimatedDocks</set>
   </property>
   <widget class="QWidget" name="centralwidget" >
-   <property name="geometry" >
-    <rect>
-     <x>0</x>
-     <y>55</y>
-     <width>1064</width>
-     <height>604</height>
-    </rect>
-   </property>
    <layout class="QVBoxLayout" name="verticalLayout" >
     <item>
      <widget class="QTabWidget" name="tabWidget" >
@@ -59,14 +51,6 @@
        <enum>Qt::ElideNone</enum>
       </property>
       <widget class="QWidget" name="tab_3DView" >
-       <property name="geometry" >
-        <rect>
-         <x>0</x>
-         <y>0</y>
-         <width>1040</width>
-         <height>557</height>
-        </rect>
-       </property>
        <attribute name="title" >
         <string>3D View</string>
        </attribute>
@@ -77,7 +61,7 @@
        </attribute>
        <layout class="QVBoxLayout" name="verticalLayout_2" >
         <item>
-         <widget class="QVTKWidget" native="1" name="qvtkWidget" >
+         <widget class="QVTKWidget" name="qvtkWidget" >
           <property name="cursor" >
            <cursorShape>OpenHandCursor</cursorShape>
           </property>
@@ -104,7 +88,7 @@
      <x>0</x>
      <y>0</y>
      <width>1064</width>
-     <height>21</height>
+     <height>20</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu_File" >
@@ -119,6 +103,8 @@
      <addaction name="actionOpenDWINrrd" />
     </widget>
     <addaction name="menuOpen_DWI" />
+    <addaction name="actionOpen_XML" />
+    <addaction name="actionOpen_QC_Report" />
     <addaction name="separator" />
     <addaction name="actionExit" />
    </widget>
@@ -150,25 +136,8 @@
    <addaction name="menuView" />
    <addaction name="menu_Help" />
   </widget>
-  <widget class="QStatusBar" name="statusbar" >
-   <property name="geometry" >
-    <rect>
-     <x>0</x>
-     <y>659</y>
-     <width>1064</width>
-     <height>19</height>
-    </rect>
-   </property>
-  </widget>
+  <widget class="QStatusBar" name="statusbar" />
   <widget class="QToolBar" name="toolBar_File" >
-   <property name="geometry" >
-    <rect>
-     <x>0</x>
-     <y>21</y>
-     <width>55</width>
-     <height>34</height>
-    </rect>
-   </property>
    <property name="windowTitle" >
     <string>toolBar</string>
    </property>
@@ -179,26 +148,9 @@
     <bool>false</bool>
    </attribute>
    <addaction name="actionOpenDWINrrd" />
+   <addaction name="actionOpen_XML" />
+   <addaction name="actionOpen_QC_Report" />
    <addaction name="separator" />
-  </widget>
-  <widget class="QToolBar" name="toolBar" >
-   <property name="geometry" >
-    <rect>
-     <x>55</x>
-     <y>21</y>
-     <width>1009</width>
-     <height>34</height>
-    </rect>
-   </property>
-   <property name="windowTitle" >
-    <string>toolBar</string>
-   </property>
-   <attribute name="toolBarArea" >
-    <enum>TopToolBarArea</enum>
-   </attribute>
-   <attribute name="toolBarBreak" >
-    <bool>false</bool>
-   </attribute>
   </widget>
   <action name="actionOpen_Scalar_Image" >
    <property name="text" >
@@ -356,11 +308,10 @@
   <action name="actionOpenDWINrrd" >
    <property name="icon" >
     <iconset>
-     <normaloff>../images/open.png</normaloff>
-     <normalon>../images/open.png</normalon>../images/open.png</iconset>
+     <normaloff>../../DTIPrep_bin/Release/images/openNrrd.png</normaloff>../../DTIPrep_bin/Release/images/openNrrd.png</iconset>
    </property>
    <property name="text" >
-    <string>NRRD File</string>
+    <string>OpenNRRD</string>
    </property>
   </action>
   <action name="actionPlastique" >
@@ -394,6 +345,24 @@
    </property>
    <property name="text" >
     <string>WindowsXP</string>
+   </property>
+  </action>
+  <action name="actionOpen_XML" >
+   <property name="icon" >
+    <iconset>
+     <normaloff>../../DTIPrep_bin/Release/images/openXML.png</normaloff>../../DTIPrep_bin/Release/images/openXML.png</iconset>
+   </property>
+   <property name="text" >
+    <string>OpenXML</string>
+   </property>
+  </action>
+  <action name="actionOpen_QC_Report" >
+   <property name="icon" >
+    <iconset>
+     <normaloff>../../DTIPrep_bin/Release/images/openQC.png</normaloff>../../DTIPrep_bin/Release/images/openQC.png</iconset>
+   </property>
+   <property name="text" >
+    <string>OpenQCReport</string>
    </property>
   </action>
  </widget>

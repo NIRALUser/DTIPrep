@@ -20,6 +20,13 @@ public:
 	CIntensityMotionCheck(void);
 	~CIntensityMotionCheck(void);
 
+	struct DiffusionDir
+	{
+		std::vector< double > gradientDir;
+		int repetitionNumber;
+	};
+
+
 	typedef unsigned short DwiPixelType;
 	typedef itk::Image<DwiPixelType, 2>			SliceImageType;
 	typedef itk::Image<DwiPixelType, 3>			GradientImageType;
@@ -33,11 +40,12 @@ public:
 	void SetFileName(std::string filename) {DwiFileName = filename; };
 	
 	void GetImagesInformation();
+	unsigned int GetGradientsNumber() { return numGradients;};
 
 	bool GetGridentDirections();
-	bool GetGridentImages();
+	//bool GetGridentImages();
 
-	bool CheckByProtocal();
+	unsigned char  CheckByProtocal();
 
 	bool ImageCheck();
 	bool DiffusionCheck();
@@ -45,15 +53,81 @@ public:
 	bool InterlaceCheck();
 	bool InterCheck();
 	void GenerateCheckOutputImage();
+	void GenerateCheckOutputImage( std::string filename);
 	void EddyMotionCorrection();
+
+	bool dtiestim();
+	bool CropDTI();
+	bool dtiprocess();
 	bool DTIComputing();
 
-	bool IntraCheck( bool bRegister, double CorrelationThreshold ,  double CorrelationDeviationThreshold);
-	bool InterlaceCheck(double angleThreshold, double transThreshold, double correlationThresholdBaseline, double correlationThresholdGradient);
-	bool InterCheck(unsigned int BinNumb, double PercentagePixel, bool UseExplicitPDFDerivatives, double angleThreshold,double transThreshold);
+	bool IntraCheck( 
+		bool bRegister, 
+		double beginSkip, 
+		double endSkip, 
+		double baselineCorrelationThreshold ,  
+		double baselineCorrelationDeviationThreshold, 
+		double CorrelationThreshold ,  
+		double CorrelationDeviationThreshold
+		);
 
-	void SetProtocal(Protocal *p) { protocal = p;};
+	bool InterlaceCheck(
+		double angleThreshold, 
+		double transThreshold, 
+		double correlationThresholdBaseline, 
+		double correlationThresholdGradient,
+		double corrBaselineDev,	
+		double corrGradientDev
+		);
+
+
+	bool InterCheck(
+		unsigned int BinNumb, 
+		double PercentagePixel, 
+		bool UseExplicitPDFDerivatives, 
+		double angleThreshold,
+		double transThreshold
+		);
+
+	void SetProtocal(Protocal *p) 
+	{ 
+		protocal = p;
+
+		if( DwiFileName.length() != 0 && ReportFileName.length() == 0 )
+		{
+			ReportFileName=DwiFileName.substr(0,DwiFileName.find_last_of('.') );
+			if( protocal->GetReportFileName().length() != 0)
+				ReportFileName.append( protocal->GetReportFileName() );// "IntensityMotionCheckReports.txt"		
+			else
+				ReportFileName.append( "_QC_CheckReports.txt");
+		}
+	};
 	void SetQCResult(QCResult *r) { qcResult = r;};
+
+	QCResult *GetQCResult() { return qcResult;};
+
+	void collectDiffusionStatistics();
+	int getBaselineNumber()		{   return baselineNumber;};
+	int getBValueNumber()		{   return bValueNumber;};
+	int getGradientDirNumber()	{   return gradientDirNumber;};
+	int getRepetitionNumber()	{   return repetitionNumber;};
+	int getGradientNumber()		{   return gradientNumber;};
+	bool validateDiffusionStatistics();
+
+	void collectLeftDiffusionStatistics();
+	int getBaselineLeftNumber()		{   return baselineLeftNumber;};
+	int getBValueLeftNumber()		{   return bValueLeftNumber;};
+	int getGradientDirLeftNumber()	{   return gradientDirLeftNumber;};
+	int getGradientLeftNumber()		{   return gradientLeftNumber;};
+	std::vector<int> getRepetitionLeftNumber()	{   return repetitionLeftNumber;};
+	unsigned char  validateLeftDiffusionStatistics();	// 00000CBA:  
+														// A: Gradient direction # is less than 6! 
+														// B: Single b-value DWI without a b0/baseline!
+														// C: Too many bad gradient directions found!
+														// 0: valid
+
+
+	void PrintResult();
 
 //signals:
  //   void Progress( int );
@@ -62,8 +136,22 @@ public:
 private:
 	bool LoadDwiImage();
 	bool bDwiLoaded;
+
+	int baselineNumber;
+	int bValueNumber;
+	int gradientDirNumber;
+	int repetitionNumber;
+	int gradientNumber;
+
+	int baselineLeftNumber;
+	int bValueLeftNumber;
+	int gradientDirLeftNumber;
+	int gradientLeftNumber;
+	std::vector<int> repetitionLeftNumber;
+
+
 	bool bGetGridentDirections;
-	bool bGetGridentImages;
+//	bool bGetGridentImages;
 
 	std::string DwiFileName;
 	std::string ReportFileName;
@@ -74,13 +162,26 @@ private:
 	DwiImageType::Pointer DwiImage;    
 	DwiReaderType::Pointer DwiReader;
 
-	std::vector<GradientImageType::Pointer>    GradientImageContainer;
+	unsigned int numGradients;
+
+	//std::vector<GradientImageType::Pointer>    GradientImageContainer;
 	GradientDirectionContainerType::Pointer	   GradientDirectionContainer;
 
-	//for all gradients (baseline excluded) slice wise correlation
+	//for all gradients  slice wise correlation
 	std::vector<double> means;
 	std::vector<double> deviations;
 
+	//for all baseline slice wise correlation
+	std::vector<double> baselineMeans;
+	std::vector<double> baselineDeviations;
+
+	//for interlace baseline correlation
+	double interlaceBaselineMeans;
+	double interlaceBaselineDeviations;
+
+	//for interlace gradient correlation
+	double interlaceGradientMeans;
+	double interlaceGradientDeviations;
 
 	//std::vector<struIntra2DResults>    Results;
 	//std::vector<struIntra2DResults>    ResultsContainer;

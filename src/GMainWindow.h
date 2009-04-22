@@ -67,6 +67,8 @@ private slots:
 
 	// open menu
 	void on_actionOpenDWINrrd_triggered();
+	void on_actionOpen_XML_triggered();
+	void on_actionOpen_QC_Report_triggered();
 
 	// styles menu
 	void on_actionWindows_triggered();
@@ -103,10 +105,9 @@ private slots:
 	void WindowLevelChanged(vtkObject * obj, unsigned long, void * client_data, void *,vtkCommand * command);
 
 //
-	void SetAllWindowLevel(int window, int level);
+	void SetAllWindowLevel(double window, double level);
 
-	// DTIPrep panel
-	void ResultUpdate();
+	
 
 private:
 	bool bDwiLoaded;//=false;

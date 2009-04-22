@@ -34,8 +34,13 @@ struct IntensityMotionCheckProtocal
 	bool bCheck;
 
 	std::string OutputFileName;
+	double badGradientPercentageTolerance;
 
 	bool bSliceCheck;
+	double headSkipSlicePercentage;
+	double tailSkipSlicePercentage;
+	double baselineCorrelationThreshold;
+	double baselineCorrelationDeviationThreshold;
 	double sliceCorrelationThreshold;
 	double sliceCorrelationDeviationThreshold;
 	double badSlicePercentageTolerance;
@@ -43,7 +48,9 @@ struct IntensityMotionCheckProtocal
 
 	bool bInterlaceCheck;
 	double interlaceCorrelationThresholdBaseline;
+	double interlaceCorrelationDeviationBaseline;
 	double interlaceCorrelationThresholdGradient;
+	double interlaceCorrelationDeviationGradient;
 	double interlaceTranslationThreshold;
 	double interlaceRotationThreshold;
 
@@ -65,12 +72,17 @@ struct DTIProtocal
 	bool bCompute;
 	std::string dtiestimCommand;
 	std::string dtiprocessCommand;
+	std::string dtiPaddingCommand;
 
 	int method;
 	int baselineThreshold;
 	std::string mask;
 
 	std::string tensor;
+
+	//std::string tensorPadded;
+	//int paddingParameters[6];
+	bool bPadding;
 
 	std::string fa;
 	std::string md;
@@ -86,7 +98,6 @@ struct DTIProtocal
 	bool  bfrobeniusnorm;
 	bool  bidwi;
 
-	std::vector< std::vector<std::string> > measures;
 };
 
 
@@ -122,10 +133,23 @@ public:
 			METHOD_UNKNOWN,
 	};
 
+	struct DiffusionDir
+	{
+		std::vector< double > gradientDir;
+		int repetitionNumber;
+	};
+
+
 	void clear();
 	void print();
 	//void fromTreeWidget(QTreeWidget tree);
 	void fromXMLFile(std::string xml);
+	
+	void collectDiffusionStatistics();
+	int getBaselineNumber()		{  return baselineNumber;};
+	int getBValueNumber()		{  return bValueNumber;};
+	int getgradientDirNumber()	{  return gradientDirNumber;};
+	int getRepetitionNumber()	{  return repetitionNumber;};
 
 	std::string									&GetReportFileName(){				return  ReportFileName;};
 
@@ -138,11 +162,15 @@ private:
 
 	std::string ReportFileName;
 
+	int baselineNumber;
+	int bValueNumber;
+	int gradientDirNumber;
+	int repetitionNumber;
+
 	ImageProtocal					imageProtocal;
 	DiffusionProtocal				diffusionProtocal;
 	IntensityMotionCheckProtocal	intensityMotionCheckProtocal;
 	EddyMotionCorrectionProtocal	eddyMotionCorrectionProtocal;
-	DTIProtocal						dTIProtocal;
-	
+	DTIProtocal						dTIProtocal;	
 
 };

@@ -81,11 +81,6 @@ GMainWindow::GMainWindow()
 
 	DWIImage = NULL;
 
-	itk::NrrdImageIO::Pointer  NrrdImageIO = itk::NrrdImageIO::New();
-	//NrrdImageIO = itk::NrrdImageIO::New();
-	DwiReader = DwiReaderType::New();
-	DwiReader->SetImageIO(NrrdImageIO);
-
 	verticalLayout->setContentsMargins(0,0,0,0);
 	verticalLayout_2->setContentsMargins(0,0,0,0);
 //	verticalLayout_3->setContentsMargins(0,0,0,0);
@@ -129,6 +124,12 @@ GMainWindow::GMainWindow()
 		SIGNAL(allDone(const QString &)),
 		statusBar(),
 		SLOT(showMessage(const QString &)));
+
+	connect( this->DTIPrepPanel, 
+		SIGNAL( status(const QString &)),
+		statusBar(),
+		SLOT(showMessage(const QString &)));
+
 
 	connect( &(this->dicom2NrrdPanel->ThreadDicomToNrrd), 
 		SIGNAL(allDone(const QString &)),
@@ -261,221 +262,18 @@ GMainWindow::GMainWindow()
 
 	// for imageplane window/leveling 2D received then emit WindowLevel(window,level);
 	connect(this->imageView2DPanelWithControls1, 
-		SIGNAL(WindowLevel(int, int)), 
-		this, SLOT( SetAllWindowLevel(int , int )) ); 
+		SIGNAL(WindowLevel(double, double)), 
+		this, SLOT( SetAllWindowLevel(double , double )) ); 
 
 	connect(this->imageView2DPanelWithControls2, 
-		SIGNAL(WindowLevel(int, int)), 
-		this, SLOT( SetAllWindowLevel(int , int )) ); 
+		SIGNAL(WindowLevel(double, double)), 
+		this, SLOT( SetAllWindowLevel(double , double )) ); 
 	
 	connect(this->imageView2DPanelWithControls3, 
-		SIGNAL(WindowLevel(int, int)), 
-		this, SLOT( SetAllWindowLevel(int , int )) ); 
+		SIGNAL(WindowLevel(double, double)), 
+		this, SLOT( SetAllWindowLevel(double , double )) ); 
 	
 	//setWindowTitle(tr("Grace DTI(Qt4)"));
-}
-
-void GMainWindow::ResultUpdate()
-{
-	/*
-	QStringList labels;
-	labels << tr("type") << tr("result")<<tr("processing");
-	//treeWidget->header()->setResizeMode(QHeaderView::Stretch);
-	treeWidget->setHeaderLabels(labels);
-
-	std::cout<<"aa:ResultUpdate()"<<std::endl;
-	treeWidget->clear();
-	std::cout<<"00:ResultUpdate()"<<std::endl;
-	QCResult &result = this->DTIPrepPanel->GetQCResult();	
-	std::cout<<"01:ResultUpdate()"<<std::endl;
-	Protocal &protocal = this->DTIPrepPanel->GetProtocal();
-	std::cout<<"02:ResultUpdate()"<<std::endl;
-	if(protocal.GetImageProtocal().bCheck)
-	{
-		// ImageInformationCheckResult
-		QTreeWidgetItem *itemImageInformation = new QTreeWidgetItem(treeWidget);
-		itemImageInformation->setText(0, tr("ImageInformation"));
-
-		//	QTreeWidgetItem *dimension = new QTreeWidgetItem(itemImageInformation);
-		//	dimension->setText(0, tr("dimension"));
-		//	if(result.GetImageInformationCheckResult().dimension)
-		//		dimension->setText(1, tr("Pass"));
-		//	else
-		//		dimension->setText(1, tr("Failed"));
-
-		QTreeWidgetItem *origin = new QTreeWidgetItem(itemImageInformation);
-		origin->setText(0, tr("origin"));
-		if(result.GetImageInformationCheckResult().origin)
-			origin->setText(1, tr("Pass"));
-		else
-			origin->setText(1, tr("Failed"));
-
-		QTreeWidgetItem *size = new QTreeWidgetItem(itemImageInformation);
-		size->setText(0, tr("size"));
-		if(result.GetImageInformationCheckResult().size)
-			size->setText(1, tr("Pass"));
-		else
-			size->setText(1, tr("Failed"));
-
-		QTreeWidgetItem *space = new QTreeWidgetItem(itemImageInformation);
-		space->setText(0, tr("space"));
-		if(result.GetImageInformationCheckResult().space)
-			space->setText(1, tr("Pass"));
-		else
-			space->setText(1, tr("Failed"));
-
-		QTreeWidgetItem *spacedirection = new QTreeWidgetItem(itemImageInformation);
-		spacedirection->setText(0, tr("spacedirection"));
-		if(result.GetImageInformationCheckResult().spacedirection)
-			spacedirection->setText(1, tr("Pass"));
-		else
-			spacedirection->setText(1, tr("Failed"));
-
-		QTreeWidgetItem *spacing = new QTreeWidgetItem(itemImageInformation);
-		spacing->setText(0, tr("spacing"));
-		if(result.GetImageInformationCheckResult().spacing)
-			spacing->setText(1, tr("Pass"));
-		else
-			spacing->setText(1, tr("Failed"));
-	}
-
-//	QTreeWidgetItem *type = new QTreeWidgetItem(itemImageInformation);
-//	type->setText(0, tr("type"));
-//	if(result.GetImageInformationCheckResult().type)
-//		type->setText(1, tr("Pass"));
-//	else
-//		type->setText(1, tr("Failed"));
-
-	if(protocal.GetDiffusionProtocal().bCheck)
-	{
-		// DiffusionInformationCheckResult
-		QTreeWidgetItem *itemDiffusionInformation = new QTreeWidgetItem(treeWidget);
-		itemDiffusionInformation->setText(0, tr("DiffusionInformation"));
-
-		QTreeWidgetItem *b = new QTreeWidgetItem(itemDiffusionInformation);
-		b->setText(0, tr("b value"));
-		if(result.GetDiffusionInformationCheckResult().b)
-			b->setText(1, tr("Pass"));
-		else
-			b->setText(1, tr("Failed"));
-
-		QTreeWidgetItem *gradient = new QTreeWidgetItem(itemDiffusionInformation);
-		gradient->setText(0, tr("gradient"));
-		if(result.GetDiffusionInformationCheckResult().gradient)
-			gradient->setText(1, tr("Pass"));
-		else
-			gradient->setText(1, tr("Failed"));
-
-		QTreeWidgetItem *measurementFrame = new QTreeWidgetItem(itemDiffusionInformation);
-		measurementFrame->setText(0, tr("measurementFrame"));
-		if(result.GetDiffusionInformationCheckResult().measurementFrame)
-			measurementFrame->setText(1, tr("Pass"));
-		else
-			measurementFrame->setText(1, tr("Failed"));
-	}
-
-	// EddyMotionCheckResult
-	if( protocal.GetIntensityMotionCheckProtocal().bCheck && (
-		protocal.GetIntensityMotionCheckProtocal().bSliceCheck ||
-		protocal.GetIntensityMotionCheckProtocal().bInterlaceCheck ||
-		protocal.GetIntensityMotionCheckProtocal().bGradientCheck)     )
-	{
-		QTreeWidgetItem *itemIntensityMotionInformation = new QTreeWidgetItem(treeWidget);
-		itemIntensityMotionInformation->setText(0, tr("IntensityMotion"));
-		std::cout<<"10:ResultUpdate()"<<std::endl;
-		std::cout<< "in MainWindow qcResult.GetGradientProcess().size()"<< result.GetGradientProcess().size() <<std::endl;
-		std::cout<<"11:ResultUpdate()"<<std::endl;
-		for(int i=0;i<result.GetIntensityMotionCheckResult().size();i++ )
-		{
-
-			// gradient 
-			QTreeWidgetItem *gradient = new QTreeWidgetItem(itemIntensityMotionInformation);
-
-			gradient->setText(0, tr("gradient ")+QString::number(i));
-
-			//std::cout<<"1:ResultUpdate()"<<std::endl;
-			if(result.GetGradientProcess()[i] == QCResult::GRADIENT_EXCLUDE)
-				gradient->setText(2, tr("EXCLUDE"));
-			else if(result.GetGradientProcess()[i] == QCResult::GRADIENT_INCLUDE)
-				gradient->setText(2, tr("INCLUDE"));
-			else
-				;
-
-			// slice wise
-			//std::cout<<"2:ResultUpdate()"<<std::endl;
-			QTreeWidgetItem *slice = new QTreeWidgetItem(gradient);
-			slice->setText(0, tr("slice check"));
-			for(int j=0; j<result.GetIntensityMotionCheckResult()[i].sliceCorrelation.size();j++)
-			{
-				QTreeWidgetItem *subslice = new QTreeWidgetItem(slice);
-				subslice->setText(0,  tr(" slice Correlation ")+QString::number(j+1));
-				subslice->setText(1, QString::number ( result.GetIntensityMotionCheckResult()[i].sliceCorrelation[j], 'f', 3 ) );
-			}
-			//std::cout<<"3:ResultUpdate()"<<std::endl;
-			// interlace wise
-			QTreeWidgetItem *interlacewise = new QTreeWidgetItem(gradient);
-			interlacewise->setText(0, tr("interlace check"));
-
-			QTreeWidgetItem *Correlation = new QTreeWidgetItem(interlacewise);
-			Correlation->setText(0, tr("Correlation"));
-			Correlation->setText(1,  QString::number ( result.GetIntensityMotionCheckResult()[i].interlaceCorrelation, 'f', 3 ));
-
-			QTreeWidgetItem *RotationX = new QTreeWidgetItem(interlacewise);
-			RotationX->setText(0, tr("RotationX"));
-			RotationX->setText(1,  QString::number ( result.GetIntensityMotionCheckResult()[i].interlaceRotationX, 'f', 3 ));
-
-			QTreeWidgetItem *RotationY = new QTreeWidgetItem(interlacewise);
-			RotationY->setText(0, tr("RotationY"));
-			RotationY->setText(1,  QString::number ( result.GetIntensityMotionCheckResult()[i].interlaceRotationY, 'f', 3 ));
-
-			QTreeWidgetItem *RotationZ = new QTreeWidgetItem(interlacewise);
-			RotationZ->setText(0, tr("RotationZ"));
-			RotationZ->setText(1,  QString::number ( result.GetIntensityMotionCheckResult()[i].interlaceRotationZ, 'f', 3 ));
-
-			QTreeWidgetItem *TranslationX = new QTreeWidgetItem(interlacewise);
-			TranslationX->setText(0, tr("TranslationX"));
-			TranslationX->setText(1,  QString::number ( result.GetIntensityMotionCheckResult()[i].interlaceTranslationX, 'f', 3 ));
-
-			QTreeWidgetItem *TranslationY = new QTreeWidgetItem(interlacewise);
-			TranslationY->setText(0, tr("TranslationY"));
-			TranslationY->setText(1,  QString::number ( result.GetIntensityMotionCheckResult()[i].interlaceTranslationY, 'f', 3 ));
-
-			QTreeWidgetItem *TranslationZ = new QTreeWidgetItem(interlacewise);
-			TranslationZ->setText(0, tr("TranslationZ"));
-			TranslationZ->setText(1,  QString::number ( result.GetIntensityMotionCheckResult()[i].interlaceTranslationZ, 'f', 3 ));
-
-			// gradient wise
-			QTreeWidgetItem *gradientwise = new QTreeWidgetItem(gradient);
-			gradientwise->setText(0, tr("gradient check"));
-
-			QTreeWidgetItem *gradientRotationX = new QTreeWidgetItem(gradientwise);
-			gradientRotationX->setText(0, tr("RotationX"));
-			gradientRotationX->setText(1,  QString::number ( result.GetIntensityMotionCheckResult()[i].gradientRotationX, 'f', 3 ));
-
-			QTreeWidgetItem *gradientRotationY = new QTreeWidgetItem(gradientwise);
-			gradientRotationY->setText(0, tr("RotationY"));
-			gradientRotationY->setText(1,  QString::number ( result.GetIntensityMotionCheckResult()[i].gradientRotationY, 'f', 3 ));
-
-			QTreeWidgetItem *gradientRotationZ = new QTreeWidgetItem(gradientwise);
-			gradientRotationZ->setText(0, tr("RotationZ"));
-			gradientRotationZ->setText(1,  QString::number ( result.GetIntensityMotionCheckResult()[i].gradientRotationZ, 'f', 3 ));
-
-			QTreeWidgetItem *gradientTranslationX = new QTreeWidgetItem(gradientwise);
-			gradientTranslationX->setText(0, tr("TranslationX"));
-			gradientTranslationX->setText(1,  QString::number ( result.GetIntensityMotionCheckResult()[i].gradientTranslationX, 'f', 3 ));
-
-			QTreeWidgetItem *gradientTranslationY = new QTreeWidgetItem(gradientwise);
-			gradientTranslationY->setText(0, tr("TranslationY"));
-			gradientTranslationY->setText(1,  QString::number ( result.GetIntensityMotionCheckResult()[i].gradientTranslationY, 'f', 3 ));
-
-			QTreeWidgetItem *gradientTranslationZ = new QTreeWidgetItem(gradientwise);
-			gradientTranslationZ->setText(0, tr("TranslationZ"));
-			gradientTranslationZ->setText(1,  QString::number ( result.GetIntensityMotionCheckResult()[i].gradientTranslationZ, 'f', 3 ));
-		}
-	}
-	//std::cout<<"4:ResultUpdate()"<<std::endl;
-*/
-	return ;
 }
 
 
@@ -903,14 +701,17 @@ void GMainWindow::on_actionOpenDWINrrd_triggered()
 
 	 if(DWINrrdFile.length()>0)
 	 {
-		DTIPrepPanel->SetFileName(DWINrrdFile);
-		
 		 //std::string str;
 		 //str=DWINrrdFile.toStdString().substr(0,DWINrrdFile.toStdString().find_last_of('\\')+1);
 		 //std::cout<< str<<std::endl;
 		 //::SetCurrentDirectory(str.c_str());
 
-		 //itk::NrrdImageIO::Pointer  NrrdImageIO = itk::NrrdImageIO::New();
+
+		 itk::NrrdImageIO::Pointer  NrrdImageIO = itk::NrrdImageIO::New();
+		 DwiReader = DwiReaderType::New();
+		 DwiReader->SetImageIO(NrrdImageIO);
+
+
 		 try
 		 {
 			 //DwiReader = DwiReaderType::New();
@@ -922,7 +723,7 @@ void GMainWindow::on_actionOpenDWINrrd_triggered()
 			 str.append(DWINrrdFile);
 			 str.append(" ...");
 			 statusBar()->showMessage(str, 2000);
-			 std::cout<< "Loading"<<DWINrrdFile.toStdString()<<" ... ";
+			 std::cout<< "Loading in GMainWindow: "<<DWINrrdFile.toStdString()<<" ... ";
 			 DwiReader->Update();
 		 }
 		 catch(itk::ExceptionObject & e)
@@ -946,21 +747,26 @@ void GMainWindow::on_actionOpenDWINrrd_triggered()
 	 std::cout<<DwiReader->GetOutput()->GetLargestPossibleRegion().GetSize()[2]<<std::endl;
 	 std::cout<<"Pixel Vector Length: "<<DwiReader->GetOutput()->GetVectorLength()<<std::endl;
 
-	DWIImage = DwiReader->GetOutput();
+	 bDwiLoaded=true;
+	 DWIImage = DwiReader->GetOutput();
 
-	
-	// update DTIPrepPanel
-	DTIPrepPanel->SetDWIImage(DWIImage);
-	DTIPrepPanel->UpdatePanelDWI( DWIImage );
+	 setWindowTitle(tr("DTIPrep Tools(Qt4) - ")+DWINrrdFile);
 
-	//update 2D/3D Image display
-	componentExtractor1 = FilterType::New();
-	componentExtractor2 = FilterType::New();
-	componentExtractor3 = FilterType::New();
+	 // update DTIPrepPanel
+	 DTIPrepPanel->SetFileName(DWINrrdFile);
+	 DTIPrepPanel->SetDWIImage(DWIImage);
+	 //std::cout<<"tree widgets cleared 1"<<std::endl;
+	 DTIPrepPanel->UpdatePanelDWI();
+	 //std::cout<<"tree widgets cleared 2"<<std::endl;
 
-	gradientConnecter1 = ItkVtkImageFilterTypeUShort::New();
-	gradientConnecter2 = ItkVtkImageFilterTypeUShort::New();
-	gradientConnecter3 = ItkVtkImageFilterTypeUShort::New();
+	 //update 2D/3D Image display
+	 componentExtractor1 = FilterType::New();
+	 componentExtractor2 = FilterType::New();
+	 componentExtractor3 = FilterType::New();
+
+	 gradientConnecter1 = ItkVtkImageFilterTypeUShort::New();
+	 gradientConnecter2 = ItkVtkImageFilterTypeUShort::New();
+	 gradientConnecter3 = ItkVtkImageFilterTypeUShort::New();
 
 //	componentExtractor1->SetInput(DwiReader->GetOutput());
 //	componentExtractor2->SetInput(DwiReader->GetOutput());
@@ -1015,6 +821,18 @@ void GMainWindow::on_actionOpenDWINrrd_triggered()
 //           xmlPath, tr("XML files (*.xml);;HTML files (*.html);;"
 //                      "SVG files (*.svg);;User Interface files (*.ui)"));
 }
+
+
+void GMainWindow::on_actionOpen_XML_triggered()
+{
+	DTIPrepPanel->OpenXML( );
+}
+
+void GMainWindow::on_actionOpen_QC_Report_triggered()
+{
+	DTIPrepPanel->OpenQCReport( );
+}
+
 
 bool GMainWindow::CreateImagePlaneWidgets(vtkImageData *GradientImage)
 {
@@ -1562,7 +1380,7 @@ void GMainWindow::popup(vtkObject * obj, unsigned long, void * client_data, void
   popupMenu->popup(global_pt);*/
 }
 
-void GMainWindow::SetAllWindowLevel(int window, int level)
+void GMainWindow::SetAllWindowLevel(double window, double level)
 {
 	if(bWindowLevelSyn)
 	{

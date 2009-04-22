@@ -1,6 +1,5 @@
 #pragma once
 
-
 #include <QIcon>
 #include <QXmlStreamReader>
 #include "Protocal.h"
@@ -12,7 +11,6 @@ class QTreeWidgetItem;
 #include <map>
 #include <string>
 #include <iostream>
-
 
 enum StringValue 
 {
@@ -32,13 +30,20 @@ enum StringValue
 	ev_DWMRI_gradient,
 	ev_QCCheck,
 	ev_QCOutputFileName,
+	ev_badGradientPercentageTolerance,
 	ev_SliceWiseCheck,  //SliceWiseCheck
+	ev_headSkipSlicePercentage,
+	ev_tailSkipSlicePercentage,
+	ev_baselineCorrelationThreshold,
+	ev_baselineCorrelationDeviationThreshold,
 	ev_sliceCorrelationThreshold,
 	ev_sliceCorrelationDeviationThreshold,
 	ev_badSlicePercentageTolerance,
 	ev_InterlaceWiseCheck, //InterlaceWiseCheck
 	ev_interlaceCorrelationThresholdBaseline,
 	ev_interlaceCorrelationThresholdGradient,
+	ev_interlaceCorrelationDeviationBaseline,
+	ev_interlaceCorrelationDeviationGradient,
 	ev_interlaceTranslationThreshold,
 	ev_interlaceRotationThreshold,
 	ev_GradientWiseCheck,  //GradientWiseCheck
@@ -52,6 +57,9 @@ enum StringValue
 	ev_baselineThreshold,
 	ev_maskFIle,
 	ev_tensor,
+	ev_Padding,
+// 	ev_tensorPadded,
+// 	ev_tensorPaddingParameters,
 	ev_fa,
 	ev_md,
 	ev_colorfa,
@@ -61,8 +69,7 @@ enum StringValue
 	ev_EddyMotionCommand,
 	ev_dtiestimCommand,
 	ev_dtiprocessCommand,
-
-
+	ev_dtiPaddingCommand,
 };
 
 
@@ -83,7 +90,7 @@ public:
 	void Initialize()
 	{
 		s_mapStringValues["ReportFileName"]		= ev_ReportFileName;
-		s_mapStringValues["Image"]				= ev_Image;
+		s_mapStringValues["Image Check"]		= ev_Image;
 		s_mapStringValues["type"]				= ev_type;
 		s_mapStringValues["space"]				= ev_space;
 		s_mapStringValues["space directions"]	= ev_directions;
@@ -92,15 +99,21 @@ public:
 		s_mapStringValues["spacing"]			= ev_spacing;
 		s_mapStringValues["origin"]				= ev_origin;
 
-		s_mapStringValues["Diffusion"]			= ev_Diffusion;
+		s_mapStringValues["Diffusion Check"]	= ev_Diffusion;
 		s_mapStringValues["measurement frame"]	= ev_measurementFrame;
 		s_mapStringValues["DWMRI_b-value"]		= ev_bvalue;
 		s_mapStringValues["DWMRI_gradient"]		= ev_DWMRI_gradient;
 
 		s_mapStringValues["QC Check"]				= ev_QCCheck;
 		s_mapStringValues["QCOutputFileName"]		= ev_QCOutputFileName;
+		s_mapStringValues["bad gradient percentage tolerance"] = ev_badGradientPercentageTolerance;
 
 		s_mapStringValues["slice wise threshold"]	= ev_SliceWiseCheck;
+		
+		s_mapStringValues["head skip slice percentage"]	= ev_headSkipSlicePercentage;
+		s_mapStringValues["tail skip slice percentage"]	= ev_tailSkipSlicePercentage;
+		s_mapStringValues["baseline correlation"]	= ev_baselineCorrelationThreshold;
+		s_mapStringValues["baseline correlation deviation"]		= ev_baselineCorrelationDeviationThreshold;
 		s_mapStringValues["slice correlation"]		= ev_sliceCorrelationThreshold;
 		s_mapStringValues["slice correlation deviation"]= ev_sliceCorrelationDeviationThreshold;
 		s_mapStringValues["bad slice percentage tolerance"]= ev_badSlicePercentageTolerance;
@@ -108,6 +121,9 @@ public:
 		s_mapStringValues["interlace wise threshold"]= ev_InterlaceWiseCheck;
 		s_mapStringValues["interlace correlation baseline"]	= ev_interlaceCorrelationThresholdBaseline;
 		s_mapStringValues["interlace correlation gradient"]	= ev_interlaceCorrelationThresholdGradient;
+		s_mapStringValues["interlace correlation deviation baseline"]	= ev_interlaceCorrelationDeviationBaseline;
+		s_mapStringValues["interlace correlation deviation gradient"]	= ev_interlaceCorrelationDeviationGradient;	
+
 		s_mapStringValues["interlace rotation"]		= ev_interlaceRotationThreshold;
 		s_mapStringValues["interlace translation"]	= ev_interlaceTranslationThreshold;
 
@@ -123,10 +139,14 @@ public:
 		s_mapStringValues["DTI Computing"]			= ev_DTIComputing;
 		s_mapStringValues["dtiestim Command"]		= ev_dtiestimCommand;
 		s_mapStringValues["dtiprocess Command"]		= ev_dtiprocessCommand;
+		s_mapStringValues["CropDTI Command"]		= ev_dtiPaddingCommand;
 		s_mapStringValues["method"]					= ev_DTIMethod;
 		s_mapStringValues["baseline threshold"]		= ev_baselineThreshold;
 		s_mapStringValues["mask file"]				= ev_maskFIle;
 		s_mapStringValues["tensor file"]			= ev_tensor;
+		s_mapStringValues["tensor padding"]			= ev_Padding;
+// 		s_mapStringValues["padded tensor file"]		= ev_tensorPadded,
+// 		s_mapStringValues["tensor padding parameters"]= ev_tensorPaddingParameters,
 		s_mapStringValues["fa"]						= ev_fa;
 		s_mapStringValues["md"]						= ev_md;
 		s_mapStringValues["colored fa"]				= ev_colorfa;
@@ -139,8 +159,6 @@ public:
 			<< " entries." << std::endl;
 	}
 
-
-
 	void setProtocal( Protocal	*p ){ protocal=p; };
 	bool readFile(const QString &fileName, int mode);
 
@@ -151,7 +169,6 @@ public:
 	};
 
 	std::vector<ITEM> paremeters;
-
 
 private:
     void readProtocalSettingsElement(int mode);
@@ -165,7 +182,4 @@ private:
     QTreeWidget *treeWidget;
 	Protocal	*protocal;
     QXmlStreamReader reader;
-
-
-
 };

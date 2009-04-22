@@ -1,9 +1,28 @@
 #include "Protocal.h"
 #include <iostream>
+#include <math.h>
+
 
 Protocal::Protocal(void)
 {
 	imageProtocal.bCheck = true;
+	intensityMotionCheckProtocal.headSkipSlicePercentage = 0;
+	intensityMotionCheckProtocal.tailSkipSlicePercentage = 0;
+
+	//dTIProtocal.paddingParameters[0] = 0;
+	//dTIProtocal.paddingParameters[1] = 0;
+	//dTIProtocal.paddingParameters[2] = 0;
+	//dTIProtocal.paddingParameters[3] = 0;
+	//dTIProtocal.paddingParameters[4] = 0;
+	//dTIProtocal.paddingParameters[5] = 0;
+
+	dTIProtocal.bPadding = false;
+
+	baselineNumber		= 0;
+	bValueNumber		= 1;
+	repetitionNumber	= 1;
+	gradientDirNumber	= 0;
+
 	//imageProtocal.size[0] = 128;
 	//imageProtocal.size[1] = 128;
 	//imageProtocal.size[2] = 79;
@@ -117,10 +136,19 @@ void Protocal::print()
 	else
 		std::cout<<"    "<<"Check: No"<<std::endl;
 
+	std::cout<<"    "<<"badGradientPercentageTolerance: "<<intensityMotionCheckProtocal.badGradientPercentageTolerance<<std::endl;
+
 	if(intensityMotionCheckProtocal.bSliceCheck)
 		std::cout<<"    -"<<"SliceCheck: Yes"<<std::endl;
 	else
 		std::cout<<"    -"<<"SliceCheck: No"<<std::endl;
+	
+	std::cout<<"        "<<"headSkipSlicePercentage: "<<intensityMotionCheckProtocal.headSkipSlicePercentage<<std::endl;
+	std::cout<<"        "<<"tailSkipSlicePercentage: "<<intensityMotionCheckProtocal.tailSkipSlicePercentage<<std::endl;
+	
+	std::cout<<"        "<<"baselineCorrelationThreshold: "<<intensityMotionCheckProtocal.baselineCorrelationThreshold<<std::endl;
+	std::cout<<"        "<<"baselineCorrelationDeviationThreshold: "<<intensityMotionCheckProtocal.baselineCorrelationDeviationThreshold<<std::endl;
+
 	std::cout<<"        "<<"sliceCorrelationThreshold: "<<intensityMotionCheckProtocal.sliceCorrelationThreshold<<std::endl;
 	std::cout<<"        "<<"sliceCorrelationDeviationThreshold: "<<intensityMotionCheckProtocal.sliceCorrelationDeviationThreshold<<std::endl;
 	std::cout<<"        "<<"badSlicePercentageTolerance: "<<intensityMotionCheckProtocal.badSlicePercentageTolerance<<std::endl;
@@ -130,7 +158,9 @@ void Protocal::print()
 	else
 		std::cout<<"    -"<<"InterlaceCheck: No"<<std::endl;
 	std::cout<<"        "<<"interlaceCorrelationThresholdBaseline: "<<intensityMotionCheckProtocal.interlaceCorrelationThresholdBaseline<<std::endl;
+	std::cout<<"        "<<"interlaceCorrelationDeviationBaseline: "<<intensityMotionCheckProtocal.interlaceCorrelationDeviationBaseline<<std::endl;
 	std::cout<<"        "<<"interlaceCorrelationThresholdGradient: "<<intensityMotionCheckProtocal.interlaceCorrelationThresholdGradient<<std::endl;
+	std::cout<<"        "<<"interlaceCorrelationDeviationGradient: "<<intensityMotionCheckProtocal.interlaceCorrelationDeviationGradient<<std::endl;
 	std::cout<<"        "<<"interlaceTranslationThreshold: "<<intensityMotionCheckProtocal.interlaceTranslationThreshold<<std::endl;
 	std::cout<<"        "<<"interlaceRotationThreshold: "<<intensityMotionCheckProtocal.interlaceRotationThreshold<<std::endl;
 
@@ -161,6 +191,7 @@ void Protocal::print()
 
 	std::cout<<"    "<<"dtiestimCommand: "<< dTIProtocal.dtiestimCommand << std::endl;
 	std::cout<<"    "<<"dtiprocessCommand: "<< dTIProtocal.dtiprocessCommand<< std::endl;
+	std::cout<<"    "<<"CropDTICommand: "<< dTIProtocal.dtiPaddingCommand<< std::endl;
 
 	switch(dTIProtocal.method)
 	{
@@ -178,10 +209,20 @@ void Protocal::print()
 		std::cout<<"    "<<"method: UNKNOWN"<<std::endl;
 		break;
 	}
+	std::cout<<"    "<<"tensor: "<<dTIProtocal.tensor<<std::endl;
+
+	if(dTIProtocal.bPadding)
+		std::cout<<"    "<<"padding: Yes"<<std::endl;
+	else
+		std::cout<<"    "<<"padding: No"<<std::endl;
+
+// 	std::cout<<"    "<<"padded tensor: "<<dTIProtocal.tensorPadded<<std::endl;
+// 	std::cout<<"    "<<"padding paremeters: "
+// 		<<dTIProtocal.paddingParameters[0]<<" "<<dTIProtocal.paddingParameters[1]<<" "<<dTIProtocal.paddingParameters[2]<<" "
+// 		<<dTIProtocal.paddingParameters[3]<<" "<<dTIProtocal.paddingParameters[4]<<" "<<dTIProtocal.paddingParameters[5]<<std::endl;
 
 	std::cout<<"    "<<"baselineThreshold: "<<dTIProtocal.baselineThreshold<<std::endl;
 	std::cout<<"    "<<"mask: "<<dTIProtocal.mask<<std::endl;
-	std::cout<<"    "<<"tensor: "<<dTIProtocal.tensor<<std::endl;
 	std::cout<<"    "<<"baseline: "<<dTIProtocal.baseline<<std::endl;
 	std::cout<<"    "<<"idwi: "<<dTIProtocal.idwi<<std::endl;
 	std::cout<<"    "<<"fa: "<<dTIProtocal.fa<<std::endl;
@@ -207,7 +248,6 @@ void Protocal::fromXMLFile(std::string xml)
 void Protocal::clear()
 {
 	this->GetDiffusionProtocal().gradients.clear();
-	this->GetDTIProtocal().measures.clear();
 
 	this->GetImageProtocal().bCheck = false;
 
@@ -218,5 +258,135 @@ void Protocal::clear()
 	this->GetIntensityMotionCheckProtocal().bSliceCheck = false;
 	this->GetIntensityMotionCheckProtocal().bInterlaceCheck = false;
 
+	baselineNumber		= 0;
+	bValueNumber		= 1;
+	repetitionNumber	= 1;
+	gradientDirNumber	= 0;
 }
 
+void Protocal::collectDiffusionStatistics()
+{
+
+	std::vector<DiffusionDir> DiffusionDirections;
+	DiffusionDirections.clear();
+
+// 	std::cout<<"this->GetDiffusionProtocal().gradients.size(): " << this->GetDiffusionProtocal().gradients.size() <<std::endl;
+	for( int i=0; i<this->GetDiffusionProtocal().gradients.size();i++)
+	{
+		if(DiffusionDirections.size()>0)
+		{
+			bool newDir = true;
+			for(int j=0;j<DiffusionDirections.size();j++)
+			{
+				if( this->GetDiffusionProtocal().gradients[i][0] == DiffusionDirections[j].gradientDir[0] && 
+					this->GetDiffusionProtocal().gradients[i][1] == DiffusionDirections[j].gradientDir[1] && 
+					this->GetDiffusionProtocal().gradients[i][2] == DiffusionDirections[j].gradientDir[2] )
+				{
+					DiffusionDirections[j].repetitionNumber++;
+					newDir = false;;
+				}
+			}
+			if(newDir)
+			{
+				std::vector< double > dir;
+				dir.push_back(this->GetDiffusionProtocal().gradients[i][0]);
+				dir.push_back(this->GetDiffusionProtocal().gradients[i][1]);
+				dir.push_back(this->GetDiffusionProtocal().gradients[i][2]);
+
+				DiffusionDir diffusionDir;
+				diffusionDir.gradientDir = dir;
+				diffusionDir.repetitionNumber=1;
+
+				DiffusionDirections.push_back(diffusionDir);
+			}
+		}
+		else
+		{
+			std::vector< double > dir;
+			dir.push_back(this->GetDiffusionProtocal().gradients[i][0]);
+			dir.push_back(this->GetDiffusionProtocal().gradients[i][1]);
+			dir.push_back(this->GetDiffusionProtocal().gradients[i][2]);
+
+			DiffusionDir diffusionDir;
+			diffusionDir.gradientDir = dir;
+			diffusionDir.repetitionNumber=1;
+
+			DiffusionDirections.push_back(diffusionDir);
+		}
+	}
+
+// 	std::cout<<"DiffusionDirections.size(): " << DiffusionDirections.size() <<std::endl;
+
+	std::vector<int> repetNum;
+	repetNum.clear();
+	std::vector<double> dirMode;
+	dirMode.clear();
+
+	double modeTemp = 0.0;
+	for( int i=0; i<DiffusionDirections.size(); i++)
+	{
+		if( DiffusionDirections[i].gradientDir[0] == 0.0 &&
+			DiffusionDirections[i].gradientDir[1] == 0.0 &&
+			DiffusionDirections[i].gradientDir[2] == 0.0 ) 
+		{
+			this->baselineNumber = DiffusionDirections[i].repetitionNumber;
+// 			std::cout<<"DiffusionDirections[i].repetitionNumber: " <<i<<"  "<<DiffusionDirections[i].repetitionNumber <<std::endl;
+		}
+		else
+		{
+			repetNum.push_back(DiffusionDirections[i].repetitionNumber);
+
+			double modeSqr =	DiffusionDirections[i].gradientDir[0]*DiffusionDirections[i].gradientDir[0] +
+								DiffusionDirections[i].gradientDir[1]*DiffusionDirections[i].gradientDir[1] +
+								DiffusionDirections[i].gradientDir[2]*DiffusionDirections[i].gradientDir[2];
+
+// 			std::cout<<"modeSqr: " <<modeSqr <<std::endl;
+			if( dirMode.size() > 0)
+			{
+				bool newDirMode = true;
+				for(int j=0;j< dirMode.size();j++)
+				{
+					if( fabs(modeSqr-dirMode[j])<0.001)   // 1 DIFFERENCE for b value
+					{
+						newDirMode = false;	
+						break;
+					}
+				}
+				if(newDirMode)
+				{
+					dirMode.push_back(	modeSqr) ;
+// 					std::cout<<" if(newDirMode) dirMode.size(): " <<  dirMode.size() <<std::endl;
+				}
+			}
+			else
+			{
+				dirMode.push_back(	modeSqr) ;
+// 				std::cout<<" else dirMode.size(): " <<  dirMode.size() <<std::endl;
+			}
+		}
+	}
+
+// 	std::cout<<" repetNum.size(): " <<  repetNum.size() <<std::endl;
+// 	std::cout<<" dirMode.size(): " <<  dirMode.size() <<std::endl;
+
+	this->gradientDirNumber = repetNum.size();
+	this->bValueNumber = dirMode.size();
+
+	repetitionNumber = repetNum[0];
+	for( int i=1; i<repetNum.size(); i++)
+	{ 
+		if( repetNum[i] != repetNum[0])
+		{
+			std::cout<<"Protocol error. Not all the gradient directions have same repetition. "<<std::endl;
+			repetitionNumber = -1;			
+		}
+	}
+
+	std::cout<<"Protocol Diffusion: "	<<std::endl;
+	std::cout<<"  baselineNumber: "	<<baselineNumber	<<std::endl;
+	std::cout<<"  bValueNumber: "		<<bValueNumber		<<std::endl;
+	std::cout<<"  gradientDirNumber: "<<gradientDirNumber	<<std::endl;
+	std::cout<<"  repetitionNumber: "	<<repetitionNumber	<<std::endl;
+
+	return ;
+}

@@ -78,7 +78,7 @@ signals:
 	void orientationchanged(int, int);
 	void gradientchanged(int, int);
 	void interpolation(int, int);	
-	void WindowLevel( int window,int level);
+	void WindowLevel( double window,double level);
 	void contentschanged(int window,int index);
 
 	void SynWindowLevel(bool syn);
