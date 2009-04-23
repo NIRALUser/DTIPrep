@@ -2,9 +2,6 @@
 
 #include "itkMetaDataDictionary.h"
 #include "itkNrrdImageIO.h"
-//#include "itkGDCMImageIO.h"
-//#include "itkGDCMSeriesFileNames.h"
-//#include "itkImageSeriesReader.h"
 #include "itkMetaDataDictionary.h"
 #include "itkMetaDataObject.h"
 #include "itkVectorIndexSelectionCastImageFilter.h"
@@ -22,19 +19,23 @@
 CIntensityMotionCheck::CIntensityMotionCheck(std::string filename,std::string reportFile)
 {
 	DwiFileName = filename;
+
 	if(reportFile.length()==0)
 	{
-		ReportFileName=DwiFileName.substr(0,DwiFileName.find_last_of('.') );
-		ReportFileName.append("IntensityMotionCheckReports.txt");
+		ReportFileName.clear();
 	}
 	else
 		ReportFileName = reportFile;
 
+	baselineNumber		= 0;
+	bValueNumber		= 1;
+	repetitionNumber	= 1;
+	gradientDirNumber	= 0;
 
 	DwiImage=NULL;
 	bDwiLoaded=false;
 	bGetGridentDirections=false;
-	bGetGridentImages=false;
+	//bGetGridentImages=false;
 }
 
 
@@ -44,7 +45,7 @@ CIntensityMotionCheck::CIntensityMotionCheck(void)
 	DwiImage=NULL;
 	bDwiLoaded=false;
 	bGetGridentDirections=false;
-	bGetGridentImages=false;
+	//bGetGridentImages=false;
 
 
 }
@@ -56,7 +57,7 @@ CIntensityMotionCheck::~CIntensityMotionCheck(void)
 
 bool CIntensityMotionCheck::LoadDwiImage()
 {
-// use with windows
+	// use with windows
 	//std::string str;
 
 	//str=DwiFileName.substr(0,DwiFileName.find_last_of('\\')+1);
@@ -72,7 +73,7 @@ bool CIntensityMotionCheck::LoadDwiImage()
 			DwiReader = DwiReaderType::New();
 			DwiReader->SetImageIO(NrrdImageIO);
 			DwiReader->SetFileName(DwiFileName);
-			std::cout<< "Loading"<<DwiFileName<<" ... ";
+			std::cout<< "Loading in CIntensityMotionCheck: "<<DwiFileName<<" ... ";
 			DwiReader->Update();
 		}
 		catch(itk::ExceptionObject & e)
@@ -97,32 +98,62 @@ bool CIntensityMotionCheck::LoadDwiImage()
 	DwiImage = DwiReader->GetOutput();
 	bDwiLoaded=true;
 
+	GetGridentDirections();
+	if( bGetGridentDirections )
+		collectDiffusionStatistics();
+	else
+	{
+		std::cout<< "Diffusion information read error"<<std::endl;
+		return false;
+	}
+
 	std::cout<<"Image size"<< DwiImage->GetLargestPossibleRegion().GetSize().GetSizeDimension()<<": ";
 	std::cout<<DwiImage->GetLargestPossibleRegion().GetSize()[0]<<" ";
 	std::cout<<DwiImage->GetLargestPossibleRegion().GetSize()[1]<<" ";
 	std::cout<<DwiImage->GetLargestPossibleRegion().GetSize()[2]<<std::endl;
 
+	this->numGradients = DwiImage->GetVectorLength();
 	std::cout<<"Pixel Vector Length: "<<DwiImage->GetVectorLength()<<std::endl;
 
 	// Create result
 	GradientIntensityMotionCheckResult result;
+	
+	result.bSliceCheckOK = true;
 	for(int i=1; i<DwiImage->GetLargestPossibleRegion().GetSize()[2]; i++)
 	{
 		result.sliceCorrelation.push_back(0.0);
 	}
 	//std::cout<<"result.sliceCorrelation.size(): "<< result.sliceCorrelation.size()<<std::endl;
 
+	result.bInterlaceCheckOK	= true;
+	result.interlaceCorrelation	= 0.0;
+	result.interlaceRotationX	= 0.0;
+	result.interlaceRotationY	= 0.0;
+	result.interlaceRotationZ	= 0.0;
+	result.interlaceTranslationX= 0.0;
+	result.interlaceTranslationY= 0.0;
+	result.interlaceTranslationZ= 0.0;
+
+	result.bGradientCheckOK		= true;
+	result.gradientRotationX	= 0.0;
+	result.gradientRotationY	= 0.0;
+	result.gradientRotationZ	= 0.0;
+	result.gradientTranslationX	= 0.0;
+	result.gradientTranslationY	= 0.0;
+	result.gradientTranslationZ	= 0.0;
+
+	qcResult->Clear();
+
 	for( unsigned int j = 0; j<DwiImage->GetVectorLength(); j++ )
 	{
 		qcResult->GetIntensityMotionCheckResult().push_back(result);
-		//std::cout<<"qcResult.GetIntensityMotionCheckResult().size(): "<<qcResult->GetIntensityMotionCheckResult().size()<<std::endl;
+		qcResult->GetGradientProcess().push_back(QCResult::GRADIENT_INCLUDE);
 	}
-	std::cout<<"qcResult.GetIntensityMotionCheckResult().size(): "<<qcResult->GetIntensityMotionCheckResult().size()<<std::endl;
-
+	//std::cout<<"qcResult.GetIntensityMotionCheckResult().size(): "<<qcResult->GetIntensityMotionCheckResult().size()<<std::endl;
 	return true;
 }
 
-
+/*
 bool CIntensityMotionCheck::GetGridentImages()
 {
 	if( !bDwiLoaded  ) LoadDwiImage();
@@ -160,17 +191,36 @@ bool CIntensityMotionCheck::GetGridentImages()
 	bGetGridentImages=true;
 	return true;
 }
- 
+*/
 bool CIntensityMotionCheck::IntraCheck( )
 {
 	if(protocal->GetIntensityMotionCheckProtocal().bCheck &&  protocal->GetIntensityMotionCheckProtocal().bSliceCheck)
-		return IntraCheck( 0, protocal->GetIntensityMotionCheckProtocal().sliceCorrelationThreshold, protocal->GetIntensityMotionCheckProtocal().sliceCorrelationDeviationThreshold );
+		return IntraCheck( 
+		0, 
+		protocal->GetIntensityMotionCheckProtocal().headSkipSlicePercentage,
+		protocal->GetIntensityMotionCheckProtocal().tailSkipSlicePercentage,
+		protocal->GetIntensityMotionCheckProtocal().baselineCorrelationThreshold,
+		protocal->GetIntensityMotionCheckProtocal().baselineCorrelationDeviationThreshold,
+		protocal->GetIntensityMotionCheckProtocal().sliceCorrelationThreshold, 
+		protocal->GetIntensityMotionCheckProtocal().sliceCorrelationDeviationThreshold 
+		);
 	else
+	{
+		std::cout<<"Intra-gradient slice-wise check NOT set."<<std::endl;
 		return true;
+	}
 }
 
 
-bool CIntensityMotionCheck::IntraCheck(bool bRegister, double CorrelationThreshold ,  double CorrelationDeviationThreshold)
+bool CIntensityMotionCheck::IntraCheck(
+									   bool bRegister,  
+									   double beginSkip, 
+									   double endSkip, 
+									   double baselineCorrelationThreshold ,  
+									   double baselineCorrelationDeviationThreshold, 
+									   double CorrelationThreshold ,  
+									   double CorrelationDeviationThreshold	
+									   )
 {
 	if(!bDwiLoaded  ) LoadDwiImage();
 	if(!bDwiLoaded  )
@@ -178,13 +228,6 @@ bool CIntensityMotionCheck::IntraCheck(bool bRegister, double CorrelationThresho
 		std::cout<<"DWI load error, no Gradient Images got"<<std::endl;
 		return false;
 	}	
-
-	if(qcResult->GetGradientProcess().size()!=DwiImage->GetVectorLength())
-	{
-		qcResult->GetGradientProcess().clear();
-		for(int j=0;j<DwiImage->GetVectorLength();j++)
-			qcResult->GetGradientProcess().push_back(QCResult::GRADIENT_INCLUDE);
-	}
 
 	std::vector< std::vector<struIntra2DResults> >		ResultsContainer;
 
@@ -211,7 +254,6 @@ bool CIntensityMotionCheck::IntraCheck(bool bRegister, double CorrelationThresho
 		std::cout<<std::endl;
 		std::cout<<"Gradient "<<j<<std::endl;
 		
-		//std::vector< double >	NormalizedCorrelation;
 		std::vector< struIntra2DResults >	Results;
 
 		filter1->SetInput( componentExtractor->GetOutput() );
@@ -241,14 +283,14 @@ bool CIntensityMotionCheck::IntraCheck(bool bRegister, double CorrelationThresho
 			filter2->Update();
 
 			CIntraGradientRigidRegistration IntraGradientRigidReg(filter1->GetOutput(),filter2->GetOutput());
-			Results.push_back(IntraGradientRigidReg.Run( bRegister ));
+			struIntra2DResults s2DResults= IntraGradientRigidReg.Run( bRegister );
+			Results.push_back(s2DResults);
 		}
 		ResultsContainer.push_back(Results);
+		//emit Progress(j+1/DwiImage->GetVectorLength());//emit QQQ(10);
 	}
 
-	// copy slice correlation to qcResult
-	std::cout<<"ResultsContainer.size(): "<<ResultsContainer.size()<<std::endl;
-	std::cout<<"qcResult->GetIntensityMotionCheckResult().size(): "<<qcResult->GetIntensityMotionCheckResult().size()<<std::endl;
+// copy slice correlation to qcResult
 	for(int i=0; i< ResultsContainer.size(); i++)
 	{
 		for(int j=0; j<ResultsContainer[i].size(); j++)
@@ -257,56 +299,30 @@ bool CIntensityMotionCheck::IntraCheck(bool bRegister, double CorrelationThresho
 		}
 	}
 
-	// print & save results
+//print & save results
 	std::ofstream outfile; 
 	outfile.open(ReportFileName.c_str(),std::ios::app);
 	outfile<<std::endl;
 	outfile<<"==========================================================================="<<std::endl;
 	outfile <<"Intra-gradient slice wise check with/without 2D rigid registration: "<<std::endl<<std::endl;
 
-	/*
-	for(int i=0;i<ResultsContainer.size();i++)
-	{
-		outfile <<"Gradient#: "<<i<<std::endl;
-		outfile <<"\tRegistration\tAngle\tTranslationX\tTranslationY\tCorralation"<<std::endl;
-
-		std::cout<<std::endl<<"Gradient "<<i<<std::endl;
-
-		for(int j=0;j<ResultsContainer[i].size();j++)
-		{
-			std::cout.precision(6);
-			std::cout.setf(std::ios_base::showpoint);
-			std::cout<<std::setw(10)<<ResultsContainer[i][j].Correlation;
-			std::cout.precision();
-			std::cout.setf(std::ios_base::unitbuf);
-
-			outfile <<"\t"<<j+1<<"-"<<j;
-			outfile.precision(6);
-			outfile.setf(std::ios_base::showpoint|std::ios_base::right) ;	
-			//outfile.fill();
-			outfile <<"\t"<<std::setw(10)<<ResultsContainer[i][j].Angle;
-			outfile <<"\t"<<std::setw(10)<<ResultsContainer[i][j].TranslationX;
-			outfile <<"\t"<<std::setw(10)<<ResultsContainer[i][j].TranslationY;
-			outfile <<"\t"<<std::setw(10)<<ResultsContainer[i][j].Correlation<<std::endl;
-			outfile.precision();
-			outfile.setf(std::ios_base::unitbuf);			
-		}
-		outfile<<std::endl;
-	}
-*/
 	outfile <<"Slice Correlations"<<std::endl;
 	for(int i=0; i<ResultsContainer.size(); i++)
 	{
 		outfile <<"\t"<<"Gradient"<<i;
 	}
-	outfile <<"\tmean"<<"\tdeviation"<<std::endl;
+	outfile <<"\tbaselineMean"<<"\tbaselineDeviation"<<"\tmean"<<"\tdeviation"<<std::endl;
 
-//	std::vector<double> means;
-//	std::vector<double> deviations;
+	int DWICount, BaselineCount;
+	BaselineCount	= baselineNumber;
+	DWICount		= ResultsContainer.size()-baselineNumber;//gradientDirNumber * repitionNumber;
+
+	std::cout <<"BaselineCount: "<<BaselineCount<<std::endl;
+	std::cout <<"DWICount: "<<DWICount<<std::endl;
 
 	for(int j=0;j<ResultsContainer[0].size();j++)
 	{
-		double mean=0.0, deviation=0.0;
+		double baselinemean=0.0, DWImean=0.0, baselinedeviation=0.0, DWIdeviation=0.0;
 		for(int i=0; i<ResultsContainer.size(); i++)
 		{
 			outfile.precision(6);
@@ -314,97 +330,211 @@ bool CIntensityMotionCheck::IntraCheck(bool bRegister, double CorrelationThresho
 			outfile <<"\t"<<std::setw(10)<<ResultsContainer[i][j].Correlation;
 			outfile.precision();
 			outfile.setf(std::ios_base::unitbuf);
+			if ( GradientDirectionContainer->at(i)[0] == 0.0 && GradientDirectionContainer->at(i)[1] == 0.0 && GradientDirectionContainer->at(i)[2] == 0.0 )
+			{
+				baselinemean+=ResultsContainer[i][j].Correlation/(double)(BaselineCount);
+			}
+			else
+			{
+				DWImean+=ResultsContainer[i][j].Correlation/(double)(DWICount);
+			}				
+		}
 
-			if(i>0)
-				mean+=ResultsContainer[i][j].Correlation/(double)(ResultsContainer.size()-1.0);
-		}
-		for(int i=1; i<ResultsContainer.size(); i++)
+		for(int i=0; i<ResultsContainer.size(); i++)
 		{
-			if(i>0)
-				deviation+=(ResultsContainer[i][j].Correlation-mean)*(ResultsContainer[i][j].Correlation-mean)/(double)(ResultsContainer.size()-2.0);
+			if ( GradientDirectionContainer->at(i)[0] == 0.0 && GradientDirectionContainer->at(i)[1] == 0.0 && GradientDirectionContainer->at(i)[2] == 0.0)
+			{
+				if(BaselineCount>=1)
+					baselinedeviation+=(ResultsContainer[i][j].Correlation-baselinemean)*(ResultsContainer[i][j].Correlation-baselinemean)/(double)(BaselineCount);
+				else
+					baselinedeviation=0.0;
+			}
+			else
+			{
+				if(DWICount>=1)
+					DWIdeviation+=(ResultsContainer[i][j].Correlation-DWImean)*(ResultsContainer[i][j].Correlation-DWImean)/(double)(DWICount);
+				else
+					DWIdeviation=0.0;
+			}
 		}
-		outfile <<"\t"<<std::setw(10)<<mean;
-		outfile <<"\t"<<std::setw(10)<<sqrt(deviation);
+
+		outfile <<"\t"<<std::setw(10)<<baselinemean;
+		outfile <<"\t"<<std::setw(10)<<sqrt(baselinedeviation);
+		outfile <<"\t"<<std::setw(10)<<DWImean;
+		outfile <<"\t"<<std::setw(10)<<sqrt(DWIdeviation);
 		outfile <<std::endl;
 
-		means.push_back(mean);
-		deviations.push_back(sqrt(deviation));
+		this->baselineMeans.push_back(baselinemean);
+		this->baselineDeviations.push_back(sqrt(baselinedeviation));
 
+		this->means.push_back(DWImean);
+		this->deviations.push_back(sqrt(DWIdeviation));
 	}
-
-	// calculate the means and deviations
-/*
-	for(int j=0;j<ResultsContainer[0].size();j++)
-	{
-		double mean=0.0, deviation=0.0;
-		for(int i=1; i<ResultsContainer.size(); i++)
-			mean+= ResultsContainer[i][j].Correlation/((float)ResultsContainer.size()-1.0);
-		for(int i=1; i<ResultsContainer.size(); i++)
-			deviation+=(ResultsContainer[i][j].Correlation-mean)*(ResultsContainer[i][j].Correlation-mean)/((float)ResultsContainer.size()-2.0);
-
-		means.push_back(mean);
-		deviations.push_back(sqrt(deviation));
-	}
-	
-	outfile <<std::endl;
-	for(int i=0;i<means.size();i++)
-		outfile <<"\t"<<std::setw(10)<<means[i];
-	outfile << std::endl;
-	for(int i=0;i<deviations.size();i++)
-		outfile <<"\t"<<std::setw(10)<<deviations[i];
-	outfile << std::endl;
-
-*/
 
 	outfile <<std::endl<<"Intra-Gradient Slice Check Artifacts:"<<std::endl;
-	outfile  <<"\t"<<std::setw(10)<<"Gradient"<<"\t"<<std::setw(10)<<"Slice"<<"\t"<<std::setw(10)<<"preCorrelation"<<"\t"<<std::setw(10)<<"afterCorrelation"<<std::endl;
+	outfile  <<"\t"<<std::setw(10)<<"Gradient"<<"\t"<<std::setw(10)<<"Slice"<<"\t"<<std::setw(10)<<"Correlation"<<std::endl;
+
 	std::cout <<std::endl<<"Intra-Gradient Slice Check Artifacts:"<<std::endl;
-	std::cout<<"\t"<<std::setw(10)<<"Gradient"<<"\t"<<std::setw(10)<<"Slice"<<"\t"<<std::setw(10)<<"preCorrelation"<<"\t"<<std::setw(10)<<"afterCorrelation"<<std::endl;
-
-//first baseline
+	std::cout<<"\t"<<std::setw(10)<<"Gradient"<<"\t"<<std::setw(10)<<"Slice"<<"\t"<<std::setw(10)<<"Correlation"<<std::endl;
+	
 	int badcount=0;
-	for(int j=0;j<ResultsContainer[0].size(); j++) //for(int j=0;j<ResultsContainer[0].size()-1; j++)
-	{
-		outfile.precision(6);
-		outfile.setf(std::ios_base::showpoint|std::ios_base::right) ;	
-		if( ResultsContainer[0][j].Correlation < CorrelationThreshold )
-		{
-			outfile  <<"\t"<<std::setw(10)<<"0"<<"\t"<<std::setw(10)<<j+1<<"\t"<<ResultsContainer[0][j].Correlation<<"\t"<<std::setw(10)<<ResultsContainer[0][j+1].Correlation<<std::endl;
-			std::cout<<"\t"<<std::setw(10)<<"0"<<"\t"<<std::setw(10)<<j+1<<"\t"<<ResultsContainer[0][j].Correlation<<"\t"<<std::setw(10)<<ResultsContainer[0][j+1].Correlation<<std::endl;
-			badcount++;
-		}
-		outfile.precision();
-		outfile.setf(std::ios_base::unitbuf);
-	}
+	int baselineBadcount=0;
 
-	if( badcount >= protocal->GetIntensityMotionCheckProtocal().badSlicePercentageTolerance * DwiImage->GetLargestPossibleRegion().GetSize()[2] )
-		qcResult->GetGradientProcess()[0]=QCResult::GRADIENT_EXCLUDE;
-
-// gradients
-	for(int i=1;i<ResultsContainer.size();i++)
+	for(int i=0;i<ResultsContainer.size();i++)
 	{
+		baselineBadcount = 0;
 		badcount=0;
-		for(int j=0;j<ResultsContainer[0].size(); j++) //for(int j=0;j<ResultsContainer[0].size()-1; j++)
-		{
-			outfile.precision(6);
-			outfile.setf(std::ios_base::showpoint|std::ios_base::right) ;	
-			//if( ResultsContainer[i][j].Correlation < CorrelationThreshold &&  ResultsContainer[i][j+1].Correlation < CorrelationThreshold)
-			if( ResultsContainer[i][j].Correlation < CorrelationThreshold ||  abs(ResultsContainer[i][j].Correlation-means[j]) > deviations[j] * CorrelationDeviationThreshold)
+		if ( GradientDirectionContainer->at(i)[0] == 0.0 && GradientDirectionContainer->at(i)[1] == 0.0 && GradientDirectionContainer->at(i)[2] == 0.0 )
+		{	
+			//baseline
+			for(int j = 0 + (int)(DwiImage->GetLargestPossibleRegion().GetSize()[2]*beginSkip);j < ResultsContainer[0].size() - (int)(DwiImage->GetLargestPossibleRegion().GetSize()[2]*endSkip); j++ ) 
 			{
-				outfile  <<"\t"<<std::setw(10)<<i<<"\t"<<std::setw(10)<<j+1<<"\t"<<ResultsContainer[i][j].Correlation<<"\t"<<std::setw(10)<<ResultsContainer[i][j+1].Correlation<<std::endl;
-				std::cout<<"\t"<<std::setw(10)<<i<<"\t"<<std::setw(10)<<j+1<<"\t"<<ResultsContainer[i][j].Correlation<<"\t"<<std::setw(10)<<ResultsContainer[i][j+1].Correlation<<std::endl;
-				badcount++;
+				outfile.precision(6);
+				outfile.setf(std::ios_base::showpoint|std::ios_base::right) ;
+				if( ResultsContainer[i][j].Correlation < baselineCorrelationThreshold ||  ResultsContainer[i][j].Correlation < baselineMeans[j] - baselineDeviations[j] * baselineCorrelationDeviationThreshold)
+				{
+					outfile  <<"\t"<<std::setw(10)<<i<<"\t"<<std::setw(10)<<j+1<<"\t"<<ResultsContainer[i][j].Correlation<<std::endl;
+					std::cout<<"\t"<<std::setw(10)<<i<<"\t"<<std::setw(10)<<j+1<<"\t"<<ResultsContainer[i][j].Correlation<<std::endl;
+					baselineBadcount++;
+				}
+				outfile.precision();
+				outfile.setf(std::ios_base::unitbuf);
 			}
-			outfile.precision();
-			outfile.setf(std::ios_base::unitbuf);
+
+			if( baselineBadcount > (int)(protocal->GetIntensityMotionCheckProtocal().badSlicePercentageTolerance * DwiImage->GetLargestPossibleRegion().GetSize()[2]) )
+			{
+				qcResult->GetGradientProcess()[i] = QCResult::GRADIENT_EXCLUDE;
+				qcResult->GetIntensityMotionCheckResult()[i].bSliceCheckOK = false;
+			}
 		}
-		if( badcount >= protocal->GetIntensityMotionCheckProtocal().badSlicePercentageTolerance * DwiImage->GetLargestPossibleRegion().GetSize()[2] )
-			qcResult->GetGradientProcess()[i]=QCResult::GRADIENT_EXCLUDE;
-		
+		else // gradients
+		{			
+			for(int j=0 + (int)(DwiImage->GetLargestPossibleRegion().GetSize()[2]*beginSkip);j<ResultsContainer[0].size() - (int)(DwiImage->GetLargestPossibleRegion().GetSize()[2]*endSkip); j++) //for(int j=0;j<ResultsContainer[0].size()-1; j++)
+			{
+				outfile.precision(6);
+				outfile.setf(std::ios_base::showpoint|std::ios_base::right) ;	
+				//if( ResultsContainer[i][j].Correlation < CorrelationThreshold &&  ResultsContainer[i][j+1].Correlation < CorrelationThreshold)
+				if( ResultsContainer[i][j].Correlation < CorrelationThreshold ||  ResultsContainer[i][j].Correlation < means[j] - deviations[j] * CorrelationDeviationThreshold)
+				{
+					outfile  <<"\t"<<std::setw(10)<<i<<"\t"<<std::setw(10)<<j+1<<"\t"<<ResultsContainer[i][j].Correlation<<std::endl;
+					std::cout<<"\t"<<std::setw(10)<<i<<"\t"<<std::setw(10)<<j+1<<"\t"<<ResultsContainer[i][j].Correlation<<std::endl;
+					badcount++;
+				}
+				outfile.precision();
+				outfile.setf(std::ios_base::unitbuf);
+			}
+			if( badcount > (int)(protocal->GetIntensityMotionCheckProtocal().badSlicePercentageTolerance * DwiImage->GetLargestPossibleRegion().GetSize()[2]) )
+			{
+				qcResult->GetGradientProcess()[i]=QCResult::GRADIENT_EXCLUDE;
+				qcResult->GetIntensityMotionCheckResult()[i].bSliceCheckOK = false;
+			}
+		}		
 	}
 	outfile.close();	
 	return true;
 }
+
+void CIntensityMotionCheck::PrintResult()
+{
+/*	// slice wise check results
+	std::ofstream outfile; 
+	outfile.open(ReportFileName.c_str(),std::ios::app);
+	outfile<<std::endl;
+	outfile<<"==========================================================================="<<std::endl;
+	outfile <<"Intra-gradient slice wise check with/without 2D rigid registration: "<<std::endl<<std::endl;
+
+	outfile <<"Slice Correlations"<<std::endl;
+	for(int i=0; i< qcResult->GetIntensityMotionCheckResult().size(); i++)
+	{
+		outfile <<"\t"<<"Gradient"<<i;
+	}
+	outfile <<"\tbaselineMean"<<"\tbaselineDeviation"<<"\tmean"<<"\tdeviation"<<std::endl;
+
+
+	for(int j=0;j<qcResult->GetIntensityMotionCheckResult()[0].sliceCorrelation.size();j++)
+	{
+		for(int i=0; i<qcResult->GetIntensityMotionCheckResult().size(); i++)
+		{
+			outfile.precision(6);
+			outfile.setf(std::ios_base::showpoint|std::ios_base::right) ;	
+			outfile <<"\t"<<std::setw(10)<<qcResult->GetIntensityMotionCheckResult()[i].sliceCorrelation[j];
+			outfile.precision();
+			outfile.setf(std::ios_base::unitbuf);
+		}
+
+		outfile <<"\t"<<std::setw(10)<< this->baselineMeans[j];
+		outfile <<"\t"<<std::setw(10)<<sqrt(this->baselineDeviations[j]);
+		outfile <<"\t"<<std::setw(10)<<this->means;
+		outfile <<"\t"<<std::setw(10)<<sqrt(this->deviations);
+		outfile <<std::endl;
+	}
+
+	outfile <<std::endl<<"Intra-Gradient Slice Check Artifacts:"<<std::endl;
+	outfile  <<"\t"<<std::setw(10)<<"Gradient"<<"\t"<<std::setw(10)<<"Slice"<<"\t"<<std::setw(10)<<"Correlation"<<std::endl;
+	std::cout <<std::endl<<"Intra-Gradient Slice Check Artifacts:"<<std::endl;
+	std::cout<<"\t"<<std::setw(10)<<"Gradient"<<"\t"<<std::setw(10)<<"Slice"<<"\t"<<std::setw(10)<<"Correlation"<<std::endl;
+
+	int badcount=0;
+	int baselineBadcount=0;
+
+	for(int i=0;i<ResultsContainer.size();i++)
+	{
+		baselineBadcount = 0;
+		badcount=0;
+		if ( GradientDirectionContainer->at(i)[0] == 0.0 && GradientDirectionContainer->at(i)[1] == 0.0 && GradientDirectionContainer->at(i)[2] == 0.0 )
+		{	
+			//baseline
+			for(int j = 0 + (int)(DwiImage->GetLargestPossibleRegion().GetSize()[2]*beginSkip);j < ResultsContainer[0].size() - (int)(DwiImage->GetLargestPossibleRegion().GetSize()[2]*endSkip); j++ ) 
+			{
+				outfile.precision(6);
+				outfile.setf(std::ios_base::showpoint|std::ios_base::right) ;	
+				if( ResultsContainer[i][j].Correlation < baselineCorrelationThreshold ||  ResultsContainer[i][j].Correlation < baselineMeans[j] - baselineDeviations[j] * baselineCorrelationDeviationThreshold)
+				{
+					outfile  <<"\t"<<std::setw(10)<<i<<"\t"<<std::setw(10)<<j+1<<"\t"<<ResultsContainer[i][j].Correlation<<std::endl;
+					std::cout<<"\t"<<std::setw(10)<<i<<"\t"<<std::setw(10)<<j+1<<"\t"<<ResultsContainer[i][j].Correlation<<std::endl;
+					baselineBadcount++;
+				}
+				outfile.precision();
+				outfile.setf(std::ios_base::unitbuf);
+			}
+
+			if( baselineBadcount > (int)(protocal->GetIntensityMotionCheckProtocal().badSlicePercentageTolerance * DwiImage->GetLargestPossibleRegion().GetSize()[2]) )
+			{
+				qcResult->GetGradientProcess()[i]=QCResult::GRADIENT_EXCLUDE;
+				qcResult->GetIntensityMotionCheckResult()[i].bSliceCheckOK = false;
+			}
+		}
+		else // gradients
+		{			
+			for(int j=0 + (int)(DwiImage->GetLargestPossibleRegion().GetSize()[2]*beginSkip);j<ResultsContainer[0].size() - (int)(DwiImage->GetLargestPossibleRegion().GetSize()[2]*endSkip); j++) //for(int j=0;j<ResultsContainer[0].size()-1; j++)
+			{
+				outfile.precision(6);
+				outfile.setf(std::ios_base::showpoint|std::ios_base::right) ;	
+				//if( ResultsContainer[i][j].Correlation < CorrelationThreshold &&  ResultsContainer[i][j+1].Correlation < CorrelationThreshold)
+				if( ResultsContainer[i][j].Correlation < CorrelationThreshold ||  ResultsContainer[i][j].Correlation < means[j] - deviations[j] * CorrelationDeviationThreshold)
+				{
+					outfile  <<"\t"<<std::setw(10)<<i<<"\t"<<std::setw(10)<<j+1<<"\t"<<ResultsContainer[i][j].Correlation<<std::endl;
+					std::cout<<"\t"<<std::setw(10)<<i<<"\t"<<std::setw(10)<<j+1<<"\t"<<ResultsContainer[i][j].Correlation<<std::endl;
+					badcount++;
+				}
+				outfile.precision();
+				outfile.setf(std::ios_base::unitbuf);
+			}
+			if( badcount > (int)(protocal->GetIntensityMotionCheckProtocal().badSlicePercentageTolerance * DwiImage->GetLargestPossibleRegion().GetSize()[2]) )
+			{
+				qcResult->GetGradientProcess()[i]=QCResult::GRADIENT_EXCLUDE;
+				qcResult->GetIntensityMotionCheckResult()[i].bSliceCheckOK = false;
+			}
+		}		
+	}
+
+
+
+	outfile.close();	
+*/
+
+}
+
 
 bool CIntensityMotionCheck::InterlaceCheck()
 {
@@ -412,15 +542,25 @@ bool CIntensityMotionCheck::InterlaceCheck()
 		return InterlaceCheck(	protocal->GetIntensityMotionCheckProtocal().interlaceRotationThreshold,
 								protocal->GetIntensityMotionCheckProtocal().interlaceTranslationThreshold,
 								protocal->GetIntensityMotionCheckProtocal().interlaceCorrelationThresholdBaseline,
-								protocal->GetIntensityMotionCheckProtocal().interlaceCorrelationThresholdGradient	);
+								protocal->GetIntensityMotionCheckProtocal().interlaceCorrelationThresholdGradient,
+								protocal->GetIntensityMotionCheckProtocal().interlaceCorrelationDeviationBaseline,
+								protocal->GetIntensityMotionCheckProtocal().interlaceCorrelationDeviationGradient
+								);
 	else
+	{
+		std::cout<<"Intra-gradient interlace-wise check NOT set."<<std::endl;
 		return true;
-
-	//return InterlaceCheck(0.5, 1.0); //0.5 degree 1 mm
+	}
 }
 
 
-bool CIntensityMotionCheck::InterlaceCheck(double angleThreshold, double transThreshold, double correlationThresholdBaseline, double correlationThresholdGradient)
+bool CIntensityMotionCheck::InterlaceCheck(
+	double angleThreshold, 
+	double transThreshold, 
+	double correlationThresholdBaseline, 
+	double correlationThresholdGradient,
+	double corrBaselineDev,	
+	double corrGradientDev)
 {
 	if(!bDwiLoaded ) LoadDwiImage();
 	if(!bDwiLoaded )
@@ -429,15 +569,6 @@ bool CIntensityMotionCheck::InterlaceCheck(double angleThreshold, double transTh
 		return false;
 	}	
 	
-	if(qcResult->GetGradientProcess().size()!=DwiImage->GetVectorLength())
-	{
-		qcResult->GetGradientProcess().clear();
-		for(int j=0;j<DwiImage->GetVectorLength();j++)
-			qcResult->GetGradientProcess().push_back(QCResult::GRADIENT_INCLUDE);
-	}
-
-	//std::vector< std::vector<struInterlaceResults> >	ResultsContainer;
-
 	typedef itk::VectorIndexSelectionCastImageFilter<DwiImageType, GradientImageType > FilterType;
 	FilterType::Pointer componentExtractor = FilterType::New();
 
@@ -458,10 +589,6 @@ bool CIntensityMotionCheck::InterlaceCheck(double angleThreshold, double transTh
 
 	GradientImageType::SpacingType spacing;
 	spacing = componentExtractor->GetOutput()->GetSpacing();
-	//std::cout<<"spacing  "<<spacing[0]<<"spacing  "<<spacing[1]<<"spacing  "<<spacing[2]<<std::endl;
-
-	//spacing = DwiImage->GetSpacing();
-	//std::cout<<"spacing  "<<spacing[0]<<"spacing  "<<spacing[1]<<"spacing  "<<spacing[2]<<std::endl;
 
 	InterlaceOdd->CopyInformation(componentExtractor->GetOutput());
 	InterlaceEven->CopyInformation(componentExtractor->GetOutput());
@@ -515,6 +642,7 @@ bool CIntensityMotionCheck::InterlaceCheck(double angleThreshold, double transTh
 
 		CRigidRegistration RigidRegistration(InterlaceOdd,InterlaceEven,25, 0.1, 1 );
 		Results.push_back(RigidRegistration.Run());
+
 //////////////////////////////////////////////////////
 // to calculate correlation between interlaces  /////
 //////////////////////////////////////////////////////
@@ -539,8 +667,6 @@ bool CIntensityMotionCheck::InterlaceCheck(double angleThreshold, double transTh
 		Correlation=sAB/sqrt(sA2*sB2);
 		Results[j].Correlation=Correlation;
 
-
-//////////////////////////////////////
 		std::cout<<"Angles: "<<Results[j].AngleX<<" "<<Results[j].AngleY<<" "<<Results[j].AngleZ<<std::endl;
 		std::cout<<"Trans : "<<Results[j].TranslationX<<" "<<Results[j].TranslationY<<" "<<Results[j].TranslationZ<<std::endl;
 		std::cout<<"MI    : "<<Results[j].MutualInformation<<std::endl;
@@ -559,6 +685,60 @@ bool CIntensityMotionCheck::InterlaceCheck(double angleThreshold, double transTh
 		qcResult->GetIntensityMotionCheckResult()[i].interlaceTranslationZ	= Results[i].TranslationZ;	
 	}
 
+// 	if(!bGetGridentDirections)
+// 		GetGridentDirections();
+	int DWICount, BaselineCount;
+
+	BaselineCount= baselineNumber;
+	DWICount=GradientDirectionContainer->size()-baselineNumber;
+// 	for ( int i=0;i< GradientDirectionContainer->size() ;i++ )
+// 	{
+// 		if( GradientDirectionContainer->ElementAt(i)[0] == 0.0 && GradientDirectionContainer->ElementAt(i)[1] == 0.0 && GradientDirectionContainer->ElementAt(i)[2] == 0.0)
+// 			BaselineCount++;
+// 		else
+// 			DWICount++;
+// 	}
+
+	std::cout<<"BaselineCount: "<<BaselineCount<<std::endl;
+	std::cout<<"DWICount: "<<DWICount<<std::endl;
+
+	interlaceBaselineMeans=0.0;
+	interlaceBaselineDeviations=0.0;
+	interlaceGradientMeans=0.0;
+	interlaceGradientDeviations=0.0;
+
+	for(int i=0; i< Results.size(); i++)
+	{
+		if ( GradientDirectionContainer->at(i)[0] == 0.0 && GradientDirectionContainer->at(i)[1] == 0.0 && GradientDirectionContainer->at(i)[2] == 0.0 )
+		{	//for interlace baseline correlation
+			interlaceBaselineMeans += Results[i].Correlation/(double)BaselineCount;			
+		}
+		else //for interlace gradient correlation
+		{
+			interlaceGradientMeans += Results[i].Correlation/(double)DWICount;
+		}
+	}
+
+	for(int i=0; i<Results.size(); i++)
+	{
+		if ( GradientDirectionContainer->at(i)[0] == 0.0 && GradientDirectionContainer->at(i)[1] == 0.0 && GradientDirectionContainer->at(i)[2] == 0.0)
+		{
+			if(BaselineCount>=1)
+				interlaceBaselineDeviations += ( Results[i].Correlation-interlaceBaselineMeans)*( Results[i].Correlation-interlaceBaselineMeans)/(double)(BaselineCount);
+			else
+				interlaceBaselineDeviations = 0.0;
+		}
+		else
+		{
+			if(DWICount>=1)
+				interlaceGradientDeviations+=( Results[i].Correlation-interlaceGradientMeans)*( Results[i].Correlation-interlaceGradientMeans)/(double)(DWICount);
+			else
+				interlaceGradientDeviations = 0.0;
+		}
+	}
+
+	interlaceBaselineDeviations = sqrt(interlaceBaselineDeviations);
+	interlaceGradientDeviations = sqrt(interlaceGradientDeviations);
 
 	// print & save results
 	std::ofstream outfile; 
@@ -609,6 +789,18 @@ bool CIntensityMotionCheck::InterlaceCheck(double angleThreshold, double transTh
 		outfile.setf(std::ios_base::unitbuf);		
 	}
 
+	outfile<< "interlaceBaselineDeviations: " << interlaceBaselineDeviations<<std::endl;
+	outfile<< "interlaceBaselineMeans: " << interlaceBaselineMeans<<std::endl;
+
+	outfile<< "interlaceGradientDeviations: " << interlaceGradientDeviations<<std::endl;
+	outfile<< "interlaceGradientMeans: " << interlaceGradientMeans<<std::endl;
+
+	std::cout<< "interlaceBaselineDeviations: " << interlaceBaselineDeviations<<std::endl;
+	std::cout<< "interlaceBaselineMeans: " << interlaceBaselineMeans<<std::endl;
+
+	std::cout<< "interlaceGradientDeviations: " << interlaceGradientDeviations<<std::endl;
+	std::cout<< "interlaceGradientMeans: " << interlaceGradientMeans<<std::endl;
+
 	std::cout <<std::endl<<"Intra-Gradient Interlace Check Artifacts:"<<std::endl;
 	outfile   <<std::endl<<"Intra-Gradient Interlace Check Artifacts:"<<std::endl;
 
@@ -623,12 +815,13 @@ bool CIntensityMotionCheck::InterlaceCheck(double angleThreshold, double transTh
 
 	for(int i=0;i<Results.size();i++)
 	{
-		if(i==0)
-		{
-			if(fabs(Results[i].AngleX) > angleThreshold || fabs(Results[i].AngleY) > angleThreshold ||
-				fabs(Results[i].AngleZ) > angleThreshold	 ||fabs(Results[i].TranslationX)>transThreshold || 
-				fabs(Results[i].TranslationY)>transThreshold || fabs(Results[i].TranslationZ-0.5*spacing[2])>transThreshold||
-				Results[i].Correlation < correlationThresholdBaseline) 
+		if ( GradientDirectionContainer->at(i)[0] == 0.0 && GradientDirectionContainer->at(i)[1] == 0.0 && GradientDirectionContainer->at(i)[2] == 0.0)
+		{	//baseline
+			if( fabs(Results[i].AngleX) > angleThreshold	|| fabs(Results[i].AngleY) > angleThreshold ||
+				fabs(Results[i].AngleZ) > angleThreshold	|| fabs(Results[i].TranslationX)>transThreshold || 
+				fabs(Results[i].TranslationY)>transThreshold|| fabs(Results[i].TranslationZ-0.5*spacing[2])>transThreshold||
+				Results[i].Correlation < correlationThresholdBaseline ||
+				Results[i].Correlation < interlaceBaselineMeans - interlaceBaselineDeviations * corrBaselineDev ) 
 			{
 				std::cout.precision(6);
 				std::cout.setf(std::ios_base::showpoint|std::ios_base::right) ;	
@@ -661,52 +854,94 @@ bool CIntensityMotionCheck::InterlaceCheck(double angleThreshold, double transTh
 				outfile.setf(std::ios_base::unitbuf);	
 
 				qcResult->GetGradientProcess()[i]=(QCResult::GRADIENT_EXCLUDE);
+				qcResult->GetIntensityMotionCheckResult()[i].bInterlaceCheckOK = false;
 			}
-			//else
-			//	qcResult->GetGradientProcess()[i]=(QCResult::GRADIENT_INCLUDE);
-
 		}
-		else
+		else // gradients
 		{
-			if(fabs(Results[i].AngleX) > angleThreshold || fabs(Results[i].AngleY) > angleThreshold ||
-				fabs(Results[i].AngleZ) > angleThreshold	 ||fabs(Results[i].TranslationX)>transThreshold || 
-				fabs(Results[i].TranslationY)>transThreshold || fabs(Results[i].TranslationZ-0.5*spacing[2])>transThreshold||
-				Results[i].Correlation< correlationThresholdGradient) 
+			if( this->bValueNumber>1) // multiple b values
 			{
-				std::cout.precision(6);
-				std::cout.setf(std::ios_base::showpoint|std::ios_base::right) ;	
-				std::cout<<"\t"<<std::setw(10)<<i;
-				std::cout<<"\t"<<std::setw(10)<<Results[i].AngleX;
-				std::cout<<"\t"<<std::setw(10)<<Results[i].AngleY;
-				std::cout<<"\t"<<std::setw(10)<<Results[i].AngleZ;
-				std::cout<<"\t"<<std::setw(10)<<Results[i].TranslationX;
-				std::cout<<"\t"<<std::setw(10)<<Results[i].TranslationY;
-				std::cout<<"\t"<<std::setw(10)<<Results[i].TranslationZ;
-				std::cout<<"\t"<<std::setw(10)<<Results[i].MutualInformation;
-				std::cout<<"\t"<<std::setw(10)<<Results[i].Correlation;
-				std::cout<<std::endl;
-				std::cout.precision();
-				std::cout.setf(std::ios_base::unitbuf);
+				if(fabs(Results[i].AngleX) > angleThreshold || fabs(Results[i].AngleY) > angleThreshold ||
+					fabs(Results[i].AngleZ) > angleThreshold	 ||fabs(Results[i].TranslationX)>transThreshold || 
+					fabs(Results[i].TranslationY)>transThreshold || fabs(Results[i].TranslationZ-0.5*spacing[2])>transThreshold||
+					Results[i].Correlation < correlationThresholdGradient) 
+				{
+					std::cout.precision(6);
+					std::cout.setf(std::ios_base::showpoint|std::ios_base::right) ;	
+					std::cout<<"\t"<<std::setw(10)<<i;
+					std::cout<<"\t"<<std::setw(10)<<Results[i].AngleX;
+					std::cout<<"\t"<<std::setw(10)<<Results[i].AngleY;
+					std::cout<<"\t"<<std::setw(10)<<Results[i].AngleZ;
+					std::cout<<"\t"<<std::setw(10)<<Results[i].TranslationX;
+					std::cout<<"\t"<<std::setw(10)<<Results[i].TranslationY;
+					std::cout<<"\t"<<std::setw(10)<<Results[i].TranslationZ;
+					std::cout<<"\t"<<std::setw(10)<<Results[i].MutualInformation;
+					std::cout<<"\t"<<std::setw(10)<<Results[i].Correlation;
+					std::cout<<std::endl;
+					std::cout.precision();
+					std::cout.setf(std::ios_base::unitbuf);
 
-				outfile.precision(6);
-				outfile.setf(std::ios_base::showpoint|std::ios_base::right) ;	
-				outfile<<"\t"<<std::setw(10)<<i;
-				outfile<<"\t"<<std::setw(10)<<Results[i].AngleX;
-				outfile<<"\t"<<std::setw(10)<<Results[i].AngleY;
-				outfile<<"\t"<<std::setw(10)<<Results[i].AngleZ;
-				outfile<<"\t"<<std::setw(10)<<Results[i].TranslationX;
-				outfile<<"\t"<<std::setw(10)<<Results[i].TranslationY;
-				outfile<<"\t"<<std::setw(10)<<Results[i].TranslationZ;
-				outfile<<"\t"<<std::setw(10)<<Results[i].MutualInformation;
-				outfile<<"\t"<<std::setw(10)<<Results[i].Correlation;
-				outfile<<std::endl;
-				outfile.precision();
-				outfile.setf(std::ios_base::unitbuf);	
+					outfile.precision(6);
+					outfile.setf(std::ios_base::showpoint|std::ios_base::right) ;	
+					outfile<<"\t"<<std::setw(10)<<i;
+					outfile<<"\t"<<std::setw(10)<<Results[i].AngleX;
+					outfile<<"\t"<<std::setw(10)<<Results[i].AngleY;
+					outfile<<"\t"<<std::setw(10)<<Results[i].AngleZ;
+					outfile<<"\t"<<std::setw(10)<<Results[i].TranslationX;
+					outfile<<"\t"<<std::setw(10)<<Results[i].TranslationY;
+					outfile<<"\t"<<std::setw(10)<<Results[i].TranslationZ;
+					outfile<<"\t"<<std::setw(10)<<Results[i].MutualInformation;
+					outfile<<"\t"<<std::setw(10)<<Results[i].Correlation;
+					outfile<<std::endl;
+					outfile.precision();
+					outfile.setf(std::ios_base::unitbuf);	
 
-				qcResult->GetGradientProcess()[i]=(QCResult::GRADIENT_EXCLUDE);
+					qcResult->GetGradientProcess()[i]=(QCResult::GRADIENT_EXCLUDE);
+					qcResult->GetIntensityMotionCheckResult()[i].bInterlaceCheckOK = false;
+				}
 			}
-			//else
-			  //qcResult->GetGradientProcess()[i]=(QCResult::GRADIENT_INCLUDE);
+			else // single b value
+			{
+				if(fabs(Results[i].AngleX) > angleThreshold || fabs(Results[i].AngleY) > angleThreshold ||
+					fabs(Results[i].AngleZ) > angleThreshold	 ||fabs(Results[i].TranslationX)>transThreshold || 
+					fabs(Results[i].TranslationY)>transThreshold || fabs(Results[i].TranslationZ-0.5*spacing[2])>transThreshold||
+					Results[i].Correlation < correlationThresholdGradient || 
+					Results[i].Correlation < interlaceGradientMeans - interlaceGradientDeviations * corrGradientDev) 
+				{
+					std::cout.precision(6);
+					std::cout.setf(std::ios_base::showpoint|std::ios_base::right) ;	
+					std::cout<<"\t"<<std::setw(10)<<i;
+					std::cout<<"\t"<<std::setw(10)<<Results[i].AngleX;
+					std::cout<<"\t"<<std::setw(10)<<Results[i].AngleY;
+					std::cout<<"\t"<<std::setw(10)<<Results[i].AngleZ;
+					std::cout<<"\t"<<std::setw(10)<<Results[i].TranslationX;
+					std::cout<<"\t"<<std::setw(10)<<Results[i].TranslationY;
+					std::cout<<"\t"<<std::setw(10)<<Results[i].TranslationZ;
+					std::cout<<"\t"<<std::setw(10)<<Results[i].MutualInformation;
+					std::cout<<"\t"<<std::setw(10)<<Results[i].Correlation;
+					std::cout<<std::endl;
+					std::cout.precision();
+					std::cout.setf(std::ios_base::unitbuf);
+
+					outfile.precision(6);
+					outfile.setf(std::ios_base::showpoint|std::ios_base::right) ;	
+					outfile<<"\t"<<std::setw(10)<<i;
+					outfile<<"\t"<<std::setw(10)<<Results[i].AngleX;
+					outfile<<"\t"<<std::setw(10)<<Results[i].AngleY;
+					outfile<<"\t"<<std::setw(10)<<Results[i].AngleZ;
+					outfile<<"\t"<<std::setw(10)<<Results[i].TranslationX;
+					outfile<<"\t"<<std::setw(10)<<Results[i].TranslationY;
+					outfile<<"\t"<<std::setw(10)<<Results[i].TranslationZ;
+					outfile<<"\t"<<std::setw(10)<<Results[i].MutualInformation;
+					outfile<<"\t"<<std::setw(10)<<Results[i].Correlation;
+					outfile<<std::endl;
+					outfile.precision();
+					outfile.setf(std::ios_base::unitbuf);	
+
+					qcResult->GetGradientProcess()[i]=(QCResult::GRADIENT_EXCLUDE);
+					qcResult->GetIntensityMotionCheckResult()[i].bInterlaceCheckOK = false;
+				}
+			}
 		}
 	}
 	outfile.close();	
@@ -721,7 +956,10 @@ bool CIntensityMotionCheck::InterCheck()
 							protocal->GetIntensityMotionCheckProtocal().gradientRotationThreshold,
 							protocal->GetIntensityMotionCheckProtocal().gradientTranslationThreshold	);
 	else
+	{
+		std::cout<<"Inter-gradient gradient-wise check NOT set."<<std::endl;
 		return true;
+	}
 
 	//return InterCheck(25, 0.1, 1, 0.5, 1.0);
 }
@@ -735,13 +973,6 @@ bool CIntensityMotionCheck::InterCheck(unsigned int BinNumb, double PercentagePi
 		std::cout<<"DWI load error, no Gradient Images got"<<std::endl;
 		return false;
 	}	
-
-	if(qcResult->GetGradientProcess().size()!=DwiImage->GetVectorLength())
-	{
-		qcResult->GetGradientProcess().clear();
-		for(int j=0;j<DwiImage->GetVectorLength();j++)
-			qcResult->GetGradientProcess().push_back(QCResult::GRADIENT_INCLUDE);
-	}
 
 	//std::vector< std::vector<struInterlaceResults> >	ResultsContainer;
 
@@ -775,12 +1006,12 @@ bool CIntensityMotionCheck::InterCheck(unsigned int BinNumb, double PercentagePi
 	// copy gradient results to qcResult
 	for(int i=0; i< Results.size(); i++)
 	{
-		qcResult->GetIntensityMotionCheckResult()[i].gradientRotationX		= Results[i].AngleX;	
-		qcResult->GetIntensityMotionCheckResult()[i].gradientRotationY		= Results[i].AngleY;	
-		qcResult->GetIntensityMotionCheckResult()[i].gradientRotationZ		= Results[i].AngleZ;	
-		qcResult->GetIntensityMotionCheckResult()[i].gradientTranslationX	= Results[i].TranslationX;	
-		qcResult->GetIntensityMotionCheckResult()[i].gradientTranslationY	= Results[i].TranslationY;
-		qcResult->GetIntensityMotionCheckResult()[i].gradientTranslationZ	= Results[i].TranslationZ;
+		qcResult->GetIntensityMotionCheckResult()[i+1].gradientRotationX	= Results[i].AngleX;	
+		qcResult->GetIntensityMotionCheckResult()[i+1].gradientRotationY	= Results[i].AngleY;	
+		qcResult->GetIntensityMotionCheckResult()[i+1].gradientRotationZ	= Results[i].AngleZ;	
+		qcResult->GetIntensityMotionCheckResult()[i+1].gradientTranslationX	= Results[i].TranslationX;	
+		qcResult->GetIntensityMotionCheckResult()[i+1].gradientTranslationY	= Results[i].TranslationY;
+		qcResult->GetIntensityMotionCheckResult()[i+1].gradientTranslationZ	= Results[i].TranslationZ;
 	}
 
 
@@ -805,7 +1036,7 @@ bool CIntensityMotionCheck::InterCheck(unsigned int BinNumb, double PercentagePi
 	{
 		std::cout.precision(6);
 		std::cout.setf(std::ios_base::showpoint|std::ios_base::right) ;	
-		std::cout<<"\tRegister "<<"-0";
+		std::cout<<"\tRegister "<<i+1<<"-0";
 		std::cout<<"\t"<<std::setw(10)<<Results[i].AngleX;
 		std::cout<<"\t"<<std::setw(10)<<Results[i].AngleY;
 		std::cout<<"\t"<<std::setw(10)<<Results[i].AngleZ;
@@ -878,18 +1109,14 @@ bool CIntensityMotionCheck::InterCheck(unsigned int BinNumb, double PercentagePi
 			outfile.precision();
 			outfile.setf(std::ios_base::unitbuf);		
 
-			qcResult->GetGradientProcess()[i]=(QCResult::GRADIENT_EXCLUDE);
+			qcResult->GetGradientProcess()[i+1]=(QCResult::GRADIENT_EXCLUDE);
+			qcResult->GetIntensityMotionCheckResult()[i+1].bGradientCheckOK = false;
 		}
-		//else
-			//qcResult->GetGradientProcess()[i]=(QCResult::GRADIENT_INCLUDE);
-
 	}
 
 	outfile.close();	
-	
 	return true;
 }
-
 
 bool CIntensityMotionCheck::GetGridentDirections()
 {
@@ -937,22 +1164,11 @@ bool CIntensityMotionCheck::GetGridentDirections()
 		std::cout<<"BValue not specified in header file" <<std::endl;
 		return false;
 	}
-	if(GradientDirectionContainer->Size()<=6) 
+	if(GradientDirectionContainer->size()<=6) 
 	{
 		std::cout<<"Gradient Images Less than 7" <<std::endl;
 		bGetGridentDirections=false;
 		return false;
-	}
-
-	std::cout<<"b Value: "<<b0<<std::endl;
-	std::cout<<"DWI image gradient count: "<<DwiImage->GetVectorLength()<<std::endl;
-
-	for( unsigned int i = 0; i<DwiImage->GetVectorLength();i++ )//GradientDirectionContainer->Size()
-	{
-		std::cout<<"Gradient Direction "<<i<<": \t[";
-		std::cout<<GradientDirectionContainer->at(i)[0]<<",\t";
-		std::cout<<GradientDirectionContainer->at(i)[1]<<",\t";
-		std::cout<<GradientDirectionContainer->at(i)[2]<<" ]"<<std::endl;
 	}
 
 	bGetGridentDirections=true;
@@ -962,13 +1178,6 @@ bool CIntensityMotionCheck::GetGridentDirections()
 void CIntensityMotionCheck::GetImagesInformation()
 {
 
-///////////////////////////////
-/*
-space directions: (-1.9779,-0.0658816,0.289063) (-4.79479e-08,-1.95,-0.444431) (0.296476,-0.439521,1.92845) none
-measurement frame: (1,0,0) (0,1,0) (0,0,1)
-
-*/
-/////////////////////////////
 	if(!bDwiLoaded ) LoadDwiImage();
 	if(!bDwiLoaded )
 	{
@@ -995,20 +1204,20 @@ measurement frame: (1,0,0) (0,1,0) (0,0,1)
 	DwiImageType::PointType		origin	=  DwiImage->GetOrigin();
 	DwiImageType::DirectionType direction = DwiImage->GetDirection();
 
-	std::cout<<"spacing: "<< spacing[0] <<" "<< spacing[1] <<" "<<spacing[2]<<std::endl;
-	std::cout<<"origin: "<< origin[0] <<" "<< origin[1] <<" "<<origin[2]<<std::endl;
-	std::cout<<"direction: "
-			<< direction[0] <<" "<< direction[1] <<" "<<direction[2]
-			<< direction[3] <<" "<< direction[4] <<" "<<direction[5]
-			<< direction[6] <<" "<< direction[7] <<" "<<direction[8]	<<std::endl;
+// 	std::cout<<"spacing: "<< spacing[0] <<" "<< spacing[1] <<" "<<spacing[2]<<std::endl;
+// 	std::cout<<"origin: "<< origin[0] <<" "<< origin[1] <<" "<<origin[2]<<std::endl;
+// 	std::cout<<"direction: "
+// 			<< direction[0] <<" "<< direction[1] <<" "<<direction[2]
+// 			<< direction[3] <<" "<< direction[4] <<" "<<direction[5]
+// 			<< direction[6] <<" "<< direction[7] <<" "<<direction[8]	<<std::endl;
 
 	int dimension = DwiImage->GetImageDimension();
 	int componentNumber = DwiImage->GetNumberOfComponentsPerPixel();
 	int vectorLength = DwiImage->GetVectorLength();
 	
-	std::cout<<"dimension: "<< dimension <<std::endl;
-	std::cout<<"componentNumber: "<< componentNumber <<std::endl;
-	std::cout<<"vectorLength: "<< vectorLength <<std::endl;
+// 	std::cout<<"dimension: "<< dimension <<std::endl;
+// 	std::cout<<"componentNumber: "<< componentNumber <<std::endl;
+// 	std::cout<<"vectorLength: "<< vectorLength <<std::endl;
 
 	int type=-1;
 	int space;
@@ -1018,7 +1227,7 @@ measurement frame: (1,0,0) (0,1,0) (0,0,1)
 	{
 		//double x,y,z;
 		itk::ExposeMetaData<std::string> (imgMetaDictionary, *itKey, metaString);
-		std::cout<<"itKey: "<< *itKey <<"    metaString: "<<metaString<<std::endl;
+// 		std::cout<<"itKey: "<< *itKey <<"    metaString: "<<metaString<<std::endl;
 
 		if (itKey->find("DWMRI_gradient") != std::string::npos)
 		{ 
@@ -1060,12 +1269,17 @@ measurement frame: (1,0,0) (0,1,0) (0,0,1)
 bool CIntensityMotionCheck::ImageCheck()
 {
 
-	std::ofstream outfile; 
-	outfile.open(ReportFileName.c_str());//,std::ios::app);
-	outfile<<"Image Information Check"<<std::endl;
-
-	if( protocal->GetImageProtocal().bCheck)
+	if( !protocal->GetImageProtocal().bCheck)
 	{
+		std::cout<<"Image information check NOT set."<<std::endl;
+		return true;
+	}
+	else
+	{
+		std::ofstream outfile; 
+		outfile.open(ReportFileName.c_str());//,std::ios::app);
+		outfile<<"Image Information Check"<<std::endl;
+
 		if(!bDwiLoaded  ) LoadDwiImage();
 		if(!bDwiLoaded  )
 		{
@@ -1079,14 +1293,14 @@ bool CIntensityMotionCheck::ImageCheck()
 			protocal->GetImageProtocal().size[2] ==	DwiImage->GetLargestPossibleRegion().GetSize()[2] )
 		{
 			qcResult->GetImageInformationCheckResult().size = true;
-			outfile<<"Image size Check OK"<<std::endl;
-			std::cout<<"Image size Check OK"<<std::endl;
+			outfile<<"  Image size Check OK"<<std::endl;
+			std::cout<<"  Image size Check OK"<<std::endl;
 		}
 		else
 		{
 			qcResult->GetImageInformationCheckResult().size = false;
-			outfile<<" Image size Check FAILED"<<std::endl;
-			std::cout<<" Image size Check FAILED"<<std::endl;
+			outfile<<"  Image size Check FAILED"<<std::endl;
+			std::cout<<"  Image size Check FAILED"<<std::endl;
 			return false;
 		}
 //origion
@@ -1095,14 +1309,14 @@ bool CIntensityMotionCheck::ImageCheck()
 			protocal->GetImageProtocal().origin[2] ==	DwiImage->GetOrigin()[2]	 	)
 		{
 			qcResult->GetImageInformationCheckResult().origin = true;
-			outfile<<"Image Origin Check OK"<<std::endl;
-			std::cout<<"Image Origin Check OK"<<std::endl;
+			outfile<<"  Image Origin Check OK"<<std::endl;
+			std::cout<<"  Image Origin Check OK"<<std::endl;
 		}
 		else
 		{
 			qcResult->GetImageInformationCheckResult().origin = false;
-			outfile<<" Image Origin Check FAILED"<<std::endl;
-			std::cout<<" Image Origin Check FAILED"<<std::endl;
+			outfile<<"  Image Origin Check FAILED"<<std::endl;
+			std::cout<<"  Image Origin Check FAILED"<<std::endl;
 			return false;
 		}
 //spacing
@@ -1113,14 +1327,14 @@ bool CIntensityMotionCheck::ImageCheck()
 			protocal->GetImageProtocal().spacing[2] ==	DwiImage->GetSpacing()[2]	 	)
 		{
 			qcResult->GetImageInformationCheckResult().spacing = true;
-			outfile<<"Image Spacing Check OK"<<std::endl;
-			std::cout<<"Image Spacing Check OK"<<std::endl;
+			outfile<<"  Image Spacing Check OK"<<std::endl;
+			std::cout<<"  Image Spacing Check OK"<<std::endl;
 		}
 		else
 		{
 			qcResult->GetImageInformationCheckResult().spacing = false;
-			outfile<<" Image Spacing Check FAILED"<<std::endl;
-			std::cout<<" Image Spacing Check FAILED"<<std::endl;
+			outfile<<"  Image Spacing Check FAILED"<<std::endl;
+			std::cout<<"  Image Spacing Check FAILED"<<std::endl;
 			return false;
 		}
 // space direction
@@ -1138,14 +1352,14 @@ bool CIntensityMotionCheck::ImageCheck()
 			protocal->GetImageProtocal().spacedirection[2][2] ==	imgf(2,2)	    )		
 		{
 			qcResult->GetImageInformationCheckResult().spacedirection = true;
-			outfile<<"Image spacedirection Check OK"<<std::endl;
-			std::cout<<"Image spacedirection Check OK"<<std::endl;
+			outfile<<"  Image spacedirection Check OK"<<std::endl;
+			std::cout<<"  Image spacedirection Check OK"<<std::endl;
 		}
 		else
 		{
 			qcResult->GetImageInformationCheckResult().spacedirection = false;
-			outfile<<" Image spacedirection Check FAILED"<<std::endl;
-			std::cout<<" Image spacedirection Check FAILED"<<std::endl;
+			outfile<<"  Image spacedirection Check FAILED"<<std::endl;
+			std::cout<<"  Image spacedirection Check FAILED"<<std::endl;
 			return false;
 		}
 
@@ -1162,7 +1376,7 @@ bool CIntensityMotionCheck::ImageCheck()
 		if(		 metaString.compare( "left-posterior-superior") ==0 )	space = Protocal::SPACE_LPS;
 		else if( metaString.compare( "left-posterior-inferior") ==0 )	space = Protocal::SPACE_LPI;
 		else if( metaString.compare( "left-anterior-superior" )==0 )	space = Protocal::SPACE_LAS;
-		else if( metaString.compare( "left-posterior-superior" )==0 )	space = Protocal::SPACE_LPS;
+		else if( metaString.compare( "left-anterior-inferior" )==0 )	space = Protocal::SPACE_LAI;
 		else if( metaString.compare( "right-posterior-superior")==0 )	space = Protocal::SPACE_RPS;
 		else if( metaString.compare( "right-posterior-inferior")==0 )	space = Protocal::SPACE_RPI;
 		else if( metaString.compare( "right-anterior-superior" )==0 )	space = Protocal::SPACE_RAS;
@@ -1172,161 +1386,212 @@ bool CIntensityMotionCheck::ImageCheck()
 		if( protocal->GetImageProtocal().space == space)
 		{
 			qcResult->GetImageInformationCheckResult().space = true;
-			outfile<<"Image space Check OK"<<std::endl;
-			std::cout<<"Image space Check OK"<<std::endl;
+			outfile<<"  Image space Check OK"<<std::endl;
+			std::cout<<"  Image space Check OK"<<std::endl;
 		}
 		else
 		{
 			qcResult->GetImageInformationCheckResult().space = false;
-			outfile<<" Image space Check FAILED"<<std::endl;
-			std::cout<<" Image space Check FAILED"<<std::endl;
+			outfile<<"  Image space Check FAILED"<<std::endl;
+			std::cout<<"  Image space Check FAILED"<<std::endl;
 			return false;
 		}
+		outfile.close();	
 	}
 
-	outfile.close();	
 	return true;
 }
 
 bool CIntensityMotionCheck::DiffusionCheck()
 {
-	if(!bDwiLoaded  ) LoadDwiImage();
-	if(!bDwiLoaded  )
+
+	if( !protocal->GetDiffusionProtocal().bCheck)
 	{
-		std::cout<<"DWI load error, no Gradient Direction Loaded"<<std::endl;
-		bGetGridentDirections=false;
-		return false;
-	}	
-
-	std::ofstream outfile; 
-	outfile.open(ReportFileName.c_str(), std::ios::app);
-	outfile<<"==============================================================="<<std::endl;
-	outfile<<"Diffusion Information Check"<<std::endl;
-
-
-
-	GetGridentDirections();
-
-	if( protocal->GetDiffusionProtocal().b == b0)
-	{
-		qcResult->GetDiffusionInformationCheckResult().b = true;
-		outfile<<"Diffusion b Check OK"<<std::endl;
-		std::cout<<"Diffusion b Check OK"<<std::endl;
+		std::cout<<"Diffusion information check NOT set."<<std::endl;
+		return true;
 	}
 	else
 	{
-		qcResult->GetDiffusionInformationCheckResult().b = false;
-		outfile<<" Diffusion b Check FAILED"<<std::endl;
-		std::cout<<" Diffusion b Check FAILED"<<std::endl;
-		return false;
-	}
-	
-
-	bool result = true;
-	for(int i=0; i< GradientDirectionContainer->size();i++)
-	{
-		if( protocal->GetDiffusionProtocal().gradients[i][0] == GradientDirectionContainer->ElementAt(i)[0] &&
-			protocal->GetDiffusionProtocal().gradients[i][1] == GradientDirectionContainer->ElementAt(i)[1] &&
-			protocal->GetDiffusionProtocal().gradients[i][2] == GradientDirectionContainer->ElementAt(i)[2]   )			
+		if(!bDwiLoaded  ) LoadDwiImage();
+		if(!bDwiLoaded  )
 		{
-			result = true;
+			std::cout<<"DWI load error, no Gradient Direction Loaded"<<std::endl;
+			bGetGridentDirections=false;
+			return false;
+		}	
+
+		std::ofstream outfile; 
+		outfile.open(ReportFileName.c_str(), std::ios::app);
+		outfile<<"==============================================================="<<std::endl;
+		outfile<<"Diffusion Information Check"<<std::endl;
+
+		if(!bGetGridentDirections)
+			GetGridentDirections();
+
+		if( fabs(protocal->GetDiffusionProtocal().b - this->b0) < 0.0000001 )
+		{
+			qcResult->GetDiffusionInformationCheckResult().b = true;
+			outfile<<"  Diffusion b Check OK"<<std::endl;
+			std::cout<<"  Diffusion b Check OK"<<std::endl;
 		}
 		else
 		{
-			result = false;
-			break;
+			qcResult->GetDiffusionInformationCheckResult().b = false;
+			outfile<<"  Diffusion b Check FAILED: protocol "<< protocal->GetDiffusionProtocal().b<< "   image: " << this->b0<<std::endl;
+			std::cout<<"  Diffusion b Check FAILED: protocol "<< protocal->GetDiffusionProtocal().b<< "   image: " << this->b0<<std::endl;
+			return false;
 		}
-	}
-	if( result)
-	{
-		qcResult->GetDiffusionInformationCheckResult().gradient = true;
-		outfile<<"Diffusion gradient Check OK"<<std::endl;
-		std::cout<<"Diffusion gradient Check OK"<<std::endl;
-	}
-	else
-	{
-		qcResult->GetDiffusionInformationCheckResult().gradient = false;
-		outfile<<" Diffusion gradient Check FAILED"<<std::endl;
-		std::cout<<" Diffusion gradient Check FAILED"<<std::endl;
-		return false;
-	}
-
-	
-/////////////////////////////////////////////////
 
 
-	itk::MetaDataDictionary imgMetaDictionary = DwiImage->GetMetaDataDictionary(); 
-	std::vector<std::string> imgMetaKeys = imgMetaDictionary.GetKeys();
-	std::vector<std::string>::const_iterator itKey = imgMetaKeys.begin();
-	std::string metaString;
-
-	//  measurement frame 
-	if(imgMetaDictionary.HasKey("NRRD_measurement frame"))
-	{
-		// measurement frame
-		vnl_matrix<double> mf(3,3);
-		// imaging frame
-		vnl_matrix<double> imgf(3,3);
-		std::vector<std::vector<double> > nrrdmf;
-		itk::ExposeMetaData<std::vector<std::vector<double> > >(imgMetaDictionary,"NRRD_measurement frame",nrrdmf);
-
-		imgf = DwiImage->GetDirection().GetVnlMatrix();
-
-		//Image frame
-		std::cout << "Image frame: " << std::endl;
-		std::cout << imgf << std::endl;
-
-		for(unsigned int i = 0; i < 3; ++i)
+		bool result = true;
+		for(int i=0; i< GradientDirectionContainer->size();i++)
 		{
-			for(unsigned int j = 0; j < 3; ++j)
+			if( fabs(protocal->GetDiffusionProtocal().gradients[i][0] - GradientDirectionContainer->ElementAt(i)[0]) < 0.0000001 &&
+				fabs(protocal->GetDiffusionProtocal().gradients[i][1] - GradientDirectionContainer->ElementAt(i)[1]) < 0.0000001 &&
+				fabs(protocal->GetDiffusionProtocal().gradients[i][2] - GradientDirectionContainer->ElementAt(i)[2]) < 0.0000001 )			
 			{
-				mf(i,j) = nrrdmf[j][i];
-				nrrdmf[j][i] = imgf(i,j);
+				result = true;
+			}
+			else
+			{
+				std::cout<<i<< ": " <<std::endl;
+				std::cout<<protocal->GetDiffusionProtocal().gradients[i][0]<<"    "<< GradientDirectionContainer->ElementAt(i)[0]<<std::endl;
+				std::cout<<protocal->GetDiffusionProtocal().gradients[i][1]<<"    "<< GradientDirectionContainer->ElementAt(i)[1]<<std::endl;
+				std::cout<<protocal->GetDiffusionProtocal().gradients[i][2]<<"    "<< GradientDirectionContainer->ElementAt(i)[2]<<std::endl;
+				result = false;
+				break;
 			}
 		}
-
-		// Meausurement frame
-		std::cout << "Meausurement frame: " << std::endl;
-		std::cout << mf << std::endl;
-
-		if( 
-			protocal->GetDiffusionProtocal().measurementFrame[0][0] == mf(0,0) &&
-			protocal->GetDiffusionProtocal().measurementFrame[0][1] == mf(0,1) &&
-			protocal->GetDiffusionProtocal().measurementFrame[0][2] == mf(0,2) &&
-			protocal->GetDiffusionProtocal().measurementFrame[1][0] == mf(1,0) &&
-			protocal->GetDiffusionProtocal().measurementFrame[1][1] == mf(1,1) &&
-			protocal->GetDiffusionProtocal().measurementFrame[1][2] == mf(1,2) &&
-			protocal->GetDiffusionProtocal().measurementFrame[2][0] == mf(2,0) &&
-			protocal->GetDiffusionProtocal().measurementFrame[2][1] == mf(2,1) &&
-			protocal->GetDiffusionProtocal().measurementFrame[2][2] == mf(2,2)		)
+		if( result)
 		{
-			qcResult->GetDiffusionInformationCheckResult().measurementFrame = true;
-			outfile<<"Diffusion measurementFrame Check OK"<<std::endl;
-			std::cout<<"Diffusion measurementFrame Check OK"<<std::endl;
+			qcResult->GetDiffusionInformationCheckResult().gradient = true;
+			outfile<<"  Diffusion gradient Check OK"<<std::endl;
+			std::cout<<"  Diffusion gradient Check OK"<<std::endl;
 		}
 		else
 		{
-			qcResult->GetDiffusionInformationCheckResult().measurementFrame = false;
-			outfile<<"Diffusion measurementFrame Check FAILED"<<std::endl;
-			std::cout<<"Diffusion measurementFrame Check FAILED"<<std::endl;
+			qcResult->GetDiffusionInformationCheckResult().gradient = false;
+			outfile<<"  Diffusion gradient Check FAILED"<<std::endl;
+			std::cout<<"  Diffusion gradient Check FAILED"<<std::endl;
+			return false;
 		}
 
-		//itk::EncapsulateMetaData<std::vector<std::vector<double> > >(dict,NRRD_MEASUREMENT_KEY,nrrdmf);
+
+		/////////////////////////////////////////////////
+
+
+		itk::MetaDataDictionary imgMetaDictionary = DwiImage->GetMetaDataDictionary(); 
+		std::vector<std::string> imgMetaKeys = imgMetaDictionary.GetKeys();
+		std::vector<std::string>::const_iterator itKey = imgMetaKeys.begin();
+		std::string metaString;
+
+		//  measurement frame 
+		if(imgMetaDictionary.HasKey("NRRD_measurement frame"))
+		{
+			// measurement frame
+			vnl_matrix<double> mf(3,3);
+			// imaging frame
+			vnl_matrix<double> imgf(3,3);
+			std::vector<std::vector<double> > nrrdmf;
+			itk::ExposeMetaData<std::vector<std::vector<double> > >(imgMetaDictionary,"NRRD_measurement frame",nrrdmf);
+
+			imgf = DwiImage->GetDirection().GetVnlMatrix();
+
+			//Image frame
+// 			std::cout << "Image frame: " << std::endl;
+// 			std::cout << imgf << std::endl;
+
+			for(unsigned int i = 0; i < 3; ++i)
+			{
+				for(unsigned int j = 0; j < 3; ++j)
+				{
+					mf(i,j) = nrrdmf[j][i];
+					nrrdmf[j][i] = imgf(i,j);
+				}
+			}
+
+			// Meausurement frame
+// 			std::cout << "Meausurement frame: " << std::endl;
+// 			std::cout << mf << std::endl;
+
+			if( 
+				protocal->GetDiffusionProtocal().measurementFrame[0][0] == mf(0,0) &&
+				protocal->GetDiffusionProtocal().measurementFrame[0][1] == mf(0,1) &&
+				protocal->GetDiffusionProtocal().measurementFrame[0][2] == mf(0,2) &&
+				protocal->GetDiffusionProtocal().measurementFrame[1][0] == mf(1,0) &&
+				protocal->GetDiffusionProtocal().measurementFrame[1][1] == mf(1,1) &&
+				protocal->GetDiffusionProtocal().measurementFrame[1][2] == mf(1,2) &&
+				protocal->GetDiffusionProtocal().measurementFrame[2][0] == mf(2,0) &&
+				protocal->GetDiffusionProtocal().measurementFrame[2][1] == mf(2,1) &&
+				protocal->GetDiffusionProtocal().measurementFrame[2][2] == mf(2,2)		)
+			{
+				qcResult->GetDiffusionInformationCheckResult().measurementFrame = true;
+				outfile<<"  Diffusion measurementFrame Check OK"<<std::endl;
+				std::cout<<"  Diffusion measurementFrame Check OK"<<std::endl;
+			}
+			else
+			{
+				qcResult->GetDiffusionInformationCheckResult().measurementFrame = false;
+				outfile<<"  Diffusion measurementFrame Check FAILED"<<std::endl;
+				std::cout<<"  Diffusion measurementFrame Check FAILED"<<std::endl;
+			}
+
+			//itk::EncapsulateMetaData<std::vector<std::vector<double> > >(dict,NRRD_MEASUREMENT_KEY,nrrdmf);
+		}
+
+		qcResult->GetDiffusionInformationCheckResult().gradient = true;
+		qcResult->GetDiffusionInformationCheckResult().measurementFrame = true;
+
+		outfile.close();	
 	}
 
-	qcResult->GetDiffusionInformationCheckResult().gradient = true;
-	qcResult->GetDiffusionInformationCheckResult().measurementFrame = true;
-
-	outfile.close();	
 	return true;
 
 }
 
-bool CIntensityMotionCheck::DTIComputing()
+
+bool CIntensityMotionCheck::CropDTI()
+{ 
+
+	if(!protocal->GetDTIProtocal().bPadding)
+	{
+		std::cout<<"tensor padding not set"<<std::endl;
+		return true;
+	}
+
+	std::string str;
+	str.append(protocal->GetDTIProtocal().dtiPaddingCommand); 
+	str.append(" ");
+
+	str.append(DwiFileName.substr(0,DwiFileName.find_last_of('.') ));
+	str.append(protocal->GetDTIProtocal().tensor);
+
+	str.append(" -o ");
+
+	str.append(DwiFileName.substr(0,DwiFileName.find_last_of('.') ));
+	str.append(protocal->GetDTIProtocal().tensor);
+
+	str.append(" -size ");
+
+	std::stringstream out;
+	out << protocal->GetImageProtocal().size[0]<<","
+		<< protocal->GetImageProtocal().size[1]<<","
+		<< protocal->GetImageProtocal().size[2];		
+
+	str.append(out.str());
+
+	std::cout<< "DTICrop command: "<< str.c_str() << std::endl;
+	system(str.c_str());
+	
+
+	return true;
+}
+
+bool CIntensityMotionCheck::dtiestim()
 {
 	if(!protocal->GetDTIProtocal().bCompute)
 	{
-		std::cout<< "DTI computing not set" <<std::endl;
+		std::cout<< "DTI computing NOT set" <<std::endl;
 		return true;
 	}
 
@@ -1404,13 +1669,34 @@ bool CIntensityMotionCheck::DTIComputing()
 
 	std::cout<< "dtiestim command: "<< str.c_str() << std::endl;
 	system(str.c_str());
-	
+}
+
+bool CIntensityMotionCheck::DTIComputing()
+{
+	if(!protocal->GetDTIProtocal().bCompute)
+	{
+		std::cout<< "DTI computing NOT set" <<std::endl;
+		return true;
+	}
+
+	dtiestim();
+	CropDTI();	
+	dtiprocess();
+	return true;
+}
+
 // dtiprocess
+bool CIntensityMotionCheck::dtiprocess()
+{
 	std::string string;
 	string.append(protocal->GetDTIProtocal().dtiprocessCommand); 
 	string.append(" "); 
 
-	string.append(OutputTensor);	
+	std::string dtiprocessInput;
+	dtiprocessInput=DwiFileName.substr(0,DwiFileName.find_last_of('.') );
+	dtiprocessInput.append(protocal->GetDTIProtocal().tensor);
+
+	string.append(dtiprocessInput);	
 
 	if( protocal->GetDTIProtocal().bfa)
 	{
@@ -1454,207 +1740,452 @@ bool CIntensityMotionCheck::DTIComputing()
 	return true;
 }
 
-void CIntensityMotionCheck::GenerateCheckOutputImage()
+
+void CIntensityMotionCheck::GenerateCheckOutputImage( std::string filename)
 {
-	if(!bDwiLoaded  ) LoadDwiImage();
-	if(!bDwiLoaded  )
-	{
-		std::cout<<"DWI load error, no Gradient Direction Loaded"<<std::endl;
-		bGetGridentDirections=false;
-		return ;
-	}
 
-	std::ofstream outfile; 
-	outfile.open(ReportFileName.c_str(), std::ios::app);
-	outfile<<"==============================================================="<<std::endl;
-	outfile<<"QC Check Results"<<std::endl;
+		if(!bDwiLoaded  ) LoadDwiImage();
+		if(!bDwiLoaded  )
+		{
+			std::cout<<"DWI load error, no Gradient Direction Loaded"<<std::endl;
+			bGetGridentDirections=false;
+			return ;
+		}
 
-	for(int i=0;i< qcResult->GetGradientProcess().size();i++)
-	{
-		if(qcResult->GetGradientProcess()[i] == QCResult::GRADIENT_EXCLUDE)
-			outfile<<"Gradient "<< i <<" excluded "<<std::endl;
-	}
+		int gradientLeft=0;
+		for(int i=0;i< qcResult->GetGradientProcess().size();i++)
+		{
+			if(qcResult->GetGradientProcess()[i] == QCResult::GRADIENT_INCLUDE)
+				gradientLeft++;
+		}
 
-	int gradientLeft=0;
-	for(int i=0;i< qcResult->GetGradientProcess().size();i++)
-	{
-		if(qcResult->GetGradientProcess()[i] == QCResult::GRADIENT_INCLUDE)
-			gradientLeft++;
-	}
-	
+		std::cout << "gradientLeft: " << gradientLeft<<std::endl;
 
-	DwiImageType::Pointer newDwiImage = DwiImageType::New(); 
-	newDwiImage->CopyInformation(DwiImage);
-	newDwiImage->SetRegions(DwiImage->GetLargestPossibleRegion());
-	newDwiImage->SetVectorLength( gradientLeft) ; 
-//	newDwiImage->SetMetaDataDictionary(imgMetaDictionary);
-	newDwiImage->Allocate();
-	
-	typedef itk::ImageRegionConstIteratorWithIndex< DwiImageType > ConstIteratorType;
-	ConstIteratorType oit( DwiImage, DwiImage->GetLargestPossibleRegion() );
-	typedef itk::ImageRegionIteratorWithIndex< DwiImageType > IteratorType;
-	IteratorType nit( newDwiImage, newDwiImage->GetLargestPossibleRegion() );
+		if( gradientLeft == 0)
+		{
+			std::cout<<"No gradient data left."<<std::endl;
+			return;
+		}
 
-	oit.GoToBegin();
-	nit.GoToBegin();
+		if( gradientLeft == qcResult->GetGradientProcess().size())
+		{
+			itk::NrrdImageIO::Pointer  NrrdImageIO = itk::NrrdImageIO::New();
+			try
+			{
+				DwiWriterType::Pointer DwiWriter = DwiWriterType::New();
+				DwiWriter->SetImageIO(NrrdImageIO);
+				DwiWriter->SetFileName( filename );
+				DwiWriter->SetInput(DwiReader->GetOutput());
+				DwiWriter->UseCompressionOn();
+				DwiWriter->Update();
+			}
+			catch(itk::ExceptionObject & e)
+			{
+				std::cout<< e.GetDescription()<<std::endl;
+				return ;
+			}
+			return;
+		}
 
-	DwiImageType::PixelType value ;
-    value.SetSize( gradientLeft ) ;
- 
-	while (!oit.IsAtEnd())
-	{
-		int element = 0;
-		for( int i = 0 ; i < qcResult->GetGradientProcess().size(); i++ )
+		DwiImageType::Pointer newDwiImage = DwiImageType::New(); 
+		newDwiImage->CopyInformation(DwiImage);
+		newDwiImage->SetRegions(DwiImage->GetLargestPossibleRegion());
+		newDwiImage->SetVectorLength( gradientLeft) ; 
+		//	newDwiImage->SetMetaDataDictionary(imgMetaDictionary);
+		newDwiImage->Allocate();
+
+		typedef itk::ImageRegionConstIteratorWithIndex< DwiImageType > ConstIteratorType;
+		ConstIteratorType oit( DwiImage, DwiImage->GetLargestPossibleRegion() );
+		typedef itk::ImageRegionIteratorWithIndex< DwiImageType > IteratorType;
+		IteratorType nit( newDwiImage, newDwiImage->GetLargestPossibleRegion() );
+
+		oit.GoToBegin();
+		nit.GoToBegin();
+
+		DwiImageType::PixelType value ;
+		value.SetSize( gradientLeft ) ;
+
+		while (!oit.IsAtEnd())
+		{
+			int element = 0;
+			for( int i = 0 ; i < qcResult->GetGradientProcess().size(); i++ )
+			{
+				if(qcResult->GetGradientProcess()[i] == QCResult::GRADIENT_INCLUDE)
+				{
+					value.SetElement( element , oit.Get()[i] ) ;
+					element++;
+				}
+			}
+			nit.Set(value);	
+			++oit;
+			++nit;
+		}
+
+		itk::NrrdImageIO::Pointer  NrrdImageIO = itk::NrrdImageIO::New();
+		try
+		{
+			DwiWriterType::Pointer DwiWriter = DwiWriterType::New();
+			DwiWriter->SetImageIO(NrrdImageIO);
+			DwiWriter->SetFileName( filename );
+			DwiWriter->SetInput(newDwiImage);
+			DwiWriter->UseCompressionOn();
+			DwiWriter->Update();
+		}
+		catch(itk::ExceptionObject & e)
+		{
+			std::cout<< e.GetDescription()<<std::endl;
+			return ;
+		}
+
+		//newDwiImage->Delete();
+
+		itk::MetaDataDictionary imgMetaDictionary = DwiImage->GetMetaDataDictionary();    //
+		std::vector<std::string> imgMetaKeys = imgMetaDictionary.GetKeys();
+		std::vector<std::string>::const_iterator itKey = imgMetaKeys.begin();
+		std::string metaString;
+
+		char *aryOut = new char[filename.length()+1];
+		strcpy ( aryOut, filename.c_str() );
+
+		std::ofstream header;
+		header.open(aryOut, std::ios_base::app);
+
+		//  measurement frame 
+		if(imgMetaDictionary.HasKey("NRRD_measurement frame"))
+		{
+			// measurement frame
+			vnl_matrix<double> mf(3,3);
+			// imaging frame
+			vnl_matrix<double> imgf(3,3);
+			std::vector<std::vector<double> > nrrdmf;
+			itk::ExposeMetaData<std::vector<std::vector<double> > >(imgMetaDictionary,"NRRD_measurement frame",nrrdmf);
+
+			imgf = DwiImage->GetDirection().GetVnlMatrix();
+
+			//Image frame
+			//std::cout << "Image frame: " << std::endl;
+			//std::cout << imgf << std::endl;
+
+			for(unsigned int i = 0; i < 3; ++i)
+			{
+				for(unsigned int j = 0; j < 3; ++j)
+				{
+					mf(i,j) = nrrdmf[j][i];
+					nrrdmf[j][i] = imgf(i,j);
+				}
+			}
+
+			// Meausurement frame
+			header	<< "measurement frame: (" 
+				<< mf(0,0) << "," 
+				<< mf(1,0) << "," 
+				<< mf(2,0) << ") ("
+				<< mf(0,1) << "," 
+				<< mf(1,1) << "," 
+				<< mf(2,1) << ") ("
+				<< mf(0,2) << "," 
+				<< mf(1,2) << "," 
+				<< mf(2,2) << ")"
+				<< std::endl;
+		}
+
+		for ( itKey=imgMetaKeys.begin(); itKey != imgMetaKeys.end(); itKey ++){
+			int pos;
+
+			itk::ExposeMetaData(imgMetaDictionary, *itKey, metaString);
+			pos = itKey->find("modality");
+			if (pos == -1){
+				continue;
+			}
+
+			std::cout  << metaString << std::endl;    
+			header << "modality:=" << metaString << std::endl;
+		}
+
+		if(!bGetGridentDirections)
+			GetGridentDirections();
+
+		for ( itKey=imgMetaKeys.begin(); itKey != imgMetaKeys.end(); itKey ++){
+			int pos;
+
+			itk::ExposeMetaData(imgMetaDictionary, *itKey, metaString);
+			pos = itKey->find("DWMRI_b-value");
+			if (pos == -1){
+				continue;
+			}
+
+			std::cout  << metaString << std::endl;    
+			header << "DWMRI_b-value:=" << metaString << std::endl;
+		}
+
+
+		int temp=0;
+		for(int i=0;i< GradientDirectionContainer->size();i++ )
 		{
 			if(qcResult->GetGradientProcess()[i] == QCResult::GRADIENT_INCLUDE)
 			{
-				value.SetElement( element , oit.Get()[i] ) ;
-				element++;
-			}
-		}
-		nit.Set(value);	
-		++oit;
-		++nit;
-	}
-
-	std::string OutputFileName;
-	OutputFileName=DwiFileName.substr(0,DwiFileName.find_last_of('.') );
-	OutputFileName.append(protocal->GetIntensityMotionCheckProtocal().OutputFileName);
-	std::cout<<"OutputFileName: "<<OutputFileName <<std::endl;
-
-	itk::NrrdImageIO::Pointer  NrrdImageIO = itk::NrrdImageIO::New();
-	try
-	{
-		DwiWriterType::Pointer DwiWriter = DwiWriterType::New();
-		DwiWriter->SetImageIO(NrrdImageIO);
-		DwiWriter->SetFileName( OutputFileName );
-		DwiWriter->SetInput(newDwiImage);
-		DwiWriter->Update();
-	}
-	catch(itk::ExceptionObject & e)
-	{
-		std::cout<< e.GetDescription()<<std::endl;
-		return ;
-	}
-
-	//newDwiImage->Delete();
-
-	outfile<<"QC output image: "<< OutputFileName <<std::endl;
-	outfile<<"Gradients included: "<< std::endl;
-	for(int i=0;i< qcResult->GetGradientProcess().size();i++)
-	{
-		if(qcResult->GetGradientProcess()[i] == QCResult::GRADIENT_INCLUDE)
-			outfile<<"Gradient "<< i <<std::endl;
-	}
-
-	outfile.close();
-
-
-
-	itk::MetaDataDictionary imgMetaDictionary = DwiImage->GetMetaDataDictionary();    //
-	std::vector<std::string> imgMetaKeys = imgMetaDictionary.GetKeys();
-	std::vector<std::string>::const_iterator itKey = imgMetaKeys.begin();
-	std::string metaString;
-
-	char *aryOut = new char[OutputFileName.length()+1];
-	strcpy ( aryOut, OutputFileName.c_str() );
-
-	std::ofstream header;
-	header.open(aryOut, std::ios_base::app);
-
-
-	//  measurement frame 
-	if(imgMetaDictionary.HasKey("NRRD_measurement frame"))
-	{
-		// measurement frame
-		vnl_matrix<double> mf(3,3);
-		// imaging frame
-		vnl_matrix<double> imgf(3,3);
-		std::vector<std::vector<double> > nrrdmf;
-		itk::ExposeMetaData<std::vector<std::vector<double> > >(imgMetaDictionary,"NRRD_measurement frame",nrrdmf);
-
-		imgf = DwiImage->GetDirection().GetVnlMatrix();
-
-		//Image frame
-		//std::cout << "Image frame: " << std::endl;
-		//std::cout << imgf << std::endl;
-
-		for(unsigned int i = 0; i < 3; ++i)
-		{
-			for(unsigned int j = 0; j < 3; ++j)
-			{
-				mf(i,j) = nrrdmf[j][i];
-				nrrdmf[j][i] = imgf(i,j);
-			}
-		}
-
-		// Meausurement frame
-		header	<< "measurement frame: (" 
-			<< mf(0,0) << "," 
-			<< mf(1,0) << "," 
-			<< mf(2,0) << ") ("
-			<< mf(0,1) << "," 
-			<< mf(1,1) << "," 
-			<< mf(2,1) << ") ("
-			<< mf(0,2) << "," 
-			<< mf(1,2) << "," 
-			<< mf(2,2) << ")"
-			<< std::endl;
-	}
-
-	for ( itKey=imgMetaKeys.begin(); itKey != imgMetaKeys.end(); itKey ++){
-		int pos;
-
-		itk::ExposeMetaData(imgMetaDictionary, *itKey, metaString);
-		pos = itKey->find("modality");
-		if (pos == -1){
-			continue;
-		}
-
-		std::cout  << metaString << std::endl;    
-		header << "modality:=" << metaString << std::endl;
-	}
-
-	GetGridentDirections();
-
-	for ( itKey=imgMetaKeys.begin(); itKey != imgMetaKeys.end(); itKey ++){
-		int pos;
-
-		itk::ExposeMetaData(imgMetaDictionary, *itKey, metaString);
-		pos = itKey->find("DWMRI_b-value");
-		if (pos == -1){
-			continue;
-		}
-
-		std::cout  << metaString << std::endl;    
-		header << "DWMRI_b-value:=" << metaString << std::endl;
-	}
-
-
-	int temp=0;
-	for(int i=0;i< GradientDirectionContainer->size();i++ )
-	{
-		if(qcResult->GetGradientProcess()[i] == QCResult::GRADIENT_INCLUDE)
-		{
-			header	<< "DWMRI_gradient_" << std::setw(4) << std::setfill('0') << temp << ":=" 
+				header	<< "DWMRI_gradient_" << std::setw(4) << std::setfill('0') << temp << ":=" 
 					<< GradientDirectionContainer->ElementAt(i)[0] << "   " 
 					<< GradientDirectionContainer->ElementAt(i)[1] << "   " 
 					<< GradientDirectionContainer->ElementAt(i)[2] << std::endl;
-			++temp;
+				++temp;
+			}
 		}
+
+		header.flush();
+		header.close();
+
+		std::cout<<" QC Image saved "<<std::endl;
+
+}
+
+void CIntensityMotionCheck::GenerateCheckOutputImage()
+{
+	if( protocal->GetIntensityMotionCheckProtocal().bCheck && (
+		protocal->GetIntensityMotionCheckProtocal().bSliceCheck ||
+		protocal->GetIntensityMotionCheckProtocal().bInterlaceCheck ||
+		protocal->GetIntensityMotionCheckProtocal().bGradientCheck)     )
+	{
+
+		if(!bDwiLoaded  ) LoadDwiImage();
+		if(!bDwiLoaded  )
+		{
+			std::cout<<"DWI load error, no Gradient Direction Loaded"<<std::endl;
+			bGetGridentDirections=false;
+			return ;
+		}
+
+		std::ofstream outfile; 
+		outfile.open(ReportFileName.c_str(), std::ios::app);
+		outfile<<"==============================================================="<<std::endl;
+		outfile<<"QC Check Results"<<std::endl;
+
+		outfile<<"  Gradient(s) excluded:"<<std::endl;
+		for(int i=0;i< qcResult->GetGradientProcess().size();i++)
+		{
+			if(qcResult->GetGradientProcess()[i] == QCResult::GRADIENT_EXCLUDE)
+				outfile<<"    Gradient "<< i <<std::endl;
+		}
+
+		int gradientLeft=0;
+		for(int i=0;i< qcResult->GetGradientProcess().size();i++)
+		{
+			if(qcResult->GetGradientProcess()[i] == QCResult::GRADIENT_INCLUDE)
+				gradientLeft++;
+		}
+
+		if( gradientLeft == 0)
+		{
+			outfile<<"No gradient data left."<<std::endl;
+			std::cout<<"No gradient data left."<<std::endl;
+			return;
+		}
+
+		if( gradientLeft == qcResult->GetGradientProcess().size())
+		{
+			std::string OutputFileName;
+			OutputFileName=DwiFileName.substr(0,DwiFileName.find_last_of('.') );
+			OutputFileName.append(protocal->GetIntensityMotionCheckProtocal().OutputFileName);
+			std::cout<<"No gradient data excluded."<<std::endl;
+			std::cout<<"OutputFileName: "<<OutputFileName <<std::endl;
+			outfile<<"No gradient data excluded."<<std::endl;
+			outfile<<"OutputFileName: "<<OutputFileName <<std::endl;
+
+			itk::NrrdImageIO::Pointer  NrrdImageIO = itk::NrrdImageIO::New();
+			try
+			{
+				DwiWriterType::Pointer DwiWriter = DwiWriterType::New();
+				DwiWriter->SetImageIO(NrrdImageIO);
+				DwiWriter->SetFileName( OutputFileName );
+				DwiWriter->SetInput(DwiReader->GetOutput());
+				DwiWriter->UseCompressionOn();
+				DwiWriter->Update();
+			}
+			catch(itk::ExceptionObject & e)
+			{
+				std::cout<< e.GetDescription()<<std::endl;
+				return ;
+			}
+			return;
+		}
+
+		DwiImageType::Pointer newDwiImage = DwiImageType::New(); 
+		newDwiImage->CopyInformation(DwiImage);
+		newDwiImage->SetRegions(DwiImage->GetLargestPossibleRegion());
+		newDwiImage->SetVectorLength( gradientLeft) ; 
+		//	newDwiImage->SetMetaDataDictionary(imgMetaDictionary);
+		newDwiImage->Allocate();
+
+		typedef itk::ImageRegionConstIteratorWithIndex< DwiImageType > ConstIteratorType;
+		ConstIteratorType oit( DwiImage, DwiImage->GetLargestPossibleRegion() );
+		typedef itk::ImageRegionIteratorWithIndex< DwiImageType > IteratorType;
+		IteratorType nit( newDwiImage, newDwiImage->GetLargestPossibleRegion() );
+
+		oit.GoToBegin();
+		nit.GoToBegin();
+
+		DwiImageType::PixelType value ;
+		value.SetSize( gradientLeft ) ;
+
+		while (!oit.IsAtEnd())
+		{
+			int element = 0;
+			for( int i = 0 ; i < qcResult->GetGradientProcess().size(); i++ )
+			{
+				if(qcResult->GetGradientProcess()[i] == QCResult::GRADIENT_INCLUDE)
+				{
+					value.SetElement( element , oit.Get()[i] ) ;
+					element++;
+				}
+			}
+			nit.Set(value);	
+			++oit;
+			++nit;
+		}
+
+		std::string OutputFileName;
+		OutputFileName=DwiFileName.substr(0,DwiFileName.find_last_of('.') );
+		OutputFileName.append(protocal->GetIntensityMotionCheckProtocal().OutputFileName);
+		std::cout<<"OutputFileName: "<<OutputFileName <<std::endl;
+
+		itk::NrrdImageIO::Pointer  NrrdImageIO = itk::NrrdImageIO::New();
+		try
+		{
+			DwiWriterType::Pointer DwiWriter = DwiWriterType::New();
+			DwiWriter->SetImageIO(NrrdImageIO);
+			DwiWriter->SetFileName( OutputFileName );
+			DwiWriter->SetInput(newDwiImage);
+			DwiWriter->UseCompressionOn();
+			DwiWriter->Update();
+		}
+		catch(itk::ExceptionObject & e)
+		{
+			std::cout<< e.GetDescription()<<std::endl;
+			return ;
+		}
+
+		//newDwiImage->Delete();
+
+		outfile<<"  QC output image: "<< OutputFileName <<std::endl;
+		outfile<<"  Gradients included: "<< std::endl;
+		for(int i=0;i< qcResult->GetGradientProcess().size();i++)
+		{
+			if(qcResult->GetGradientProcess()[i] == QCResult::GRADIENT_INCLUDE)
+				outfile<<"    Gradient "<< i <<std::endl;
+		}
+
+		outfile.close();
+
+
+
+		itk::MetaDataDictionary imgMetaDictionary = DwiImage->GetMetaDataDictionary();    //
+		std::vector<std::string> imgMetaKeys = imgMetaDictionary.GetKeys();
+		std::vector<std::string>::const_iterator itKey = imgMetaKeys.begin();
+		std::string metaString;
+
+		char *aryOut = new char[OutputFileName.length()+1];
+		strcpy ( aryOut, OutputFileName.c_str() );
+
+		std::ofstream header;
+		header.open(aryOut, std::ios_base::app);
+
+
+		//  measurement frame 
+		if(imgMetaDictionary.HasKey("NRRD_measurement frame"))
+		{
+			// measurement frame
+			vnl_matrix<double> mf(3,3);
+			// imaging frame
+			vnl_matrix<double> imgf(3,3);
+			std::vector<std::vector<double> > nrrdmf;
+			itk::ExposeMetaData<std::vector<std::vector<double> > >(imgMetaDictionary,"NRRD_measurement frame",nrrdmf);
+
+			imgf = DwiImage->GetDirection().GetVnlMatrix();
+
+			//Image frame
+			//std::cout << "Image frame: " << std::endl;
+			//std::cout << imgf << std::endl;
+
+			for(unsigned int i = 0; i < 3; ++i)
+			{
+				for(unsigned int j = 0; j < 3; ++j)
+				{
+					mf(i,j) = nrrdmf[j][i];
+					nrrdmf[j][i] = imgf(i,j);
+				}
+			}
+
+			// Meausurement frame
+			header	<< "measurement frame: (" 
+				<< mf(0,0) << "," 
+				<< mf(1,0) << "," 
+				<< mf(2,0) << ") ("
+				<< mf(0,1) << "," 
+				<< mf(1,1) << "," 
+				<< mf(2,1) << ") ("
+				<< mf(0,2) << "," 
+				<< mf(1,2) << "," 
+				<< mf(2,2) << ")"
+				<< std::endl;
+		}
+
+		for ( itKey=imgMetaKeys.begin(); itKey != imgMetaKeys.end(); itKey ++){
+			int pos;
+
+			itk::ExposeMetaData(imgMetaDictionary, *itKey, metaString);
+			pos = itKey->find("modality");
+			if (pos == -1){
+				continue;
+			}
+
+			std::cout  << metaString << std::endl;    
+			header << "modality:=" << metaString << std::endl;
+		}
+
+		if(!bGetGridentDirections)
+			GetGridentDirections();
+
+		for ( itKey=imgMetaKeys.begin(); itKey != imgMetaKeys.end(); itKey ++){
+			int pos;
+
+			itk::ExposeMetaData(imgMetaDictionary, *itKey, metaString);
+			pos = itKey->find("DWMRI_b-value");
+			if (pos == -1){
+				continue;
+			}
+
+			std::cout  << metaString << std::endl;    
+			header << "DWMRI_b-value:=" << metaString << std::endl;
+		}
+
+
+		int temp=0;
+		for(int i=0;i< GradientDirectionContainer->size();i++ )
+		{
+			if(qcResult->GetGradientProcess()[i] == QCResult::GRADIENT_INCLUDE)
+			{
+				header	<< "DWMRI_gradient_" << std::setw(4) << std::setfill('0') << temp << ":=" 
+					<< GradientDirectionContainer->ElementAt(i)[0] << "   " 
+					<< GradientDirectionContainer->ElementAt(i)[1] << "   " 
+					<< GradientDirectionContainer->ElementAt(i)[2] << std::endl;
+				++temp;
+			}
+		}
+
+		header.flush();
+		header.close();
+
+		std::cout<<" QC Image saved "<<std::endl;
 	}
-
-	header.flush();
-	header.close();
-
-
-	std::cout<<" QC Image saved "<<std::endl;
+	else
+		std::cout<<" NO QC check procesure and NO QC Image saved "<<std::endl;
 }
 
 void CIntensityMotionCheck::EddyMotionCorrection()
 {
 	if(!protocal->GetEddyMotionCorrectionProtocal().bCorrect)
 	{
+		std::cout<< "EddyMotionCorrection NOT set" <<std::endl;
 		return ;
 	}
 
@@ -1678,47 +2209,462 @@ void CIntensityMotionCheck::EddyMotionCorrection()
 	system(string.c_str());
 }
 
-bool CIntensityMotionCheck::CheckByProtocal()
+unsigned char CIntensityMotionCheck::CheckByProtocal()
 {
-	std::cout<<"ImageCheck ... ";
-	ImageCheck();
-	std::cout<<"ImageCheck DONE"<<std::endl;
+	unsigned char result=0;   // ZYXEDCBA: 					
+					// X QC; Too many bad gradient directions found!
+					// Y QC; Single b-value DWI without a b0/baseline!
+					// Z QC: Gradient direction # is less than 6!
+					// A:ImageCheck() B:DiffusionCheck() C: IntraCheck()  D:InterlaceCheck()  E: InterCheck()
 
-	std::cout<<"DiffusionCheck ... ";
-	DiffusionCheck();
-	std::cout<<"DiffusionCheck DONE"<<std::endl;
+	std::cout<<"ImageCheck ... "<<std::endl;
+	if(!ImageCheck())
+		result = result | 1;
+	std::cout<<"ImageCheck DONE "<<std::endl;
 
-	std::cout<<"IntraCheck ... ";
-	IntraCheck();
-	std::cout<<"IntraCheck DONE"<<std::endl;
+	std::cout<<"DiffusionCheck ... "<<std::endl;
+	if(!DiffusionCheck())
+		result = result | 2;
+	std::cout<<"DiffusionCheck DONE "<<std::endl;
 
-	std::cout<<"InterlaceCheck ... ";
-	InterlaceCheck();
+	std::cout<<"IntraCheck ... "<<std::endl;
+	if(!IntraCheck())
+		result = result | 4;
+	std::cout<<"IntraCheck DONE "<<std::endl;
+
+	std::cout<<"InterlaceCheck ... "<<std::endl;
+	if(!InterlaceCheck())
+		result = result | 8;
 	std::cout<<"nterlaceCheck DONE"<<std::endl;
 
-	std::cout<<"InterCheck ... ";
-	InterCheck();
+	std::cout<<"InterCheck ... "<<std::endl;
+	if(!InterCheck())
+		result = result | 16;
 	std::cout<<"nterCheck DONE"<<std::endl;
 
-	std::cout<<"GenerateCheckOutputImage ... ";
+	int baselineLeft=0;
+	int gradientLeft=0;
+	for(int i=0;i< qcResult->GetGradientProcess().size();i++)
+	{
+		if ( GradientDirectionContainer->at(i)[0] == 0.0 && GradientDirectionContainer->at(i)[1] == 0.0 && GradientDirectionContainer->at(i)[2] == 0.0)
+		//baseline
+		{
+			if(qcResult->GetGradientProcess()[i] == QCResult::GRADIENT_INCLUDE)
+				baselineLeft++;
+		}
+		else //gradient
+		{
+			if(qcResult->GetGradientProcess()[i] == QCResult::GRADIENT_INCLUDE)
+				gradientLeft++;
+		}
+	}
+
+	this->gradientLeftNumber = gradientLeft;
+
+	std::cout <<"baselineLeft: "<<baselineLeft<<std::endl;
+	std::cout <<"gradientLeft: "<<gradientLeft<<std::endl;
+
+	collectLeftDiffusionStatistics();
+
+	unsigned char ValidateResult;
+	ValidateResult=validateLeftDiffusionStatistics();
+	// 00000CBA:  
+	// A: Gradient direction # is less than 6! 
+	// B: Single b-value DWI without a b0/baseline!
+	// C: Too many bad gradient directions found!
+	// 0: valid
+
+	//std::cout << "CheckByProtocal(): ValidateResult: "<< ValidateResult << std::endl;
+// 	switch(ValidateResult)
+// 	{
+// 	case 1:
+// 		break;
+// 		std::cout<<"Gradient direction # is less than 6! Bad DWI! Should be excluded!"<<std::endl;
+// 		result = result | 128;	
+// 	case 2:
+// 		std::cout<<"Single b-value DWI without a b0/baseline! Bad DWI! Should be excluded!"<<std::endl;
+// 		result = result | 64;	
+// 		break;
+// 	case 4:
+// 		std::cout<<"Too many bad gradient directions found! Bad DWI! Should be excluded!"<<std::endl;
+// 		result = result | 32;	
+// 		break;
+// 	default:
+// 		break;
+// 	}
+
+	if( ValidateResult & 1)
+	{	
+		std::cout<<"Gradient direction # is less than 6! Bad DWI! Should be excluded!"<<std::endl;
+		result = result | 128;	
+		//return result;
+	}
+
+	if( ValidateResult & 2)
+	{	
+		std::cout<<"Single b-value DWI without a b0/baseline! Bad DWI! Should be excluded!"<<std::endl;
+		result = result | 64;	
+		//return result;
+	}
+
+	if( ValidateResult & 4)
+	{	
+		std::cout<<"Too many bad gradient directions found! Bad DWI! Should be excluded!"<<std::endl;
+		result = result | 32;	
+		//return result;
+	}
+
+	if(ValidateResult>0)
+	{
+		std::cout << "CheckByProtocal(): result: "<< ValidateResult << std::endl;
+		return result;
+	}
+
+	std::cout<<"GenerateCheckOutputImage ... "<<std::endl;
 	GenerateCheckOutputImage();
 	std::cout<<"GenerateCheckOutputImage DONE"<<std::endl;
 
-	std::cout<<"EddyMotionCorrection ... ";
+	std::cout<<"EddyMotionCorrection ... "<<std::endl;
 	EddyMotionCorrection();
 	std::cout<<"EddyMotionCorrection DONE"<<std::endl;
 
-	std::cout<<"DTIComputing ... ";
+	std::cout<<"DTIComputing ... "<<std::endl;
 	DTIComputing();
 	std::cout<<"DTIComputing DONE"<<std::endl;
 
-	/*
-	return (	ImageCheck()		&&
-				DiffusionCheck()	&&
-				IntraCheck()		&&
-				InterlaceCheck()	&&
-				InterCheck()		&&
-				DTIComputing()			);*/
+	//std::cout << "CheckByProtocal(): result: "<< ValidateResult << std::endl;
+	return result;
+}
+
+bool CIntensityMotionCheck::validateDiffusionStatistics()
+{
 	return true;
 }
+
+unsigned char CIntensityMotionCheck::validateLeftDiffusionStatistics() 
+
+// 00000CBA:  
+// A: Gradient direction # is less than 6! 
+// B: Single b-value DWI without a b0/baseline!
+// C: Too many bad gradient directions found!
+// 0: valid
+
+{
+	std::ofstream outfile; 
+	outfile.open(ReportFileName.c_str(), std::ios::app);
+	outfile<<"==============================================================="<<std::endl;
+	outfile<<"QC result summary:"<<std::endl;
+
+	unsigned char ret = 0;
+
+	if(this->gradientDirLeftNumber<6)
+	{
+		std::cout<<"\tGradient direction # is less than 6!"<<std::endl;
+		outfile<<"\tGradient direction # is less than 6!"<<std::endl;
+		ret = ret| 1;
+	}
+
+	if(this->baselineLeftNumber==0 && this->bValueLeftNumber==1)
+	{
+		std::cout<<"\tSingle b-value DWI without a b0/baseline!"<<std::endl;
+		outfile<<"\tSingle b-value DWI without a b0/baseline!"<<std::endl;
+		ret = ret| 2;
+	}
+
+	if( ((this->gradientDirNumber)-(this->gradientDirLeftNumber)) > protocal->GetIntensityMotionCheckProtocal().badGradientPercentageTolerance* (this->gradientDirNumber))
+	{
+		std::cout<<"\tToo many bad gradient directions found! "<<std::endl;
+		outfile  <<"\tToo many bad gradient directions found! "<<std::endl;
+		ret = ret| 4;
+	}
+
+	//std::cout<<"validateDiffusionStatistics(): ret "<<ret<<std::endl;
+	outfile.close();
+
+	return ret;
+}
+
+void CIntensityMotionCheck::collectLeftDiffusionStatistics()
+{
+	std::vector<DiffusionDir> DiffusionDirections;
+	DiffusionDirections.clear();
+
+	for( int i=0; i< this->GradientDirectionContainer->size();i++) 
+	{
+		if(DiffusionDirections.size()>0)
+		{
+			bool newDir = true;
+			for(int j=0;j<DiffusionDirections.size();j++)
+			{
+				if( this->GradientDirectionContainer->ElementAt(i)[0] == DiffusionDirections[j].gradientDir[0] && 
+					this->GradientDirectionContainer->ElementAt(i)[1] == DiffusionDirections[j].gradientDir[1] && 
+					this->GradientDirectionContainer->ElementAt(i)[2] == DiffusionDirections[j].gradientDir[2] )
+				{
+					if(qcResult->GetGradientProcess()[i] == QCResult::GRADIENT_INCLUDE)
+						DiffusionDirections[j].repetitionNumber++;
+					newDir = false;;
+				}
+			}
+			if(newDir)
+			{
+				std::vector< double > dir;
+				dir.push_back(this->GradientDirectionContainer->ElementAt(i)[0]);
+				dir.push_back(this->GradientDirectionContainer->ElementAt(i)[1]);
+				dir.push_back(this->GradientDirectionContainer->ElementAt(i)[2]);
+
+				DiffusionDir diffusionDir;
+				diffusionDir.gradientDir = dir;
+				if(qcResult->GetGradientProcess()[i] == QCResult::GRADIENT_INCLUDE)
+					diffusionDir.repetitionNumber=1;
+				else
+					diffusionDir.repetitionNumber=0;
+
+				DiffusionDirections.push_back(diffusionDir);
+			}
+		}
+		else
+		{
+			std::vector< double > dir;
+			dir.push_back(this->GradientDirectionContainer->ElementAt(i)[0]);
+			dir.push_back(this->GradientDirectionContainer->ElementAt(i)[1]);
+			dir.push_back(this->GradientDirectionContainer->ElementAt(i)[2]);
+
+			DiffusionDir diffusionDir;
+			diffusionDir.gradientDir = dir;
+			if(qcResult->GetGradientProcess()[i] == QCResult::GRADIENT_INCLUDE)
+				diffusionDir.repetitionNumber=1;
+			else
+				diffusionDir.repetitionNumber=0;
+
+			DiffusionDirections.push_back(diffusionDir);
+		}
+	}
+
+	// 	std::cout<<"DiffusionDirections.size(): " << DiffusionDirections.size() <<std::endl;
+
+	//std::vector<int> repetNum;
+	//repetNum.clear();
+	std::vector<double> dirMode;
+	dirMode.clear();
+
+	this->baselineLeftNumber=0;
+	double modeTemp = 0.0;
+	for( int i=0; i<DiffusionDirections.size(); i++)
+	{
+		if( DiffusionDirections[i].gradientDir[0] == 0.0 &&
+			DiffusionDirections[i].gradientDir[1] == 0.0 &&
+			DiffusionDirections[i].gradientDir[2] == 0.0 ) 
+		{
+			this->baselineLeftNumber = DiffusionDirections[i].repetitionNumber;
+			// std::cout<<"DiffusionDirections[i].repetitionNumber: " <<i<<"  "<<DiffusionDirections[i].repetitionNumber <<std::endl;
+		}
+		else
+		{
+			this->repetitionLeftNumber.push_back(DiffusionDirections[i].repetitionNumber);
+
+			double modeSqr =	DiffusionDirections[i].gradientDir[0]*DiffusionDirections[i].gradientDir[0] +
+				DiffusionDirections[i].gradientDir[1]*DiffusionDirections[i].gradientDir[1] +
+				DiffusionDirections[i].gradientDir[2]*DiffusionDirections[i].gradientDir[2];
+
+			// 	std::cout<<"modeSqr: " <<modeSqr <<std::endl;
+			if( dirMode.size() > 0)
+			{
+				bool newDirMode = true;
+				for(int j=0;j< dirMode.size();j++)
+				{
+					if( fabs(modeSqr-dirMode[j])<0.001)   // 1 DIFFERENCE for b value
+					{
+						newDirMode = false;	
+						break;
+					}
+				}
+				if( newDirMode && DiffusionDirections[i].repetitionNumber>0 )
+				{
+					dirMode.push_back(	modeSqr) ;
+					// 					std::cout<<" if(newDirMode) dirMode.size(): " <<  dirMode.size() <<std::endl;
+				}
+			}
+			else
+			{
+				if(DiffusionDirections[i].repetitionNumber>0)
+					dirMode.push_back(	modeSqr) ;
+				//std::cout<<" else dirMode.size(): " <<  dirMode.size() <<std::endl;
+			}
+		}
+	}
+
+	// 	std::cout<<" repetNum.size(): " <<  repetNum.size() <<std::endl;
+	// 	std::cout<<" dirMode.size(): " <<  dirMode.size() <<std::endl;
+
+	this->gradientDirLeftNumber = 0;
+	for(int i=0; i<this->repetitionLeftNumber.size(); i++)
+	{
+		if(this->repetitionLeftNumber[i]>0)
+			this->gradientDirLeftNumber++;
+	}
+		
+	this->bValueLeftNumber = dirMode.size();
+
+	std::ofstream outfile; 
+	outfile.open(ReportFileName.c_str(), std::ios::app);
+	outfile<<"==============================================================="<<std::endl;
+	outfile<<"Diffusion Gradient information:"<<std::endl;
+
+	std::cout<<"Left DWI Diffusion: "	<<std::endl;
+	std::cout<<"\tbaselineLeftNumber: "	<<baselineLeftNumber	<<std::endl;
+	std::cout<<"\tbValueLeftNumber: "	<<bValueLeftNumber		<<std::endl;
+	std::cout<<"\tgradientDirLeftNumber: "<<gradientDirLeftNumber	<<std::endl;
+
+	outfile<<"Left DWI Diffusion: "		<<std::endl;
+	outfile<<"\tbaselineLeftNumber: "	<<baselineLeftNumber	<<std::endl;
+	outfile<<"\tbValueLeftNumber: "		<<bValueLeftNumber		<<std::endl;
+	outfile<<"\tgradientDirLeftNumber: "<<gradientDirLeftNumber	<<std::endl;
+
+	for(int i=0;i< DiffusionDirections.size();i++)
+	{
+		std::cout<<"\t["	<<DiffusionDirections[i].gradientDir[0]<<", "
+			<<DiffusionDirections[i].gradientDir[1]<<", "
+			<<DiffusionDirections[i].gradientDir[2]<<"] "
+			<<"repetitionLeftNumber: "	<<DiffusionDirections[i].repetitionNumber <<std::endl;
+		outfile<<"\t["	<<DiffusionDirections[i].gradientDir[0]<<", "
+			<<DiffusionDirections[i].gradientDir[1]<<", "
+			<<DiffusionDirections[i].gradientDir[2]<<"] "
+			<<"repetitionLeftNumber: "	<<DiffusionDirections[i].repetitionNumber <<std::endl;
+	}
+
+	outfile.close();
+	return ;
+
+}
+
+
+void CIntensityMotionCheck::collectDiffusionStatistics()
+{
+	std::vector<DiffusionDir> DiffusionDirections;
+	DiffusionDirections.clear();
+
+	// 	std::cout<<"this->GetDiffusionProtocal().gradients.size(): " << this->GetDiffusionProtocal().gradients.size() <<std::endl;
+	for( int i=0; i< this->GradientDirectionContainer->size();i++) 
+	{
+		if(DiffusionDirections.size()>0)
+		{
+			bool newDir = true;
+			for(int j=0;j<DiffusionDirections.size();j++)
+			{
+				if( this->GradientDirectionContainer->ElementAt(i)[0] == DiffusionDirections[j].gradientDir[0] && 
+					this->GradientDirectionContainer->ElementAt(i)[1] == DiffusionDirections[j].gradientDir[1] && 
+					this->GradientDirectionContainer->ElementAt(i)[2] == DiffusionDirections[j].gradientDir[2] )
+				{
+					DiffusionDirections[j].repetitionNumber++;
+					newDir = false;;
+				}
+			}
+			if(newDir)
+			{
+				std::vector< double > dir;
+				dir.push_back(this->GradientDirectionContainer->ElementAt(i)[0]);
+				dir.push_back(this->GradientDirectionContainer->ElementAt(i)[1]);
+				dir.push_back(this->GradientDirectionContainer->ElementAt(i)[2]);
+
+				DiffusionDir diffusionDir;
+				diffusionDir.gradientDir = dir;
+				diffusionDir.repetitionNumber=1;
+
+				DiffusionDirections.push_back(diffusionDir);
+			}
+		}
+		else
+		{
+			std::vector< double > dir;
+			dir.push_back(this->GradientDirectionContainer->ElementAt(i)[0]);
+			dir.push_back(this->GradientDirectionContainer->ElementAt(i)[1]);
+			dir.push_back(this->GradientDirectionContainer->ElementAt(i)[2]);
+
+			DiffusionDir diffusionDir;
+			diffusionDir.gradientDir = dir;
+			diffusionDir.repetitionNumber=1;
+
+			DiffusionDirections.push_back(diffusionDir);
+		}
+	}
+
+	// 	std::cout<<"DiffusionDirections.size(): " << DiffusionDirections.size() <<std::endl;
+
+	std::vector<int> repetNum;
+	repetNum.clear();
+	std::vector<double> dirMode;
+	dirMode.clear();
+
+	double modeTemp = 0.0;
+	for( int i=0; i<DiffusionDirections.size(); i++)
+	{
+		if( DiffusionDirections[i].gradientDir[0] == 0.0 &&
+			DiffusionDirections[i].gradientDir[1] == 0.0 &&
+			DiffusionDirections[i].gradientDir[2] == 0.0 ) 
+		{
+			this->baselineNumber = DiffusionDirections[i].repetitionNumber;
+			// 			std::cout<<"DiffusionDirections[i].repetitionNumber: " <<i<<"  "<<DiffusionDirections[i].repetitionNumber <<std::endl;
+		}
+		else
+		{
+			repetNum.push_back(DiffusionDirections[i].repetitionNumber);
+
+			double modeSqr =	DiffusionDirections[i].gradientDir[0]*DiffusionDirections[i].gradientDir[0] +
+				DiffusionDirections[i].gradientDir[1]*DiffusionDirections[i].gradientDir[1] +
+				DiffusionDirections[i].gradientDir[2]*DiffusionDirections[i].gradientDir[2];
+
+			// 			std::cout<<"modeSqr: " <<modeSqr <<std::endl;
+			if( dirMode.size() > 0)
+			{
+				bool newDirMode = true;
+				for(int j=0;j< dirMode.size();j++)
+				{
+					if( fabs(modeSqr-dirMode[j])<0.001)   // 1 DIFFERENCE for b value
+					{
+						newDirMode = false;	
+						break;
+					}
+				}
+				if(newDirMode)
+				{
+					dirMode.push_back(	modeSqr) ;
+					// 					std::cout<<" if(newDirMode) dirMode.size(): " <<  dirMode.size() <<std::endl;
+				}
+			}
+			else
+			{
+				dirMode.push_back(	modeSqr) ;
+				// 				std::cout<<" else dirMode.size(): " <<  dirMode.size() <<std::endl;
+			}
+		}
+	}
+
+	// 	std::cout<<" repetNum.size(): " <<  repetNum.size() <<std::endl;
+	// 	std::cout<<" dirMode.size(): " <<  dirMode.size() <<std::endl;
+
+	this->gradientDirNumber = repetNum.size();
+	this->bValueNumber = dirMode.size();
+
+	repetitionNumber = repetNum[0];
+	for( int i=1; i<repetNum.size(); i++)
+	{ 
+		if( repetNum[i] != repetNum[0])
+		{
+			std::cout<<"Protocol error. Not all the gradient directions have same repetition. "<<std::endl;
+			repetitionNumber = -1;			
+		}
+	}
+
+	this->gradientNumber = this->GradientDirectionContainer->size()-this->baselineNumber;
+
+	std::cout<<"DWI Diffusion: "		<<std::endl;
+	std::cout<<"  baselineNumber: "		<<baselineNumber	<<std::endl;
+	std::cout<<"  bValueNumber: "		<<bValueNumber		<<std::endl;
+	std::cout<<"  gradientDirNumber: "	<<gradientDirNumber	<<std::endl;
+	std::cout<<"  gradientNumber: "		<<gradientNumber	<<std::endl;
+	std::cout<<"  repetitionNumber: "	<<repetitionNumber	<<std::endl;
+
+	return ;
+}
+
 
