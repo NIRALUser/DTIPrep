@@ -195,6 +195,8 @@ void IntensityMotionCheckPanel::OpenXML( )
 	 {
 		lineEdit_Protocal->setText(xmlFile);
 	 }
+	 else
+		 return;
 
 	treeWidget->clear();
 	protocal.clear();
@@ -403,7 +405,6 @@ void IntensityMotionCheckPanel::on_pushButton_SaveProtocolAs_clicked( )
 		XmlReader.setProtocal( &protocal);
 		//XmlReader.readFile(xmlFile, XmlStreamReader::TreeWise);
 		XmlReader.readFile(xmlFile, XmlStreamReader::ProtocalWise);
-
 	}
 
 	bProtocol = true;
@@ -991,28 +992,28 @@ void IntensityMotionCheckPanel::CreateDefaultProtocol()
 
 	this->GetProtocal().GetIntensityMotionCheckProtocal().bSliceCheck = true;
 	this->GetProtocal().GetIntensityMotionCheckProtocal().badSlicePercentageTolerance = 0.0;
-	this->GetProtocal().GetIntensityMotionCheckProtocal().baselineCorrelationThreshold = sliceBaselineThreshold*0.95; //0.8; // to be optimized
-	this->GetProtocal().GetIntensityMotionCheckProtocal().baselineCorrelationDeviationThreshold = devBaselineThreshold*1.1;//3.50;
+	this->GetProtocal().GetIntensityMotionCheckProtocal().baselineCorrelationThreshold = sliceBaselineThreshold*0.90; //0.8; // to be optimized
+	this->GetProtocal().GetIntensityMotionCheckProtocal().baselineCorrelationDeviationThreshold = 3.0; //devBaselineThreshold*1.1;//3.50;
 	this->GetProtocal().GetIntensityMotionCheckProtocal().headSkipSlicePercentage = 0.15; 
 	this->GetProtocal().GetIntensityMotionCheckProtocal().tailSkipSlicePercentage = 0.15;  
-	this->GetProtocal().GetIntensityMotionCheckProtocal().sliceCorrelationThreshold = sliceGradientThreshold*0.95; //0.8;// to be optimized
-	this->GetProtocal().GetIntensityMotionCheckProtocal().sliceCorrelationDeviationThreshold = devGradientThreshold*1.1;//3.50;//
+	this->GetProtocal().GetIntensityMotionCheckProtocal().sliceCorrelationThreshold = sliceGradientThreshold*0.90; //0.8;// to be optimized
+	this->GetProtocal().GetIntensityMotionCheckProtocal().sliceCorrelationDeviationThreshold = 3.50; //devGradientThreshold*1.1;//3.50;//
 
 	this->GetProtocal().GetIntensityMotionCheckProtocal().bInterlaceCheck = true;
-	this->GetProtocal().GetIntensityMotionCheckProtocal().interlaceCorrelationThresholdBaseline = interlaceBaselineThreshold*0.98; //0.92;// to be optimized
-	this->GetProtocal().GetIntensityMotionCheckProtocal().interlaceCorrelationDeviationBaseline = interlaceBaselineDev*1.05;//3.00;//
-	this->GetProtocal().GetIntensityMotionCheckProtocal().interlaceCorrelationThresholdGradient = interlaceGradientThreshold*0.98; //0.90;//  to be optimized
-	this->GetProtocal().GetIntensityMotionCheckProtocal().interlaceCorrelationDeviationGradient = interlaceGradientDev*1.05;//3.00;//
+	this->GetProtocal().GetIntensityMotionCheckProtocal().interlaceCorrelationThresholdBaseline = interlaceBaselineThreshold*0.9; //0.92;// to be optimized
+	this->GetProtocal().GetIntensityMotionCheckProtocal().interlaceCorrelationDeviationBaseline = 3.00;//interlaceBaselineDev*1.05;//3.00;//
+	this->GetProtocal().GetIntensityMotionCheckProtocal().interlaceCorrelationThresholdGradient = interlaceGradientThreshold*0.9; //0.90;//  to be optimized
+	this->GetProtocal().GetIntensityMotionCheckProtocal().interlaceCorrelationDeviationGradient = 3.00;//interlaceGradientDev*1.05;//3.00;//
 	this->GetProtocal().GetIntensityMotionCheckProtocal().interlaceRotationThreshold = 0.5;// degree
 	this->GetProtocal().GetIntensityMotionCheckProtocal().interlaceTranslationThreshold = ( this->GetProtocal().GetImageProtocal().spacing[0] +
 																							this->GetProtocal().GetImageProtocal().spacing[1] +
 																							this->GetProtocal().GetImageProtocal().spacing[2] )*0.33333333333;//1 xoxel;//
 
 	this->GetProtocal().GetIntensityMotionCheckProtocal().bGradientCheck = true;
-	this->GetProtocal().GetIntensityMotionCheckProtocal().gradientRotationThreshold = 2.5; //degree
+	this->GetProtocal().GetIntensityMotionCheckProtocal().gradientRotationThreshold = 0.8; //degree
 	this->GetProtocal().GetIntensityMotionCheckProtocal().gradientTranslationThreshold = (	this->GetProtocal().GetImageProtocal().spacing[0] +
 																							this->GetProtocal().GetImageProtocal().spacing[1] +
-																							this->GetProtocal().GetImageProtocal().spacing[2] )*0.33333333333*3.0;//3 voxel;//
+																							this->GetProtocal().GetImageProtocal().spacing[2] )*0.33333333333*1.50;//3 voxel;//
 
 	// Eddy motion correction
 	this->GetProtocal().GetEddyMotionCorrectionProtocal().bCorrect = true;
@@ -1025,7 +1026,7 @@ void IntensityMotionCheckPanel::CreateDefaultProtocol()
 	this->GetProtocal().GetDTIProtocal().dtiestimCommand = "/tools/bin_linux64/dtiestim";
 	this->GetProtocal().GetDTIProtocal().dtiprocessCommand = "/tools/bin_linux64/dtiprocess";
 	this->GetProtocal().GetDTIProtocal().dtiPaddingCommand = "/tools/bin_linux64/CropDTI";
-	this->GetProtocal().GetDTIProtocal().baselineThreshold = 100; //
+	this->GetProtocal().GetDTIProtocal().baselineThreshold = 50; //
 	this->GetProtocal().GetDTIProtocal().mask = "";
 	this->GetProtocal().GetDTIProtocal().method = Protocal::METHOD_WLS;
 	this->GetProtocal().GetDTIProtocal().tensor = "_DTI.nhdr";

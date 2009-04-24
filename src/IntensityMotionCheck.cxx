@@ -259,6 +259,82 @@ bool CIntensityMotionCheck::IntraCheck(
 		filter1->SetInput( componentExtractor->GetOutput() );
 		filter2->SetInput( componentExtractor->GetOutput() );	
 
+// 		std::vector< struIntra2DResults >	 corrEven;
+// 		std::vector< struIntra2DResults >	 corrOdd;
+// 
+// 		for(int i=2; i<componentExtractor->GetOutput()->GetLargestPossibleRegion().GetSize()[2]; i+=2)
+// 		{
+// 			if(bRegister)
+// 				std::cout<<"Total slice #: "<<componentExtractor->GetOutput()-> GetLargestPossibleRegion().GetSize()[2]<<",  Registering slice "<< i <<" to slice "<<i-1<<std::endl;
+// 			else
+// 				std::cout<<"Total slice #: "<<componentExtractor->GetOutput()-> GetLargestPossibleRegion().GetSize()[2]<<",  Metric for slice"<< i <<" to slice "<<i-1<<std::endl;
+// 
+// 			start1[2] = i-2;
+// 			start2[2] = i;
+// 
+// 			GradientImageType::RegionType desiredRegion1;
+// 			desiredRegion1.SetSize( size );
+// 			desiredRegion1.SetIndex( start1 );
+// 			filter1->SetExtractionRegion( desiredRegion1 );
+// 
+// 			GradientImageType::RegionType desiredRegion2;
+// 			desiredRegion2.SetSize( size );
+// 			desiredRegion2.SetIndex( start2 );
+// 			filter2->SetExtractionRegion( desiredRegion2 );
+// 
+// 			filter1->Update();
+// 			filter2->Update();
+// 
+// 			CIntraGradientRigidRegistration IntraGradientRigidReg(filter1->GetOutput(),filter2->GetOutput());
+// 			struIntra2DResults s2DResults= IntraGradientRigidReg.Run( bRegister );
+// 			corrEven.push_back(s2DResults);
+// 		}
+// 
+// 		std::ofstream ofile; 
+// 		ofile.open("/home/zhliu/corrForWang_EVEN.txt",  std::ios::app);
+// 		for(int i=0;i<corrEven.size();i++ )
+// 			ofile<<corrEven[i].Correlation<<std::endl;
+// 
+// 		ofile<<std::endl;
+// 		ofile.close();
+// 
+// 		for(int i=3; i<componentExtractor->GetOutput()->GetLargestPossibleRegion().GetSize()[2]; i+=2)
+// 		{
+// 			if(bRegister)
+// 				std::cout<<"Total slice #: "<<componentExtractor->GetOutput()-> GetLargestPossibleRegion().GetSize()[2]<<",  Registering slice "<< i <<" to slice "<<i-1<<std::endl;
+// 			else
+// 				std::cout<<"Total slice #: "<<componentExtractor->GetOutput()-> GetLargestPossibleRegion().GetSize()[2]<<",  Metric for slice"<< i <<" to slice "<<i-1<<std::endl;
+// 
+// 			start1[2] = i-2;
+// 			start2[2] = i;
+// 
+// 			GradientImageType::RegionType desiredRegion1;
+// 			desiredRegion1.SetSize( size );
+// 			desiredRegion1.SetIndex( start1 );
+// 			filter1->SetExtractionRegion( desiredRegion1 );
+// 
+// 			GradientImageType::RegionType desiredRegion2;
+// 			desiredRegion2.SetSize( size );
+// 			desiredRegion2.SetIndex( start2 );
+// 			filter2->SetExtractionRegion( desiredRegion2 );
+// 
+// 			filter1->Update();
+// 			filter2->Update();
+// 
+// 			CIntraGradientRigidRegistration IntraGradientRigidReg(filter1->GetOutput(),filter2->GetOutput());
+// 			struIntra2DResults s2DResults= IntraGradientRigidReg.Run( bRegister );
+// 			corrOdd.push_back(s2DResults);
+// 		}
+// 
+// 		//std::ofstream ofile; 
+// 		ofile.open("/home/zhliu/corrForWang_ODD.txt",  std::ios::app);
+// 		for(int i=0;i<corrOdd.size();i++ )
+// 			ofile<<corrOdd[i].Correlation<<std::endl;
+// 
+// 		ofile<<std::endl;
+// 		ofile.close();
+
+
 		for(int i=1; i<componentExtractor->GetOutput()->GetLargestPossibleRegion().GetSize()[2]; i++)
 		{
 			if(bRegister)
@@ -413,8 +489,9 @@ bool CIntensityMotionCheck::IntraCheck(
 			{
 				outfile.precision(6);
 				outfile.setf(std::ios_base::showpoint|std::ios_base::right) ;	
-				//if( ResultsContainer[i][j].Correlation < CorrelationThreshold &&  ResultsContainer[i][j+1].Correlation < CorrelationThreshold)
-				if( ResultsContainer[i][j].Correlation < CorrelationThreshold ||  ResultsContainer[i][j].Correlation < means[j] - deviations[j] * CorrelationDeviationThreshold)
+				//////if( ResultsContainer[i][j].Correlation < CorrelationThreshold &&  ResultsContainer[i][j+1].Correlation < CorrelationThreshold)
+				if( ResultsContainer[i][j].Correlation < CorrelationThreshold ||  ResultsContainer[i][j].Correlation < means[j] - deviations[j] * CorrelationDeviationThreshold) // ok
+				//if( ResultsContainer[i][j].Correlation < CorrelationThreshold ||  ResultsContainer[i][j].Correlation < means[j] - 0.005 * CorrelationDeviationThreshold)
 				{
 					outfile  <<"\t"<<std::setw(10)<<i<<"\t"<<std::setw(10)<<j+1<<"\t"<<ResultsContainer[i][j].Correlation<<std::endl;
 					std::cout<<"\t"<<std::setw(10)<<i<<"\t"<<std::setw(10)<<j+1<<"\t"<<ResultsContainer[i][j].Correlation<<std::endl;
@@ -1763,6 +1840,7 @@ void CIntensityMotionCheck::GenerateCheckOutputImage( std::string filename)
 
 		if( gradientLeft == 0)
 		{
+			//outfile<<"No gradient data left."<<std::endl;
 			std::cout<<"No gradient data left."<<std::endl;
 			return;
 		}
