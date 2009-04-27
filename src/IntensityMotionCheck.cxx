@@ -448,7 +448,7 @@ bool CIntensityMotionCheck::IntraCheck(
 	}
 
 	double baselineMeanStdev=0.0, gradientMeanStdev=0.0;
-	unsigned int effectiveSliceNumber;
+	unsigned int effectiveSliceNumber=0;
 
 	for(int j = 0 + (int)(DwiImage->GetLargestPossibleRegion().GetSize()[2]*beginSkip);j < ResultsContainer[0].size() - (int)(DwiImage->GetLargestPossibleRegion().GetSize()[2]*endSkip); j++ ) 
 	{
@@ -460,7 +460,7 @@ bool CIntensityMotionCheck::IntraCheck(
 	baselineMeanStdev = baselineMeanStdev/(double)effectiveSliceNumber;		
 	gradientMeanStdev = gradientMeanStdev/(double)effectiveSliceNumber;	
 
-
+	std::cout<<"effectiveSliceNumber: "<<effectiveSliceNumber<<std::endl;
 	std::cout<<"baselineMeanStdev: "<<baselineMeanStdev<<std::endl;
 	std::cout<<"gradientMeanStdev: "<<gradientMeanStdev<<std::endl;
 
