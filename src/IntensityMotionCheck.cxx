@@ -447,6 +447,23 @@ bool CIntensityMotionCheck::IntraCheck(
 		this->deviations.push_back(sqrt(DWIdeviation));
 	}
 
+	double baselineMeanStdev=0.0, gradientMeanStdev=0.0;
+	unsigned int effectiveSliceNumber;
+
+	for(int j = 0 + (int)(DwiImage->GetLargestPossibleRegion().GetSize()[2]*beginSkip);j < ResultsContainer[0].size() - (int)(DwiImage->GetLargestPossibleRegion().GetSize()[2]*endSkip); j++ ) 
+	{
+		baselineMeanStdev += this->baselineDeviations[j];		
+		gradientMeanStdev += this->deviations[j];	
+		effectiveSliceNumber++;
+	}
+
+	baselineMeanStdev = baselineMeanStdev/(double)effectiveSliceNumber;		
+	gradientMeanStdev = gradientMeanStdev/(double)effectiveSliceNumber;	
+
+
+	std::cout<<"baselineMeanStdev: "<<baselineMeanStdev<<std::endl;
+	std::cout<<"gradientMeanStdev: "<<gradientMeanStdev<<std::endl;
+
 	outfile <<std::endl<<"Intra-Gradient Slice Check Artifacts:"<<std::endl;
 	outfile  <<"\t"<<std::setw(10)<<"Gradient"<<"\t"<<std::setw(10)<<"Slice"<<"\t"<<std::setw(10)<<"Correlation"<<std::endl;
 
@@ -467,7 +484,15 @@ bool CIntensityMotionCheck::IntraCheck(
 			{
 				outfile.precision(6);
 				outfile.setf(std::ios_base::showpoint|std::ios_base::right) ;
-				if( ResultsContainer[i][j].Correlation < baselineCorrelationThreshold ||  ResultsContainer[i][j].Correlation < baselineMeans[j] - baselineDeviations[j] * baselineCorrelationDeviationThreshold)
+
+				double stddev=0.0;
+				if( baselineDeviations[j]< baselineMeanStdev )
+					stddev = baselineDeviations[j];
+				else
+					stddev = baselineMeanStdev;
+				
+				//if( ResultsContainer[i][j].Correlation < baselineCorrelationThreshold ||  ResultsContainer[i][j].Correlation < baselineMeans[j] - baselineDeviations[j] * baselineCorrelationDeviationThreshold)
+				if( ResultsContainer[i][j].Correlation < baselineCorrelationThreshold ||  ResultsContainer[i][j].Correlation < baselineMeans[j] - stddev * baselineCorrelationDeviationThreshold)
 				{
 					outfile  <<"\t"<<std::setw(10)<<i<<"\t"<<std::setw(10)<<j+1<<"\t"<<ResultsContainer[i][j].Correlation<<std::endl;
 					std::cout<<"\t"<<std::setw(10)<<i<<"\t"<<std::setw(10)<<j+1<<"\t"<<ResultsContainer[i][j].Correlation<<std::endl;
@@ -489,9 +514,15 @@ bool CIntensityMotionCheck::IntraCheck(
 			{
 				outfile.precision(6);
 				outfile.setf(std::ios_base::showpoint|std::ios_base::right) ;	
-				//////if( ResultsContainer[i][j].Correlation < CorrelationThreshold &&  ResultsContainer[i][j+1].Correlation < CorrelationThreshold)
-				if( ResultsContainer[i][j].Correlation < CorrelationThreshold ||  ResultsContainer[i][j].Correlation < means[j] - deviations[j] * CorrelationDeviationThreshold) // ok
-				//if( ResultsContainer[i][j].Correlation < CorrelationThreshold ||  ResultsContainer[i][j].Correlation < means[j] - 0.005 * CorrelationDeviationThreshold)
+
+				double stddev=0.0;
+				if( deviations[j]< gradientMeanStdev )
+					stddev = deviations[j];
+				else
+					stddev = gradientMeanStdev;
+
+				//if( ResultsContainer[i][j].Correlation < CorrelationThreshold ||  ResultsContainer[i][j].Correlation < means[j] - deviations[j] * CorrelationDeviationThreshold) // ok
+				if( ResultsContainer[i][j].Correlation < CorrelationThreshold ||  ResultsContainer[i][j].Correlation < means[j] - stddev * CorrelationDeviationThreshold) // ok
 				{
 					outfile  <<"\t"<<std::setw(10)<<i<<"\t"<<std::setw(10)<<j+1<<"\t"<<ResultsContainer[i][j].Correlation<<std::endl;
 					std::cout<<"\t"<<std::setw(10)<<i<<"\t"<<std::setw(10)<<j+1<<"\t"<<ResultsContainer[i][j].Correlation<<std::endl;
