@@ -491,8 +491,8 @@ bool CIntensityMotionCheck::IntraCheck(
 				else
 					stddev = baselineMeanStdev;
 				
-				//if( ResultsContainer[i][j].Correlation < baselineCorrelationThreshold ||  ResultsContainer[i][j].Correlation < baselineMeans[j] - baselineDeviations[j] * baselineCorrelationDeviationThreshold)
-				if( ResultsContainer[i][j].Correlation < baselineCorrelationThreshold ||  ResultsContainer[i][j].Correlation < baselineMeans[j] - stddev * baselineCorrelationDeviationThreshold)
+				if( ResultsContainer[i][j].Correlation < baselineCorrelationThreshold ||  ResultsContainer[i][j].Correlation < baselineMeans[j] - baselineDeviations[j] * baselineCorrelationDeviationThreshold)
+				//if( ResultsContainer[i][j].Correlation < baselineCorrelationThreshold ||  ResultsContainer[i][j].Correlation < baselineMeans[j] - stddev * baselineCorrelationDeviationThreshold)
 				{
 					outfile  <<"\t"<<std::setw(10)<<i<<"\t"<<std::setw(10)<<j+1<<"\t"<<ResultsContainer[i][j].Correlation<<std::endl;
 					std::cout<<"\t"<<std::setw(10)<<i<<"\t"<<std::setw(10)<<j+1<<"\t"<<ResultsContainer[i][j].Correlation<<std::endl;
