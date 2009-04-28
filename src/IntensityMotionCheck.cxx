@@ -521,8 +521,8 @@ bool CIntensityMotionCheck::IntraCheck(
 				else
 					stddev = gradientMeanStdev;
 
-				//if( ResultsContainer[i][j].Correlation < CorrelationThreshold ||  ResultsContainer[i][j].Correlation < means[j] - deviations[j] * CorrelationDeviationThreshold) // ok
-				if( ResultsContainer[i][j].Correlation < CorrelationThreshold ||  ResultsContainer[i][j].Correlation < means[j] - stddev * CorrelationDeviationThreshold) // ok
+				if( ResultsContainer[i][j].Correlation < CorrelationThreshold ||  ResultsContainer[i][j].Correlation < means[j] - deviations[j] * CorrelationDeviationThreshold) // ok
+				//if( ResultsContainer[i][j].Correlation < CorrelationThreshold ||  ResultsContainer[i][j].Correlation < means[j] - stddev * CorrelationDeviationThreshold) // ok
 				{
 					outfile  <<"\t"<<std::setw(10)<<i<<"\t"<<std::setw(10)<<j+1<<"\t"<<ResultsContainer[i][j].Correlation<<std::endl;
 					std::cout<<"\t"<<std::setw(10)<<i<<"\t"<<std::setw(10)<<j+1<<"\t"<<ResultsContainer[i][j].Correlation<<std::endl;
