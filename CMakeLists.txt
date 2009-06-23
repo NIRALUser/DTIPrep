@@ -101,6 +101,9 @@ SET( DTIPrep_UIS
   gui/ImageView2DPanelWithControls.ui
 )
  
+SET(DTIPrep_RCCS DTIPrep.qrc)
+# generate rules for building source files from the resources
+QT4_ADD_RESOURCES(RCC_SRCS ${DTIPrep_RCCS})
 
 QT4_WRAP_UI( UIHeaders ${DTIPrep_UIS} )
 QT4_WRAP_CPP( MOCSrcs ${DTIPrep_HRDS} )
@@ -120,6 +123,7 @@ ADD_EXECUTABLE( DTIPrep
   ${DTIPrep_SRCS} 
   ${UISrcs} 
   ${MOCSrcs}
+  ${RCC_SRCS}
 )
 
 TARGET_LINK_LIBRARIES( DTIPrep
