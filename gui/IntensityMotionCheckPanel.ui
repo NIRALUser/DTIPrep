@@ -1,387 +1,388 @@
-<ui version="4.0" >
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
  <class>IntensityMotionCheckPanel</class>
- <widget class="QDockWidget" name="IntensityMotionCheckPanel" >
-  <property name="geometry" >
+ <widget class="QDockWidget" name="IntensityMotionCheckPanel">
+  <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>301</width>
-    <height>618</height>
+    <width>396</width>
+    <height>634</height>
    </rect>
   </property>
-  <property name="locale" >
-   <locale country="UnitedStates" language="English" />
+  <property name="locale">
+   <locale language="English" country="UnitedStates"/>
   </property>
-  <property name="windowTitle" >
+  <property name="windowTitle">
    <string>DTIPrep</string>
   </property>
-  <widget class="QWidget" name="dockWidgetContents" >
-   <layout class="QVBoxLayout" name="verticalLayout" >
+  <widget class="QWidget" name="dockWidgetContents">
+   <layout class="QVBoxLayout" name="verticalLayout">
     <item>
-     <widget class="QScrollArea" name="scrollArea" >
-      <property name="widgetResizable" >
+     <widget class="QScrollArea" name="scrollArea">
+      <property name="widgetResizable">
        <bool>true</bool>
       </property>
-      <widget class="QWidget" name="scrollAreaWidgetContents" >
-       <property name="geometry" >
+      <widget class="QWidget" name="scrollAreaWidgetContents">
+       <property name="geometry">
         <rect>
          <x>0</x>
          <y>0</y>
-         <width>281</width>
-         <height>575</height>
+         <width>368</width>
+         <height>580</height>
         </rect>
        </property>
-       <layout class="QVBoxLayout" name="verticalLayout_4" >
+       <layout class="QVBoxLayout" name="verticalLayout_4">
         <item>
-         <widget class="QTabWidget" name="tabWidgetm" >
-          <property name="sizePolicy" >
-           <sizepolicy vsizetype="Expanding" hsizetype="Preferred" >
+         <widget class="QTabWidget" name="tabWidgetm">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
             <horstretch>0</horstretch>
             <verstretch>0</verstretch>
            </sizepolicy>
           </property>
-          <property name="minimumSize" >
+          <property name="minimumSize">
            <size>
             <width>20</width>
             <height>0</height>
            </size>
           </property>
-          <property name="cursor" >
+          <property name="cursor">
            <cursorShape>ArrowCursor</cursorShape>
           </property>
-          <property name="currentIndex" >
-           <number>1</number>
+          <property name="currentIndex">
+           <number>2</number>
           </property>
-          <widget class="QWidget" name="Tab_3" >
-           <attribute name="title" >
+          <widget class="QWidget" name="Tab_3">
+           <attribute name="title">
             <string>DWI</string>
            </attribute>
-           <layout class="QVBoxLayout" name="verticalLayout_14" >
+           <layout class="QVBoxLayout" name="verticalLayout_14">
             <item>
-             <widget class="QGroupBox" name="groupBox_2" >
-              <property name="sizePolicy" >
-               <sizepolicy vsizetype="Preferred" hsizetype="Preferred" >
+             <widget class="QGroupBox" name="groupBox_2">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
                 <horstretch>0</horstretch>
                 <verstretch>0</verstretch>
                </sizepolicy>
               </property>
-              <property name="minimumSize" >
+              <property name="minimumSize">
                <size>
                 <width>150</width>
                 <height>0</height>
                </size>
               </property>
-              <property name="title" >
+              <property name="title">
                <string>ImageInfo</string>
               </property>
-              <layout class="QVBoxLayout" name="verticalLayout_11" >
-               <property name="spacing" >
+              <layout class="QVBoxLayout" name="verticalLayout_11">
+               <property name="spacing">
                 <number>1</number>
                </property>
-               <property name="topMargin" >
+               <property name="topMargin">
                 <number>1</number>
                </property>
-               <property name="bottomMargin" >
+               <property name="bottomMargin">
                 <number>3</number>
                </property>
                <item>
-                <layout class="QGridLayout" name="gridLayout_3" >
-                 <property name="horizontalSpacing" >
+                <layout class="QGridLayout" name="gridLayout_3">
+                 <property name="horizontalSpacing">
                   <number>4</number>
                  </property>
-                 <property name="verticalSpacing" >
+                 <property name="verticalSpacing">
                   <number>0</number>
                  </property>
-                 <item row="0" column="0" >
-                  <widget class="QLabel" name="label_30" >
-                   <property name="sizePolicy" >
-                    <sizepolicy vsizetype="Preferred" hsizetype="Preferred" >
+                 <item row="0" column="0">
+                  <widget class="QLabel" name="label_30">
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
                      <horstretch>0</horstretch>
                      <verstretch>0</verstretch>
                     </sizepolicy>
                    </property>
-                   <property name="text" >
+                   <property name="text">
                     <string>Size</string>
                    </property>
-                   <property name="alignment" >
+                   <property name="alignment">
                     <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
                    </property>
                   </widget>
                  </item>
-                 <item row="0" column="1" >
-                  <widget class="QLineEdit" name="lineEdit_SizeX" >
-                   <property name="sizePolicy" >
-                    <sizepolicy vsizetype="Fixed" hsizetype="Expanding" >
+                 <item row="0" column="1">
+                  <widget class="QLineEdit" name="lineEdit_SizeX">
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
                      <horstretch>0</horstretch>
                      <verstretch>0</verstretch>
                     </sizepolicy>
                    </property>
-                   <property name="minimumSize" >
+                   <property name="minimumSize">
                     <size>
                      <width>30</width>
                      <height>0</height>
                     </size>
                    </property>
-                   <property name="maximumSize" >
+                   <property name="maximumSize">
                     <size>
                      <width>16777215</width>
                      <height>20</height>
                     </size>
                    </property>
-                   <property name="text" >
+                   <property name="text">
                     <string/>
                    </property>
-                   <property name="alignment" >
+                   <property name="alignment">
                     <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
                    </property>
-                   <property name="readOnly" >
+                   <property name="readOnly">
                     <bool>true</bool>
                    </property>
                   </widget>
                  </item>
-                 <item row="0" column="2" >
-                  <widget class="QLineEdit" name="lineEdit_SizeY" >
-                   <property name="sizePolicy" >
-                    <sizepolicy vsizetype="Fixed" hsizetype="Expanding" >
+                 <item row="0" column="2">
+                  <widget class="QLineEdit" name="lineEdit_SizeY">
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
                      <horstretch>0</horstretch>
                      <verstretch>0</verstretch>
                     </sizepolicy>
                    </property>
-                   <property name="minimumSize" >
+                   <property name="minimumSize">
                     <size>
                      <width>30</width>
                      <height>0</height>
                     </size>
                    </property>
-                   <property name="maximumSize" >
+                   <property name="maximumSize">
                     <size>
                      <width>16777215</width>
                      <height>20</height>
                     </size>
                    </property>
-                   <property name="alignment" >
+                   <property name="alignment">
                     <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
                    </property>
-                   <property name="readOnly" >
+                   <property name="readOnly">
                     <bool>true</bool>
                    </property>
                   </widget>
                  </item>
-                 <item row="0" column="3" >
-                  <widget class="QLineEdit" name="lineEdit_SizeZ" >
-                   <property name="sizePolicy" >
-                    <sizepolicy vsizetype="Fixed" hsizetype="Expanding" >
+                 <item row="0" column="3">
+                  <widget class="QLineEdit" name="lineEdit_SizeZ">
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
                      <horstretch>0</horstretch>
                      <verstretch>0</verstretch>
                     </sizepolicy>
                    </property>
-                   <property name="minimumSize" >
+                   <property name="minimumSize">
                     <size>
                      <width>30</width>
                      <height>0</height>
                     </size>
                    </property>
-                   <property name="maximumSize" >
+                   <property name="maximumSize">
                     <size>
                      <width>16777215</width>
                      <height>20</height>
                     </size>
                    </property>
-                   <property name="alignment" >
+                   <property name="alignment">
                     <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
                    </property>
-                   <property name="readOnly" >
+                   <property name="readOnly">
                     <bool>true</bool>
                    </property>
                   </widget>
                  </item>
-                 <item row="1" column="0" >
-                  <widget class="QLabel" name="label_32" >
-                   <property name="sizePolicy" >
-                    <sizepolicy vsizetype="Preferred" hsizetype="Preferred" >
+                 <item row="1" column="0">
+                  <widget class="QLabel" name="label_32">
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
                      <horstretch>0</horstretch>
                      <verstretch>0</verstretch>
                     </sizepolicy>
                    </property>
-                   <property name="text" >
+                   <property name="text">
                     <string>Origin</string>
                    </property>
-                   <property name="alignment" >
+                   <property name="alignment">
                     <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
                    </property>
                   </widget>
                  </item>
-                 <item row="1" column="1" >
-                  <widget class="QLineEdit" name="lineEdit_OriginX" >
-                   <property name="sizePolicy" >
-                    <sizepolicy vsizetype="Fixed" hsizetype="Expanding" >
+                 <item row="1" column="1">
+                  <widget class="QLineEdit" name="lineEdit_OriginX">
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
                      <horstretch>0</horstretch>
                      <verstretch>0</verstretch>
                     </sizepolicy>
                    </property>
-                   <property name="minimumSize" >
+                   <property name="minimumSize">
                     <size>
                      <width>30</width>
                      <height>0</height>
                     </size>
                    </property>
-                   <property name="maximumSize" >
+                   <property name="maximumSize">
                     <size>
                      <width>16777215</width>
                      <height>20</height>
                     </size>
                    </property>
-                   <property name="alignment" >
+                   <property name="alignment">
                     <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
                    </property>
-                   <property name="readOnly" >
+                   <property name="readOnly">
                     <bool>true</bool>
                    </property>
                   </widget>
                  </item>
-                 <item row="1" column="2" >
-                  <widget class="QLineEdit" name="lineEdit_OriginY" >
-                   <property name="sizePolicy" >
-                    <sizepolicy vsizetype="Fixed" hsizetype="Expanding" >
+                 <item row="1" column="2">
+                  <widget class="QLineEdit" name="lineEdit_OriginY">
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
                      <horstretch>0</horstretch>
                      <verstretch>0</verstretch>
                     </sizepolicy>
                    </property>
-                   <property name="minimumSize" >
+                   <property name="minimumSize">
                     <size>
                      <width>30</width>
                      <height>0</height>
                     </size>
                    </property>
-                   <property name="maximumSize" >
+                   <property name="maximumSize">
                     <size>
                      <width>16777215</width>
                      <height>20</height>
                     </size>
                    </property>
-                   <property name="alignment" >
+                   <property name="alignment">
                     <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
                    </property>
-                   <property name="readOnly" >
+                   <property name="readOnly">
                     <bool>true</bool>
                    </property>
                   </widget>
                  </item>
-                 <item row="1" column="3" >
-                  <widget class="QLineEdit" name="lineEdit_OriginZ" >
-                   <property name="sizePolicy" >
-                    <sizepolicy vsizetype="Fixed" hsizetype="Expanding" >
+                 <item row="1" column="3">
+                  <widget class="QLineEdit" name="lineEdit_OriginZ">
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
                      <horstretch>0</horstretch>
                      <verstretch>0</verstretch>
                     </sizepolicy>
                    </property>
-                   <property name="minimumSize" >
+                   <property name="minimumSize">
                     <size>
                      <width>30</width>
                      <height>0</height>
                     </size>
                    </property>
-                   <property name="maximumSize" >
+                   <property name="maximumSize">
                     <size>
                      <width>16777215</width>
                      <height>20</height>
                     </size>
                    </property>
-                   <property name="alignment" >
+                   <property name="alignment">
                     <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
                    </property>
-                   <property name="readOnly" >
+                   <property name="readOnly">
                     <bool>true</bool>
                    </property>
                   </widget>
                  </item>
-                 <item row="2" column="0" >
-                  <widget class="QLabel" name="label_7" >
-                   <property name="text" >
+                 <item row="2" column="0">
+                  <widget class="QLabel" name="label_7">
+                   <property name="text">
                     <string>spacing</string>
                    </property>
                   </widget>
                  </item>
-                 <item row="2" column="1" >
-                  <widget class="QLineEdit" name="lineEdit_SpacingX" >
-                   <property name="sizePolicy" >
-                    <sizepolicy vsizetype="Fixed" hsizetype="Expanding" >
+                 <item row="2" column="1">
+                  <widget class="QLineEdit" name="lineEdit_SpacingX">
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
                      <horstretch>0</horstretch>
                      <verstretch>0</verstretch>
                     </sizepolicy>
                    </property>
-                   <property name="minimumSize" >
+                   <property name="minimumSize">
                     <size>
                      <width>30</width>
                      <height>0</height>
                     </size>
                    </property>
-                   <property name="maximumSize" >
+                   <property name="maximumSize">
                     <size>
                      <width>16777215</width>
                      <height>20</height>
                     </size>
                    </property>
-                   <property name="alignment" >
+                   <property name="alignment">
                     <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
                    </property>
-                   <property name="readOnly" >
+                   <property name="readOnly">
                     <bool>true</bool>
                    </property>
                   </widget>
                  </item>
-                 <item row="2" column="2" >
-                  <widget class="QLineEdit" name="lineEdit_SpacingY" >
-                   <property name="sizePolicy" >
-                    <sizepolicy vsizetype="Fixed" hsizetype="Expanding" >
+                 <item row="2" column="2">
+                  <widget class="QLineEdit" name="lineEdit_SpacingY">
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
                      <horstretch>0</horstretch>
                      <verstretch>0</verstretch>
                     </sizepolicy>
                    </property>
-                   <property name="minimumSize" >
+                   <property name="minimumSize">
                     <size>
                      <width>30</width>
                      <height>0</height>
                     </size>
                    </property>
-                   <property name="maximumSize" >
+                   <property name="maximumSize">
                     <size>
                      <width>16777215</width>
                      <height>20</height>
                     </size>
                    </property>
-                   <property name="alignment" >
+                   <property name="alignment">
                     <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
                    </property>
-                   <property name="readOnly" >
+                   <property name="readOnly">
                     <bool>true</bool>
                    </property>
                   </widget>
                  </item>
-                 <item row="2" column="3" >
-                  <widget class="QLineEdit" name="lineEdit_SpacingZ" >
-                   <property name="sizePolicy" >
-                    <sizepolicy vsizetype="Fixed" hsizetype="Expanding" >
+                 <item row="2" column="3">
+                  <widget class="QLineEdit" name="lineEdit_SpacingZ">
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
                      <horstretch>0</horstretch>
                      <verstretch>0</verstretch>
                     </sizepolicy>
                    </property>
-                   <property name="minimumSize" >
+                   <property name="minimumSize">
                     <size>
                      <width>30</width>
                      <height>0</height>
                     </size>
                    </property>
-                   <property name="maximumSize" >
+                   <property name="maximumSize">
                     <size>
                      <width>16777215</width>
                      <height>20</height>
                     </size>
                    </property>
-                   <property name="alignment" >
+                   <property name="alignment">
                     <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
                    </property>
-                   <property name="readOnly" >
+                   <property name="readOnly">
                     <bool>true</bool>
                    </property>
                   </widget>
@@ -389,68 +390,68 @@
                 </layout>
                </item>
                <item>
-                <layout class="QHBoxLayout" name="horizontalLayout_13" >
+                <layout class="QHBoxLayout" name="horizontalLayout_13">
                  <item>
-                  <widget class="QLabel" name="label_27" >
-                   <property name="sizePolicy" >
-                    <sizepolicy vsizetype="Preferred" hsizetype="Fixed" >
+                  <widget class="QLabel" name="label_27">
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
                      <horstretch>0</horstretch>
                      <verstretch>0</verstretch>
                     </sizepolicy>
                    </property>
-                   <property name="text" >
+                   <property name="text">
                     <string>Space</string>
                    </property>
-                   <property name="alignment" >
+                   <property name="alignment">
                     <set>Qt::AlignCenter</set>
                    </property>
                   </widget>
                  </item>
                  <item>
-                  <widget class="QComboBox" name="comboBox_Space" >
-                   <property name="maximumSize" >
+                  <widget class="QComboBox" name="comboBox_Space">
+                   <property name="maximumSize">
                     <size>
                      <width>16777215</width>
                      <height>20</height>
                     </size>
                    </property>
                    <item>
-                    <property name="text" >
+                    <property name="text">
                      <string>left-anterior-inferior</string>
                     </property>
                    </item>
                    <item>
-                    <property name="text" >
+                    <property name="text">
                      <string>left-anterior-superior</string>
                     </property>
                    </item>
                    <item>
-                    <property name="text" >
+                    <property name="text">
                      <string>left-posterior-inferior</string>
                     </property>
                    </item>
                    <item>
-                    <property name="text" >
+                    <property name="text">
                      <string>left-posterior-superior</string>
                     </property>
                    </item>
                    <item>
-                    <property name="text" >
+                    <property name="text">
                      <string>right-anterior-inferior</string>
                     </property>
                    </item>
                    <item>
-                    <property name="text" >
+                    <property name="text">
                      <string>right-anterior-superior</string>
                     </property>
                    </item>
                    <item>
-                    <property name="text" >
+                    <property name="text">
                      <string>right-posterior-inferior</string>
                     </property>
                    </item>
                    <item>
-                    <property name="text" >
+                    <property name="text">
                      <string>right-posterior-superior</string>
                     </property>
                    </item>
@@ -462,282 +463,282 @@
              </widget>
             </item>
             <item>
-             <widget class="QGroupBox" name="groupBox_13" >
-              <property name="sizePolicy" >
-               <sizepolicy vsizetype="Preferred" hsizetype="Preferred" >
+             <widget class="QGroupBox" name="groupBox_13">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
                 <horstretch>0</horstretch>
                 <verstretch>0</verstretch>
                </sizepolicy>
               </property>
-              <property name="title" >
+              <property name="title">
                <string>Space directions</string>
               </property>
-              <layout class="QVBoxLayout" name="verticalLayout_12" >
-               <property name="spacing" >
+              <layout class="QVBoxLayout" name="verticalLayout_12">
+               <property name="spacing">
                 <number>1</number>
                </property>
-               <property name="topMargin" >
+               <property name="topMargin">
                 <number>1</number>
                </property>
-               <property name="bottomMargin" >
+               <property name="bottomMargin">
                 <number>3</number>
                </property>
                <item>
-                <layout class="QGridLayout" name="gridLayout_5" >
-                 <property name="horizontalSpacing" >
+                <layout class="QGridLayout" name="gridLayout_5">
+                 <property name="horizontalSpacing">
                   <number>4</number>
                  </property>
-                 <property name="verticalSpacing" >
+                 <property name="verticalSpacing">
                   <number>0</number>
                  </property>
-                 <item row="0" column="0" >
-                  <widget class="QLineEdit" name="lineEdit_SpaceDir11" >
-                   <property name="sizePolicy" >
-                    <sizepolicy vsizetype="Fixed" hsizetype="Expanding" >
+                 <item row="0" column="0">
+                  <widget class="QLineEdit" name="lineEdit_SpaceDir11">
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
                      <horstretch>0</horstretch>
                      <verstretch>0</verstretch>
                     </sizepolicy>
                    </property>
-                   <property name="minimumSize" >
+                   <property name="minimumSize">
                     <size>
                      <width>30</width>
                      <height>0</height>
                     </size>
                    </property>
-                   <property name="maximumSize" >
+                   <property name="maximumSize">
                     <size>
                      <width>16777215</width>
                      <height>20</height>
                     </size>
                    </property>
-                   <property name="alignment" >
+                   <property name="alignment">
                     <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
                    </property>
-                   <property name="readOnly" >
+                   <property name="readOnly">
                     <bool>true</bool>
                    </property>
                   </widget>
                  </item>
-                 <item row="0" column="1" >
-                  <widget class="QLineEdit" name="lineEdit_SpaceDir12" >
-                   <property name="sizePolicy" >
-                    <sizepolicy vsizetype="Fixed" hsizetype="Expanding" >
+                 <item row="0" column="1">
+                  <widget class="QLineEdit" name="lineEdit_SpaceDir12">
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
                      <horstretch>0</horstretch>
                      <verstretch>0</verstretch>
                     </sizepolicy>
                    </property>
-                   <property name="minimumSize" >
+                   <property name="minimumSize">
                     <size>
                      <width>30</width>
                      <height>0</height>
                     </size>
                    </property>
-                   <property name="maximumSize" >
+                   <property name="maximumSize">
                     <size>
                      <width>16777215</width>
                      <height>20</height>
                     </size>
                    </property>
-                   <property name="alignment" >
+                   <property name="alignment">
                     <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
                    </property>
-                   <property name="readOnly" >
+                   <property name="readOnly">
                     <bool>true</bool>
                    </property>
                   </widget>
                  </item>
-                 <item row="0" column="2" >
-                  <widget class="QLineEdit" name="lineEdit_SpaceDir13" >
-                   <property name="sizePolicy" >
-                    <sizepolicy vsizetype="Fixed" hsizetype="Expanding" >
+                 <item row="0" column="2">
+                  <widget class="QLineEdit" name="lineEdit_SpaceDir13">
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
                      <horstretch>0</horstretch>
                      <verstretch>0</verstretch>
                     </sizepolicy>
                    </property>
-                   <property name="minimumSize" >
+                   <property name="minimumSize">
                     <size>
                      <width>30</width>
                      <height>0</height>
                     </size>
                    </property>
-                   <property name="maximumSize" >
+                   <property name="maximumSize">
                     <size>
                      <width>16777215</width>
                      <height>20</height>
                     </size>
                    </property>
-                   <property name="alignment" >
+                   <property name="alignment">
                     <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
                    </property>
-                   <property name="readOnly" >
+                   <property name="readOnly">
                     <bool>true</bool>
                    </property>
                   </widget>
                  </item>
-                 <item row="1" column="0" >
-                  <widget class="QLineEdit" name="lineEdit_SpaceDir21" >
-                   <property name="sizePolicy" >
-                    <sizepolicy vsizetype="Fixed" hsizetype="Expanding" >
+                 <item row="1" column="0">
+                  <widget class="QLineEdit" name="lineEdit_SpaceDir21">
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
                      <horstretch>0</horstretch>
                      <verstretch>0</verstretch>
                     </sizepolicy>
                    </property>
-                   <property name="minimumSize" >
+                   <property name="minimumSize">
                     <size>
                      <width>30</width>
                      <height>0</height>
                     </size>
                    </property>
-                   <property name="maximumSize" >
+                   <property name="maximumSize">
                     <size>
                      <width>16777215</width>
                      <height>20</height>
                     </size>
                    </property>
-                   <property name="alignment" >
+                   <property name="alignment">
                     <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
                    </property>
-                   <property name="readOnly" >
+                   <property name="readOnly">
                     <bool>true</bool>
                    </property>
                   </widget>
                  </item>
-                 <item row="1" column="1" >
-                  <widget class="QLineEdit" name="lineEdit_SpaceDir22" >
-                   <property name="sizePolicy" >
-                    <sizepolicy vsizetype="Fixed" hsizetype="Expanding" >
+                 <item row="1" column="1">
+                  <widget class="QLineEdit" name="lineEdit_SpaceDir22">
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
                      <horstretch>0</horstretch>
                      <verstretch>0</verstretch>
                     </sizepolicy>
                    </property>
-                   <property name="minimumSize" >
+                   <property name="minimumSize">
                     <size>
                      <width>30</width>
                      <height>0</height>
                     </size>
                    </property>
-                   <property name="maximumSize" >
+                   <property name="maximumSize">
                     <size>
                      <width>16777215</width>
                      <height>20</height>
                     </size>
                    </property>
-                   <property name="alignment" >
+                   <property name="alignment">
                     <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
                    </property>
-                   <property name="readOnly" >
+                   <property name="readOnly">
                     <bool>true</bool>
                    </property>
                   </widget>
                  </item>
-                 <item row="1" column="2" >
-                  <widget class="QLineEdit" name="lineEdit_SpaceDir23" >
-                   <property name="sizePolicy" >
-                    <sizepolicy vsizetype="Fixed" hsizetype="Expanding" >
+                 <item row="1" column="2">
+                  <widget class="QLineEdit" name="lineEdit_SpaceDir23">
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
                      <horstretch>0</horstretch>
                      <verstretch>0</verstretch>
                     </sizepolicy>
                    </property>
-                   <property name="minimumSize" >
+                   <property name="minimumSize">
                     <size>
                      <width>30</width>
                      <height>0</height>
                     </size>
                    </property>
-                   <property name="maximumSize" >
+                   <property name="maximumSize">
                     <size>
                      <width>16777215</width>
                      <height>20</height>
                     </size>
                    </property>
-                   <property name="alignment" >
+                   <property name="alignment">
                     <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
                    </property>
-                   <property name="readOnly" >
+                   <property name="readOnly">
                     <bool>true</bool>
                    </property>
                   </widget>
                  </item>
-                 <item row="2" column="0" >
-                  <widget class="QLineEdit" name="lineEdit_SpaceDir31" >
-                   <property name="sizePolicy" >
-                    <sizepolicy vsizetype="Fixed" hsizetype="Expanding" >
+                 <item row="2" column="0">
+                  <widget class="QLineEdit" name="lineEdit_SpaceDir31">
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
                      <horstretch>0</horstretch>
                      <verstretch>0</verstretch>
                     </sizepolicy>
                    </property>
-                   <property name="minimumSize" >
+                   <property name="minimumSize">
                     <size>
                      <width>30</width>
                      <height>0</height>
                     </size>
                    </property>
-                   <property name="maximumSize" >
+                   <property name="maximumSize">
                     <size>
                      <width>16777215</width>
                      <height>20</height>
                     </size>
                    </property>
-                   <property name="alignment" >
+                   <property name="alignment">
                     <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
                    </property>
-                   <property name="readOnly" >
+                   <property name="readOnly">
                     <bool>true</bool>
                    </property>
                   </widget>
                  </item>
-                 <item row="2" column="1" >
-                  <widget class="QLineEdit" name="lineEdit_SpaceDir32" >
-                   <property name="sizePolicy" >
-                    <sizepolicy vsizetype="Fixed" hsizetype="Expanding" >
+                 <item row="2" column="1">
+                  <widget class="QLineEdit" name="lineEdit_SpaceDir32">
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
                      <horstretch>0</horstretch>
                      <verstretch>0</verstretch>
                     </sizepolicy>
                    </property>
-                   <property name="minimumSize" >
+                   <property name="minimumSize">
                     <size>
                      <width>30</width>
                      <height>0</height>
                     </size>
                    </property>
-                   <property name="maximumSize" >
+                   <property name="maximumSize">
                     <size>
                      <width>16777215</width>
                      <height>20</height>
                     </size>
                    </property>
-                   <property name="alignment" >
+                   <property name="alignment">
                     <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
                    </property>
-                   <property name="readOnly" >
+                   <property name="readOnly">
                     <bool>true</bool>
                    </property>
                   </widget>
                  </item>
-                 <item row="2" column="2" >
-                  <widget class="QLineEdit" name="lineEdit_SpaceDir33" >
-                   <property name="sizePolicy" >
-                    <sizepolicy vsizetype="Fixed" hsizetype="Expanding" >
+                 <item row="2" column="2">
+                  <widget class="QLineEdit" name="lineEdit_SpaceDir33">
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
                      <horstretch>0</horstretch>
                      <verstretch>0</verstretch>
                     </sizepolicy>
                    </property>
-                   <property name="minimumSize" >
+                   <property name="minimumSize">
                     <size>
                      <width>30</width>
                      <height>0</height>
                     </size>
                    </property>
-                   <property name="maximumSize" >
+                   <property name="maximumSize">
                     <size>
                      <width>16777215</width>
                      <height>20</height>
                     </size>
                    </property>
-                   <property name="alignment" >
+                   <property name="alignment">
                     <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
                    </property>
-                   <property name="readOnly" >
+                   <property name="readOnly">
                     <bool>true</bool>
                    </property>
                   </widget>
@@ -748,276 +749,276 @@
              </widget>
             </item>
             <item>
-             <widget class="QGroupBox" name="groupBox_7" >
-              <property name="sizePolicy" >
-               <sizepolicy vsizetype="Preferred" hsizetype="Preferred" >
+             <widget class="QGroupBox" name="groupBox_7">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
                 <horstretch>0</horstretch>
                 <verstretch>0</verstretch>
                </sizepolicy>
               </property>
-              <property name="maximumSize" >
+              <property name="maximumSize">
                <size>
                 <width>22222</width>
                 <height>16777215</height>
                </size>
               </property>
-              <property name="title" >
+              <property name="title">
                <string>Measurement Frame</string>
               </property>
-              <layout class="QVBoxLayout" name="verticalLayout_13" >
-               <property name="topMargin" >
+              <layout class="QVBoxLayout" name="verticalLayout_13">
+               <property name="topMargin">
                 <number>1</number>
                </property>
-               <property name="bottomMargin" >
+               <property name="bottomMargin">
                 <number>3</number>
                </property>
                <item>
-                <layout class="QGridLayout" name="gridLayout_4" >
-                 <property name="horizontalSpacing" >
+                <layout class="QGridLayout" name="gridLayout_4">
+                 <property name="horizontalSpacing">
                   <number>4</number>
                  </property>
-                 <property name="verticalSpacing" >
+                 <property name="verticalSpacing">
                   <number>0</number>
                  </property>
-                 <item row="0" column="0" >
-                  <widget class="QLineEdit" name="lineEdit_MeasurementFrame11" >
-                   <property name="sizePolicy" >
-                    <sizepolicy vsizetype="Fixed" hsizetype="Expanding" >
+                 <item row="0" column="0">
+                  <widget class="QLineEdit" name="lineEdit_MeasurementFrame11">
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
                      <horstretch>0</horstretch>
                      <verstretch>0</verstretch>
                     </sizepolicy>
                    </property>
-                   <property name="minimumSize" >
+                   <property name="minimumSize">
                     <size>
                      <width>20</width>
                      <height>0</height>
                     </size>
                    </property>
-                   <property name="maximumSize" >
+                   <property name="maximumSize">
                     <size>
                      <width>16777215</width>
                      <height>20</height>
                     </size>
                    </property>
-                   <property name="text" >
+                   <property name="text">
                     <string/>
                    </property>
-                   <property name="alignment" >
+                   <property name="alignment">
                     <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
                    </property>
-                   <property name="readOnly" >
+                   <property name="readOnly">
                     <bool>true</bool>
                    </property>
                   </widget>
                  </item>
-                 <item row="1" column="0" >
-                  <widget class="QLineEdit" name="lineEdit_MeasurementFrame21" >
-                   <property name="sizePolicy" >
-                    <sizepolicy vsizetype="Fixed" hsizetype="Expanding" >
+                 <item row="1" column="0">
+                  <widget class="QLineEdit" name="lineEdit_MeasurementFrame21">
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
                      <horstretch>0</horstretch>
                      <verstretch>0</verstretch>
                     </sizepolicy>
                    </property>
-                   <property name="maximumSize" >
+                   <property name="maximumSize">
                     <size>
                      <width>16777215</width>
                      <height>20</height>
                     </size>
                    </property>
-                   <property name="text" >
+                   <property name="text">
                     <string/>
                    </property>
-                   <property name="alignment" >
+                   <property name="alignment">
                     <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
                    </property>
-                   <property name="readOnly" >
+                   <property name="readOnly">
                     <bool>true</bool>
                    </property>
                   </widget>
                  </item>
-                 <item row="1" column="1" >
-                  <widget class="QLineEdit" name="lineEdit_MeasurementFrame22" >
-                   <property name="sizePolicy" >
-                    <sizepolicy vsizetype="Fixed" hsizetype="Expanding" >
+                 <item row="1" column="1">
+                  <widget class="QLineEdit" name="lineEdit_MeasurementFrame22">
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
                      <horstretch>0</horstretch>
                      <verstretch>0</verstretch>
                     </sizepolicy>
                    </property>
-                   <property name="maximumSize" >
+                   <property name="maximumSize">
                     <size>
                      <width>16777215</width>
                      <height>20</height>
                     </size>
                    </property>
-                   <property name="text" >
+                   <property name="text">
                     <string/>
                    </property>
-                   <property name="alignment" >
+                   <property name="alignment">
                     <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
                    </property>
-                   <property name="readOnly" >
+                   <property name="readOnly">
                     <bool>true</bool>
                    </property>
                   </widget>
                  </item>
-                 <item row="2" column="1" >
-                  <widget class="QLineEdit" name="lineEdit_MeasurementFrame32" >
-                   <property name="sizePolicy" >
-                    <sizepolicy vsizetype="Fixed" hsizetype="Expanding" >
+                 <item row="2" column="1">
+                  <widget class="QLineEdit" name="lineEdit_MeasurementFrame32">
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
                      <horstretch>0</horstretch>
                      <verstretch>0</verstretch>
                     </sizepolicy>
                    </property>
-                   <property name="maximumSize" >
+                   <property name="maximumSize">
                     <size>
                      <width>16777215</width>
                      <height>20</height>
                     </size>
                    </property>
-                   <property name="text" >
+                   <property name="text">
                     <string/>
                    </property>
-                   <property name="alignment" >
+                   <property name="alignment">
                     <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
                    </property>
-                   <property name="readOnly" >
+                   <property name="readOnly">
                     <bool>true</bool>
                    </property>
                   </widget>
                  </item>
-                 <item row="2" column="2" >
-                  <widget class="QLineEdit" name="lineEdit_MeasurementFrame33" >
-                   <property name="sizePolicy" >
-                    <sizepolicy vsizetype="Fixed" hsizetype="Expanding" >
+                 <item row="2" column="2">
+                  <widget class="QLineEdit" name="lineEdit_MeasurementFrame33">
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
                      <horstretch>0</horstretch>
                      <verstretch>0</verstretch>
                     </sizepolicy>
                    </property>
-                   <property name="maximumSize" >
+                   <property name="maximumSize">
                     <size>
                      <width>16777215</width>
                      <height>20</height>
                     </size>
                    </property>
-                   <property name="text" >
+                   <property name="text">
                     <string/>
                    </property>
-                   <property name="alignment" >
+                   <property name="alignment">
                     <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
                    </property>
-                   <property name="readOnly" >
+                   <property name="readOnly">
                     <bool>true</bool>
                    </property>
                   </widget>
                  </item>
-                 <item row="0" column="1" >
-                  <widget class="QLineEdit" name="lineEdit_MeasurementFrame12" >
-                   <property name="sizePolicy" >
-                    <sizepolicy vsizetype="Fixed" hsizetype="Expanding" >
+                 <item row="0" column="1">
+                  <widget class="QLineEdit" name="lineEdit_MeasurementFrame12">
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
                      <horstretch>0</horstretch>
                      <verstretch>0</verstretch>
                     </sizepolicy>
                    </property>
-                   <property name="minimumSize" >
+                   <property name="minimumSize">
                     <size>
                      <width>20</width>
                      <height>0</height>
                     </size>
                    </property>
-                   <property name="maximumSize" >
+                   <property name="maximumSize">
                     <size>
                      <width>16777215</width>
                      <height>20</height>
                     </size>
                    </property>
-                   <property name="text" >
+                   <property name="text">
                     <string/>
                    </property>
-                   <property name="alignment" >
+                   <property name="alignment">
                     <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
                    </property>
-                   <property name="readOnly" >
+                   <property name="readOnly">
                     <bool>true</bool>
                    </property>
                   </widget>
                  </item>
-                 <item row="0" column="2" >
-                  <widget class="QLineEdit" name="lineEdit_MeasurementFrame13" >
-                   <property name="sizePolicy" >
-                    <sizepolicy vsizetype="Fixed" hsizetype="Expanding" >
+                 <item row="0" column="2">
+                  <widget class="QLineEdit" name="lineEdit_MeasurementFrame13">
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
                      <horstretch>0</horstretch>
                      <verstretch>0</verstretch>
                     </sizepolicy>
                    </property>
-                   <property name="minimumSize" >
+                   <property name="minimumSize">
                     <size>
                      <width>20</width>
                      <height>0</height>
                     </size>
                    </property>
-                   <property name="maximumSize" >
+                   <property name="maximumSize">
                     <size>
                      <width>16777215</width>
                      <height>20</height>
                     </size>
                    </property>
-                   <property name="text" >
+                   <property name="text">
                     <string/>
                    </property>
-                   <property name="alignment" >
+                   <property name="alignment">
                     <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
                    </property>
-                   <property name="readOnly" >
+                   <property name="readOnly">
                     <bool>true</bool>
                    </property>
                   </widget>
                  </item>
-                 <item row="1" column="2" >
-                  <widget class="QLineEdit" name="lineEdit_MeasurementFrame23" >
-                   <property name="sizePolicy" >
-                    <sizepolicy vsizetype="Fixed" hsizetype="Expanding" >
+                 <item row="1" column="2">
+                  <widget class="QLineEdit" name="lineEdit_MeasurementFrame23">
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
                      <horstretch>0</horstretch>
                      <verstretch>0</verstretch>
                     </sizepolicy>
                    </property>
-                   <property name="maximumSize" >
+                   <property name="maximumSize">
                     <size>
                      <width>16777215</width>
                      <height>20</height>
                     </size>
                    </property>
-                   <property name="text" >
+                   <property name="text">
                     <string/>
                    </property>
-                   <property name="alignment" >
+                   <property name="alignment">
                     <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
                    </property>
-                   <property name="readOnly" >
+                   <property name="readOnly">
                     <bool>true</bool>
                    </property>
                   </widget>
                  </item>
-                 <item row="2" column="0" >
-                  <widget class="QLineEdit" name="lineEdit_MeasurementFrame31" >
-                   <property name="sizePolicy" >
-                    <sizepolicy vsizetype="Fixed" hsizetype="Expanding" >
+                 <item row="2" column="0">
+                  <widget class="QLineEdit" name="lineEdit_MeasurementFrame31">
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
                      <horstretch>0</horstretch>
                      <verstretch>0</verstretch>
                     </sizepolicy>
                    </property>
-                   <property name="maximumSize" >
+                   <property name="maximumSize">
                     <size>
                      <width>16777215</width>
                      <height>20</height>
                     </size>
                    </property>
-                   <property name="text" >
+                   <property name="text">
                     <string/>
                    </property>
-                   <property name="alignment" >
+                   <property name="alignment">
                     <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
                    </property>
-                   <property name="readOnly" >
+                   <property name="readOnly">
                     <bool>true</bool>
                    </property>
                   </widget>
@@ -1028,29 +1029,29 @@
              </widget>
             </item>
             <item>
-             <widget class="QGroupBox" name="groupBox_11" >
-              <property name="title" >
+             <widget class="QGroupBox" name="groupBox_11">
+              <property name="title">
                <string>Diffusion</string>
               </property>
-              <layout class="QVBoxLayout" name="verticalLayout_15" >
-               <property name="spacing" >
+              <layout class="QVBoxLayout" name="verticalLayout_15">
+               <property name="spacing">
                 <number>1</number>
                </property>
-               <property name="topMargin" >
+               <property name="topMargin">
                 <number>1</number>
                </property>
-               <property name="bottomMargin" >
+               <property name="bottomMargin">
                 <number>3</number>
                </property>
                <item>
-                <widget class="QTreeWidget" name="treeWidget_DiffusionInformation" >
+                <widget class="QTreeWidget" name="treeWidget_DiffusionInformation">
                  <column>
-                  <property name="text" >
+                  <property name="text">
                    <string>Tag</string>
                   </property>
                  </column>
                  <column>
-                  <property name="text" >
+                  <property name="text">
                    <string>Value</string>
                   </property>
                  </column>
@@ -1061,33 +1062,33 @@
             </item>
            </layout>
           </widget>
-          <widget class="QWidget" name="tab_Protocal" >
-           <attribute name="title" >
+          <widget class="QWidget" name="tab_Protocal">
+           <attribute name="title">
             <string>Protocol</string>
            </attribute>
-           <layout class="QVBoxLayout" name="verticalLayout_7" >
+           <layout class="QVBoxLayout" name="verticalLayout_7">
             <item>
-             <layout class="QVBoxLayout" name="verticalLayout_6" >
+             <layout class="QVBoxLayout" name="verticalLayout_6">
               <item>
-               <layout class="QHBoxLayout" name="horizontalLayout_6" >
+               <layout class="QHBoxLayout" name="horizontalLayout_6">
                 <item>
-                 <widget class="QLineEdit" name="lineEdit_Protocal" />
+                 <widget class="QLineEdit" name="lineEdit_Protocal"/>
                 </item>
                 <item>
-                 <widget class="QToolButton" name="toolButton_ProtocalFileOpen" >
-                  <property name="minimumSize" >
+                 <widget class="QToolButton" name="toolButton_ProtocalFileOpen">
+                  <property name="minimumSize">
                    <size>
                     <width>0</width>
                     <height>20</height>
                    </size>
                   </property>
-                  <property name="maximumSize" >
+                  <property name="maximumSize">
                    <size>
                     <width>16777215</width>
                     <height>16777215</height>
                    </size>
                   </property>
-                  <property name="text" >
+                  <property name="text">
                    <string>Load</string>
                   </property>
                  </widget>
@@ -1095,33 +1096,33 @@
                </layout>
               </item>
               <item>
-               <layout class="QHBoxLayout" name="horizontalLayout_5" >
+               <layout class="QHBoxLayout" name="horizontalLayout_5">
                 <item>
-                 <widget class="QPushButton" name="pushButton_DefaultProtocol" >
-                  <property name="text" >
+                 <widget class="QPushButton" name="pushButton_DefaultProtocol">
+                  <property name="text">
                    <string>Default</string>
                   </property>
                  </widget>
                 </item>
                 <item>
-                 <widget class="QPushButton" name="pushButton_Save" >
-                  <property name="enabled" >
+                 <widget class="QPushButton" name="pushButton_Save">
+                  <property name="enabled">
                    <bool>true</bool>
                   </property>
-                  <property name="text" >
+                  <property name="text">
                    <string>Save&amp;&amp;Update</string>
                   </property>
-                  <property name="default" >
+                  <property name="default">
                    <bool>false</bool>
                   </property>
-                  <property name="flat" >
+                  <property name="flat">
                    <bool>false</bool>
                   </property>
                  </widget>
                 </item>
                 <item>
-                 <widget class="QPushButton" name="pushButton_SaveProtocolAs" >
-                  <property name="text" >
+                 <widget class="QPushButton" name="pushButton_SaveProtocolAs">
+                  <property name="text">
                    <string>Save as</string>
                   </property>
                  </widget>
@@ -1131,59 +1132,59 @@
              </layout>
             </item>
             <item>
-             <widget class="QTreeWidget" name="treeWidget" >
-              <property name="editTriggers" >
+             <widget class="QTreeWidget" name="treeWidget">
+              <property name="editTriggers">
                <set>QAbstractItemView::AllEditTriggers</set>
               </property>
-              <property name="alternatingRowColors" >
+              <property name="alternatingRowColors">
                <bool>true</bool>
               </property>
-              <property name="rootIsDecorated" >
+              <property name="rootIsDecorated">
                <bool>true</bool>
               </property>
-              <property name="uniformRowHeights" >
+              <property name="uniformRowHeights">
                <bool>false</bool>
               </property>
-              <property name="allColumnsShowFocus" >
+              <property name="allColumnsShowFocus">
                <bool>true</bool>
               </property>
               <column>
-               <property name="text" >
+               <property name="text">
                 <string>Item</string>
                </property>
               </column>
               <column>
-               <property name="text" >
+               <property name="text">
                 <string>Value</string>
                </property>
               </column>
              </widget>
             </item>
             <item>
-             <widget class="QGroupBox" name="groupBox_Progress" >
-              <property name="title" >
+             <widget class="QGroupBox" name="groupBox_Progress">
+              <property name="title">
                <string>Progress</string>
               </property>
-              <layout class="QHBoxLayout" name="horizontalLayout_3" >
-               <property name="topMargin" >
+              <layout class="QHBoxLayout" name="horizontalLayout_3">
+               <property name="topMargin">
                 <number>1</number>
                </property>
-               <property name="bottomMargin" >
+               <property name="bottomMargin">
                 <number>4</number>
                </property>
                <item>
-                <widget class="QProgressBar" name="progressBar" >
-                 <property name="value" >
+                <widget class="QProgressBar" name="progressBar">
+                 <property name="value">
                   <number>24</number>
                  </property>
-                 <property name="alignment" >
+                 <property name="alignment">
                   <set>Qt::AlignCenter</set>
                  </property>
                 </widget>
                </item>
                <item>
-                <widget class="QPushButton" name="pushButton_RunPipeline" >
-                 <property name="text" >
+                <widget class="QPushButton" name="pushButton_RunPipeline">
+                 <property name="text">
                   <string>RunByProtocol</string>
                  </property>
                 </widget>
@@ -1193,46 +1194,46 @@
             </item>
            </layout>
           </widget>
-          <widget class="QWidget" name="标签页" >
-           <attribute name="title" >
+          <widget class="QWidget" name="ODDCHARACTERS">
+           <attribute name="title">
             <string>QCResults</string>
            </attribute>
-           <layout class="QVBoxLayout" name="verticalLayout_5" >
+           <layout class="QVBoxLayout" name="verticalLayout_5">
             <item>
-             <layout class="QVBoxLayout" name="verticalLayout_3" >
+             <layout class="QVBoxLayout" name="verticalLayout_3">
               <item>
-               <layout class="QHBoxLayout" name="horizontalLayout_2" >
+               <layout class="QHBoxLayout" name="horizontalLayout_2">
                 <item>
-                 <widget class="QLineEdit" name="lineEdit_QCReport" />
+                 <widget class="QLineEdit" name="lineEdit_QCReport"/>
                 </item>
                </layout>
               </item>
               <item>
-               <layout class="QHBoxLayout" name="horizontalLayout_4" >
+               <layout class="QHBoxLayout" name="horizontalLayout_4">
                 <item>
-                 <widget class="QPushButton" name="pushButton_DefaultQCResult" >
-                  <property name="text" >
+                 <widget class="QPushButton" name="pushButton_DefaultQCResult">
+                  <property name="text">
                    <string>Default</string>
                   </property>
                  </widget>
                 </item>
                 <item>
-                 <widget class="QPushButton" name="pushButton_OpenQCReport" >
-                  <property name="text" >
+                 <widget class="QPushButton" name="pushButton_OpenQCReport">
+                  <property name="text">
                    <string>Load</string>
                   </property>
                  </widget>
                 </item>
                 <item>
-                 <widget class="QPushButton" name="pushButton_SaveQCReport" >
-                  <property name="text" >
+                 <widget class="QPushButton" name="pushButton_SaveQCReport">
+                  <property name="text">
                    <string>Save</string>
                   </property>
                  </widget>
                 </item>
                 <item>
-                 <widget class="QPushButton" name="pushButton_SaveQCReportAs" >
-                  <property name="text" >
+                 <widget class="QPushButton" name="pushButton_SaveQCReportAs">
+                  <property name="text">
                    <string>Save as</string>
                   </property>
                  </widget>
@@ -1242,42 +1243,42 @@
              </layout>
             </item>
             <item>
-             <widget class="QTreeWidget" name="treeWidget_Results" >
+             <widget class="QTreeWidget" name="treeWidget_Results">
               <column>
-               <property name="text" >
+               <property name="text">
                 <string>Type</string>
                </property>
               </column>
               <column>
-               <property name="text" >
+               <property name="text">
                 <string>Parameter</string>
                </property>
               </column>
               <column>
-               <property name="text" >
+               <property name="text">
                 <string>Processing</string>
                </property>
               </column>
              </widget>
             </item>
             <item>
-             <widget class="QGroupBox" name="groupBox" >
-              <property name="title" >
+             <widget class="QGroupBox" name="groupBox">
+              <property name="title">
                <string>Save DWI</string>
               </property>
-              <layout class="QVBoxLayout" name="verticalLayout_2" >
+              <layout class="QVBoxLayout" name="verticalLayout_2">
                <item>
-                <layout class="QHBoxLayout" name="horizontalLayout" >
+                <layout class="QHBoxLayout" name="horizontalLayout">
                  <item>
-                  <widget class="QPushButton" name="pushButton_SaveDWI" >
-                   <property name="text" >
+                  <widget class="QPushButton" name="pushButton_SaveDWI">
+                   <property name="text">
                     <string>Save by protocol</string>
                    </property>
                   </widget>
                  </item>
                  <item>
-                  <widget class="QPushButton" name="pushButton_SaveDWIAs" >
-                   <property name="text" >
+                  <widget class="QPushButton" name="pushButton_SaveDWIAs">
+                   <property name="text">
                     <string>Save as ...</string>
                    </property>
                   </widget>
@@ -1307,11 +1308,11 @@
    <receiver>treeWidget_DiffusionInformation</receiver>
    <slot>collapseAll()</slot>
    <hints>
-    <hint type="sourcelabel" >
+    <hint type="sourcelabel">
      <x>113</x>
      <y>483</y>
     </hint>
-    <hint type="destinationlabel" >
+    <hint type="destinationlabel">
      <x>158</x>
      <y>480</y>
     </hint>

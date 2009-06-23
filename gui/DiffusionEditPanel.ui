@@ -1,7 +1,8 @@
-<ui version="4.0" >
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
  <class>DiffusionEditPanel</class>
- <widget class="QDockWidget" name="DiffusionEditPanel" >
-  <property name="geometry" >
+ <widget class="QDockWidget" name="DiffusionEditPanel">
+  <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
@@ -9,83 +10,75 @@
     <height>609</height>
    </rect>
   </property>
-  <property name="locale" >
-   <locale country="UnitedStates" language="English" />
+  <property name="locale">
+   <locale language="English" country="UnitedStates"/>
   </property>
-  <property name="windowTitle" >
+  <property name="windowTitle">
    <string>DiffusionEdit</string>
   </property>
-  <widget class="QWidget" name="dockWidgetContents" >
-   <property name="geometry" >
-    <rect>
-     <x>0</x>
-     <y>23</y>
-     <width>316</width>
-     <height>586</height>
-    </rect>
-   </property>
-   <layout class="QVBoxLayout" name="verticalLayout" >
+  <widget class="QWidget" name="dockWidgetContents">
+   <layout class="QVBoxLayout" name="verticalLayout">
     <item>
-     <widget class="QScrollArea" name="scrollArea" >
-      <property name="widgetResizable" >
+     <widget class="QScrollArea" name="scrollArea">
+      <property name="widgetResizable">
        <bool>true</bool>
       </property>
-      <widget class="QWidget" name="scrollAreaWidgetContents" >
-       <property name="geometry" >
+      <widget class="QWidget" name="scrollAreaWidgetContents">
+       <property name="geometry">
         <rect>
          <x>0</x>
          <y>0</y>
-         <width>294</width>
-         <height>564</height>
+         <width>312</width>
+         <height>540</height>
         </rect>
        </property>
-       <layout class="QVBoxLayout" name="verticalLayout_5" >
+       <layout class="QVBoxLayout" name="verticalLayout_5">
         <item>
-         <widget class="QGroupBox" name="groupBox" >
-          <property name="title" >
+         <widget class="QGroupBox" name="groupBox">
+          <property name="title">
            <string>Measurement Frame</string>
           </property>
-          <layout class="QVBoxLayout" name="verticalLayout_2" >
+          <layout class="QVBoxLayout" name="verticalLayout_2">
            <item>
-            <layout class="QGridLayout" name="gridLayout" >
-             <property name="horizontalSpacing" >
+            <layout class="QGridLayout" name="gridLayout">
+             <property name="horizontalSpacing">
               <number>1</number>
              </property>
-             <item row="0" column="0" >
-              <widget class="QDoubleSpinBox" name="doubleSpinBox" >
-               <property name="value" >
+             <item row="0" column="0">
+              <widget class="QDoubleSpinBox" name="doubleSpinBox">
+               <property name="value">
                 <double>1.000000000000000</double>
                </property>
               </widget>
              </item>
-             <item row="0" column="1" >
-              <widget class="QDoubleSpinBox" name="doubleSpinBox_6" />
+             <item row="0" column="1">
+              <widget class="QDoubleSpinBox" name="doubleSpinBox_6"/>
              </item>
-             <item row="0" column="2" >
-              <widget class="QDoubleSpinBox" name="doubleSpinBox_7" />
+             <item row="0" column="2">
+              <widget class="QDoubleSpinBox" name="doubleSpinBox_7"/>
              </item>
-             <item row="1" column="0" >
-              <widget class="QDoubleSpinBox" name="doubleSpinBox_2" />
+             <item row="1" column="0">
+              <widget class="QDoubleSpinBox" name="doubleSpinBox_2"/>
              </item>
-             <item row="1" column="1" >
-              <widget class="QDoubleSpinBox" name="doubleSpinBox_5" >
-               <property name="value" >
+             <item row="1" column="1">
+              <widget class="QDoubleSpinBox" name="doubleSpinBox_5">
+               <property name="value">
                 <double>1.000000000000000</double>
                </property>
               </widget>
              </item>
-             <item row="1" column="2" >
-              <widget class="QDoubleSpinBox" name="doubleSpinBox_8" />
+             <item row="1" column="2">
+              <widget class="QDoubleSpinBox" name="doubleSpinBox_8"/>
              </item>
-             <item row="2" column="0" >
-              <widget class="QDoubleSpinBox" name="doubleSpinBox_3" />
+             <item row="2" column="0">
+              <widget class="QDoubleSpinBox" name="doubleSpinBox_3"/>
              </item>
-             <item row="2" column="1" >
-              <widget class="QDoubleSpinBox" name="doubleSpinBox_4" />
+             <item row="2" column="1">
+              <widget class="QDoubleSpinBox" name="doubleSpinBox_4"/>
              </item>
-             <item row="2" column="2" >
-              <widget class="QDoubleSpinBox" name="doubleSpinBox_9" >
-               <property name="value" >
+             <item row="2" column="2">
+              <widget class="QDoubleSpinBox" name="doubleSpinBox_9">
+               <property name="value">
                 <double>1.000000000000000</double>
                </property>
               </widget>
@@ -93,8 +86,8 @@
             </layout>
            </item>
            <item>
-            <widget class="QPushButton" name="pushButton" >
-             <property name="text" >
+            <widget class="QPushButton" name="pushButton">
+             <property name="text">
               <string>PushButton</string>
              </property>
             </widget>
@@ -103,51 +96,51 @@
          </widget>
         </item>
         <item>
-         <widget class="QGroupBox" name="groupBox_2" >
-          <property name="title" >
+         <widget class="QGroupBox" name="groupBox_2">
+          <property name="title">
            <string>Gradients</string>
           </property>
-          <layout class="QVBoxLayout" name="verticalLayout_3" >
+          <layout class="QVBoxLayout" name="verticalLayout_3">
            <item>
-            <layout class="QHBoxLayout" name="horizontalLayout" >
+            <layout class="QHBoxLayout" name="horizontalLayout">
              <item>
-              <widget class="QLabel" name="label" >
-               <property name="text" >
+              <widget class="QLabel" name="label">
+               <property name="text">
                 <string>b Value</string>
                </property>
-               <property name="alignment" >
+               <property name="alignment">
                 <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
                </property>
-               <property name="buddy" >
+               <property name="buddy">
                 <cstring>spinBox</cstring>
                </property>
               </widget>
              </item>
              <item>
-              <widget class="QSpinBox" name="spinBox" >
-               <property name="minimumSize" >
+              <widget class="QSpinBox" name="spinBox">
+               <property name="minimumSize">
                 <size>
                  <width>60</width>
                  <height>0</height>
                 </size>
                </property>
-               <property name="maximum" >
+               <property name="maximum">
                 <number>9999</number>
                </property>
-               <property name="singleStep" >
+               <property name="singleStep">
                 <number>100</number>
                </property>
-               <property name="value" >
+               <property name="value">
                 <number>1000</number>
                </property>
               </widget>
              </item>
              <item>
-              <spacer name="horizontalSpacer" >
-               <property name="orientation" >
+              <spacer name="horizontalSpacer">
+               <property name="orientation">
                 <enum>Qt::Horizontal</enum>
                </property>
-               <property name="sizeHint" stdset="0" >
+               <property name="sizeHint" stdset="0">
                 <size>
                  <width>17</width>
                  <height>20</height>
@@ -156,59 +149,59 @@
               </spacer>
              </item>
              <item>
-              <widget class="QLabel" name="label_2" >
-               <property name="text" >
+              <widget class="QLabel" name="label_2">
+               <property name="text">
                 <string>Gradient#</string>
                </property>
               </widget>
              </item>
              <item>
-              <widget class="QLineEdit" name="lineEdit_2" />
+              <widget class="QLineEdit" name="lineEdit_2"/>
              </item>
             </layout>
            </item>
            <item>
-            <widget class="QTableWidget" name="tableWidget" >
+            <widget class="QTableWidget" name="tableWidget">
              <column>
-              <property name="text" >
+              <property name="text">
                <string>DWI File</string>
               </property>
              </column>
              <column>
-              <property name="text" >
+              <property name="text">
                <string>Policy</string>
               </property>
              </column>
             </widget>
            </item>
            <item>
-            <widget class="QGroupBox" name="groupBox_3" >
-             <property name="title" >
+            <widget class="QGroupBox" name="groupBox_3">
+             <property name="title">
               <string>Policy</string>
              </property>
-             <layout class="QVBoxLayout" name="verticalLayout_4" >
+             <layout class="QVBoxLayout" name="verticalLayout_4">
               <item>
-               <widget class="QRadioButton" name="radioButton" >
-                <property name="text" >
+               <widget class="QRadioButton" name="radioButton">
+                <property name="text">
                  <string> Image</string>
                 </property>
                </widget>
               </item>
               <item>
-               <layout class="QHBoxLayout" name="horizontalLayout_2" >
+               <layout class="QHBoxLayout" name="horizontalLayout_2">
                 <item>
-                 <widget class="QRadioButton" name="radioButton_2" >
-                  <property name="text" >
+                 <widget class="QRadioButton" name="radioButton_2">
+                  <property name="text">
                    <string>File</string>
                   </property>
                  </widget>
                 </item>
                 <item>
-                 <widget class="QLineEdit" name="lineEdit" />
+                 <widget class="QLineEdit" name="lineEdit"/>
                 </item>
                 <item>
-                 <widget class="QToolButton" name="toolButton" >
-                  <property name="text" >
+                 <widget class="QToolButton" name="toolButton">
+                  <property name="text">
                    <string>...</string>
                   </property>
                  </widget>
@@ -216,33 +209,33 @@
                </layout>
               </item>
               <item>
-               <layout class="QHBoxLayout" name="horizontalLayout_4" >
+               <layout class="QHBoxLayout" name="horizontalLayout_4">
                 <item>
-                 <widget class="QRadioButton" name="radioButton_3" >
-                  <property name="text" >
+                 <widget class="QRadioButton" name="radioButton_3">
+                  <property name="text">
                    <string>Protocal</string>
                   </property>
                  </widget>
                 </item>
                 <item>
-                 <widget class="QComboBox" name="comboBox" >
+                 <widget class="QComboBox" name="comboBox">
                   <item>
-                   <property name="text" >
+                   <property name="text">
                     <string>Conte</string>
                    </property>
                   </item>
                   <item>
-                   <property name="text" >
+                   <property name="text">
                     <string>Conte Neorate</string>
                    </property>
                   </item>
                   <item>
-                   <property name="text" >
+                   <property name="text">
                     <string>Autism</string>
                    </property>
                   </item>
                   <item>
-                   <property name="text" >
+                   <property name="text">
                     <string>ACE</string>
                    </property>
                   </item>
@@ -257,8 +250,8 @@
          </widget>
         </item>
         <item>
-         <widget class="QDialogButtonBox" name="buttonBox" >
-          <property name="standardButtons" >
+         <widget class="QDialogButtonBox" name="buttonBox">
+          <property name="standardButtons">
            <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
           </property>
          </widget>
@@ -290,8 +283,6 @@
   <tabstop>radioButton_3</tabstop>
   <tabstop>comboBox</tabstop>
  </tabstops>
- <resources>
-  <include location="../DTITools.qrc" />
- </resources>
+ <resources/>
  <connections/>
 </ui>
