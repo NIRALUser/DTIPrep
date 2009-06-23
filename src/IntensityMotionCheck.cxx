@@ -118,7 +118,7 @@ bool CIntensityMotionCheck::LoadDwiImage()
 	GradientIntensityMotionCheckResult result;
 	
 	result.bSliceCheckOK = true;
-	for(int i=1; i<DwiImage->GetLargestPossibleRegion().GetSize()[2]; i++)
+	for(unsigned int i=1; i<DwiImage->GetLargestPossibleRegion().GetSize()[2]; i++)
 	{
 		result.sliceCorrelation.push_back(0.0);
 	}
@@ -334,7 +334,7 @@ bool CIntensityMotionCheck::IntraCheck(
 // 		ofile.close();
 
 
-		for(int i=1; i<componentExtractor->GetOutput()->GetLargestPossibleRegion().GetSize()[2]; i++)
+		for(unsigned int i=1; i<componentExtractor->GetOutput()->GetLargestPossibleRegion().GetSize()[2]; i++)
 		{
 			if(bRegister)
 				std::cout<<"Total slice #: "<<componentExtractor->GetOutput()-> GetLargestPossibleRegion().GetSize()[2]<<",  Registering slice "<< i <<" to slice "<<i-1<<std::endl;
@@ -366,9 +366,9 @@ bool CIntensityMotionCheck::IntraCheck(
 	}
 
 // copy slice correlation to qcResult
-	for(int i=0; i< ResultsContainer.size(); i++)
+	for(unsigned int i=0; i< ResultsContainer.size(); i++)
 	{
-		for(int j=0; j<ResultsContainer[i].size(); j++)
+		for(unsigned int j=0; j<ResultsContainer[i].size(); j++)
 		{
 			qcResult->GetIntensityMotionCheckResult()[i].sliceCorrelation[j] = ResultsContainer[i][j].Correlation;
 		}
@@ -382,7 +382,7 @@ bool CIntensityMotionCheck::IntraCheck(
 	outfile <<"Intra-gradient slice wise check with/without 2D rigid registration: "<<std::endl<<std::endl;
 
 	outfile <<"Slice Correlations"<<std::endl;
-	for(int i=0; i<ResultsContainer.size(); i++)
+	for(unsigned int i=0; i<ResultsContainer.size(); i++)
 	{
 		outfile <<"\t"<<"Gradient"<<i;
 	}
@@ -395,10 +395,10 @@ bool CIntensityMotionCheck::IntraCheck(
 	std::cout <<"BaselineCount: "<<BaselineCount<<std::endl;
 	std::cout <<"DWICount: "<<DWICount<<std::endl;
 
-	for(int j=0;j<ResultsContainer[0].size();j++)
+	for(unsigned int j=0;j<ResultsContainer[0].size();j++)
 	{
 		double baselinemean=0.0, DWImean=0.0, baselinedeviation=0.0, DWIdeviation=0.0;
-		for(int i=0; i<ResultsContainer.size(); i++)
+		for(unsigned int i=0; i<ResultsContainer.size(); i++)
 		{
 			outfile.precision(6);
 			outfile.setf(std::ios_base::showpoint|std::ios_base::right) ;	
@@ -415,7 +415,7 @@ bool CIntensityMotionCheck::IntraCheck(
 			}				
 		}
 
-		for(int i=0; i<ResultsContainer.size(); i++)
+		for(unsigned int i=0; i<ResultsContainer.size(); i++)
 		{
 			if ( GradientDirectionContainer->at(i)[0] == 0.0 && GradientDirectionContainer->at(i)[1] == 0.0 && GradientDirectionContainer->at(i)[2] == 0.0)
 			{
@@ -472,14 +472,14 @@ bool CIntensityMotionCheck::IntraCheck(
 	int badcount=0;
 	int baselineBadcount=0;
 
-	for(int i=0;i<ResultsContainer.size();i++)
+	for(unsigned int i=0;i<ResultsContainer.size();i++)
 	{
 		baselineBadcount = 0;
 		badcount=0;
 		if ( GradientDirectionContainer->at(i)[0] == 0.0 && GradientDirectionContainer->at(i)[1] == 0.0 && GradientDirectionContainer->at(i)[2] == 0.0 )
 		{	
 			//baseline
-			for(int j = 0 + (int)(DwiImage->GetLargestPossibleRegion().GetSize()[2]*beginSkip);j < ResultsContainer[0].size() - (int)(DwiImage->GetLargestPossibleRegion().GetSize()[2]*endSkip); j++ ) 
+			for(unsigned int j = 0 + (int)(DwiImage->GetLargestPossibleRegion().GetSize()[2]*beginSkip);j < ResultsContainer[0].size() - (int)(DwiImage->GetLargestPossibleRegion().GetSize()[2]*endSkip); j++ ) 
 			{
 				outfile.precision(6);
 				outfile.setf(std::ios_base::showpoint|std::ios_base::right) ;
@@ -487,7 +487,7 @@ bool CIntensityMotionCheck::IntraCheck(
 				double MeanStdev=0.0;
 				unsigned int effectiveSliceNumber=0;
 
-				for(int k = (j-3>0? j-3:0); k < (j+3<DwiImage->GetLargestPossibleRegion().GetSize()[2]? j+3:DwiImage->GetLargestPossibleRegion().GetSize()[2]) ; k++ ) 
+				for(unsigned int k = (j-3>0? j-3:0); k < (j+3<DwiImage->GetLargestPossibleRegion().GetSize()[2]? j+3:DwiImage->GetLargestPossibleRegion().GetSize()[2]) ; k++ ) 
 				{
 					MeanStdev += this->baselineDeviations[k];		
 					effectiveSliceNumber++;
@@ -537,7 +537,7 @@ bool CIntensityMotionCheck::IntraCheck(
 		}
 		else // gradients
 		{			
-			for(int j=0 + (int)(DwiImage->GetLargestPossibleRegion().GetSize()[2]*beginSkip);j<ResultsContainer[0].size() - (int)(DwiImage->GetLargestPossibleRegion().GetSize()[2]*endSkip); j++) //for(int j=0;j<ResultsContainer[0].size()-1; j++)
+			for(unsigned int j=0 + (int)(DwiImage->GetLargestPossibleRegion().GetSize()[2]*beginSkip);j<ResultsContainer[0].size() - (int)(DwiImage->GetLargestPossibleRegion().GetSize()[2]*endSkip); j++) //for(int j=0;j<ResultsContainer[0].size()-1; j++)
 			{
 				outfile.precision(6);
 				outfile.setf(std::ios_base::showpoint|std::ios_base::right) ;	
@@ -545,7 +545,7 @@ bool CIntensityMotionCheck::IntraCheck(
 				double MeanStdev=0.0;
 				unsigned int effectiveSliceNumber=0;
 
-				for(int k = (j-3>0? j-3:0); k < ( j+3 < DwiImage->GetLargestPossibleRegion().GetSize()[2]? j+3:DwiImage->GetLargestPossibleRegion().GetSize()[2]) ; k++ ) 
+				for(unsigned int k = (j-3>0? j-3:0); k < ( j+3 < DwiImage->GetLargestPossibleRegion().GetSize()[2]? j+3:DwiImage->GetLargestPossibleRegion().GetSize()[2]) ; k++ ) 
 				{
 					MeanStdev += this->deviations[k];		
 					effectiveSliceNumber++;
@@ -772,7 +772,7 @@ bool CIntensityMotionCheck::InterlaceCheck(
 		iterateOdd.GoToBegin();
 		iterateEven.GoToBegin();
 
-		long count=0;
+		unsigned long count=0;
 		while (!iterateGradient.IsAtEnd())
 		{
 			if(count<size[0]*size[1]*size[2]*2)
@@ -830,7 +830,7 @@ bool CIntensityMotionCheck::InterlaceCheck(
 	}
 
 	// copy interlace results to qcResult
-	for(int i=0; i< Results.size(); i++)
+	for(unsigned int i=0; i< Results.size(); i++)
 	{
 		qcResult->GetIntensityMotionCheckResult()[i].interlaceCorrelation	= Results[i].Correlation;	
 		qcResult->GetIntensityMotionCheckResult()[i].interlaceRotationX		= Results[i].AngleX;	
@@ -863,7 +863,7 @@ bool CIntensityMotionCheck::InterlaceCheck(
 	interlaceGradientMeans=0.0;
 	interlaceGradientDeviations=0.0;
 
-	for(int i=0; i< Results.size(); i++)
+	for(unsigned int i=0; i< Results.size(); i++)
 	{
 		if ( GradientDirectionContainer->at(i)[0] == 0.0 && GradientDirectionContainer->at(i)[1] == 0.0 && GradientDirectionContainer->at(i)[2] == 0.0 )
 		{	//for interlace baseline correlation
@@ -875,7 +875,7 @@ bool CIntensityMotionCheck::InterlaceCheck(
 		}
 	}
 
-	for(int i=0; i<Results.size(); i++)
+	for(unsigned int i=0; i<Results.size(); i++)
 	{
 		if ( GradientDirectionContainer->at(i)[0] == 0.0 && GradientDirectionContainer->at(i)[1] == 0.0 && GradientDirectionContainer->at(i)[2] == 0.0)
 		{
@@ -912,7 +912,7 @@ bool CIntensityMotionCheck::InterlaceCheck(
 			std::setw(10)<<"AngleZ\t"<<std::setw(10)<<"TranslationX\t"<<std::setw(10)<<"TranslationY\t"<<
 			std::setw(10)<<"TranslationZ\t"<<std::setw(10)<<"Metric(MI)\t"<<std::setw(10)<<"Correlation"<<std::endl;
 
-	for(int i=0;i<Results.size();i++)
+	for(unsigned int i=0;i<Results.size();i++)
 	{
 		std::cout.precision(6);
 		std::cout.setf(std::ios_base::showpoint|std::ios_base::right) ;	
@@ -969,7 +969,7 @@ bool CIntensityMotionCheck::InterlaceCheck(
 			std::setw(10)<<"TranslationZ\t"<<std::setw(10)<<"Metric(MI)\t"<<std::setw(10)<<"Correlation"<<std::endl;
 
 
-	for(int i=0;i<Results.size();i++)
+	for(unsigned int i=0;i<Results.size();i++)
 	{
 		if ( GradientDirectionContainer->at(i)[0] == 0.0 && GradientDirectionContainer->at(i)[1] == 0.0 && GradientDirectionContainer->at(i)[2] == 0.0)
 		{	//baseline
@@ -1160,7 +1160,7 @@ bool CIntensityMotionCheck::InterCheck(unsigned int BinNumb, double PercentagePi
 	}
 
 	// copy gradient results to qcResult
-	for(int i=0; i< Results.size(); i++)
+	for(unsigned int i=0; i< Results.size(); i++)
 	{
 		qcResult->GetIntensityMotionCheckResult()[i+1].gradientRotationX	= Results[i].AngleX;	
 		qcResult->GetIntensityMotionCheckResult()[i+1].gradientRotationY	= Results[i].AngleY;	
@@ -1188,7 +1188,7 @@ bool CIntensityMotionCheck::InterCheck(unsigned int BinNumb, double PercentagePi
 			std::setw(10)<<"AngleZ\t"<<std::setw(10)<<"TranslationX\t"<<std::setw(10)<<"TranslationY\t"<<
 			std::setw(10)<<"TranslationZ\t"<<std::setw(10)<<"Metric(MI)"<<std::endl;
 
-	for(int i=0;i<Results.size();i++)
+	for(unsigned int i=0;i<Results.size();i++)
 	{
 		std::cout.precision(6);
 		std::cout.setf(std::ios_base::showpoint|std::ios_base::right) ;	
@@ -1231,7 +1231,7 @@ bool CIntensityMotionCheck::InterCheck(unsigned int BinNumb, double PercentagePi
 			std::setw(10)<<"TranslationZ\t"<<std::setw(10)<<"Metric(MI)"<<std::endl;
 
 
-	for(int i=0;i<Results.size();i++)
+	for(unsigned int i=0;i<Results.size();i++)
 	{
 		if( fabs(Results[i].AngleX) > angleThreshold || fabs(Results[i].AngleY) > angleThreshold ||
 			fabs(Results[i].AngleZ) > angleThreshold ||fabs(Results[i].TranslationX)>transThreshold ||
@@ -1367,15 +1367,15 @@ void CIntensityMotionCheck::GetImagesInformation()
 // 			<< direction[3] <<" "<< direction[4] <<" "<<direction[5]
 // 			<< direction[6] <<" "<< direction[7] <<" "<<direction[8]	<<std::endl;
 
-	int dimension = DwiImage->GetImageDimension();
-	int componentNumber = DwiImage->GetNumberOfComponentsPerPixel();
-	int vectorLength = DwiImage->GetVectorLength();
+	//int dimension = DwiImage->GetImageDimension();
+	//int componentNumber = DwiImage->GetNumberOfComponentsPerPixel();
+	//int vectorLength = DwiImage->GetVectorLength();
 	
 // 	std::cout<<"dimension: "<< dimension <<std::endl;
 // 	std::cout<<"componentNumber: "<< componentNumber <<std::endl;
 // 	std::cout<<"vectorLength: "<< vectorLength <<std::endl;
 
-	int type=-1;
+	//int type=-1;
 	int space;
 
 	
@@ -1600,7 +1600,7 @@ bool CIntensityMotionCheck::DiffusionCheck()
 
 
 		bool result = true;
-		for(int i=0; i< GradientDirectionContainer->size();i++)
+		for(unsigned int i=0; i< GradientDirectionContainer->size();i++)
 		{
 			if( fabs(protocal->GetDiffusionProtocal().gradients[i][0] - GradientDirectionContainer->ElementAt(i)[0]) < 0.0000001 &&
 				fabs(protocal->GetDiffusionProtocal().gradients[i][1] - GradientDirectionContainer->ElementAt(i)[1]) < 0.0000001 &&
@@ -1909,8 +1909,8 @@ void CIntensityMotionCheck::GenerateCheckOutputImage( std::string filename)
 			return ;
 		}
 
-		int gradientLeft=0;
-		for(int i=0;i< qcResult->GetGradientProcess().size();i++)
+		unsigned int gradientLeft=0;
+		for(unsigned int i=0;i< qcResult->GetGradientProcess().size();i++)
 		{
 			if(qcResult->GetGradientProcess()[i] == QCResult::GRADIENT_INCLUDE)
 				gradientLeft++;
@@ -1965,8 +1965,8 @@ void CIntensityMotionCheck::GenerateCheckOutputImage( std::string filename)
 
 		while (!oit.IsAtEnd())
 		{
-			int element = 0;
-			for( int i = 0 ; i < qcResult->GetGradientProcess().size(); i++ )
+			unsigned int element = 0;
+			for( unsigned int i = 0 ; i < qcResult->GetGradientProcess().size(); i++ )
 			{
 				if(qcResult->GetGradientProcess()[i] == QCResult::GRADIENT_INCLUDE)
 				{
@@ -2077,8 +2077,8 @@ void CIntensityMotionCheck::GenerateCheckOutputImage( std::string filename)
 		}
 
 
-		int temp=0;
-		for(int i=0;i< GradientDirectionContainer->size();i++ )
+		unsigned int temp=0;
+		for(unsigned int i=0;i< GradientDirectionContainer->size();i++ )
 		{
 			if(qcResult->GetGradientProcess()[i] == QCResult::GRADIENT_INCLUDE)
 			{
@@ -2119,14 +2119,14 @@ void CIntensityMotionCheck::GenerateCheckOutputImage()
 		outfile<<"QC Check Results"<<std::endl;
 
 		outfile<<"  Gradient(s) excluded:"<<std::endl;
-		for(int i=0;i< qcResult->GetGradientProcess().size();i++)
+		for(unsigned int i=0;i< qcResult->GetGradientProcess().size();i++)
 		{
 			if(qcResult->GetGradientProcess()[i] == QCResult::GRADIENT_EXCLUDE)
 				outfile<<"    Gradient "<< i <<std::endl;
 		}
 
-		int gradientLeft=0;
-		for(int i=0;i< qcResult->GetGradientProcess().size();i++)
+		unsigned int gradientLeft=0;
+		for(unsigned int i=0;i< qcResult->GetGradientProcess().size();i++)
 		{
 			if(qcResult->GetGradientProcess()[i] == QCResult::GRADIENT_INCLUDE)
 				gradientLeft++;
@@ -2187,8 +2187,8 @@ void CIntensityMotionCheck::GenerateCheckOutputImage()
 
 		while (!oit.IsAtEnd())
 		{
-			int element = 0;
-			for( int i = 0 ; i < qcResult->GetGradientProcess().size(); i++ )
+			unsigned int element = 0;
+			for( unsigned int i = 0 ; i < qcResult->GetGradientProcess().size(); i++ )
 			{
 				if(qcResult->GetGradientProcess()[i] == QCResult::GRADIENT_INCLUDE)
 				{
@@ -2226,7 +2226,7 @@ void CIntensityMotionCheck::GenerateCheckOutputImage()
 
 		outfile<<"  QC output image: "<< OutputFileName <<std::endl;
 		outfile<<"  Gradients included: "<< std::endl;
-		for(int i=0;i< qcResult->GetGradientProcess().size();i++)
+		for(unsigned int i=0;i< qcResult->GetGradientProcess().size();i++)
 		{
 			if(qcResult->GetGradientProcess()[i] == QCResult::GRADIENT_INCLUDE)
 				outfile<<"    Gradient "<< i <<std::endl;
@@ -2317,8 +2317,8 @@ void CIntensityMotionCheck::GenerateCheckOutputImage()
 		}
 
 
-		int temp=0;
-		for(int i=0;i< GradientDirectionContainer->size();i++ )
+		unsigned int temp=0;
+		for(unsigned int i=0;i< GradientDirectionContainer->size();i++ )
 		{
 			if(qcResult->GetGradientProcess()[i] == QCResult::GRADIENT_INCLUDE)
 			{
@@ -2400,9 +2400,9 @@ unsigned char CIntensityMotionCheck::CheckByProtocal()
 		result = result | 16;
 	std::cout<<"nterCheck DONE"<<std::endl;
 
-	int baselineLeft=0;
-	int gradientLeft=0;
-	for(int i=0;i< qcResult->GetGradientProcess().size();i++)
+	unsigned int baselineLeft=0;
+	unsigned int gradientLeft=0;
+	for(unsigned int i=0;i< qcResult->GetGradientProcess().size();i++)
 	{
 		if ( GradientDirectionContainer->at(i)[0] == 0.0 && GradientDirectionContainer->at(i)[1] == 0.0 && GradientDirectionContainer->at(i)[2] == 0.0)
 		//baseline
@@ -2547,12 +2547,12 @@ void CIntensityMotionCheck::collectLeftDiffusionStatistics()
 	std::vector<DiffusionDir> DiffusionDirections;
 	DiffusionDirections.clear();
 
-	for( int i=0; i< this->GradientDirectionContainer->size();i++) 
+	for( unsigned int i=0; i< this->GradientDirectionContainer->size();i++) 
 	{
 		if(DiffusionDirections.size()>0)
 		{
 			bool newDir = true;
-			for(int j=0;j<DiffusionDirections.size();j++)
+			for(unsigned int j=0;j<DiffusionDirections.size();j++)
 			{
 				if( this->GradientDirectionContainer->ElementAt(i)[0] == DiffusionDirections[j].gradientDir[0] && 
 					this->GradientDirectionContainer->ElementAt(i)[1] == DiffusionDirections[j].gradientDir[1] && 
@@ -2606,8 +2606,7 @@ void CIntensityMotionCheck::collectLeftDiffusionStatistics()
 	dirMode.clear();
 
 	this->baselineLeftNumber=0;
-	double modeTemp = 0.0;
-	for( int i=0; i<DiffusionDirections.size(); i++)
+	for( unsigned int i=0; i<DiffusionDirections.size(); i++)
 	{
 		if( DiffusionDirections[i].gradientDir[0] == 0.0 &&
 			DiffusionDirections[i].gradientDir[1] == 0.0 &&
@@ -2628,7 +2627,7 @@ void CIntensityMotionCheck::collectLeftDiffusionStatistics()
 			if( dirMode.size() > 0)
 			{
 				bool newDirMode = true;
-				for(int j=0;j< dirMode.size();j++)
+				for(unsigned int j=0;j< dirMode.size();j++)
 				{
 					if( fabs(modeSqr-dirMode[j])<0.001)   // 1 DIFFERENCE for b value
 					{
@@ -2656,7 +2655,7 @@ void CIntensityMotionCheck::collectLeftDiffusionStatistics()
 
 	this->gradientDirLeftNumber = 0;
 	this->gradientLeftNumber = 0;
-	for(int i=0; i<this->repetitionLeftNumber.size(); i++)
+	for(unsigned int i=0; i<this->repetitionLeftNumber.size(); i++)
 	{
 		this->gradientLeftNumber+=this->repetitionLeftNumber[i];
 		if(this->repetitionLeftNumber[i]>0)
@@ -2680,7 +2679,7 @@ void CIntensityMotionCheck::collectLeftDiffusionStatistics()
 	outfile<<"\tbValueLeftNumber: "		<<bValueLeftNumber		<<std::endl;
 	outfile<<"\tgradientDirLeftNumber: "<<gradientDirLeftNumber	<<std::endl;
 
-	for(int i=0;i< DiffusionDirections.size();i++)
+	for(unsigned int i=0;i< DiffusionDirections.size();i++)
 	{
 		std::cout<<"\t["	<<DiffusionDirections[i].gradientDir[0]<<", "
 			<<DiffusionDirections[i].gradientDir[1]<<", "
@@ -2704,12 +2703,12 @@ void CIntensityMotionCheck::collectDiffusionStatistics()
 	DiffusionDirections.clear();
 
 	// 	std::cout<<"this->GetDiffusionProtocal().gradients.size(): " << this->GetDiffusionProtocal().gradients.size() <<std::endl;
-	for( int i=0; i< this->GradientDirectionContainer->size();i++) 
+	for( unsigned int i=0; i< this->GradientDirectionContainer->size();i++) 
 	{
 		if(DiffusionDirections.size()>0)
 		{
 			bool newDir = true;
-			for(int j=0;j<DiffusionDirections.size();j++)
+			for(unsigned int j=0;j<DiffusionDirections.size();j++)
 			{
 				if( this->GradientDirectionContainer->ElementAt(i)[0] == DiffusionDirections[j].gradientDir[0] && 
 					this->GradientDirectionContainer->ElementAt(i)[1] == DiffusionDirections[j].gradientDir[1] && 
@@ -2755,8 +2754,7 @@ void CIntensityMotionCheck::collectDiffusionStatistics()
 	std::vector<double> dirMode;
 	dirMode.clear();
 
-	double modeTemp = 0.0;
-	for( int i=0; i<DiffusionDirections.size(); i++)
+	for( unsigned int i=0; i<DiffusionDirections.size(); i++)
 	{
 		if( DiffusionDirections[i].gradientDir[0] == 0.0 &&
 			DiffusionDirections[i].gradientDir[1] == 0.0 &&
@@ -2777,7 +2775,7 @@ void CIntensityMotionCheck::collectDiffusionStatistics()
 			if( dirMode.size() > 0)
 			{
 				bool newDirMode = true;
-				for(int j=0;j< dirMode.size();j++)
+				for(unsigned int j=0;j< dirMode.size();j++)
 				{
 					if( fabs(modeSqr-dirMode[j])<0.001)   // 1 DIFFERENCE for b value
 					{
@@ -2806,7 +2804,7 @@ void CIntensityMotionCheck::collectDiffusionStatistics()
 	this->bValueNumber = dirMode.size();
 
 	repetitionNumber = repetNum[0];
-	for( int i=1; i<repetNum.size(); i++)
+	for( unsigned int i=1; i<repetNum.size(); i++)
 	{ 
 		if( repetNum[i] != repetNum[0])
 		{

@@ -208,10 +208,10 @@ void ImageView2DPanelWithControls::Setup( vtkImageData *image, double ww,double 
 		this->ImageViewer2->SetColorWindow(range[1] - range[0]);
 		this->ImageViewer2->SetColorLevel(0.5*(range[1] + range[0]));
 	}
-	float scaleTemp[3];
 	float scale;
 	if(ImageDimension[0]!=0 && ImageDimension[1]!=0 && ImageDimension[2]!=0)
 	{
+	  float scaleTemp[3];
 		if(ImageDimension[0]*ImageSpacing[0]>=ImageDimension[1]*ImageSpacing[1]) 
 			scaleTemp[0]= ImageDimension[0]*ImageSpacing[0]/2.0;
 		else scaleTemp[0]= ImageDimension[1]*ImageSpacing[1]/2.0;
@@ -231,6 +231,11 @@ void ImageView2DPanelWithControls::Setup( vtkImageData *image, double ww,double 
 		else //(dims[2]>=dims[0] && dims[2]>=dims[1]) 
 			scale=scaleTemp[2];//((float)(this->ImageDimension[2]-1))/2.0;	
 	}
+  else
+    {//Setting scale to a default value if not previously set.  This may not be the desired behavior, but scale must be set
+    //in order to use it below.
+    scale=0;
+    }
 
 	this->ImageViewer2->SetSize(this->qvtkWidget->GetRenderWindow()->GetSize()[0],this->qvtkWidget->GetRenderWindow()->GetSize()[1]);
 	this->ImageViewer2->GetRenderer()->GetActiveCamera()->SetFocalPoint(0,0,0);
@@ -258,22 +263,23 @@ void ImageView2DPanelWithControls::Update()
 
 	std::cout<<ImageDimension[0]<<" ddd   "<< ImageDimension[1]<<"  dd   "<<ImageDimension[2]<<std::endl;
 	std::cout<<ImageSpacing[0]<<"   dd "<< ImageSpacing[1]<<"  dd   "<<ImageSpacing[2]<<std::endl;
-	int index;
+	int index=0;
   	switch(Orientation)
 	{
 		case ORIENTATION_AXIAL:
-			if(index<0) index = ImageDimension[2]/2;
+			if(index<1) index = ImageDimension[2]/2;
 			this->horizontalSlider_SliceIndex->setRange(0, ImageDimension[2]-1);
 			break;
 		case ORIENTATION_SAGITTAL:
 			this->horizontalSlider_SliceIndex->setRange(0, ImageDimension[0]-1);
-			if(index<0) index = ImageDimension[0]/2;
+			if(index<1) index = ImageDimension[0]/2;
 			break;
 		case ORIENTATION_CORONAL:
 			if(index<1) index = ImageDimension[1]/2;
 			this->horizontalSlider_SliceIndex->setRange(0, ImageDimension[1]-1);
 			break;
 		default:
+      index=0;
 			break;
 	}
 
@@ -402,7 +408,7 @@ void ImageView2DPanelWithControls::on_comboBox_Orientation_currentIndexChanged(i
 	emit orientationchanged(WindowID, Orientation);
 	
 
-	int index;
+	int index=0;
 	switch(Orientation)
 	{
 		case ORIENTATION_AXIAL:
@@ -427,14 +433,15 @@ void ImageView2DPanelWithControls::on_comboBox_Orientation_currentIndexChanged(i
 			index = ImageDimension[1]/2;
 			break;
 		default:
+      index=0;
 			break;
 	}
 
 
-	float scaleTemp[3];
 	float scale;
 	if(ImageDimension[0]!=0 && ImageDimension[1]!=0 && ImageDimension[2]!=0)
 	{
+	  float scaleTemp[3];
 		if(ImageDimension[0]*ImageSpacing[0]>=ImageDimension[1]*ImageSpacing[1]) 
 			scaleTemp[0]= ImageDimension[0]*ImageSpacing[0]/2.0;
 		else scaleTemp[0]= ImageDimension[1]*ImageSpacing[1]/2.0;
@@ -454,6 +461,10 @@ void ImageView2DPanelWithControls::on_comboBox_Orientation_currentIndexChanged(i
 		else //(dims[2]>=dims[0] && dims[2]>=dims[1]) 
 			scale=scaleTemp[2];//((float)(this->ImageDimension[2]-1))/2.0;	
 	}
+  else
+    {//This case was not previously handled.  It seems like scale should always be handled.
+    scale=0;
+    }
 
 
 	QString str;

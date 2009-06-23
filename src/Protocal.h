@@ -15,7 +15,7 @@ struct ImageProtocal
 	int type;
 	int space;
 	int dimension;
-	int size[4];
+	unsigned int size[4];
 	double origin[3];
 	double spacing[3];
 	double spacedirection[3][3];

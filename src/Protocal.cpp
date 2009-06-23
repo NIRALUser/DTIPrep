@@ -322,7 +322,6 @@ void Protocal::collectDiffusionStatistics()
 	std::vector<double> dirMode;
 	dirMode.clear();
 
-	double modeTemp = 0.0;
 	for( unsigned int i=0; i<DiffusionDirections.size(); i++)
 	{
 		if( DiffusionDirections[i].gradientDir[0] == 0.0 &&

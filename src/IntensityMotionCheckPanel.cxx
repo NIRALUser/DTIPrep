@@ -599,7 +599,7 @@ void IntensityMotionCheckPanel::UpdatePanelDWI()
 	bValue->setText(0, tr("DWMRI_b-value"));
 	bValue->setText(1, QString::number(b0, 'f', 0));
 
-	for(int i=0; i< GradientDirectionContainer->size();i++)
+	for(unsigned int i=0; i< GradientDirectionContainer->size();i++)
 	{
 		QTreeWidgetItem *gradient = new QTreeWidgetItem(treeWidget_DiffusionInformation);
 		gradient->setText(0, QString("DWMRI_gradient_%1").arg(i, 4, 10, QLatin1Char( '0' )));
@@ -872,7 +872,7 @@ void IntensityMotionCheckPanel::CreateDefaultProtocol()
 	this->GetProtocal().GetDiffusionProtocal().bCheck = true;
 	this->GetProtocal().GetDiffusionProtocal().b = this->b0;
 
-	for(int i=0; i< GradientDirectionContainer->size();i++)
+	for(unsigned int i=0; i< GradientDirectionContainer->size();i++)
 	{
 		std::vector<double> vect;
 		vect.push_back(GradientDirectionContainer->ElementAt(i)[0]);
@@ -1107,7 +1107,7 @@ bool IntensityMotionCheckPanel::GetSliceProtocolParameters(
 		filter1->SetInput( componentExtractor->GetOutput() );
 		filter2->SetInput( componentExtractor->GetOutput() );	
 
-		for(int i=1; i<componentExtractor->GetOutput()->GetLargestPossibleRegion().GetSize()[2]; i++)
+		for(unsigned int i=1; i<componentExtractor->GetOutput()->GetLargestPossibleRegion().GetSize()[2]; i++)
 		{
 			start1[2] = i-1;
 			start2[2] = i;
@@ -1138,7 +1138,7 @@ bool IntensityMotionCheckPanel::GetSliceProtocolParameters(
 
 	DWICount=0;
 	BaselineCount=0;
-	for ( int i=0;i< GradientDirectionContainer->size() ;i++ )
+	for ( unsigned int i=0;i< GradientDirectionContainer->size() ;i++ )
 	{
 		if( GradientDirectionContainer->ElementAt(i)[0] == 0.0 && GradientDirectionContainer->ElementAt(i)[1] == 0.0 && GradientDirectionContainer->ElementAt(i)[2] == 0.0)
 			BaselineCount++;
@@ -1158,10 +1158,10 @@ bool IntensityMotionCheckPanel::GetSliceProtocolParameters(
 	std::vector<double> baselineCorrelationDev;
 	std::vector<double> gradientCorrelationDev;
 
-	for(int j=0;j<ResultsContainer[0].size();j++)
+	for(unsigned int j=0;j<ResultsContainer[0].size();j++)
 	{
 		double baselinemean=0.0, DWImean=0.0, baselinedeviation=0.0, DWIdeviation=0.0, baselineMin=1.0, gradientMin=1.0;
-		for(int i=0; i<ResultsContainer.size(); i++)
+		for(unsigned int i=0; i<ResultsContainer.size(); i++)
 		{
 			if ( GradientDirectionContainer->at(i)[0] == 0.0 && GradientDirectionContainer->at(i)[1] == 0.0 && GradientDirectionContainer->at(i)[2] == 0.0 )
 			{
@@ -1181,7 +1181,7 @@ bool IntensityMotionCheckPanel::GetSliceProtocolParameters(
 		baselineCorrelationMin.push_back(baselineMin);
 		gradientCorrelationMin.push_back(gradientMin);
 
-		for(int i=0; i<ResultsContainer.size(); i++)
+		for(unsigned int i=0; i<ResultsContainer.size(); i++)
 		{
 			if ( GradientDirectionContainer->at(i)[0] == 0.0 && GradientDirectionContainer->at(i)[1] == 0.0 && GradientDirectionContainer->at(i)[2] == 0.0)
 			{
@@ -1313,7 +1313,7 @@ bool IntensityMotionCheckPanel::GetInterlaceProtocolParameters(
 		iterateOdd.GoToBegin();
 		iterateEven.GoToBegin();
 
-		long count=0;
+		unsigned long count=0;
 		while (!iterateGradient.IsAtEnd())
 		{
 			if(count<size[0]*size[1]*size[2]*2)
@@ -1365,7 +1365,7 @@ bool IntensityMotionCheckPanel::GetInterlaceProtocolParameters(
 
 	DWICount=0;
 	BaselineCount=0;
-	for ( int i=0;i< GradientDirectionContainer->size() ;i++ )
+	for (unsigned int i=0;i< GradientDirectionContainer->size() ;i++ )
 	{
 		if( GradientDirectionContainer->ElementAt(i)[0] == 0.0 && GradientDirectionContainer->ElementAt(i)[1] == 0.0 && GradientDirectionContainer->ElementAt(i)[2] == 0.0)
 			BaselineCount++;
@@ -1385,28 +1385,28 @@ bool IntensityMotionCheckPanel::GetInterlaceProtocolParameters(
 	double baselineCorrelationDev = 0.0;
 	double gradientCorrelationDev = 0.0;
 
-	for(int i=0; i< baselineCorrelation.size(); i++)
+	for(unsigned int i=0; i< baselineCorrelation.size(); i++)
 	{
 			if( baselineCorrelation[i] < minBaselineCorrelation )
 				minBaselineCorrelation = baselineCorrelation[i];
 			meanBaselineCorrelation += baselineCorrelation[i]/baselineCorrelation.size();
 	}
 
-	for(int i=0; i< baselineCorrelation.size(); i++)
+	for(unsigned int i=0; i< baselineCorrelation.size(); i++)
 	{
 		baselineCorrelationDev += ( baselineCorrelation[i] - meanBaselineCorrelation )*( baselineCorrelation[i] -meanBaselineCorrelation )/baselineCorrelation.size() ;//meanBaselineCorrelation += baselineCorrelation[i]/baselineCorrelation.size();
 	}
 	baselineCorrelationDev = sqrt(baselineCorrelationDev);
 
 
-	for(int i=0; i< gradientCorrelation.size(); i++)
+	for(unsigned int i=0; i< gradientCorrelation.size(); i++)
 	{
 		if( gradientCorrelation[i] < minGradientCorrelation )
 			minGradientCorrelation = gradientCorrelation[i];	
 		meanGradientCorrelation += gradientCorrelation[i]/gradientCorrelation.size();
 	}
 
-	for(int i=0; i< gradientCorrelation.size(); i++)
+	for(unsigned int i=0; i< gradientCorrelation.size(); i++)
 	{
 		gradientCorrelationDev += ( gradientCorrelation[i] - meanGradientCorrelation )*( gradientCorrelation[i] -meanGradientCorrelation )/gradientCorrelation.size() ;//meanBaselineCorrelation += baselineCorrelation[i]/baselineCorrelation.size();
 	}
@@ -1551,7 +1551,7 @@ void IntensityMotionCheckPanel::UpdateProtocolTree( )
 	itemBValue->setText(0, tr("DWMRI_b-value"));
 	itemBValue->setText(1,QString("%1").arg(this->GetProtocal().GetDiffusionProtocal().b, 0, 'f', 4));
 
-	for(int i=0;i<this->GetProtocal().GetDiffusionProtocal().gradients.size();i++ )
+	for(unsigned int i=0;i<this->GetProtocal().GetDiffusionProtocal().gradients.size();i++ )
 	{
 		QTreeWidgetItem *itemGradientDir = new QTreeWidgetItem(itemDiffusionInformation);
 		itemGradientDir->setText(0, QString("DWMRI_gradient_%1").arg(i, 4, 10, QLatin1Char( '0' )));
@@ -1895,7 +1895,7 @@ void IntensityMotionCheckPanel::ResultUpdate()
 
 
 		//std::cout<< "in panel qcResult.GetGradientProcess().size(): "<< qcResult.GetGradientProcess().size() <<std::endl;
-		for(int i=0;i<qcResult.GetIntensityMotionCheckResult().size();i++ )
+		for(unsigned int i=0;i<qcResult.GetIntensityMotionCheckResult().size();i++ )
 		{
 
 			// gradient 
@@ -1921,7 +1921,7 @@ void IntensityMotionCheckPanel::ResultUpdate()
 			else
 				slice->setText(1, tr("pass"));
 
-			for(int j=0; j<qcResult.GetIntensityMotionCheckResult()[i].sliceCorrelation.size();j++)
+			for(unsigned int j=0; j<qcResult.GetIntensityMotionCheckResult()[i].sliceCorrelation.size();j++)
 			{
 				QTreeWidgetItem *subslice = new QTreeWidgetItem(slice);
 				subslice->setText(0,  tr(" slice Correlation ")+QString::number(j+1));
@@ -2018,8 +2018,8 @@ void IntensityMotionCheckPanel::GenerateCheckOutputImage( std::string filename)
 		return ;
 	}
 
-	int gradientLeft=0;
-	for(int i=0;i< qcResult.GetGradientProcess().size();i++)
+	unsigned int gradientLeft=0;
+	for(unsigned int i=0;i< qcResult.GetGradientProcess().size();i++)
 	{
 		if(qcResult.GetGradientProcess()[i] == QCResult::GRADIENT_INCLUDE)
 			gradientLeft++;
@@ -2083,7 +2083,7 @@ void IntensityMotionCheckPanel::GenerateCheckOutputImage( std::string filename)
 	while (!oit.IsAtEnd())
 	{
 		int element = 0;
-		for( int i = 0 ; i < qcResult.GetGradientProcess().size(); i++ )
+		for( unsigned int i = 0 ; i < qcResult.GetGradientProcess().size(); i++ )
 		{
 			if(qcResult.GetGradientProcess()[i] == QCResult::GRADIENT_INCLUDE)
 			{
@@ -2194,7 +2194,7 @@ void IntensityMotionCheckPanel::GenerateCheckOutputImage( std::string filename)
 
 
 	int temp=0;
-	for(int i=0;i< GradientDirectionContainer->size();i++ )
+	for(unsigned int i=0;i< GradientDirectionContainer->size();i++ )
 	{
 		if(qcResult.GetGradientProcess()[i] == QCResult::GRADIENT_INCLUDE)
 		{
@@ -2351,10 +2351,10 @@ void IntensityMotionCheckPanel::DefaultProcess( )
 	IntensityMotionCheckResult.interlaceTranslationZ = 0.0;
 
 	IntensityMotionCheckResult.bSliceCheckOK = true;
-	for(int i=0;i<this->DwiImage->GetLargestPossibleRegion().GetSize()[2];i++)
+	for(unsigned int i=0;i<this->DwiImage->GetLargestPossibleRegion().GetSize()[2];i++)
 		IntensityMotionCheckResult.sliceCorrelation.push_back(0.0);
 
-	for( int i=0;i< this->DwiImage->GetVectorLength(); i++)
+	for( unsigned int i=0;i< this->DwiImage->GetVectorLength(); i++)
 	{
 		this->qcResult.GetGradientProcess().push_back(QCResult::GRADIENT_INCLUDE);
 		this->qcResult.GetIntensityMotionCheckResult().push_back(IntensityMotionCheckResult);
@@ -2417,10 +2417,10 @@ void IntensityMotionCheckPanel::OpenQCReport( )
 	IntensityMotionCheckResult.interlaceTranslationZ = 0.0;
 
 	IntensityMotionCheckResult.bSliceCheckOK = true;
-	for(int i=0;i<this->DwiImage->GetLargestPossibleRegion().GetSize()[2];i++)
+	for(unsigned int i=0;i<this->DwiImage->GetLargestPossibleRegion().GetSize()[2];i++)
 		IntensityMotionCheckResult.sliceCorrelation.push_back(0.0);
 
-	for( int i=0;i< this->DwiImage->GetVectorLength(); i++)
+	for( unsigned int i=0;i< this->DwiImage->GetVectorLength(); i++)
 	{
 		this->qcResult.GetGradientProcess().push_back(QCResult::GRADIENT_INCLUDE);
 		this->qcResult.GetIntensityMotionCheckResult().push_back(IntensityMotionCheckResult);
@@ -2515,7 +2515,7 @@ void IntensityMotionCheckPanel::OpenQCReport( )
 	if(bAllIncluded)
 	{
 		GradientProcess.clear();
-		for( int i=0;i< this->DwiImage->GetVectorLength(); i++)
+		for( unsigned int i=0;i< this->DwiImage->GetVectorLength(); i++)
 		{
 			GradientProcess.push_back(i);
 		}
@@ -2531,7 +2531,7 @@ void IntensityMotionCheckPanel::OpenQCReport( )
 		return;
 	}
 
-	for(int i=0;i< GradientProcess.size();i++)
+	for(unsigned int i=0;i< GradientProcess.size();i++)
 	{
 		if(GradientProcess[i]< 0 ) 
 			this->qcResult.GetGradientProcess()[-GradientProcess[i]]=QCResult::GRADIENT_EXCLUDE;

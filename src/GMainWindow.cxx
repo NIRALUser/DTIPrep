@@ -958,7 +958,7 @@ void GMainWindow::on_actionOpen_XML_triggered()
 	pvtkRenderer_3DView->RemoveActor(actorDirProtocol);
 	actorDirProtocol->GetParts()->RemoveAllItems();
 	
-	for (int i=0; i< DTIPrepPanel->GetProtocal().GetDiffusionProtocal().gradients.size(); i++)
+	for (unsigned int i=0; i< DTIPrepPanel->GetProtocal().GetDiffusionProtocal().gradients.size(); i++)
 	{
 		if( DTIPrepPanel->GetProtocal().GetDiffusionProtocal().gradients[i][0] == 0.0 &&  
 			DTIPrepPanel->GetProtocal().GetDiffusionProtocal().gradients[i][1] == 0.0 && 
