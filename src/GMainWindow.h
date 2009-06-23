@@ -40,6 +40,14 @@ class QMenu;
 #include "vtkCommand.h"
 #include "itkVectorIndexSelectionCastImageFilter.h"
 
+#include "vtkSphereSource.h"
+#include "vtkLineSource.h"
+#include "vtkPropAssembly.h"
+#include "vtkCylinderSource.h"
+#include "vtkTubeFilter.h"
+#include "vtkLight.h"
+
+
 
 class QStyleFactory;
 
@@ -77,6 +85,13 @@ private slots:
 	void on_actionCDE_triggered();
 	void on_actionPlastique_triggered();
 	void on_actionCleanlooks_triggered();
+
+	// vector view
+	void on_actionFrom_Protocol_toggled( bool);
+	void on_actionFrom_DWI_toggled( bool);
+	void on_actionIncluded_toggled( bool);
+	void on_actionExcluded_toggled( bool);
+	void on_actionSphere_toggled( bool);
 
 	void on_actionExit_triggered();
 	void UpdateProgressbar(int pos);
@@ -116,6 +131,13 @@ private:
 	bool bContentSyn;	//=true;
 	bool bInterpolationSyn;	//=true;
 	bool bOrientationSyn;	//=false;
+
+// 3D window
+	vtkActor *actorSphere;
+	vtkPropAssembly *actorDirProtocol;
+	vtkPropAssembly *actorDirFile;
+	vtkPropAssembly *actorDirInclude;
+	vtkPropAssembly *actorDirExclude;
 
 
 // docking panels
@@ -189,11 +211,15 @@ public:
 	ItkVtkImageFilterTypeUShort::Pointer gradientConnecter2;
 	ItkVtkImageFilterTypeUShort::Pointer gradientConnecter3;
 
-
+	// for 3D Image
 	vtkRenderer		*pvtkRenderer;
 	vtkImagePlaneWidget	*planeWidgetX;
 	vtkImagePlaneWidget	*planeWidgetY;
 	vtkImagePlaneWidget	*planeWidgetZ;
+
+	// for 3D view
+	vtkRenderer		*pvtkRenderer_3DView;
+
 
 public:
 	bool CreateImagePlaneWidgets( vtkImageData *GradientImage );

@@ -27,6 +27,10 @@
 #include "itkNrrdImageIO.h"
 #include "itkVectorIndexSelectionCastImageFilter.h"
 
+#include "itkMetaDataDictionary.h"
+#include "itkMetaDataObject.h"
+
+
 #include "vtkEventQtSlotConnect.h"
 
 #include <vtkInteractorStyleImage.h>
@@ -79,11 +83,12 @@ GMainWindow::GMainWindow()
 	planeWidgetY = vtkImagePlaneWidget::New();
 	planeWidgetZ = vtkImagePlaneWidget::New();
 
+
 	DWIImage = NULL;
 
 	verticalLayout->setContentsMargins(0,0,0,0);
 	verticalLayout_2->setContentsMargins(0,0,0,0);
-//	verticalLayout_3->setContentsMargins(0,0,0,0);
+	verticalLayout_3->setContentsMargins(0,0,0,0);
 //	verticalLayout_3->setSpacing(2);
 	tabWidget->setCurrentIndex(0);
 
@@ -92,6 +97,40 @@ GMainWindow::GMainWindow()
 
 	// QT/VTK interact
 	qvtkWidget->GetRenderWindow()->SetStereoTypeToRedBlue();
+	qvtkWidget_3DView->GetRenderWindow()->SetStereoTypeToRedBlue();
+
+	pvtkRenderer = vtkRenderer::New();
+	pvtkRenderer->SetBackground(0.35, 0.35, 0.35);
+
+	pvtkRenderer_3DView = vtkRenderer::New();
+	pvtkRenderer_3DView->SetBackground(0.35, 0.35, 0.35);
+
+	qvtkWidget->GetRenderWindow()->AddRenderer(pvtkRenderer);
+	qvtkWidget_3DView->GetRenderWindow()->AddRenderer(pvtkRenderer_3DView);
+	
+	// 3D direction vectors
+	actorDirProtocol = vtkPropAssembly::New();
+	actorDirFile	 = vtkPropAssembly::New();
+	actorDirInclude  = vtkPropAssembly::New();
+	actorDirExclude  = vtkPropAssembly::New();
+
+	vtkSphereSource *SphereSource	=	vtkSphereSource::New();
+	SphereSource ->SetRadius(1.0);
+	SphereSource ->SetThetaResolution(50);
+	SphereSource ->SetPhiResolution(50);
+	SphereSource ->SetCenter(0.0, 0.0, 0.0);
+
+	vtkPolyDataMapper *mapperSphere = vtkPolyDataMapper::New();
+	mapperSphere->SetInput(SphereSource->GetOutput());
+
+	actorSphere	= vtkActor::New();
+	actorSphere->SetMapper(mapperSphere);
+	actorSphere->GetProperty()->SetColor(0.5, 0.3, 0.3);
+	actorSphere->GetProperty()->SetOpacity(1.0);
+	actorSphere->SetVisibility(0);
+
+	pvtkRenderer_3DView->AddActor(actorSphere);
+
 	//qvtkWidget->GetRenderWindow()->StereoCapableWindowOn();
 	//this->pvtkRenderer->GetActiveCamera()->ParallelProjectionOn();
 	//qvtkWidget->GetRenderWindow()->SetStereoTypeToCrystalEyes();
@@ -108,16 +147,17 @@ GMainWindow::GMainWindow()
 	createStatusBar();
 	createDockPanels();
 
-	pvtkRenderer = vtkRenderer::New();
-	qvtkWidget->GetRenderWindow()->AddRenderer(pvtkRenderer);
-	pvtkRenderer->SetBackground(0.35, 0.35, 0.35);
-
 
 	//ProbeWithSplineWidget();
 //	connect( this->DTIPrepPanel->GetThreadIntensityMotionCheck(), 
 //		SIGNAL(ResultUpdate()),
 //		this,
 //		SLOT(ResultUpdate()) );
+
+	connect( this->DTIPrepPanel, 
+		SIGNAL(loadProtocol()),
+		this,
+		SLOT(on_actionOpen_XML_triggered()));
 
 	
 	connect( this->DTIPrepPanel->GetThreadIntensityMotionCheck(), 
@@ -813,20 +853,154 @@ void GMainWindow::on_actionOpenDWINrrd_triggered()
 		SLOT(WindowLevelChanged( vtkObject*, unsigned long, void*, void*, vtkCommand*)),
 		&whichWindow[0], 1.0);
 
-	
+	//////////////////////////////////////////////////////////////////////////
+	itk::MetaDataDictionary imgMetaDictionary = DWIImage->GetMetaDataDictionary();    //
+	std::vector<std::string> imgMetaKeys = imgMetaDictionary.GetKeys();
+	std::vector<std::string>::const_iterator itKey = imgMetaKeys.begin();
+	std::string metaString;
 
+	pvtkRenderer_3DView->RemoveActor(actorDirFile);
 
-	
-	 //QString filePath = QFileDialog::getOpenFileName(this, tr("Open File"),
-//           xmlPath, tr("XML files (*.xml);;HTML files (*.html);;"
-//                      "SVG files (*.svg);;User Interface files (*.ui)"));
+	actorDirFile->GetParts()->RemoveAllItems();
+	float vect3d[3];
+	for ( ; itKey != imgMetaKeys.end(); itKey ++)
+	{
+		//double x,y,z;
+		itk::ExposeMetaData<std::string> (imgMetaDictionary, *itKey, metaString);
+		if (itKey->find("DWMRI_gradient") != std::string::npos)
+		{ 
+			std::istringstream iss(metaString);
+			iss >> vect3d[0] >> vect3d[1] >> vect3d[2];
+
+			if(vect3d[0] == 0.0 &&  vect3d[1] == 0.0 &&  vect3d[2]== 0.0)
+				continue;
+
+			vtkLineSource *LineSource		=	vtkLineSource::New();
+			//LineSource->SetPoint1(0.0, 0.0, 0.0);
+			LineSource->SetPoint1(-vect3d[0],-vect3d[1],-vect3d[2]);
+ 			LineSource->SetPoint2(vect3d[0],vect3d[1],vect3d[2]);
+
+			vtkTubeFilter *TubeFilter = vtkTubeFilter::New();
+			TubeFilter->SetInput(LineSource->GetOutput());
+			TubeFilter->SetRadius(0.01);
+			TubeFilter->SetNumberOfSides(10);
+			TubeFilter->SetVaryRadiusToVaryRadiusOff();
+			TubeFilter->SetCapping(1);
+			TubeFilter->Update(); ///
+
+			vtkPolyDataMapper *mapper = vtkPolyDataMapper::New();
+			mapper->SetInput(TubeFilter->GetOutput());
+
+			vtkActor *actor = vtkActor::New();
+			actor->SetMapper(mapper);
+			actor->GetProperty()->SetColor(0.0, 0.0, 1.0);
+// 			actor->GetProperty()->SetOpacity(0.5);
+			actorDirFile->AddPart(actor);
+		}
+	}
+	pvtkRenderer_3DView->AddActor(actorDirFile);
+	actorDirFile->SetVisibility(actionFrom_DWI->isChecked());
+	//actionFrom_DWI->setChecked(1);
 }
+
+void GMainWindow::on_actionFrom_Protocol_toggled( bool check)
+{
+	if(actorDirProtocol)
+	{
+		actorDirProtocol->SetVisibility(check);
+		qvtkWidget_3DView->GetRenderWindow()->Render();
+	}
+
+}
+
+void GMainWindow::on_actionFrom_DWI_toggled( bool check)
+{
+	if(actorDirFile)
+	{
+		actorDirFile->SetVisibility(check);
+		qvtkWidget_3DView->GetRenderWindow()->Render();
+	}
+}
+
+void GMainWindow::on_actionIncluded_toggled( bool check)
+{
+	if(actorDirInclude)
+	{
+		actorDirInclude->SetVisibility(check);
+		qvtkWidget_3DView->GetRenderWindow()->Render();
+	}
+}
+
+void GMainWindow::on_actionExcluded_toggled( bool check)
+{
+	if(actorDirExclude)
+	{
+		actorDirExclude->SetVisibility(check);
+		qvtkWidget_3DView->GetRenderWindow()->Render();
+	}
+}
+
+void GMainWindow::on_actionSphere_toggled( bool check)
+{
+	if(actorSphere)
+	{
+		actorSphere->SetVisibility(check);
+		qvtkWidget_3DView->GetRenderWindow()->Render();
+	}	
+}
+
 
 
 void GMainWindow::on_actionOpen_XML_triggered()
 {
 	DTIPrepPanel->OpenXML( );
+
+	pvtkRenderer_3DView->RemoveActor(actorDirProtocol);
+	actorDirProtocol->GetParts()->RemoveAllItems();
+	
+	for (int i=0; i< DTIPrepPanel->GetProtocal().GetDiffusionProtocal().gradients.size(); i++)
+	{
+		if( DTIPrepPanel->GetProtocal().GetDiffusionProtocal().gradients[i][0] == 0.0 &&  
+			DTIPrepPanel->GetProtocal().GetDiffusionProtocal().gradients[i][1] == 0.0 && 
+			DTIPrepPanel->GetProtocal().GetDiffusionProtocal().gradients[i][2] == 0.0    )
+			continue;
+
+		vtkLineSource *LineSource		=	vtkLineSource::New();
+		//LineSource->SetPoint1(0.0, 0.0, 0.0);
+		
+		LineSource->SetPoint1( 
+			DTIPrepPanel->GetProtocal().GetDiffusionProtocal().gradients[i][0],
+			DTIPrepPanel->GetProtocal().GetDiffusionProtocal().gradients[i][1],
+			DTIPrepPanel->GetProtocal().GetDiffusionProtocal().gradients[i][2]
+		);
+
+		LineSource->SetPoint2( 
+			-DTIPrepPanel->GetProtocal().GetDiffusionProtocal().gradients[i][0],
+			-DTIPrepPanel->GetProtocal().GetDiffusionProtocal().gradients[i][1],
+			-DTIPrepPanel->GetProtocal().GetDiffusionProtocal().gradients[i][2]
+		);
+
+		vtkTubeFilter *TubeFilter = vtkTubeFilter::New();
+		TubeFilter->SetInput(LineSource->GetOutput());
+		TubeFilter->SetRadius(0.01);
+		TubeFilter->SetNumberOfSides(10);
+		TubeFilter->SetVaryRadiusToVaryRadiusOff();
+		TubeFilter->SetCapping(1);
+		TubeFilter->Update(); ///
+
+		vtkPolyDataMapper *mapper = vtkPolyDataMapper::New();
+		mapper->SetInput(TubeFilter->GetOutput());
+
+		vtkActor *actor = vtkActor::New();
+		actor->SetMapper(mapper);
+		actor->GetProperty()->SetColor(0.70, 0.88, 0.93);
+// 		actor->GetProperty()->SetOpacity(0.5);
+		actorDirProtocol->AddPart(actor);
+	}
+	pvtkRenderer_3DView->AddActor(actorDirProtocol);
+	actorDirProtocol->SetVisibility(actionFrom_Protocol->isChecked());
 }
+
 
 void GMainWindow::on_actionOpen_QC_Report_triggered()
 {

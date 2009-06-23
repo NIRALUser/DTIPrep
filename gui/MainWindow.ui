@@ -16,8 +16,8 @@
    <string>DTIPrep Tools(Qt4)</string>
   </property>
   <property name="windowIcon" >
-   <iconset>
-    <normaloff>../../DTIPrep_bin/Release/images/logo.png</normaloff>../../DTIPrep_bin/Release/images/logo.png</iconset>
+   <iconset resource="../DTIPrep.qrc" >
+    <normaloff>:/icon/images/logo.png</normaloff>:/icon/images/logo.png</iconset>
   </property>
   <property name="locale" >
    <locale country="UnitedStates" language="English" />
@@ -45,18 +45,18 @@
        <enum>QTabWidget::Rounded</enum>
       </property>
       <property name="currentIndex" >
-       <number>0</number>
+       <number>1</number>
       </property>
       <property name="elideMode" >
        <enum>Qt::ElideNone</enum>
       </property>
       <widget class="QWidget" name="tab_3DView" >
        <attribute name="title" >
-        <string>3D View</string>
+        <string>MPR</string>
        </attribute>
        <attribute name="icon" >
         <iconset>
-         <normalon>C:/Documents and Settings/Administrator/My Documents/My QQ Files/u=318474793,1338338098&amp;fm=0&amp;gp=40.jpg</normalon>
+         <normalon>../../../../../Documents and Settings/Administrator/My Documents/My QQ Files/u=318474793,1338338098&amp;fm=0&amp;gp=40.jpg</normalon>
         </iconset>
        </attribute>
        <layout class="QVBoxLayout" name="verticalLayout_2" >
@@ -75,6 +75,16 @@
            <string>3D Window</string>
           </property>
          </widget>
+        </item>
+       </layout>
+      </widget>
+      <widget class="QWidget" name="标签页" >
+       <attribute name="title" >
+        <string>3D view</string>
+       </attribute>
+       <layout class="QVBoxLayout" name="verticalLayout_3" >
+        <item>
+         <widget class="QVTKWidget" name="qvtkWidget_3DView" />
         </item>
        </layout>
       </widget>
@@ -123,8 +133,23 @@
      <addaction name="actionPlastique" />
      <addaction name="actionCleanlooks" />
     </widget>
+    <widget class="QMenu" name="menuDirection_Vectors" >
+     <property name="title" >
+      <string>Direction Vectors</string>
+     </property>
+     <property name="icon" >
+      <iconset>
+       <normaloff>../../../../../DTIPrep_bin/Release/images/protocol.png</normaloff>../../../../../DTIPrep_bin/Release/images/protocol.png</iconset>
+     </property>
+     <addaction name="actionSphere" />
+     <addaction name="actionFrom_Protocol" />
+     <addaction name="actionFrom_DWI" />
+     <addaction name="actionIncluded" />
+     <addaction name="actionExcluded" />
+    </widget>
     <addaction name="menuStyles" />
     <addaction name="separator" />
+    <addaction name="menuDirection_Vectors" />
    </widget>
    <widget class="QMenu" name="menu_Help" >
     <property name="title" >
@@ -151,6 +176,11 @@
    <addaction name="actionOpen_XML" />
    <addaction name="actionOpen_QC_Report" />
    <addaction name="separator" />
+   <addaction name="actionSphere" />
+   <addaction name="actionFrom_Protocol" />
+   <addaction name="actionFrom_DWI" />
+   <addaction name="actionIncluded" />
+   <addaction name="actionExcluded" />
   </widget>
   <action name="actionOpen_Scalar_Image" >
    <property name="text" >
@@ -243,7 +273,7 @@
    </property>
    <property name="icon" >
     <iconset>
-     <normaloff>C:/Documents and Settings/Administrator/My Documents/My Skype Pictures/Angel Skype.png</normaloff>C:/Documents and Settings/Administrator/My Documents/My Skype Pictures/Angel Skype.png</iconset>
+     <normaloff>../../../../../Documents and Settings/Administrator/My Documents/My Skype Pictures/Angel Skype.png</normaloff>../../../../../Documents and Settings/Administrator/My Documents/My Skype Pictures/Angel Skype.png</iconset>
    </property>
    <property name="text" >
     <string>Windows</string>
@@ -261,8 +291,8 @@
    </property>
    <property name="icon" >
     <iconset>
-     <normaloff>C:/Documents and Settings/Administrator/My Documents/My Skype Pictures/Skype Cool Shades.png</normaloff>
-     <normalon>C:/Documents and Settings/Administrator/My Documents/My Skype Pictures/Angel Skype.png</normalon>C:/Documents and Settings/Administrator/My Documents/My Skype Pictures/Skype Cool Shades.png</iconset>
+     <normaloff>../../../../../Documents and Settings/Administrator/My Documents/My Skype Pictures/Skype Cool Shades.png</normaloff>
+     <normalon>../../../../../Documents and Settings/Administrator/My Documents/My Skype Pictures/Angel Skype.png</normalon>../../../../../Documents and Settings/Administrator/My Documents/My Skype Pictures/Skype Cool Shades.png</iconset>
    </property>
    <property name="text" >
     <string>Motif</string>
@@ -274,7 +304,7 @@
    </property>
    <property name="icon" >
     <iconset>
-     <normaloff>C:/Documents and Settings/Administrator/My Documents/My Skype Pictures/Hula Skype.png</normaloff>C:/Documents and Settings/Administrator/My Documents/My Skype Pictures/Hula Skype.png</iconset>
+     <normaloff>../../../../../Documents and Settings/Administrator/My Documents/My Skype Pictures/Hula Skype.png</normaloff>../../../../../Documents and Settings/Administrator/My Documents/My Skype Pictures/Hula Skype.png</iconset>
    </property>
    <property name="text" >
     <string>CDE</string>
@@ -307,8 +337,8 @@
   </action>
   <action name="actionOpenDWINrrd" >
    <property name="icon" >
-    <iconset>
-     <normaloff>../../DTIPrep_bin/Release/images/openNrrd.png</normaloff>../../DTIPrep_bin/Release/images/openNrrd.png</iconset>
+    <iconset resource="../DTIPrep.qrc" >
+     <normaloff>:/icon/images/openNrrd.png</normaloff>:/icon/images/openNrrd.png</iconset>
    </property>
    <property name="text" >
     <string>OpenNRRD</string>
@@ -320,7 +350,7 @@
    </property>
    <property name="icon" >
     <iconset>
-     <normaloff>C:/Documents and Settings/Administrator/My Documents/My Skype Pictures/Geisha Skype.png</normaloff>C:/Documents and Settings/Administrator/My Documents/My Skype Pictures/Geisha Skype.png</iconset>
+     <normaloff>../../../../../Documents and Settings/Administrator/My Documents/My Skype Pictures/Geisha Skype.png</normaloff>../../../../../Documents and Settings/Administrator/My Documents/My Skype Pictures/Geisha Skype.png</iconset>
    </property>
    <property name="text" >
     <string>Plastique</string>
@@ -332,7 +362,7 @@
    </property>
    <property name="icon" >
     <iconset>
-     <normaloff>C:/Documents and Settings/Administrator/My Documents/My Skype Pictures/Skypahontas.png</normaloff>C:/Documents and Settings/Administrator/My Documents/My Skype Pictures/Skypahontas.png</iconset>
+     <normaloff>../../../../../Documents and Settings/Administrator/My Documents/My Skype Pictures/Skypahontas.png</normaloff>../../../../../Documents and Settings/Administrator/My Documents/My Skype Pictures/Skypahontas.png</iconset>
    </property>
    <property name="text" >
     <string>Cleanlooks</string>
@@ -341,7 +371,7 @@
   <action name="actionWindowsXP" >
    <property name="icon" >
     <iconset>
-     <normaloff>C:/Documents and Settings/Administrator/My Documents/My Skype Pictures/Hula Skype.png</normaloff>C:/Documents and Settings/Administrator/My Documents/My Skype Pictures/Hula Skype.png</iconset>
+     <normaloff>../../../../../Documents and Settings/Administrator/My Documents/My Skype Pictures/Hula Skype.png</normaloff>../../../../../Documents and Settings/Administrator/My Documents/My Skype Pictures/Hula Skype.png</iconset>
    </property>
    <property name="text" >
     <string>WindowsXP</string>
@@ -349,8 +379,8 @@
   </action>
   <action name="actionOpen_XML" >
    <property name="icon" >
-    <iconset>
-     <normaloff>../../DTIPrep_bin/Release/images/openXML.png</normaloff>../../DTIPrep_bin/Release/images/openXML.png</iconset>
+    <iconset resource="../DTIPrep.qrc" >
+     <normaloff>:/icon/images/openXML.png</normaloff>:/icon/images/openXML.png</iconset>
    </property>
    <property name="text" >
     <string>OpenXML</string>
@@ -358,11 +388,97 @@
   </action>
   <action name="actionOpen_QC_Report" >
    <property name="icon" >
-    <iconset>
-     <normaloff>../../DTIPrep_bin/Release/images/openQC.png</normaloff>../../DTIPrep_bin/Release/images/openQC.png</iconset>
+    <iconset resource="../DTIPrep.qrc" >
+     <normaloff>:/icon/images/openQC.png</normaloff>:/icon/images/openQC.png</iconset>
    </property>
    <property name="text" >
     <string>OpenQCReport</string>
+   </property>
+  </action>
+  <action name="actionGradient_Vectors" >
+   <property name="text" >
+    <string>Gradient Vectors</string>
+   </property>
+  </action>
+  <action name="actionFrom_Protocol" >
+   <property name="checkable" >
+    <bool>true</bool>
+   </property>
+   <property name="icon" >
+    <iconset resource="../DTIPrep.qrc" >
+     <normaloff>:/icon/images/protocol.png</normaloff>:/icon/images/protocol.png</iconset>
+   </property>
+   <property name="text" >
+    <string>From Protocol</string>
+   </property>
+   <property name="iconText" >
+    <string>FromProtocol</string>
+   </property>
+   <property name="toolTip" >
+    <string>Toggle the display of the gradient direction vectors in protocol.</string>
+   </property>
+  </action>
+  <action name="actionFrom_DWI" >
+   <property name="checkable" >
+    <bool>true</bool>
+   </property>
+   <property name="icon" >
+    <iconset resource="../DTIPrep.qrc" >
+     <normaloff>:/icon/images/File.png</normaloff>:/icon/images/File.png</iconset>
+   </property>
+   <property name="text" >
+    <string>From DWI File</string>
+   </property>
+   <property name="iconText" >
+    <string>FromFile</string>
+   </property>
+   <property name="toolTip" >
+    <string>Toggle the display of the gradient direction vectors in nrrd file.</string>
+   </property>
+  </action>
+  <action name="actionIncluded" >
+   <property name="checkable" >
+    <bool>true</bool>
+   </property>
+   <property name="icon" >
+    <iconset resource="../DTIPrep.qrc" >
+     <normaloff>:/icon/images/include.png</normaloff>:/icon/images/include.png</iconset>
+   </property>
+   <property name="text" >
+    <string>Included</string>
+   </property>
+   <property name="toolTip" >
+    <string>Toggle the display of the gradient direction vectors left after QC.</string>
+   </property>
+  </action>
+  <action name="actionExcluded" >
+   <property name="checkable" >
+    <bool>true</bool>
+   </property>
+   <property name="icon" >
+    <iconset resource="../DTIPrep.qrc" >
+     <normaloff>:/icon/images/exclude.png</normaloff>:/icon/images/exclude.png</iconset>
+   </property>
+   <property name="text" >
+    <string>Excluded</string>
+   </property>
+   <property name="toolTip" >
+    <string>Toggle the display of the gradient direction vectors excluded after QC.</string>
+   </property>
+  </action>
+  <action name="actionSphere" >
+   <property name="checkable" >
+    <bool>true</bool>
+   </property>
+   <property name="icon" >
+    <iconset resource="../DTIPrep.qrc" >
+     <normaloff>:/icon/images/sphere.png</normaloff>:/icon/images/sphere.png</iconset>
+   </property>
+   <property name="text" >
+    <string>UnitSphere</string>
+   </property>
+   <property name="toolTip" >
+    <string>Toggle the display of unit sphere.</string>
    </property>
   </action>
  </widget>
@@ -373,7 +489,9 @@
    <header>QVTKWidget.h</header>
   </customwidget>
  </customwidgets>
- <resources/>
+ <resources>
+  <include location="../DTIPrep.qrc" />
+ </resources>
  <connections/>
  <designerdata>
   <property name="gridDeltaX" >

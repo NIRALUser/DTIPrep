@@ -1,6 +1,5 @@
 #include "IntensityMotionCheck.h"
 
-#include "itkMetaDataDictionary.h"
 #include "itkNrrdImageIO.h"
 #include "itkMetaDataDictionary.h"
 #include "itkMetaDataObject.h"
@@ -447,22 +446,22 @@ bool CIntensityMotionCheck::IntraCheck(
 		this->deviations.push_back(sqrt(DWIdeviation));
 	}
 
-	double baselineMeanStdev=0.0, gradientMeanStdev=0.0;
-	unsigned int effectiveSliceNumber=0;
+// 	double baselineMeanStdev=0.0, gradientMeanStdev=0.0;
+// 	unsigned int effectiveSliceNumber=0;
+// 
+// 	for(int j = 0 + (int)(DwiImage->GetLargestPossibleRegion().GetSize()[2]*beginSkip);j < ResultsContainer[0].size() - (int)(DwiImage->GetLargestPossibleRegion().GetSize()[2]*endSkip); j++ ) 
+// 	{
+// 		baselineMeanStdev += this->baselineDeviations[j];		
+// 		gradientMeanStdev += this->deviations[j];	
+// 		effectiveSliceNumber++;
+// 	}
+// 
+// 	baselineMeanStdev = baselineMeanStdev/(double)effectiveSliceNumber;		
+// 	gradientMeanStdev = gradientMeanStdev/(double)effectiveSliceNumber;	
 
-	for(int j = 0 + (int)(DwiImage->GetLargestPossibleRegion().GetSize()[2]*beginSkip);j < ResultsContainer[0].size() - (int)(DwiImage->GetLargestPossibleRegion().GetSize()[2]*endSkip); j++ ) 
-	{
-		baselineMeanStdev += this->baselineDeviations[j];		
-		gradientMeanStdev += this->deviations[j];	
-		effectiveSliceNumber++;
-	}
-
-	baselineMeanStdev = baselineMeanStdev/(double)effectiveSliceNumber;		
-	gradientMeanStdev = gradientMeanStdev/(double)effectiveSliceNumber;	
-
-	std::cout<<"effectiveSliceNumber: "<<effectiveSliceNumber<<std::endl;
-	std::cout<<"baselineMeanStdev: "<<baselineMeanStdev<<std::endl;
-	std::cout<<"gradientMeanStdev: "<<gradientMeanStdev<<std::endl;
+// 	std::cout<<"effectiveSliceNumber: "<<effectiveSliceNumber<<std::endl;
+// 	std::cout<<"baselineMeanStdev: "<<baselineMeanStdev<<std::endl;
+// 	std::cout<<"gradientMeanStdev: "<<gradientMeanStdev<<std::endl;
 
 	outfile <<std::endl<<"Intra-Gradient Slice Check Artifacts:"<<std::endl;
 	outfile  <<"\t"<<std::setw(10)<<"Gradient"<<"\t"<<std::setw(10)<<"Slice"<<"\t"<<std::setw(10)<<"Correlation"<<std::endl;
@@ -485,19 +484,47 @@ bool CIntensityMotionCheck::IntraCheck(
 				outfile.precision(6);
 				outfile.setf(std::ios_base::showpoint|std::ios_base::right) ;
 
+				double MeanStdev=0.0;
+				unsigned int effectiveSliceNumber=0;
+
+				for(int k = (j-3>0? j-3:0); k < (j+3<DwiImage->GetLargestPossibleRegion().GetSize()[2]? j+3:DwiImage->GetLargestPossibleRegion().GetSize()[2]) ; k++ ) 
+				{
+					MeanStdev += this->baselineDeviations[k];		
+					effectiveSliceNumber++;
+				}
+				MeanStdev = MeanStdev/(double)effectiveSliceNumber;	
+
 				double stddev=0.0;
-				if( baselineDeviations[j]< baselineMeanStdev )
+				if( baselineDeviations[j]< MeanStdev )
 					stddev = baselineDeviations[j];
 				else
-					stddev = baselineMeanStdev;
+					stddev = MeanStdev;
 				
-				if( ResultsContainer[i][j].Correlation < baselineCorrelationThreshold ||  ResultsContainer[i][j].Correlation < baselineMeans[j] - baselineDeviations[j] * baselineCorrelationDeviationThreshold)
-				//if( ResultsContainer[i][j].Correlation < baselineCorrelationThreshold ||  ResultsContainer[i][j].Correlation < baselineMeans[j] - stddev * baselineCorrelationDeviationThreshold)
+				if(getBValueNumber()>1)
 				{
-					outfile  <<"\t"<<std::setw(10)<<i<<"\t"<<std::setw(10)<<j+1<<"\t"<<ResultsContainer[i][j].Correlation<<std::endl;
-					std::cout<<"\t"<<std::setw(10)<<i<<"\t"<<std::setw(10)<<j+1<<"\t"<<ResultsContainer[i][j].Correlation<<std::endl;
-					baselineBadcount++;
+					if( ResultsContainer[i][j].Correlation < baselineCorrelationThreshold ||  ResultsContainer[i][j].Correlation < baselineMeans[j] - baselineDeviations[j] * baselineCorrelationDeviationThreshold)
+					{
+						outfile  <<"\t"<<std::setw(10)<<i<<"\t"<<std::setw(10)<<j+1<<"\t"<<ResultsContainer[i][j].Correlation<<std::endl;
+						std::cout<<"\t"<<std::setw(10)<<i<<"\t"<<std::setw(10)<<j+1<<"\t"<<ResultsContainer[i][j].Correlation<<std::endl;
+						baselineBadcount++;
+					}
 				}
+				else
+				{	
+					if( ResultsContainer[i][j].Correlation < baselineCorrelationThreshold ||  ResultsContainer[i][j].Correlation < baselineMeans[j] - stddev * baselineCorrelationDeviationThreshold)
+					{
+						outfile  <<"\t"<<std::setw(10)<<i<<"\t"<<std::setw(10)<<j+1<<"\t"<<ResultsContainer[i][j].Correlation<<std::endl;
+						std::cout<<"\t"<<std::setw(10)<<i<<"\t"<<std::setw(10)<<j+1<<"\t"<<ResultsContainer[i][j].Correlation<<std::endl;
+						baselineBadcount++;
+					}
+				}
+// 				if( ResultsContainer[i][j].Correlation < baselineCorrelationThreshold ||  ResultsContainer[i][j].Correlation < baselineMeans[j] - baselineDeviations[j] * baselineCorrelationDeviationThreshold)
+// 				//if( ResultsContainer[i][j].Correlation < baselineCorrelationThreshold ||  ResultsContainer[i][j].Correlation < baselineMeans[j] - stddev * baselineCorrelationDeviationThreshold)
+// 				{
+// 					outfile  <<"\t"<<std::setw(10)<<i<<"\t"<<std::setw(10)<<j+1<<"\t"<<ResultsContainer[i][j].Correlation<<std::endl;
+// 					std::cout<<"\t"<<std::setw(10)<<i<<"\t"<<std::setw(10)<<j+1<<"\t"<<ResultsContainer[i][j].Correlation<<std::endl;
+// 					baselineBadcount++;
+// 				}
 				outfile.precision();
 				outfile.setf(std::ios_base::unitbuf);
 			}
@@ -515,18 +542,39 @@ bool CIntensityMotionCheck::IntraCheck(
 				outfile.precision(6);
 				outfile.setf(std::ios_base::showpoint|std::ios_base::right) ;	
 
+				double MeanStdev=0.0;
+				unsigned int effectiveSliceNumber=0;
+
+				for(int k = (j-3>0? j-3:0); k < ( j+3 < DwiImage->GetLargestPossibleRegion().GetSize()[2]? j+3:DwiImage->GetLargestPossibleRegion().GetSize()[2]) ; k++ ) 
+				{
+					MeanStdev += this->deviations[k];		
+					effectiveSliceNumber++;
+				}
+				MeanStdev = MeanStdev/(double)effectiveSliceNumber;	
+
 				double stddev=0.0;
-				if( deviations[j]< gradientMeanStdev )
+				if( deviations[j]< MeanStdev )
 					stddev = deviations[j];
 				else
-					stddev = gradientMeanStdev;
+					stddev = MeanStdev;
 
-				if( ResultsContainer[i][j].Correlation < CorrelationThreshold ||  ResultsContainer[i][j].Correlation < means[j] - deviations[j] * CorrelationDeviationThreshold) // ok
-				//if( ResultsContainer[i][j].Correlation < CorrelationThreshold ||  ResultsContainer[i][j].Correlation < means[j] - stddev * CorrelationDeviationThreshold) // ok
+				if(getBValueNumber()>1)
 				{
-					outfile  <<"\t"<<std::setw(10)<<i<<"\t"<<std::setw(10)<<j+1<<"\t"<<ResultsContainer[i][j].Correlation<<std::endl;
-					std::cout<<"\t"<<std::setw(10)<<i<<"\t"<<std::setw(10)<<j+1<<"\t"<<ResultsContainer[i][j].Correlation<<std::endl;
-					badcount++;
+					if( ResultsContainer[i][j].Correlation < CorrelationThreshold ||  ResultsContainer[i][j].Correlation < means[j] - deviations[j] * CorrelationDeviationThreshold) // ok
+					{
+						outfile  <<"\t"<<std::setw(10)<<i<<"\t"<<std::setw(10)<<j+1<<"\t"<<ResultsContainer[i][j].Correlation<<std::endl;
+						std::cout<<"\t"<<std::setw(10)<<i<<"\t"<<std::setw(10)<<j+1<<"\t"<<ResultsContainer[i][j].Correlation<<std::endl;
+						badcount++;
+					}
+				}
+				else
+				{
+					if( ResultsContainer[i][j].Correlation < CorrelationThreshold ||  ResultsContainer[i][j].Correlation < means[j] - stddev * CorrelationDeviationThreshold) // ok
+					{
+						outfile  <<"\t"<<std::setw(10)<<i<<"\t"<<std::setw(10)<<j+1<<"\t"<<ResultsContainer[i][j].Correlation<<std::endl;
+						std::cout<<"\t"<<std::setw(10)<<i<<"\t"<<std::setw(10)<<j+1<<"\t"<<ResultsContainer[i][j].Correlation<<std::endl;
+						badcount++;
+					}
 				}
 				outfile.precision();
 				outfile.setf(std::ios_base::unitbuf);
@@ -2368,7 +2416,7 @@ unsigned char CIntensityMotionCheck::CheckByProtocal()
 		}
 	}
 
-	this->gradientLeftNumber = gradientLeft;
+	//this->gradientLeftNumber = gradientLeft;
 
 	std::cout <<"baselineLeft: "<<baselineLeft<<std::endl;
 	std::cout <<"gradientLeft: "<<gradientLeft<<std::endl;
@@ -2606,8 +2654,10 @@ void CIntensityMotionCheck::collectLeftDiffusionStatistics()
 	// 	std::cout<<" dirMode.size(): " <<  dirMode.size() <<std::endl;
 
 	this->gradientDirLeftNumber = 0;
+	this->gradientLeftNumber = 0;
 	for(int i=0; i<this->repetitionLeftNumber.size(); i++)
 	{
+		this->gradientLeftNumber+=this->repetitionLeftNumber[i];
 		if(this->repetitionLeftNumber[i]>0)
 			this->gradientDirLeftNumber++;
 	}

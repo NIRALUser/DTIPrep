@@ -180,7 +180,8 @@ void IntensityMotionCheckPanel::SetFileName(QString nrrd )
 
 void IntensityMotionCheckPanel::on_toolButton_ProtocalFileOpen_clicked( )
 {
-	OpenXML();
+	//OpenXML();
+	emit loadProtocol();
 	pushButton_Save->setEnabled( 1 );
 	pushButton_SaveProtocolAs->setEnabled( 1 );
 	bProtocolTreeEditable = true;

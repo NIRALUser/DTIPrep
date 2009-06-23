@@ -29,8 +29,9 @@ public:
 
 signals:
 	void status(const QString &);
+	void loadProtocol();
 
-	private slots:
+private slots:
 		
 		//void on_comboBox_Protocal_currentIndexChanged(QString protocalName);
 
@@ -156,6 +157,7 @@ public:
 	void OpenXML();
 
 	void CreateDefaultProtocol();
+
 private:
 
 	bool bProtocol;

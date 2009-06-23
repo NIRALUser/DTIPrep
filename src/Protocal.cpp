@@ -271,12 +271,12 @@ void Protocal::collectDiffusionStatistics()
 	DiffusionDirections.clear();
 
 // 	std::cout<<"this->GetDiffusionProtocal().gradients.size(): " << this->GetDiffusionProtocal().gradients.size() <<std::endl;
-	for( int i=0; i<this->GetDiffusionProtocal().gradients.size();i++)
+	for( unsigned int i=0; i<this->GetDiffusionProtocal().gradients.size();i++)
 	{
 		if(DiffusionDirections.size()>0)
 		{
 			bool newDir = true;
-			for(int j=0;j<DiffusionDirections.size();j++)
+			for(unsigned int j=0;j<DiffusionDirections.size();j++)
 			{
 				if( this->GetDiffusionProtocal().gradients[i][0] == DiffusionDirections[j].gradientDir[0] && 
 					this->GetDiffusionProtocal().gradients[i][1] == DiffusionDirections[j].gradientDir[1] && 
@@ -323,7 +323,7 @@ void Protocal::collectDiffusionStatistics()
 	dirMode.clear();
 
 	double modeTemp = 0.0;
-	for( int i=0; i<DiffusionDirections.size(); i++)
+	for( unsigned int i=0; i<DiffusionDirections.size(); i++)
 	{
 		if( DiffusionDirections[i].gradientDir[0] == 0.0 &&
 			DiffusionDirections[i].gradientDir[1] == 0.0 &&
@@ -344,7 +344,7 @@ void Protocal::collectDiffusionStatistics()
 			if( dirMode.size() > 0)
 			{
 				bool newDirMode = true;
-				for(int j=0;j< dirMode.size();j++)
+				for(unsigned int j=0;j< dirMode.size();j++)
 				{
 					if( fabs(modeSqr-dirMode[j])<0.001)   // 1 DIFFERENCE for b value
 					{
@@ -373,7 +373,7 @@ void Protocal::collectDiffusionStatistics()
 	this->bValueNumber = dirMode.size();
 
 	repetitionNumber = repetNum[0];
-	for( int i=1; i<repetNum.size(); i++)
+	for( unsigned int i=1; i<repetNum.size(); i++)
 	{ 
 		if( repetNum[i] != repetNum[0])
 		{
