@@ -50,7 +50,7 @@
       <property name="elideMode" >
        <enum>Qt::ElideNone</enum>
       </property>
-      <widget class="QWidget" name="tab_3DView" >
+      <widget class="QWidget" name="tab_MPR" >
        <attribute name="title" >
         <string>MPR</string>
        </attribute>
@@ -78,7 +78,7 @@
         </item>
        </layout>
       </widget>
-      <widget class="QWidget" name="标签页" >
+      <widget class="QWidget" name="tab_3DView" >
        <attribute name="title" >
         <string>3D view</string>
        </attribute>
