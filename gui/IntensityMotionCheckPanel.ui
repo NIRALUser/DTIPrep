@@ -50,9 +50,9 @@
            <cursorShape>ArrowCursor</cursorShape>
           </property>
           <property name="currentIndex" >
-           <number>1</number>
+           <number>2</number>
           </property>
-          <widget class="QWidget" name="Tab_3" >
+          <widget class="QWidget" name="Tab_DWI" >
            <attribute name="title" >
             <string>DWI</string>
            </attribute>
@@ -1193,7 +1193,7 @@
             </item>
            </layout>
           </widget>
-          <widget class="QWidget" name="标签页" >
+          <widget class="QWidget" name="tab_QCResults" >
            <attribute name="title" >
             <string>QCResults</string>
            </attribute>

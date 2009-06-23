@@ -547,18 +547,18 @@ void GMainWindow::on_actionCleanlooks_triggered()
 
 void GMainWindow::print()
 {
-#ifndef QT_NO_PRINTER
-    QTextDocument *document ;
-    QPrinter printer;
-
-    QPrintDialog *dlg = new QPrintDialog(&printer, this);
-    if (dlg->exec() != QDialog::Accepted)
-        return;
-
-    document->print(&printer);
-
-    statusBar()->showMessage(tr("Ready"), 2000);
-#endif
+// #ifndef QT_NO_PRINTER
+//     QTextDocument *document ;
+//     QPrinter printer;
+// 
+//     QPrintDialog *dlg = new QPrintDialog(&printer, this);
+//     if (dlg->exec() != QDialog::Accepted)
+//         return;
+// 
+//     document->print(&printer);
+// 
+//     statusBar()->showMessage(tr("Ready"), 2000);
+// #endif
 }
 
 void GMainWindow::save()

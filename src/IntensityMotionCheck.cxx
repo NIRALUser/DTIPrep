@@ -1825,6 +1825,7 @@ bool CIntensityMotionCheck::dtiestim()
 
 	std::cout<< "dtiestim command: "<< str.c_str() << std::endl;
 	system(str.c_str());
+	return true;
 }
 
 bool CIntensityMotionCheck::DTIComputing()
