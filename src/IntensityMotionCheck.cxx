@@ -1801,9 +1801,7 @@ bool CIntensityMotionCheck::dtiestim()
 	str.append(" -t ");
 	char buffer [10]; 
 	sprintf( buffer, "%d", protocal->GetDTIProtocal().baselineThreshold );
-	str.append(buffer);
-	
-	
+	str.append(buffer);	
 
 	if( protocal->GetDTIProtocal().bidwi)
 	{
