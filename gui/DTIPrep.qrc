@@ -1,0 +1,24 @@
+<RCC>
+  <qresource prefix="icon" >
+    <file>images/planes.png</file>
+    <file>images/print.png</file>
+    <file>images/protocol.png</file>
+    <file>images/save.png</file>
+    <file>images/sphere.png</file>
+    <file>images/undo.png</file>
+    <file>images/bounding.png</file>
+    <file>images/copy.png</file>
+    <file>images/cut.png</file>
+    <file>images/exclude.png</file>
+    <file>images/File.png</file>
+    <file>images/include.png</file>
+    <file>images/logo.png</file>
+    <file>images/logo_01.png</file>
+    <file>images/new.png</file>
+    <file>images/open.png</file>
+    <file>images/openNrrd.png</file>
+    <file>images/openQC.png</file>
+    <file>images/openXML.png</file>
+    <file>images/paste.png</file>
+  </qresource>
+</RCC>
