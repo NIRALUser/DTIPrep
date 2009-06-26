@@ -11,11 +11,6 @@
 #include <vtkCellPicker.h>
 
 #include "Dicom2NrrdPanel.h"
-#include "DiffusionCheckPanel.h"
-#include "DiffusionEditPanel.h"
-#include "DTIEstimatePanel.h"
-#include "EddyMotionCorrectPanel.h"
-#include "ImageView2DPanel.h"
 #include "ImageView2DPanelWithControls.h"
 #include "IntensityMotionCheckPanel.h"
 
