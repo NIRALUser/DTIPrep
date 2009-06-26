@@ -3,8 +3,8 @@
 Program:   ReconstructTensor
 Module:    $RCSfile: DicomToNrrdConverter.cxx,v $
 Language:  C++
-Date:      $Date: 2009-02-02 15:14:37 $
-Version:   $Revision: 1.2 $
+Date:      $Date: 2009-06-26 07:39:35 $
+Version:   $Revision: 1.3 $
 
 Copyright (c) General Electric Global Research. All rights reserved.
 
@@ -81,7 +81,7 @@ This is also the space for NRRD header.
 #include "itksys/Directory.hxx"
 #include "itksys/SystemTools.hxx"
 
-#include "DicomToNrrdConverterCLP.h"
+// #include "DicomToNrrdConverterCLP.h"
 
 // relevant GE private tags
 const gdcm::DictEntry GEDictBValue( 0x0043, 0x1039, "IS", "1", "B Value of diffusion weighting" );
@@ -165,7 +165,15 @@ void InsertUnique( std::vector<float> & vec, float value )
 int main(int argc, char* argv[])
 {
 
-  PARSE_ARGS;
+	if( argc < 3 )
+	{
+		std::cerr << "Missing Parameters " << std::endl;
+		std::cerr << "Usage: " << argv[0];
+		std::cerr << "   <input dicom directory>   <output nhdr file> " << std::endl;
+		return EXIT_FAILURE;
+	}
+
+//   PARSE_ARGS;
 
   bool SliceOrderIS = true;
   std::string vendor;
@@ -173,7 +181,8 @@ int main(int argc, char* argv[])
   bool SingleSeries = true;
 
   // check if the file name is valid
-  std::string nhdrname = outputFileName;
+//   std::string nhdrname = outputFileName;
+  std::string nhdrname = argv[2];
   std::string dataname;
   {
     int i;
@@ -181,7 +190,7 @@ int main(int argc, char* argv[])
     if (i == std::string::npos)
       {
         std::cerr << "Output file must be a nrrd header file.\n";
-        std::cerr << "Version:   $Revision: 1.2 $" << std::endl;
+        std::cerr << "Version:   $Revision: 1.3 $" << std::endl;
         return EXIT_FAILURE;
       }
     dataname = nhdrname.substr(0, i) + ".raw";
@@ -190,7 +199,9 @@ int main(int argc, char* argv[])
   //////////////////////////////////////////////////  
   // 0a) read one slice and figure out vendor
   InputNamesGeneratorType::Pointer inputNames = InputNamesGeneratorType::New();
-  inputNames->SetInputDirectory( inputDicom.c_str() );
+//   inputNames->SetInputDirectory( inputDicom.c_str() );
+  inputNames->SetInputDirectory( argv[1] );
+
 
   ReaderType::FileNamesContainer filenames;
 
@@ -217,13 +228,16 @@ int main(int argc, char* argv[])
     SingleSeries = false; 
     filenames.resize( 0 ); 
     itksys::Directory directory; 
-    directory.Load( itksys::SystemTools::CollapseFullPath(inputDicom.c_str()).c_str() ); 
+
+//     directory.Load( itksys::SystemTools::CollapseFullPath(inputDicom.c_str()).c_str() ); 
+	directory.Load( itksys::SystemTools::CollapseFullPath( argv[1]).c_str() ); 
     ImageIOType::Pointer gdcmIOTest = ImageIOType::New();
  
     // for each patient directory 
     for ( int k = 0; k < directory.GetNumberOfFiles(); k++) 
     { 
-      std::string subdirectory( inputDicom.c_str() ); 
+//       std::string subdirectory( inputDicom.c_str() ); 
+	  std::string subdirectory( argv[1] ); 
       subdirectory = subdirectory + "/" + directory.GetFile(k); 
  
       std::string sqDir( directory.GetFile(k) ); 
@@ -717,7 +731,8 @@ int main(int argc, char* argv[])
   // write volumes in raw format
   itk::ImageFileWriter< VolumeType >::Pointer rawWriter = itk::ImageFileWriter< VolumeType >::New();
   itk::RawImageIO<PixelValueType, 3>::Pointer rawIO = itk::RawImageIO<PixelValueType, 3>::New();
-  std::string rawFileName = outputDir + "/" + dataname;
+//   std::string rawFileName = outputDir + "/" + dataname;
+  std::string rawFileName =  dataname;
   rawWriter->SetFileName( rawFileName.c_str() );
   rawWriter->SetImageIO( rawIO );
   rawIO->SetByteOrderToLittleEndian();
@@ -821,7 +836,8 @@ int main(int argc, char* argv[])
   // There should be a better way using itkNRRDImageIO.
 
   std::ofstream header;
-  std::string headerFileName = outputDir + "/" + outputFileName;
+//   std::string headerFileName = outputDir + "/" + outputFileName;
+  std::string headerFileName = argv[2];
 
   header.open (headerFileName.c_str());
   header << "NRRD0005" << std::endl;
