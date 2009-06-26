@@ -41,12 +41,7 @@ SET( DTIPrep_SRCS
   src/main.cxx
   src/GMainWindow.cxx
   src/Dicom2NrrdPanel.cxx
-  src/DiffusionCheckPanel.cxx
-  src/DiffusionEditPanel.cxx
-  src/DTIEstimatePanel.cxx
-  src/EddyMotionCorrectPanel.cxx
   src/IntensityMotionCheckPanel.cxx	
-  src/ImageView2DPanel.cxx
   src/ImageView2DPanelWithControls.cxx
   src/IntensityMotionCheck.cxx
   src/IntraGradientRigidRegistration.cxx
@@ -63,45 +58,24 @@ SET( DTIPrep_SRCS
 )
 
 SET( DTIPrep_HRDS
-  src/main.h
   src/GMainWindow.h
   src/Dicom2NrrdPanel.h
-  src/DiffusionCheckPanel.h
-  src/DiffusionEditPanel.h
-  src/DTIEstimatePanel.h
-  src/EddyMotionCorrectPanel.h
   src/IntensityMotionCheckPanel.h
-  src/ImageView2DPanel.h
   src/ImageView2DPanelWithControls.h
-  src/RigidRegistration.h
-  src/IntraGradientRigidRegistration.h
-  src/InterGradientRigidRegistration.h
-  src/IntensityMotionCheck.h
   src/ThreadIntensityMotionCheck.h
   src/ThreadEddyMotionCorrect.h
   src/ThreadDicomToNrrd.h
   src/ThreadDicomSeriesRead.h
-#  src/timer.h
-  src/XmlStreamReader.h
-  src/XmlStreamWriter.h
-  src/Protocal.h
-  src/QCResult.h
-
 )
 
 SET( DTIPrep_UIS
   gui/MainWindow.ui
   gui/Dicom2NrrdPanel.ui
-  gui/DiffusionCheckPanel.ui
-  gui/DiffusionEditPanel.ui
-  gui/DTIEstimatePanel.ui
-  gui/EddyMotionCorrectPanel.ui
   gui/IntensityMotionCheckPanel.ui	
-  gui/ImageView2DPanel.ui
   gui/ImageView2DPanelWithControls.ui
 )
  
-SET(DTIPrep_RCCS DTIPrep.qrc)
+SET(DTIPrep_RCCS gui/DTIPrep.qrc)
 # generate rules for building source files from the resources
 QT4_ADD_RESOURCES(RCC_SRCS ${DTIPrep_RCCS})
 
