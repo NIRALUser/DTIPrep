@@ -18,13 +18,11 @@
 
 #include "ThreadIntensityMotionCheck.h"
 
-
 #include "itkNrrdImageIO.h"
 #include "itkVectorIndexSelectionCastImageFilter.h"
 
 #include "itkMetaDataDictionary.h"
 #include "itkMetaDataObject.h"
-
 
 #include "vtkEventQtSlotConnect.h"
 
