@@ -1,10 +1,11 @@
-<ui version="4.0" >
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
  <class>MainWindow</class>
- <widget class="QMainWindow" name="MainWindow" >
-  <property name="windowModality" >
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="windowModality">
    <enum>Qt::NonModal</enum>
   </property>
-  <property name="geometry" >
+  <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
@@ -12,79 +13,79 @@
     <height>678</height>
    </rect>
   </property>
-  <property name="windowTitle" >
+  <property name="windowTitle">
    <string>DTIPrep Tools(Qt4)</string>
   </property>
-  <property name="windowIcon" >
-   <iconset resource="DTIPrep.qrc" >
+  <property name="windowIcon">
+   <iconset resource="DTIPrep.qrc">
     <normaloff>:/icon/images/logo.png</normaloff>:/icon/images/logo.png</iconset>
   </property>
-  <property name="locale" >
-   <locale country="UnitedStates" language="English" />
+  <property name="locale">
+   <locale language="English" country="UnitedStates"/>
   </property>
-  <property name="dockOptions" >
+  <property name="dockOptions">
    <set>QMainWindow::AllowNestedDocks|QMainWindow::AllowTabbedDocks|QMainWindow::AnimatedDocks</set>
   </property>
-  <widget class="QWidget" name="centralwidget" >
-   <layout class="QVBoxLayout" name="verticalLayout" >
+  <widget class="QWidget" name="centralwidget">
+   <layout class="QVBoxLayout" name="verticalLayout">
     <item>
-     <widget class="QTabWidget" name="tabWidget" >
-      <property name="contextMenuPolicy" >
+     <widget class="QTabWidget" name="tabWidget">
+      <property name="contextMenuPolicy">
        <enum>Qt::DefaultContextMenu</enum>
       </property>
-      <property name="toolTip" >
+      <property name="toolTip">
        <string>Main Window Tab</string>
       </property>
-      <property name="autoFillBackground" >
+      <property name="autoFillBackground">
        <bool>true</bool>
       </property>
-      <property name="tabPosition" >
+      <property name="tabPosition">
        <enum>QTabWidget::North</enum>
       </property>
-      <property name="tabShape" >
+      <property name="tabShape">
        <enum>QTabWidget::Rounded</enum>
       </property>
-      <property name="currentIndex" >
+      <property name="currentIndex">
        <number>1</number>
       </property>
-      <property name="elideMode" >
+      <property name="elideMode">
        <enum>Qt::ElideNone</enum>
       </property>
-      <widget class="QWidget" name="tab_MPR" >
-       <attribute name="title" >
-        <string>MPR</string>
-       </attribute>
-       <attribute name="icon" >
+      <widget class="QWidget" name="tab_MPR">
+       <attribute name="icon">
         <iconset>
          <normalon>../../../../../Documents and Settings/Administrator/My Documents/My QQ Files/u=318474793,1338338098&amp;fm=0&amp;gp=40.jpg</normalon>
         </iconset>
        </attribute>
-       <layout class="QVBoxLayout" name="verticalLayout_2" >
+       <attribute name="title">
+        <string>MPR</string>
+       </attribute>
+       <layout class="QVBoxLayout" name="verticalLayout_2">
         <item>
-         <widget class="QVTKWidget" name="qvtkWidget" >
-          <property name="cursor" >
+         <widget class="QVTKWidget" name="qvtkWidget">
+          <property name="cursor">
            <cursorShape>OpenHandCursor</cursorShape>
           </property>
-          <property name="mouseTracking" >
+          <property name="mouseTracking">
            <bool>true</bool>
           </property>
-          <property name="contextMenuPolicy" >
+          <property name="contextMenuPolicy">
            <enum>Qt::ActionsContextMenu</enum>
           </property>
-          <property name="toolTip" >
+          <property name="toolTip">
            <string>3D Window</string>
           </property>
          </widget>
         </item>
        </layout>
       </widget>
-      <widget class="QWidget" name="tab_3DView" >
-       <attribute name="title" >
+      <widget class="QWidget" name="tab_3DView">
+       <attribute name="title">
         <string>3D view</string>
        </attribute>
-       <layout class="QVBoxLayout" name="verticalLayout_3" >
+       <layout class="QVBoxLayout" name="verticalLayout_3">
         <item>
-         <widget class="QVTKWidget" name="qvtkWidget_3DView" />
+         <widget class="QVTKWidget" name="qvtkWidget_3DView"/>
         </item>
        </layout>
       </widget>
@@ -92,392 +93,388 @@
     </item>
    </layout>
   </widget>
-  <widget class="QMenuBar" name="menubar" >
-   <property name="geometry" >
+  <widget class="QMenuBar" name="menubar">
+   <property name="geometry">
     <rect>
      <x>0</x>
      <y>0</y>
      <width>1064</width>
-     <height>20</height>
+     <height>21</height>
     </rect>
    </property>
-   <widget class="QMenu" name="menu_File" >
-    <property name="title" >
+   <widget class="QMenu" name="menu_File">
+    <property name="title">
      <string>&amp;File</string>
     </property>
-    <widget class="QMenu" name="menuOpen_DWI" >
-     <property name="title" >
+    <widget class="QMenu" name="menuOpen_DWI">
+     <property name="title">
       <string>Open DWI</string>
      </property>
-     <addaction name="separator" />
-     <addaction name="actionOpenDWINrrd" />
+     <addaction name="separator"/>
+     <addaction name="actionOpenDWINrrd"/>
     </widget>
-    <addaction name="menuOpen_DWI" />
-    <addaction name="actionOpen_XML" />
-    <addaction name="actionOpen_QC_Report" />
-    <addaction name="separator" />
-    <addaction name="actionExit" />
+    <addaction name="menuOpen_DWI"/>
+    <addaction name="actionOpen_XML"/>
+    <addaction name="separator"/>
+    <addaction name="actionExit"/>
    </widget>
-   <widget class="QMenu" name="menuView" >
-    <property name="title" >
+   <widget class="QMenu" name="menuView">
+    <property name="title">
      <string>&amp;View</string>
     </property>
-    <widget class="QMenu" name="menuStyles" >
-     <property name="title" >
+    <widget class="QMenu" name="menuStyles">
+     <property name="title">
       <string>Styles</string>
      </property>
-     <addaction name="actionWindows" />
-     <addaction name="actionWindowsXP" />
-     <addaction name="actionMotif" />
-     <addaction name="actionCDE" />
-     <addaction name="actionPlastique" />
-     <addaction name="actionCleanlooks" />
+     <addaction name="actionWindows"/>
+     <addaction name="actionWindowsXP"/>
+     <addaction name="actionMotif"/>
+     <addaction name="actionCDE"/>
+     <addaction name="actionPlastique"/>
+     <addaction name="actionCleanlooks"/>
     </widget>
-    <widget class="QMenu" name="menuDirection_Vectors" >
-     <property name="title" >
+    <widget class="QMenu" name="menuDirection_Vectors">
+     <property name="title">
       <string>Direction Vectors</string>
      </property>
-     <property name="icon" >
+     <property name="icon">
       <iconset>
        <normaloff>../../../../../DTIPrep_bin/Release/images/protocol.png</normaloff>../../../../../DTIPrep_bin/Release/images/protocol.png</iconset>
      </property>
-     <addaction name="actionSphere" />
-     <addaction name="actionFrom_Protocol" />
-     <addaction name="actionFrom_DWI" />
-     <addaction name="actionIncluded" />
-     <addaction name="actionExcluded" />
+     <addaction name="actionSphere"/>
+     <addaction name="actionFrom_Protocol"/>
+     <addaction name="actionFrom_DWI"/>
+     <addaction name="actionIncluded"/>
     </widget>
-    <addaction name="menuStyles" />
-    <addaction name="separator" />
-    <addaction name="menuDirection_Vectors" />
+    <addaction name="menuStyles"/>
+    <addaction name="separator"/>
+    <addaction name="menuDirection_Vectors"/>
    </widget>
-   <widget class="QMenu" name="menu_Help" >
-    <property name="title" >
+   <widget class="QMenu" name="menu_Help">
+    <property name="title">
      <string>&amp;Help</string>
     </property>
-    <addaction name="actionAbout" />
+    <addaction name="actionAbout"/>
    </widget>
-   <addaction name="menu_File" />
-   <addaction name="menuView" />
-   <addaction name="menu_Help" />
+   <addaction name="menu_File"/>
+   <addaction name="menuView"/>
+   <addaction name="menu_Help"/>
   </widget>
-  <widget class="QStatusBar" name="statusbar" />
-  <widget class="QToolBar" name="toolBar_File" >
-   <property name="windowTitle" >
+  <widget class="QStatusBar" name="statusbar"/>
+  <widget class="QToolBar" name="toolBar_File">
+   <property name="windowTitle">
     <string>toolBar</string>
    </property>
-   <attribute name="toolBarArea" >
+   <attribute name="toolBarArea">
     <enum>TopToolBarArea</enum>
    </attribute>
-   <attribute name="toolBarBreak" >
+   <attribute name="toolBarBreak">
     <bool>false</bool>
    </attribute>
-   <addaction name="actionOpenDWINrrd" />
-   <addaction name="actionOpen_XML" />
-   <addaction name="actionOpen_QC_Report" />
-   <addaction name="separator" />
-   <addaction name="actionSphere" />
-   <addaction name="actionFrom_Protocol" />
-   <addaction name="actionFrom_DWI" />
-   <addaction name="actionIncluded" />
-   <addaction name="actionExcluded" />
+   <addaction name="actionOpenDWINrrd"/>
+   <addaction name="actionOpen_XML"/>
+   <addaction name="separator"/>
+   <addaction name="actionSphere"/>
+   <addaction name="actionFrom_Protocol"/>
+   <addaction name="actionFrom_DWI"/>
+   <addaction name="actionIncluded"/>
   </widget>
-  <action name="actionOpen_Scalar_Image" >
-   <property name="text" >
+  <action name="actionOpen_Scalar_Image">
+   <property name="text">
     <string>Open Scalar</string>
    </property>
   </action>
-  <action name="actionOpen_DTI" >
-   <property name="text" >
+  <action name="actionOpen_DTI">
+   <property name="text">
     <string>Open DTI</string>
    </property>
   </action>
-  <action name="actionSave_DTI" >
-   <property name="text" >
+  <action name="actionSave_DTI">
+   <property name="text">
     <string>Save DTI</string>
    </property>
   </action>
-  <action name="actionSave_Fibers" >
-   <property name="text" >
+  <action name="actionSave_Fibers">
+   <property name="text">
     <string>Save Fibers</string>
    </property>
   </action>
-  <action name="actionExit" >
-   <property name="text" >
+  <action name="actionExit">
+   <property name="text">
     <string>Exit</string>
    </property>
   </action>
-  <action name="actionTool_Bars" >
-   <property name="text" >
+  <action name="actionTool_Bars">
+   <property name="text">
     <string>Tool Bars</string>
    </property>
   </action>
-  <action name="actionStatus_Bar" >
-   <property name="text" >
+  <action name="actionStatus_Bar">
+   <property name="text">
     <string>Status Bar</string>
    </property>
   </action>
-  <action name="actionOutput" >
-   <property name="text" >
+  <action name="actionOutput">
+   <property name="text">
     <string>Output Bar</string>
    </property>
   </action>
-  <action name="actionDTI_prepare_Panel" >
-   <property name="text" >
+  <action name="actionDTI_prepare_Panel">
+   <property name="text">
     <string>DTI prepare Panel</string>
    </property>
   </action>
-  <action name="actionDicom_to_Nrrd" >
-   <property name="text" >
+  <action name="actionDicom_to_Nrrd">
+   <property name="text">
     <string>Dicom to Nrrd</string>
    </property>
   </action>
-  <action name="actionDiffusion_Edit" >
-   <property name="text" >
+  <action name="actionDiffusion_Edit">
+   <property name="text">
     <string>Diffusion Edit</string>
    </property>
   </action>
-  <action name="actionIntrashot_Check" >
-   <property name="text" >
+  <action name="actionIntrashot_Check">
+   <property name="text">
     <string>Intrashot Check</string>
    </property>
   </action>
-  <action name="actionInterShot_Check" >
-   <property name="text" >
+  <action name="actionInterShot_Check">
+   <property name="text">
     <string>InterShot Check</string>
    </property>
   </action>
-  <action name="actionDiffusion_Check" >
-   <property name="text" >
+  <action name="actionDiffusion_Check">
+   <property name="text">
     <string>Diffusion Check</string>
    </property>
   </action>
-  <action name="actionDTI_Tools" >
-   <property name="text" >
+  <action name="actionDTI_Tools">
+   <property name="text">
     <string>DTI Tools</string>
    </property>
   </action>
-  <action name="actionDTI_Estimate" >
-   <property name="text" >
+  <action name="actionDTI_Estimate">
+   <property name="text">
     <string>DTI Estimate</string>
    </property>
   </action>
-  <action name="actionProject_Protocol" >
-   <property name="text" >
+  <action name="actionProject_Protocol">
+   <property name="text">
     <string>Project Protocol</string>
    </property>
   </action>
-  <action name="actionWindows" >
-   <property name="checkable" >
+  <action name="actionWindows">
+   <property name="checkable">
     <bool>false</bool>
    </property>
-   <property name="icon" >
+   <property name="icon">
     <iconset>
      <normaloff>../../../../../Documents and Settings/Administrator/My Documents/My Skype Pictures/Angel Skype.png</normaloff>../../../../../Documents and Settings/Administrator/My Documents/My Skype Pictures/Angel Skype.png</iconset>
    </property>
-   <property name="text" >
+   <property name="text">
     <string>Windows</string>
    </property>
-   <property name="statusTip" >
+   <property name="statusTip">
     <string>Windows Style</string>
    </property>
-   <property name="whatsThis" >
+   <property name="whatsThis">
     <string>To set the style to Windows</string>
    </property>
   </action>
-  <action name="actionMotif" >
-   <property name="checkable" >
+  <action name="actionMotif">
+   <property name="checkable">
     <bool>false</bool>
    </property>
-   <property name="icon" >
+   <property name="icon">
     <iconset>
      <normaloff>../../../../../Documents and Settings/Administrator/My Documents/My Skype Pictures/Skype Cool Shades.png</normaloff>
      <normalon>../../../../../Documents and Settings/Administrator/My Documents/My Skype Pictures/Angel Skype.png</normalon>../../../../../Documents and Settings/Administrator/My Documents/My Skype Pictures/Skype Cool Shades.png</iconset>
    </property>
-   <property name="text" >
+   <property name="text">
     <string>Motif</string>
    </property>
   </action>
-  <action name="actionCDE" >
-   <property name="checkable" >
+  <action name="actionCDE">
+   <property name="checkable">
     <bool>false</bool>
    </property>
-   <property name="icon" >
+   <property name="icon">
     <iconset>
      <normaloff>../../../../../Documents and Settings/Administrator/My Documents/My Skype Pictures/Hula Skype.png</normaloff>../../../../../Documents and Settings/Administrator/My Documents/My Skype Pictures/Hula Skype.png</iconset>
    </property>
-   <property name="text" >
+   <property name="text">
     <string>CDE</string>
    </property>
   </action>
-  <action name="actionRigid_Registration" >
-   <property name="text" >
+  <action name="actionRigid_Registration">
+   <property name="text">
     <string>Rigid Registration</string>
    </property>
   </action>
-  <action name="actionAbout" >
-   <property name="text" >
+  <action name="actionAbout">
+   <property name="text">
     <string>About</string>
    </property>
   </action>
-  <action name="actionContents" >
-   <property name="text" >
+  <action name="actionContents">
+   <property name="text">
     <string>Contents</string>
    </property>
   </action>
-  <action name="actionOpenDWIDicomSeries" >
-   <property name="text" >
+  <action name="actionOpenDWIDicomSeries">
+   <property name="text">
     <string>Dicom Series</string>
    </property>
   </action>
-  <action name="actionOpenDWIMultipleVolumes" >
-   <property name="text" >
+  <action name="actionOpenDWIMultipleVolumes">
+   <property name="text">
     <string>Multiple volumes</string>
    </property>
   </action>
-  <action name="actionOpenDWINrrd" >
-   <property name="icon" >
-    <iconset resource="DTIPrep.qrc" >
+  <action name="actionOpenDWINrrd">
+   <property name="icon">
+    <iconset resource="DTIPrep.qrc">
      <normaloff>:/icon/images/openNrrd.png</normaloff>:/icon/images/openNrrd.png</iconset>
    </property>
-   <property name="text" >
+   <property name="text">
     <string>OpenNRRD</string>
    </property>
   </action>
-  <action name="actionPlastique" >
-   <property name="checkable" >
+  <action name="actionPlastique">
+   <property name="checkable">
     <bool>false</bool>
    </property>
-   <property name="icon" >
+   <property name="icon">
     <iconset>
      <normaloff>../../../../../Documents and Settings/Administrator/My Documents/My Skype Pictures/Geisha Skype.png</normaloff>../../../../../Documents and Settings/Administrator/My Documents/My Skype Pictures/Geisha Skype.png</iconset>
    </property>
-   <property name="text" >
+   <property name="text">
     <string>Plastique</string>
    </property>
   </action>
-  <action name="actionCleanlooks" >
-   <property name="checkable" >
+  <action name="actionCleanlooks">
+   <property name="checkable">
     <bool>false</bool>
    </property>
-   <property name="icon" >
+   <property name="icon">
     <iconset>
      <normaloff>../../../../../Documents and Settings/Administrator/My Documents/My Skype Pictures/Skypahontas.png</normaloff>../../../../../Documents and Settings/Administrator/My Documents/My Skype Pictures/Skypahontas.png</iconset>
    </property>
-   <property name="text" >
+   <property name="text">
     <string>Cleanlooks</string>
    </property>
   </action>
-  <action name="actionWindowsXP" >
-   <property name="icon" >
+  <action name="actionWindowsXP">
+   <property name="icon">
     <iconset>
      <normaloff>../../../../../Documents and Settings/Administrator/My Documents/My Skype Pictures/Hula Skype.png</normaloff>../../../../../Documents and Settings/Administrator/My Documents/My Skype Pictures/Hula Skype.png</iconset>
    </property>
-   <property name="text" >
+   <property name="text">
     <string>WindowsXP</string>
    </property>
   </action>
-  <action name="actionOpen_XML" >
-   <property name="icon" >
-    <iconset resource="DTIPrep.qrc" >
+  <action name="actionOpen_XML">
+   <property name="icon">
+    <iconset resource="DTIPrep.qrc">
      <normaloff>:/icon/images/openXML.png</normaloff>:/icon/images/openXML.png</iconset>
    </property>
-   <property name="text" >
+   <property name="text">
     <string>OpenXML</string>
    </property>
   </action>
-  <action name="actionOpen_QC_Report" >
-   <property name="icon" >
-    <iconset resource="DTIPrep.qrc" >
+  <action name="actionOpen_QC_Report">
+   <property name="icon">
+    <iconset resource="DTIPrep.qrc">
      <normaloff>:/icon/images/openQC.png</normaloff>:/icon/images/openQC.png</iconset>
    </property>
-   <property name="text" >
+   <property name="text">
     <string>OpenQCReport</string>
    </property>
   </action>
-  <action name="actionGradient_Vectors" >
-   <property name="text" >
+  <action name="actionGradient_Vectors">
+   <property name="text">
     <string>Gradient Vectors</string>
    </property>
   </action>
-  <action name="actionFrom_Protocol" >
-   <property name="checkable" >
+  <action name="actionFrom_Protocol">
+   <property name="checkable">
     <bool>true</bool>
    </property>
-   <property name="icon" >
-    <iconset resource="DTIPrep.qrc" >
+   <property name="icon">
+    <iconset resource="DTIPrep.qrc">
      <normaloff>:/icon/images/protocol.png</normaloff>:/icon/images/protocol.png</iconset>
    </property>
-   <property name="text" >
+   <property name="text">
     <string>From Protocol</string>
    </property>
-   <property name="iconText" >
+   <property name="iconText">
     <string>FromProtocol</string>
    </property>
-   <property name="toolTip" >
+   <property name="toolTip">
     <string>Toggle the display of the gradient direction vectors in protocol.</string>
    </property>
   </action>
-  <action name="actionFrom_DWI" >
-   <property name="checkable" >
+  <action name="actionFrom_DWI">
+   <property name="checkable">
     <bool>true</bool>
    </property>
-   <property name="icon" >
-    <iconset resource="DTIPrep.qrc" >
+   <property name="icon">
+    <iconset resource="DTIPrep.qrc">
      <normaloff>:/icon/images/File.png</normaloff>:/icon/images/File.png</iconset>
    </property>
-   <property name="text" >
+   <property name="text">
     <string>From DWI File</string>
    </property>
-   <property name="iconText" >
+   <property name="iconText">
     <string>FromFile</string>
    </property>
-   <property name="toolTip" >
+   <property name="toolTip">
     <string>Toggle the display of the gradient direction vectors in nrrd file.</string>
    </property>
   </action>
-  <action name="actionIncluded" >
-   <property name="checkable" >
+  <action name="actionIncluded">
+   <property name="checkable">
     <bool>true</bool>
    </property>
-   <property name="icon" >
-    <iconset resource="DTIPrep.qrc" >
+   <property name="icon">
+    <iconset resource="DTIPrep.qrc">
      <normaloff>:/icon/images/include.png</normaloff>:/icon/images/include.png</iconset>
    </property>
-   <property name="text" >
-    <string>Included</string>
+   <property name="text">
+    <string>Output</string>
    </property>
-   <property name="toolTip" >
+   <property name="toolTip">
     <string>Toggle the display of the gradient direction vectors left after QC.</string>
    </property>
   </action>
-  <action name="actionExcluded" >
-   <property name="checkable" >
+  <action name="actionExcluded">
+   <property name="checkable">
     <bool>true</bool>
    </property>
-   <property name="icon" >
-    <iconset resource="DTIPrep.qrc" >
+   <property name="icon">
+    <iconset resource="DTIPrep.qrc">
      <normaloff>:/icon/images/exclude.png</normaloff>:/icon/images/exclude.png</iconset>
    </property>
-   <property name="text" >
+   <property name="text">
     <string>Excluded</string>
    </property>
-   <property name="toolTip" >
+   <property name="toolTip">
     <string>Toggle the display of the gradient direction vectors excluded after QC.</string>
    </property>
   </action>
-  <action name="actionSphere" >
-   <property name="checkable" >
+  <action name="actionSphere">
+   <property name="checkable">
     <bool>true</bool>
    </property>
-   <property name="icon" >
-    <iconset resource="DTIPrep.qrc" >
+   <property name="icon">
+    <iconset resource="DTIPrep.qrc">
      <normaloff>:/icon/images/sphere.png</normaloff>:/icon/images/sphere.png</iconset>
    </property>
-   <property name="text" >
+   <property name="text">
     <string>UnitSphere</string>
    </property>
-   <property name="toolTip" >
+   <property name="toolTip">
     <string>Toggle the display of unit sphere.</string>
    </property>
   </action>
@@ -490,23 +487,23 @@
   </customwidget>
  </customwidgets>
  <resources>
-  <include location="DTIPrep.qrc" />
+  <include location="DTIPrep.qrc"/>
  </resources>
  <connections/>
  <designerdata>
-  <property name="gridDeltaX" >
+  <property name="gridDeltaX">
    <number>2</number>
   </property>
-  <property name="gridDeltaY" >
+  <property name="gridDeltaY">
    <number>2</number>
   </property>
-  <property name="gridSnapX" >
+  <property name="gridSnapX">
    <bool>true</bool>
   </property>
-  <property name="gridSnapY" >
+  <property name="gridSnapY">
    <bool>true</bool>
   </property>
-  <property name="gridVisible" >
+  <property name="gridVisible">
    <bool>true</bool>
   </property>
  </designerdata>
