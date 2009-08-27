@@ -40,6 +40,11 @@ CIntensityMotionCheck::CIntensityMotionCheck(std::string filename,std::string re
 
 CIntensityMotionCheck::CIntensityMotionCheck(void)
 {	
+	baselineNumber		= 0;
+	bValueNumber		= 1;
+	repetitionNumber	= 1;
+	gradientDirNumber	= 0;
+
 	DwiImage=NULL;
 	bDwiLoaded=false;
 	bGetGridentDirections=false;
@@ -100,11 +105,11 @@ bool CIntensityMotionCheck::LoadDwiImage()
 
 	if( bGetGridentDirections )
 		collectDiffusionStatistics();
-	else
-	{
-		std::cout<< "Diffusion information read error"<<std::endl;
-		return false;
-	}
+// 	else
+// 	{
+// 		std::cout<< "Diffusion information read error"<<std::endl;
+// 		return false;
+// 	}
 // 	std::cout<<"Image size"<< DwiImage->GetLargestPossibleRegion().GetSize().GetSizeDimension()<<": ";
 // 	std::cout<<DwiImage->GetLargestPossibleRegion().GetSize()[0]<<" ";
 // 	std::cout<<DwiImage->GetLargestPossibleRegion().GetSize()[1]<<" ";
@@ -188,7 +193,7 @@ bool CIntensityMotionCheck::GetGridentDirections()
 	if(GradientDirectionContainer->size()<=6) 
 	{
 		std::cout<<"Gradient Images Less than 7" <<std::endl;
-		bGetGridentDirections=false;
+		//bGetGridentDirections=false;
 		return false;
 	}
 

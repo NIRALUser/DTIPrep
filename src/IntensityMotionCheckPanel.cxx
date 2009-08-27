@@ -1808,7 +1808,7 @@ void IntensityMotionCheckPanel::ResultUpdate()
 	}
 
 	bResultTreeEditable = false; // no edit to automatically generated results
-	pushButton_SaveDWIAs->setEnabled( 1 );
+	pushButton_SaveDWIAs->setEnabled( 0 );
 
 	emit UpdateOutputDWIDiffusionVectorActors();
 
@@ -2113,8 +2113,10 @@ void IntensityMotionCheckPanel::on_pushButton_DefaultQCResult_clicked( )
 	}
 
 	DefaultProcess( );
+	ResultUpdate();
 
 	bResultTreeEditable = true;
+	pushButton_SaveDWIAs->setEnabled( 1 );
 
 	emit UpdateOutputDWIDiffusionVectorActors();
 }
@@ -2153,8 +2155,5 @@ void IntensityMotionCheckPanel::DefaultProcess( )
 	protocal.GetBaselineAverageProtocal().bAverage = true;
 	protocal.GetEddyMotionCorrectionProtocal().bCorrect = true;
 
-	ResultUpdate();
-
-	pushButton_SaveDWIAs->setEnabled(1);
 }
 
