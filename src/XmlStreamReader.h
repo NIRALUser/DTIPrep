@@ -12,64 +12,115 @@ class QTreeWidgetItem;
 #include <string>
 #include <iostream>
 
-enum StringValue 
+enum ProtocolStringValue 
 {
-	ev_Unknow = 0,
-	ev_ReportFileName,
-	ev_Image,
-	ev_type,
-	ev_space,
-	ev_directions,
-	ev_dimension,
-	ev_sizes,
-	ev_spacing,
-	ev_origin,
-	ev_Diffusion,
-	ev_measurementFrame,
-	ev_bvalue,
-	ev_DWMRI_gradient,
-	ev_QCCheck,
-	ev_QCOutputFileName,
-	ev_badGradientPercentageTolerance,
-	ev_SliceWiseCheck,  //SliceWiseCheck
-	ev_headSkipSlicePercentage,
-	ev_tailSkipSlicePercentage,
-	ev_baselineCorrelationThreshold,
-	ev_baselineCorrelationDeviationThreshold,
-	ev_sliceCorrelationThreshold,
-	ev_sliceCorrelationDeviationThreshold,
-	ev_badSlicePercentageTolerance,
-	ev_InterlaceWiseCheck, //InterlaceWiseCheck
-	ev_interlaceCorrelationThresholdBaseline,
-	ev_interlaceCorrelationThresholdGradient,
-	ev_interlaceCorrelationDeviationBaseline,
-	ev_interlaceCorrelationDeviationGradient,
-	ev_interlaceTranslationThreshold,
-	ev_interlaceRotationThreshold,
-	ev_GradientWiseCheck,  //GradientWiseCheck
-	ev_gradientTranslationThrehshold,
-	ev_gradientRotationThreshold,
-	ev_EddyMotionCorrection,
-	ev_EddyMotionInputFileName,
-	ev_EddyMotionOutputFileName,
-	ev_DTIComputing,
-	ev_DTIMethod,
-	ev_baselineThreshold,
-	ev_maskFIle,
-	ev_tensor,
-	ev_Padding,
-// 	ev_tensorPadded,
-// 	ev_tensorPaddingParameters,
-	ev_fa,
-	ev_md,
-	ev_colorfa,
-	ev_baseline,
-	ev_idwi,
-	ev_frobeniusnorm,
-	ev_EddyMotionCommand,
-	ev_dtiestimCommand,
-	ev_dtiprocessCommand,
-	ev_dtiPaddingCommand,
+	//QC overal
+	QC_Unknow = 0,
+	QC_QCOutputDirectory,
+	QC_QCedDWIFileNameSuffix,
+	QC_reportFileNameSuffix,
+	QC_badGradientPercentageTolerance,
+
+	// image
+	IMAGE_bCheck,
+	IMAGE_type,
+	IMAGE_space,
+	IMAGE_dimension,
+	IMAGE_size,
+	IMAGE_origin,
+	IMAGE_spacing,
+	IMAGE_directions,
+	IMAGE_bCrop,
+	IMAGE_croppedDWIFileNameSuffix,
+	IMAGE_reportFileNameSuffix,
+	IMAGE_reportFileMode,
+
+	// diffusion
+	DIFFUSION_bCheck,
+	DIFFUSION_DWMRI_bValue,
+	DIFFUSION_DWMRI_gradient,
+	DIFFUSION_measurementFrame,
+	DIFFUSION_bUseDiffusionProtocal,
+	DIFFUSION_diffusionReplacedDWIFileNameSuffix,
+	DIFFUSION_reportFileNameSuffix,
+	DIFFUSION_reportFileMode,
+
+	// slice check
+	SLICE_bCheck,
+// 	SLICE_badGradientPercentageTolerance,
+	SLICE_checkTimes,
+	SLICE_headSkipSlicePercentage,
+	SLICE_tailSkipSlicePercentage,
+	SLICE_correlationDeviationThresholdbaseline,
+	SLICE_correlationDeviationThresholdgradient,
+	SLICE_outputDWIFileNameSuffix,
+	SLICE_reportFileNameSuffix,
+	SLICE_reportFileMode,
+
+	// interlace check
+	INTERLACE_bCheck,
+// 	INTERLACE_badGradientPercentageTolerance,
+	INTERLACE_correlationThresholdBaseline,
+	INTERLACE_correlationThresholdGradient,
+	INTERLACE_correlationDeviationBaseline,
+	INTERLACE_correlationDeviationGradient,
+	INTERLACE_translationThreshold,
+	INTERLACE_rotationThreshold,
+	INTERLACE_outputDWIFileNameSuffix,
+	INTERLACE_reportFileNameSuffix,
+	INTERLACE_reportFileMode,
+
+	// gradient check
+	GRADIENT_bCheck, 
+// 	GRADIENT_badGradientPercentageTolerance,
+	GRADIENT_translationThrehshold,
+	GRADIENT_rotationThreshold,
+	GRADIENT_outputDWIFileNameSuffix,
+	GRADIENT_reportFileNameSuffix,
+	GRADIENT_reportFileMode,
+
+	// baseline average
+	BASELINE_bAverage,
+	BASELINE_averageMethod,
+	BASELINE_stopThreshold,
+	BASELINE_outputDWIFileNameSuffix,
+	BASELINE_reportFileNameSuffix,
+	BASELINE_reportFileMode,
+
+	// eddy motion correction
+	EDDYMOTION_bCorrect,
+// 	EDDYMOTION_command,
+// 	EDDYMOTION_inputFileName,
+// 	EDDYMOTION_outputFileName,
+
+	EDDYMOTION_numberOfBins,
+	EDDYMOTION_numberOfSamples,
+	EDDYMOTION_translationScale,
+	EDDYMOTION_stepLength,
+	EDDYMOTION_relaxFactor,
+	EDDYMOTION_maxNumberOfIterations,
+
+	EDDYMOTION_outputDWIFileNameSuffix,
+	EDDYMOTION_reportFileNameSuffix,
+	EDDYMOTION_reportFileMode,
+
+	// DTI computing
+	DTI_bCompute,
+	DTI_dtiestimCommand,
+	DTI_dtiprocessCommand,
+	DTI_method,
+	DTI_baselineThreshold,
+	DTI_maskFileName,
+	DTI_tensor,
+	DTI_baseline,
+	DTI_idwi,
+	DTI_fa,
+	DTI_md,
+	DTI_colorfa,
+	DTI_frobeniusnorm,
+	DTI_reportFileNameSuffix,
+	DTI_reportFileMode,
+
 };
 
 
@@ -83,82 +134,11 @@ public:
 
 	enum{IMAGE = 0, DIFFUSION, QC, CORRECTION, DTICOMPUTING,};
 
-
 	// Map to associate the strings with the enum values
-	std::map<std::string, int> s_mapStringValues;
+	std::map<std::string, int> s_mapProtocolStringValues; 
 
-	void Initialize()
-	{
-		s_mapStringValues["ReportFileName"]		= ev_ReportFileName;
-		s_mapStringValues["Image Check"]		= ev_Image;
-		s_mapStringValues["type"]				= ev_type;
-		s_mapStringValues["space"]				= ev_space;
-		s_mapStringValues["space directions"]	= ev_directions;
-		s_mapStringValues["dimension"]			= ev_dimension;
-		s_mapStringValues["sizes"]				= ev_sizes;
-		s_mapStringValues["spacing"]			= ev_spacing;
-		s_mapStringValues["origin"]				= ev_origin;
-
-		s_mapStringValues["Diffusion Check"]	= ev_Diffusion;
-		s_mapStringValues["measurement frame"]	= ev_measurementFrame;
-		s_mapStringValues["DWMRI_b-value"]		= ev_bvalue;
-		s_mapStringValues["DWMRI_gradient"]		= ev_DWMRI_gradient;
-
-		s_mapStringValues["QC Check"]				= ev_QCCheck;
-		s_mapStringValues["QCOutputFileName"]		= ev_QCOutputFileName;
-		s_mapStringValues["bad gradient percentage tolerance"] = ev_badGradientPercentageTolerance;
-
-		s_mapStringValues["slice wise threshold"]	= ev_SliceWiseCheck;
-		
-		s_mapStringValues["head skip slice percentage"]	= ev_headSkipSlicePercentage;
-		s_mapStringValues["tail skip slice percentage"]	= ev_tailSkipSlicePercentage;
-		s_mapStringValues["baseline correlation"]	= ev_baselineCorrelationThreshold;
-		s_mapStringValues["baseline correlation deviation"]		= ev_baselineCorrelationDeviationThreshold;
-		s_mapStringValues["slice correlation"]		= ev_sliceCorrelationThreshold;
-		s_mapStringValues["slice correlation deviation"]= ev_sliceCorrelationDeviationThreshold;
-		s_mapStringValues["bad slice percentage tolerance"]= ev_badSlicePercentageTolerance;
-
-		s_mapStringValues["interlace wise threshold"]= ev_InterlaceWiseCheck;
-		s_mapStringValues["interlace correlation baseline"]	= ev_interlaceCorrelationThresholdBaseline;
-		s_mapStringValues["interlace correlation gradient"]	= ev_interlaceCorrelationThresholdGradient;
-		s_mapStringValues["interlace correlation deviation baseline"]	= ev_interlaceCorrelationDeviationBaseline;
-		s_mapStringValues["interlace correlation deviation gradient"]	= ev_interlaceCorrelationDeviationGradient;	
-
-		s_mapStringValues["interlace rotation"]		= ev_interlaceRotationThreshold;
-		s_mapStringValues["interlace translation"]	= ev_interlaceTranslationThreshold;
-
-		s_mapStringValues["gradient wise threshold"]= ev_GradientWiseCheck;
-		s_mapStringValues["gradient translation"]	= ev_gradientTranslationThrehshold;
-		s_mapStringValues["gradient rotation"]		= ev_gradientRotationThreshold;
-
-		s_mapStringValues["Eddy Motion Correction"]  = ev_EddyMotionCorrection;
-		s_mapStringValues["Eddy Motion Correction Command"]  = ev_EddyMotionCommand;
-		s_mapStringValues["EddyMotionInputFileName"] = ev_EddyMotionInputFileName;
-		s_mapStringValues["EddyMotionOutputFileName"] = ev_EddyMotionOutputFileName;
-
-		s_mapStringValues["DTI Computing"]			= ev_DTIComputing;
-		s_mapStringValues["dtiestim Command"]		= ev_dtiestimCommand;
-		s_mapStringValues["dtiprocess Command"]		= ev_dtiprocessCommand;
-		s_mapStringValues["CropDTI Command"]		= ev_dtiPaddingCommand;
-		s_mapStringValues["method"]					= ev_DTIMethod;
-		s_mapStringValues["baseline threshold"]		= ev_baselineThreshold;
-		s_mapStringValues["mask file"]				= ev_maskFIle;
-		s_mapStringValues["tensor file"]			= ev_tensor;
-		s_mapStringValues["tensor padding"]			= ev_Padding;
-// 		s_mapStringValues["padded tensor file"]		= ev_tensorPadded,
-// 		s_mapStringValues["tensor padding parameters"]= ev_tensorPaddingParameters,
-		s_mapStringValues["fa"]						= ev_fa;
-		s_mapStringValues["md"]						= ev_md;
-		s_mapStringValues["colored fa"]				= ev_colorfa;
-		s_mapStringValues["baseline"]				= ev_baseline;
-		s_mapStringValues["idwi"]					= ev_idwi;
-		s_mapStringValues["frobenius norm"]			= ev_frobeniusnorm;
-
-		std::cout << "s_mapStringValues contains "
-			<< s_mapStringValues.size()
-			<< " entries." << std::endl;
-	}
-
+	void InitializeProtocolStringValues();
+	
 	void setProtocal( Protocal	*p ){ protocal=p; };
 	bool readFile(const QString &fileName, int mode);
 
@@ -177,7 +157,7 @@ private:
     void readEntryElement();
     void readValueElement();
     void skipUnknownElement();
-	void parseparametersToProtocal();
+	void parseXMLParametersToProtocal();
 
     QTreeWidget *treeWidget;
 	Protocal	*protocal;

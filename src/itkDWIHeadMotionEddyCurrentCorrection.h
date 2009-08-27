@@ -1,0 +1,233 @@
+#ifndef _itk_DWIHeadMotionEddyCurrent_correction_h
+#define _itk_DWIHeadMotionEddyCurrent_correction_h
+
+#include "itkImageRegistrationMethod.h"
+#include "itkMattesMutualInformationImageToImageMetric.h"
+#include "itkLinearInterpolateImageFunction.h"
+#include "itkGradientSteepestDescentOptimizer.h"
+#include "itkGradientSteepestDescentBaseOptimizer.h"
+
+#include "itkWindowedSincInterpolateImageFunction.h"
+#include "itkCenteredTransformInitializer.h"
+#include "itkAffineTransform.h"
+#include "itkLinearHeadEddy3DCorrection.h"
+
+#include "itkImage.h"
+#include "itkImageFileReader.h"
+#include "itkImageFileWriter.h"
+
+#include "itkResampleImageFilter.h"
+#include "itkCastImageFilter.h"
+#include "itkSubtractImageFilter.h"
+#include "itkRescaleIntensityImageFilter.h"
+#include "itkShiftScaleImageFilter.h"
+
+#include "itkMatrix.h"
+#include "vnl/vnl_vector_fixed.h"
+#include "vnl/vnl_matrix_fixed.h"
+#include "vnl/algo/vnl_svd.h"
+#include "vnl/vnl_vector.h"
+
+#include "itkCommand.h"
+#include "itkVectorImage.h"
+#include "itkImageRegionIterator.h"
+#include "itkImageRegionIteratorWithIndex.h"
+
+#include "itkOrientedImage.h"
+
+namespace itk
+{
+
+class DWIHeadMotionEddyCurrentCorrection{
+
+public:
+    const static unsigned int Dimension = 3;
+
+    typedef double PrecisionType;
+    typedef std::string TextType;
+    typedef float PixelType;
+
+    typedef Image< PixelType, Dimension >  ImageType;
+    typedef ImageType::IndexType  IndexType;    
+    //typedef NrrdHeader::VectorType GradientType;
+    //typedef NrrdHeader::VectorContainerType GradientContainerType;
+
+    typedef vnl_vector_fixed<PrecisionType, Dimension> GradientType;
+    typedef std::vector<GradientType> GradientContainerType;
+
+    typedef std::vector<ImageType::Pointer> ImageContainerType;
+    
+    typedef itk::VectorImage<float, Dimension> VectorImageType;
+    typedef OrientedImage< PixelType, Dimension >  OrientImageType;
+    typedef std::vector<OrientImageType::Pointer> OrientImageContainerType;
+
+    DWIHeadMotionEddyCurrentCorrection();
+
+    VectorImageType::Pointer  Registration();
+/*
+    inline NrrdHeader GetNrrdHeader( ){
+	return this->header;
+    }
+
+    inline void SetNrrdHeader( NrrdHeader header ){
+	this->header = header;
+    }
+*/
+
+    inline GradientContainerType GetGradients( ){
+	return this->updateDirs;
+    }
+
+    inline void SetGradients ( GradientContainerType grads ){
+	this->originDirs = grads;
+    }
+
+	inline void SetBaseLines( ImageType::Pointer baseline ){
+	this->baseLines.push_back( baseline );
+    }
+    
+    inline void SetFixedImage( ImageType::Pointer fixedImage ){
+	this->fixedImage = fixedImage;
+    }
+
+    inline void SetMovingImage( ImageType::Pointer movingImage ){
+	this->movingImages.push_back( movingImage );
+    }
+    
+    inline void SetTranslationScale( PrecisionType translationScale ){
+	this->translationScale = translationScale;
+    }
+
+    inline void SetStepLength( PrecisionType stepLength ){
+	this->stepLength = stepLength;
+    }
+
+    inline void SetFactor( PrecisionType factor ){
+	this->factor = factor;
+    }
+    
+    inline void SetNumberOfBins( unsigned int numberOfBins ){
+	this->numberOfBins = numberOfBins;
+    }
+
+    inline void SetSamples( unsigned int samples ){
+	this->samples = samples;
+    }
+
+    inline void SetMaxNumberOfIterations( unsigned int maxNumberOfIterations ){
+	this->maxNumberOfIterations = maxNumberOfIterations;
+    }
+    
+    inline void SetPrefix( const TextType & outputImageFileName  ){
+	this->outputImageFileName = outputImageFileName;
+    }
+
+private:
+    PrecisionType translationScale;
+    PrecisionType stepLength;
+    PrecisionType factor;
+
+    unsigned int numberOfBins;
+    unsigned int samples;
+    unsigned int maxNumberOfIterations;
+
+    TextType fixedImageFileName;
+    TextType movingImageFileName;
+    TextType outputImageFileName;
+    TextType outputImagePrefix;
+
+    ImageType::Pointer fixedImage;
+    ImageContainerType movingImages;
+    ImageContainerType baseLines;
+
+    ImageContainerType dwiContainer;
+    //OrientImageContainerType dwiContainer;
+
+    //NrrdHeader header;
+    GradientContainerType originDirs;
+    GradientContainerType updateDirs;
+
+    VectorImageType::Pointer dwis;
+
+    bool  RegistrationSingleDWI( ImageType::Pointer fixedImage,
+				 ImageType::Pointer movingImage,
+				 const GradientType& gradDir, unsigned int no); 
+    
+    typedef itk::AffineTransform< 
+                                  PrecisionType,
+                                  Dimension  >     AffineTransformType;
+ 
+    typedef itk::LinearHeadEddy3DCorrection< 
+                                  PrecisionType,
+                                  Dimension  >     TransformType;
+
+    typedef itk::GradientSteepestDescentOptimizer OptimizerType;
+  
+    typedef itk::MattesMutualInformationImageToImageMetric< 
+                                          ImageType, 
+                                          ImageType >    MetricType;
+   
+    typedef itk:: LinearInterpolateImageFunction< 
+                                    ImageType,
+                                    PrecisionType >    LinearInterpolatorType;
+
+    typedef itk::ImageRegistrationMethod< 
+                                    ImageType, 
+                                    ImageType >    RegistrationType;
+
+    typedef itk::RescaleIntensityImageFilter<
+               ImageType, ImageType >  RescaleFilterType;
+
+    
+    typedef itk::CenteredTransformInitializer< 
+                                    AffineTransformType, 
+                                    ImageType, 
+                                    ImageType >  TransformInitializerType;
+
+    typedef OptimizerType::ScalesType       OptimizerScalesType;
+
+
+    class CommandIterationUpdate : public itk::Command  {
+    public:
+	typedef  CommandIterationUpdate   Self;
+	typedef  itk::Command             Superclass;
+	typedef itk::SmartPointer<Self>  Pointer;
+	itkNewMacro( Self );
+    protected:
+	CommandIterationUpdate() {};
+    public:
+	typedef itk::GradientSteepestDescentOptimizer OptimizerType;
+	typedef   const OptimizerType   *    OptimizerPointer;
+
+	void Execute(itk::Object *caller, const itk::EventObject & event)
+	    {
+		Execute( (const itk::Object *)caller, event);
+	    }
+
+	void Execute(const itk::Object * object, const itk::EventObject & event)
+	    {
+		OptimizerPointer optimizer = 
+                      dynamic_cast< OptimizerPointer >( object );
+		if( ! itk::IterationEvent().CheckEvent( &event ) )
+		{
+		    return;
+		}
+		std::cout << std::endl << "No: " << optimizer->GetCurrentIteration() << "   ";
+		std::cout << "Best Value: " << optimizer->GetBestValue() << std::endl;
+		std::cout << "Best Para:" << optimizer->GetBestPosition() << std::endl;
+
+		std::cout << "current value: " << optimizer->GetValue() << "  ";
+		std::cout << "Step = " << optimizer->GetCurrentStepLength() << std::endl;
+		std::cout << "next para: " << optimizer->GetCurrentPosition() << std::endl;
+	    }
+    };
+
+
+};
+
+#include "itkDWIHeadMotionEddyCurrentCorrection.txx"
+
+} // end of namespace
+
+#endif /*__itk_DWIHeadMotionEddyCurrent_correction_h */
+

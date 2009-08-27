@@ -9,7 +9,7 @@
 #include <QFileInfo>
 
 #include "GMainWindow.h"
-#include "main.h"
+//#include "main.h"
 
 #include <stddef.h> /* size_t */
 #include <string.h> /* strcmp */
@@ -25,7 +25,6 @@
 using namespace std;
 int main ( int argc, char ** argv )
 {
-
 	if(argc==1)
 	{
 		QApplication app (argc, argv);
@@ -35,9 +34,10 @@ int main ( int argc, char ** argv )
 	}
 	else
 	{
+		
 		MetaCommand command;
 
-		// input
+		// checking input or DicomToNrrd Output
 		command.SetOption(			"DWIFileName", "w", true,"DWI file name to convert dicom image series into or to be checked (nhdr)");
 		command.SetOptionLongTag(	"DWIFileName","DWINrrdFile");
 		command.AddOptionField(		"DWIFileName","DWIFileName",MetaCommand::STRING, true);
@@ -52,12 +52,16 @@ int main ( int argc, char ** argv )
 		command.SetOptionLongTag(	"xmlSetting","xmlProtocol");
 		command.AddOptionField(		"xmlSetting","xmlFileName",MetaCommand::STRING, true);
 
-		// result nootes
+		// result notes
 		command.SetOption(			"resultNotes","n", false,"result notes");
 		command.SetOptionLongTag(	"resultNotes","resultNotesFile");
 		command.AddOptionField(		"resultNotes","NotesFile",MetaCommand::STRING, true);
 
-	
+		// result folder
+		command.SetOption(			"outputFolder","f", false,"output folder name");
+		command.SetOptionLongTag(	"outputFolder","outputFolder");
+		command.AddOptionField(		"outputFolder","OutputFolder",MetaCommand::STRING, true);
+
 		if( !command.Parse(argc,argv) )
 			return EXIT_FAILURE;
 
@@ -65,10 +69,10 @@ int main ( int argc, char ** argv )
 		string InputDicomDir= command.GetValueAsString("Dicom2Nrrd","InputDicomDir");
 		string xmlFileName	= command.GetValueAsString("xmlSetting","xmlFileName");
 		string resultNotes  = command.GetValueAsString("resultNotes","NotesFile");
+		string resultFolder = command.GetValueAsString("outputFolder","OutputFolder");
 
-		cout<<"xmlFileName "<<xmlFileName<<endl;
 // convert
-		if(command.GetOptionWasSet("Dicom2Nrrd") && InputDicomDir.length()!=0 && DWIFileName.length()!=0  )
+		if(command.GetOptionWasSet("Dicom2Nrrd") && InputDicomDir.length()!=0 && DWIFileName.length()>0  )
 		{
 			std::string str,str1,str2;
 			str += string("DicomToNrrdConverter");			
@@ -77,31 +81,29 @@ int main ( int argc, char ** argv )
 			str += string("  ");
 			str += DWIFileName;
 			
-			cout<<"DicomToNrrd "<<InputDicomDir<<" "<<DWIFileName<<endl;
+			cout<<"Dicom To Nrrd convert command: "<< str <<endl;
 			system(const_cast<char *>(str.c_str())); 
 		}
 
-// check
-		CIntensityMotionCheck IntensityMotionCheck( DWIFileName );
-		// xml
-		if(command.GetOptionWasSet("xmlSetting") )
+// check with  xml
+		if(command.GetOptionWasSet("xmlSetting") && xmlFileName.length()>0 )
 		{			
+			CIntensityMotionCheck IntensityMotionCheck( DWIFileName );
 			Protocal protocal;			
 			QCResult qcResult;
-
 			QString str( xmlFileName.c_str() );
 			XmlStreamReader XmlReader(NULL);
 			XmlReader.setProtocal( &protocal);
 			XmlReader.readFile(str, XmlStreamReader::ProtocalWise);
-
+			protocal.GetQCOutputDirectory() = resultFolder;
+			protocal.printProtocals();
 			IntensityMotionCheck.SetProtocal( &protocal);
 			IntensityMotionCheck.SetQCResult( &qcResult);
 			IntensityMotionCheck.GetImagesInformation();
-
 			unsigned char  result = IntensityMotionCheck.CheckByProtocal();
 			unsigned char out;	
 			out = result;
-			std::cout << "===========================================================" << std::endl;
+			std::cout << "--------------------------------" << std::endl;
 			
 			if(resultNotes.length()>0)
 			{		
@@ -228,8 +230,8 @@ int main ( int argc, char ** argv )
 				out = out>>7;
 				if( out )
 				{
-					std::cout << "Gradient direction # is less than 6!" << std::endl;
-					outfile << "\tGradient direction # is less than 6!";
+					std::cout << "Too many bad gradient directions found!" << std::endl;
+					outfile << "\tToo many bad gradient directions found!";
 				}
 				else
 					outfile << "\t";
@@ -250,8 +252,8 @@ int main ( int argc, char ** argv )
 				out = out>>7;
 				if( out )
 				{
-					std::cout << "Too many bad gradient directions found!" << std::endl;
-					outfile << "\tToo many bad gradient directions found!";
+					std::cout << "Gradient direction # is less than 6!" << std::endl;
+					outfile << "\tGradient direction # is less than 6!";
 				}
 				else
 					outfile << "\t";
@@ -259,7 +261,7 @@ int main ( int argc, char ** argv )
 				outfile.close();
 			}
 			return result;
-		}
+		}		
 		return 0;
 	}
 }

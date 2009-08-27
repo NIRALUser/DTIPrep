@@ -28,7 +28,6 @@
 
 #include <vtkInteractorStyleImage.h>
 
-/////////////////////////////////////////////////////
 #include "vtkOutlineFilter.h"
 #include "vtkTextProperty.h"
 
@@ -51,9 +50,6 @@
 #include "vtkFloatArray.h"
 #include "vtkPointData.h"
 #include "vtkStructuredGrid.h"
-
-
-/////////////////////////////////////////////////////
 
 // Constructor
 GMainWindow::GMainWindow()
@@ -105,7 +101,6 @@ GMainWindow::GMainWindow()
 	actorDirProtocol = vtkPropAssembly::New();
 	actorDirFile	 = vtkPropAssembly::New();
 	actorDirInclude  = vtkPropAssembly::New();
-	actorDirExclude  = vtkPropAssembly::New();
 
 	vtkSphereSource *SphereSource	=	vtkSphereSource::New();
 	SphereSource ->SetRadius(1.0);
@@ -140,6 +135,16 @@ GMainWindow::GMainWindow()
 	createStatusBar();
 	createDockPanels();
 
+	actionFrom_DWI->setDisabled(1);
+	actionFrom_Protocol->setDisabled(1);
+	actionIncluded->setDisabled(1);
+	actionExcluded->setDisabled(1);
+
+	actionFrom_DWI->setCheckable(0);
+	actionFrom_Protocol->setCheckable(0);
+	actionIncluded->setCheckable(0);
+	actionExcluded->setCheckable(0);
+
 
 	//ProbeWithSplineWidget();
 //	connect( this->DTIPrepPanel->GetThreadIntensityMotionCheck(), 
@@ -147,11 +152,15 @@ GMainWindow::GMainWindow()
 //		this,
 //		SLOT(ResultUpdate()) );
 
-	connect( this->DTIPrepPanel, 
-		SIGNAL(loadProtocol()),
-		this,
-		SLOT(on_actionOpen_XML_triggered()));
+//	connect( this->DTIPrepPanel, 
+//		SIGNAL(loadProtocol()),
+//		this,
+//		SLOT(on_actionOpen_XML_triggered()));
 
+	connect( this->DTIPrepPanel, 
+		SIGNAL(ProtocolChanged()),
+		this,
+		SLOT(UpdateProtocolDiffusionVectorActors()));
 	
 	connect( this->DTIPrepPanel->GetThreadIntensityMotionCheck(), 
 		SIGNAL(allDone(const QString &)),
@@ -173,6 +182,15 @@ GMainWindow::GMainWindow()
 		SIGNAL( kkk( int )),
 		this, 
 		SLOT( UpdateProgressbar( int )));
+
+	// for DTIPrep panel
+		connect(this->DTIPrepPanel, SIGNAL( currentGradient(int, int )), 
+		this, SLOT( GradientChanged( int,int )) );
+
+		connect(this->DTIPrepPanel, SIGNAL( UpdateOutputDWIDiffusionVectorActors()), 
+		this, SLOT( UpdateOutputDWIDiffusionVectorActors()) );
+
+	//
 
 	connect(this->imageView2DPanelWithControls1, SIGNAL(indexchanged(int, int )), 
 		this, SLOT(ImageIndexChanged( int,int )) );
@@ -670,14 +688,15 @@ void GMainWindow::createDockPanels()
 //    tabifyDockWidget ( diffusionEditPanel,dTIEstimatePanel );
 //    tabifyDockWidget ( dTIEstimatePanel,eddyMotionCorrectPanel );
 //    tabifyDockWidget ( eddyMotionCorrectPanel,DTIPrepPanel );
-    tabifyDockWidget ( DTIPrepPanel,dicom2NrrdPanel );
+//    tabifyDockWidget ( DTIPrepPanel,dicom2NrrdPanel );
+    tabifyDockWidget ( dicom2NrrdPanel, DTIPrepPanel );
 
    // diffusionCheckPanel->hide();
    // diffusionEditPanel->hide();
    // dTIEstimatePanel->hide();
    // eddyMotionCorrectPanel->hide();
     //DTIPrepPanel->hide();
-    dicom2NrrdPanel ->hide();
+    //dicom2NrrdPanel ->hide();
 
 /*
 	reader = ReaderType::New();
@@ -725,7 +744,6 @@ void GMainWindow::createDockPanels()
 void GMainWindow::on_actionExit_triggered()
 {	
 	qApp->quit();
-
 }
 
 void GMainWindow::on_actionOpenDWINrrd_triggered()
@@ -734,21 +752,12 @@ void GMainWindow::on_actionOpenDWINrrd_triggered()
 
 	 if(DWINrrdFile.length()>0)
 	 {
-		 //std::string str;
-		 //str=DWINrrdFile.toStdString().substr(0,DWINrrdFile.toStdString().find_last_of('\\')+1);
-		 //std::cout<< str<<std::endl;
-		 //::SetCurrentDirectory(str.c_str());
-
-
 		 itk::NrrdImageIO::Pointer  NrrdImageIO = itk::NrrdImageIO::New();
 		 DwiReader = DwiReaderType::New();
 		 DwiReader->SetImageIO(NrrdImageIO);
 
-
 		 try
 		 {
-			 //DwiReader = DwiReaderType::New();
-			 //DwiReader->SetImageIO(NrrdImageIO);
 			 DwiReader->SetFileName(DWINrrdFile.toStdString());
 			
 			 QString str;
@@ -774,11 +783,11 @@ void GMainWindow::on_actionOpenDWINrrd_triggered()
 	 }
 	 statusBar()->showMessage(tr(" done"), 2000);
 	 std::cout<< "done "<<std::endl;
-	 std::cout<<"Image size"<< DwiReader->GetOutput()->GetLargestPossibleRegion().GetSize().GetSizeDimension()<<": ";
-	 std::cout<<DwiReader->GetOutput()->GetLargestPossibleRegion().GetSize()[0]<<" ";
-	 std::cout<<DwiReader->GetOutput()->GetLargestPossibleRegion().GetSize()[1]<<" ";
-	 std::cout<<DwiReader->GetOutput()->GetLargestPossibleRegion().GetSize()[2]<<std::endl;
-	 std::cout<<"Pixel Vector Length: "<<DwiReader->GetOutput()->GetVectorLength()<<std::endl;
+// 	 std::cout<<"Image size"<< DwiReader->GetOutput()->GetLargestPossibleRegion().GetSize().GetSizeDimension()<<": ";
+// 	 std::cout<<DwiReader->GetOutput()->GetLargestPossibleRegion().GetSize()[0]<<" ";
+// 	 std::cout<<DwiReader->GetOutput()->GetLargestPossibleRegion().GetSize()[1]<<" ";
+// 	 std::cout<<DwiReader->GetOutput()->GetLargestPossibleRegion().GetSize()[2]<<std::endl;
+// 	 std::cout<<"Pixel Vector Length: "<<DwiReader->GetOutput()->GetVectorLength()<<std::endl;
 
 	 bDwiLoaded=true;
 	 DWIImage = DwiReader->GetOutput();
@@ -788,9 +797,7 @@ void GMainWindow::on_actionOpenDWINrrd_triggered()
 	 // update DTIPrepPanel
 	 DTIPrepPanel->SetFileName(DWINrrdFile);
 	 DTIPrepPanel->SetDWIImage(DWIImage);
-	 //std::cout<<"tree widgets cleared 1"<<std::endl;
 	 DTIPrepPanel->UpdatePanelDWI();
-	 //std::cout<<"tree widgets cleared 2"<<std::endl;
 
 	 //update 2D/3D Image display
 	 componentExtractor1 = FilterType::New();
@@ -846,7 +853,12 @@ void GMainWindow::on_actionOpenDWINrrd_triggered()
 		SLOT(WindowLevelChanged( vtkObject*, unsigned long, void*, void*, vtkCommand*)),
 		&whichWindow[0], 1.0);
 
-	//////////////////////////////////////////////////////////////////////////
+	UpdateDWIDiffusionVectorActors();
+
+}
+
+void GMainWindow::UpdateDWIDiffusionVectorActors()
+{
 	itk::MetaDataDictionary imgMetaDictionary = DWIImage->GetMetaDataDictionary();    //
 	std::vector<std::string> imgMetaKeys = imgMetaDictionary.GetKeys();
 	std::vector<std::string>::const_iterator itKey = imgMetaKeys.begin();
@@ -892,8 +904,13 @@ void GMainWindow::on_actionOpenDWINrrd_triggered()
 		}
 	}
 	pvtkRenderer_3DView->AddActor(actorDirFile);
+	actorDirFile->SetVisibility(1);
+	pvtkRenderer_3DView->ResetCamera();
 	actorDirFile->SetVisibility(actionFrom_DWI->isChecked());
-	//actionFrom_DWI->setChecked(1);
+	qvtkWidget_3DView->GetRenderWindow()->Render();
+
+	actionFrom_DWI->setEnabled(1);	
+	actionFrom_DWI->setCheckable(1);
 }
 
 void GMainWindow::on_actionFrom_Protocol_toggled( bool check)
@@ -901,9 +918,9 @@ void GMainWindow::on_actionFrom_Protocol_toggled( bool check)
 	if(actorDirProtocol)
 	{
 		actorDirProtocol->SetVisibility(check);
+		pvtkRenderer_3DView->ResetCamera();
 		qvtkWidget_3DView->GetRenderWindow()->Render();
 	}
-
 }
 
 void GMainWindow::on_actionFrom_DWI_toggled( bool check)
@@ -911,24 +928,17 @@ void GMainWindow::on_actionFrom_DWI_toggled( bool check)
 	if(actorDirFile)
 	{
 		actorDirFile->SetVisibility(check);
+		pvtkRenderer_3DView->ResetCamera();
 		qvtkWidget_3DView->GetRenderWindow()->Render();
 	}
 }
 
 void GMainWindow::on_actionIncluded_toggled( bool check)
-{
+{		
 	if(actorDirInclude)
 	{
 		actorDirInclude->SetVisibility(check);
-		qvtkWidget_3DView->GetRenderWindow()->Render();
-	}
-}
-
-void GMainWindow::on_actionExcluded_toggled( bool check)
-{
-	if(actorDirExclude)
-	{
-		actorDirExclude->SetVisibility(check);
+		pvtkRenderer_3DView->ResetCamera();
 		qvtkWidget_3DView->GetRenderWindow()->Render();
 	}
 }
@@ -938,16 +948,68 @@ void GMainWindow::on_actionSphere_toggled( bool check)
 	if(actorSphere)
 	{
 		actorSphere->SetVisibility(check);
+		pvtkRenderer_3DView->ResetCamera();
 		qvtkWidget_3DView->GetRenderWindow()->Render();
-	}	
+	}
+}
+
+void GMainWindow::UpdateOutputDWIDiffusionVectorActors()
+{
+	pvtkRenderer_3DView->RemoveActor(actorDirInclude);
+	actorDirInclude->GetParts()->RemoveAllItems();
+
+	for (unsigned int i=0; i< DTIPrepPanel->GetQCResult().GetIntensityMotionCheckResult().size(); i++)
+	{
+		if( DTIPrepPanel->GetQCResult().GetIntensityMotionCheckResult()[i].processing == QCResult::GRADIENT_INCLUDE ||  
+			DTIPrepPanel->GetQCResult().GetIntensityMotionCheckResult()[i].processing == QCResult::GRADIENT_EDDY_MOTION_CORRECTED )
+		{
+			if( DTIPrepPanel->GetQCResult().GetIntensityMotionCheckResult()[i].CorrectedDir[0] == 0.0 &&
+				DTIPrepPanel->GetQCResult().GetIntensityMotionCheckResult()[i].CorrectedDir[1] == 0.0 &&
+				DTIPrepPanel->GetQCResult().GetIntensityMotionCheckResult()[i].CorrectedDir[2] == 0.0    )
+				continue;
+
+			vtkLineSource *LineSource		=	vtkLineSource::New();
+
+			LineSource->SetPoint1( 
+				DTIPrepPanel->GetQCResult().GetIntensityMotionCheckResult()[i].CorrectedDir[0],
+				DTIPrepPanel->GetQCResult().GetIntensityMotionCheckResult()[i].CorrectedDir[1],
+				DTIPrepPanel->GetQCResult().GetIntensityMotionCheckResult()[i].CorrectedDir[2]	);
+
+			LineSource->SetPoint2( 
+				-DTIPrepPanel->GetQCResult().GetIntensityMotionCheckResult()[i].CorrectedDir[0],
+				-DTIPrepPanel->GetQCResult().GetIntensityMotionCheckResult()[i].CorrectedDir[1],
+				-DTIPrepPanel->GetQCResult().GetIntensityMotionCheckResult()[i].CorrectedDir[2] );
+
+			vtkTubeFilter *TubeFilter = vtkTubeFilter::New();
+			TubeFilter->SetInput(LineSource->GetOutput());
+			TubeFilter->SetRadius(0.01);
+			TubeFilter->SetNumberOfSides(10);
+			TubeFilter->SetVaryRadiusToVaryRadiusOff();
+			TubeFilter->SetCapping(1);
+			TubeFilter->Update(); ///
+
+			vtkPolyDataMapper *mapper = vtkPolyDataMapper::New();
+			mapper->SetInput(TubeFilter->GetOutput());
+
+			vtkActor *actor = vtkActor::New();
+			actor->SetMapper(mapper);
+
+			actor->GetProperty()->SetColor(0.30, 0.90, 0.30);
+			actorDirInclude->AddPart(actor);			
+		}
+	}
+	pvtkRenderer_3DView->AddActor( actorDirInclude );
+	actorDirInclude->SetVisibility( actionIncluded->isChecked() );
+	//pvtkRenderer_3DView->ResetCamera();
+	qvtkWidget_3DView->GetRenderWindow()->Render();
+
+	actionIncluded->setEnabled(1);
+	actionIncluded->setCheckable(1);	
 }
 
 
-
-void GMainWindow::on_actionOpen_XML_triggered()
+void GMainWindow::UpdateProtocolDiffusionVectorActors()
 {
-	DTIPrepPanel->OpenXML( );
-
 	pvtkRenderer_3DView->RemoveActor(actorDirProtocol);
 	actorDirProtocol->GetParts()->RemoveAllItems();
 	
@@ -986,19 +1048,26 @@ void GMainWindow::on_actionOpen_XML_triggered()
 
 		vtkActor *actor = vtkActor::New();
 		actor->SetMapper(mapper);
+		
 		actor->GetProperty()->SetColor(0.70, 0.88, 0.93);
-// 		actor->GetProperty()->SetOpacity(0.5);
 		actorDirProtocol->AddPart(actor);
 	}
 	pvtkRenderer_3DView->AddActor(actorDirProtocol);
 	actorDirProtocol->SetVisibility(actionFrom_Protocol->isChecked());
+	//pvtkRenderer_3DView->ResetCamera();
+	qvtkWidget_3DView->GetRenderWindow()->Render();
+
+	actionFrom_Protocol->setEnabled(1);	
+	actionFrom_Protocol->setCheckable(1);	
 }
 
-
-void GMainWindow::on_actionOpen_QC_Report_triggered()
+void GMainWindow::on_actionOpen_XML_triggered()
 {
-	DTIPrepPanel->OpenQCReport( );
+	DTIPrepPanel->OpenXML( );
+	DTIPrepPanel->SetProtocolTreeEditable( true );
+	UpdateProtocolDiffusionVectorActors();
 }
+
 
 
 bool GMainWindow::CreateImagePlaneWidgets(vtkImageData *GradientImage)

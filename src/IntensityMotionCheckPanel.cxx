@@ -1,13 +1,11 @@
+#include <QtGui>
+
 #include "IntensityMotionCheckPanel.h"
 #include "IntensityMotionCheck.h"
 #include "ThreadIntensityMotionCheck.h"
-#include <QtGui>
 
 #include "itkMetaDataDictionary.h"
 #include "itkNrrdImageIO.h"
-//#include "itkGDCMImageIO.h"
-//#include "itkGDCMSeriesFileNames.h"
-//#include "itkImageSeriesReader.h"
 #include "itkMetaDataDictionary.h"
 #include "itkMetaDataObject.h"
 #include "itkVectorIndexSelectionCastImageFilter.h"
@@ -47,16 +45,16 @@ IntensityMotionCheckPanel::IntensityMotionCheckPanel(QMainWindow *parent):QDockW
 
 
 	bResultTreeEditable = false;
-	pushButton_SaveDWI->setEnabled( 0 );
-	pushButton_SaveQCReport->setEnabled( 0 );
-	pushButton_SaveQCReportAs->setEnabled( 0 );
+// 	pushButton_SaveDWI->setEnabled( 0 );
+// 	pushButton_SaveQCReport->setEnabled( 0 );
+// 	pushButton_SaveQCReportAs->setEnabled( 0 );
 	pushButton_SaveDWIAs->setEnabled( 0 );
 	//pushButton_CreateDefaultProtocol->setEnabled( 0 );
 
 	pushButton_RunPipeline->setEnabled( 0 );
 
 	pushButton_DefaultQCResult->setEnabled( 0 );
-	pushButton_OpenQCReport->setEnabled( 0 );
+// 	pushButton_OpenQCReport->setEnabled( 0 );
 
 	QStringList labels;
 	labels << tr("Parameter") << tr("Value");
@@ -88,13 +86,37 @@ IntensityMotionCheckPanel::IntensityMotionCheckPanel(QMainWindow *parent):QDockW
 
 }
 
+void IntensityMotionCheckPanel::on_treeWidget_DiffusionInformation_itemClicked( QTreeWidgetItem *item,  int column)
+{
+	std::string str = item->text(0).toStdString() ;
+	
+	if ( str.find("gradient") != std::string::npos)
+  {
+	emit currentGradient( 0, atoi( str.substr(str.length()-4, 4).c_str() ) );
+	emit currentGradient( 1, atoi( str.substr(str.length()-4, 4).c_str() ) );
+	emit currentGradient( 2, atoi( str.substr(str.length()-4, 4).c_str() ) );
+  }
+}
+
+void IntensityMotionCheckPanel::on_treeWidget_Results_itemClicked( QTreeWidgetItem *item,  int column)
+{
+	std::string str = item->text(0).toStdString() ;
+	if ( str.find("gradient") != std::string::npos)
+  {
+	emit currentGradient( 0, atoi( str.substr(str.length()-4, 4).c_str() ) );
+	emit currentGradient( 1, atoi( str.substr(str.length()-4, 4).c_str() ) );
+	emit currentGradient( 2, atoi( str.substr(str.length()-4, 4).c_str() ) );
+  }
+}
+
+
 void IntensityMotionCheckPanel::on_treeWidget_itemDoubleClicked(QTreeWidgetItem* item,int col)
 {
 	if(col==1 && bProtocolTreeEditable)
 		treeWidget->openPersistentEditor(item,col);
 }
 
-void  IntensityMotionCheckPanel::on_treeWidget_Results_itemDoubleClicked(QTreeWidgetItem * item, int column)
+void IntensityMotionCheckPanel::on_treeWidget_Results_itemDoubleClicked(QTreeWidgetItem * item, int column)
 {
 	if( bResultTreeEditable && column == 2 && item->text(0).left(8) == tr("gradient"))
 		treeWidget_Results->openPersistentEditor(item,column);
@@ -102,24 +124,25 @@ void  IntensityMotionCheckPanel::on_treeWidget_Results_itemDoubleClicked(QTreeWi
 
 void IntensityMotionCheckPanel::on_treeWidget_Results_currentItemChanged( QTreeWidgetItem *current,  QTreeWidgetItem *previous)
 {
-	treeWidget->closePersistentEditor(previous,2); // does nothing if none open
+	treeWidget_Results->closePersistentEditor(previous,2); // does nothing if none open
 }
 
 void IntensityMotionCheckPanel::on_treeWidget_Results_itemChanged(QTreeWidgetItem * item, int column) 
 {
 	if(bResultTreeEditable)
 	{
-		if( item->text(2) == tr("EXCLUDE"))
+		if( item->text(2).toLower() == tr("exclude"))
 		{
-			this->GetQCResult().GetGradientProcess()[item->text(0).right(4).toUInt()] = QCResult::GRADIENT_EXCLUDE;
-			//qcResult.GetGradientProcess()[i] == QCResult::GRADIENT_EXCLUDE
-			std::cout << "gradient "<< item->text(0).right(4).toUInt() << ": GRADIENT_EXCLUDE" <<std::endl;
+			this->GetQCResult().GetIntensityMotionCheckResult()[item->text(0).right(4).toUInt()].processing = QCResult::GRADIENT_EXCLUDE_MANUALLY;
+			//std::cout << "gradient "<< item->text(0).right(4).toUInt() << ": GRADIENT_EXCLUDE" <<std::endl;
 		}
 		else
 		{
-			this->GetQCResult().GetGradientProcess()[item->text(0).right(4).toUInt()] = QCResult::GRADIENT_INCLUDE;
-			std::cout << "gradient "<< item->text(0).right(4).toUInt() << ": GRADIENT_INCLUDE" <<std::endl;
+			this->GetQCResult().GetIntensityMotionCheckResult()[item->text(0).right(4).toUInt()].processing = QCResult::GRADIENT_INCLUDE;
+			//std::cout << "gradient "<< item->text(0).right(4).toUInt() << ": GRADIENT_INCLUDE" <<std::endl;
 		}
+
+		emit UpdateOutputDWIDiffusionVectorActors();
 	}
 }
 
@@ -141,6 +164,13 @@ void IntensityMotionCheckPanel::on_pushButton_RunPipeline_clicked( )
 	//IntensityMotionCheck.SetQCResult(&qcResult);
 	//IntensityMotionCheck.GetImagesInformation();
 	//IntensityMotionCheck.CheckByProtocal();
+	if( DwiImage->GetVectorLength() != GradientDirectionContainer->size() )
+	{
+		std::cout<< "Bad DWI: mismatch between gradient image # and gradient vector #" << std::endl;
+		QMessageBox::critical(    this, tr("BAD DWI !"), tr("Bad DWI: mismatch between gradient image # and gradient vector # !"));
+		return;
+	}
+
 	if(!bProtocol)
 	{
 		std::cout << "Protocol NOT set. Load prorocol file first!"<<std::endl;
@@ -150,8 +180,7 @@ void IntensityMotionCheckPanel::on_pushButton_RunPipeline_clicked( )
 	if(DwiFileName.length()==0)
 	{
 		std::cout<<"DWI file name not set!"<<std::endl;
-		QMessageBox::information( this, tr("Warning"), tr("DWI file name not set!"));
-
+		QMessageBox::critical(    this, tr("Warning"), tr("DWI file name not set!"));
 		return;
 	}
 
@@ -163,7 +192,6 @@ void IntensityMotionCheckPanel::on_pushButton_RunPipeline_clicked( )
 	ThreadIntensityMotionCheck->start();
 
 	bResultTreeEditable = false;
-	pushButton_SaveDWI->setEnabled( 0 );
 	pushButton_SaveDWIAs->setEnabled( 0 );
 }
 
@@ -180,14 +208,10 @@ void IntensityMotionCheckPanel::SetFileName(QString nrrd )
 
 void IntensityMotionCheckPanel::on_toolButton_ProtocalFileOpen_clicked( )
 {
-	//OpenXML();
-	emit loadProtocol();
-	pushButton_Save->setEnabled( 1 );
-	pushButton_SaveProtocolAs->setEnabled( 1 );
+	OpenXML();
 	bProtocolTreeEditable = true;
-	
+	emit ProtocolChanged();
 }
-
 
 void IntensityMotionCheckPanel::OpenXML( )
 {
@@ -210,15 +234,15 @@ void IntensityMotionCheckPanel::OpenXML( )
 	protocal.collectDiffusionStatistics();
 	bProtocol=true;
 
-	//if(DwiFileName.length()>0)
+	pushButton_Save->setEnabled( 1 );
+	pushButton_SaveProtocolAs->setEnabled( 1 );
 	pushButton_RunPipeline->setEnabled(1);
-
-	//protocal.print();
+	
+	//protocal.printProtocals();
 }
 
 bool IntensityMotionCheckPanel::LoadDwiImage()
 {
-	
 // use with windows
 	//std::string str;
 	//str=DwiFileName.substr(0,DwiFileName.find_last_of('\\')+1);
@@ -326,9 +350,9 @@ bool IntensityMotionCheckPanel::GetGridentDirections( bool bDisplay)
 
 		for( unsigned int i = 0; i<DwiImage->GetVectorLength();i++ )//GradientDirectionContainer->Size()
 		{
-			std::cout<<"Gradient Direction "<<i<<": \t[";
-			std::cout<<GradientDirectionContainer->at(i)[0]<<",\t";
-			std::cout<<GradientDirectionContainer->at(i)[1]<<",\t";
+//			std::cout<<"Gradient Direction "<<i<<": \t[";
+//			std::cout<<GradientDirectionContainer->at(i)[0]<<",\t";
+//			std::cout<<GradientDirectionContainer->at(i)[1]<<",\t";
 			std::cout<<GradientDirectionContainer->at(i)[2]<<" ]"<<std::endl;
 		}
 	}
@@ -337,58 +361,12 @@ bool IntensityMotionCheckPanel::GetGridentDirections( bool bDisplay)
 	return true;
 }
 
-/*
-void IntensityMotionCheckPanel::on_comboBox_Protocal_currentIndexChanged(QString protocalName)
-{
-	//std::cout<<"current protocal: "<<protocal<<std::endl;
-	treeWidget->clear();
-	protocal.clear();
-
-	if(protocalName!=tr("none"))
-	{
-		QString str;
-		str.append( QCoreApplication::applicationDirPath() );
-		str.append(tr("/"));
-		str.append(protocalName);
-		str.append(tr(".xml"));
-		XmlStreamReader XmlReader(treeWidget);
-		XmlReader.setProtocal( &protocal);
-		XmlReader.readFile(str, XmlStreamReader::TreeWise);
-		XmlReader.readFile(str, XmlStreamReader::ProtocalWise);
-		
-		protocal.print();
-	}
-}
-*/
 
 void IntensityMotionCheckPanel::on_treeWidget_itemChanged(QTreeWidgetItem * item, int column)
 {
 	//pushButton_Save->setEnabled(pushButton_Editable->isCheckable());
 }
 
-void IntensityMotionCheckPanel::on_pushButton_SaveQCReport_clicked( )
-{
-	if(lineEdit_QCReport->text().length()>0)
-	{
-	}
-	else
-	{
-		QString reportFile = QFileDialog::getSaveFileName( this, tr("Save Results As"),lineEdit_QCReport->text(),  tr("txt Files (*.txt)") );
-		if(reportFile.length()>0)
-		{
-			lineEdit_QCReport->setText(reportFile);
-		}
-	}
-}
-
-void IntensityMotionCheckPanel::on_pushButton_SaveQCReportAs_clicked( )
-{
-	QString reportFile = QFileDialog::getSaveFileName( this, tr("Save Results As"),lineEdit_QCReport->text(),  tr("txt Files (*.txt)") );
-	if(reportFile.length()>0)
-	{
-		lineEdit_QCReport->setText(reportFile);
-	}
-}
 
 void IntensityMotionCheckPanel::on_pushButton_SaveProtocolAs_clicked( )
 {
@@ -413,7 +391,7 @@ void IntensityMotionCheckPanel::on_pushButton_SaveProtocolAs_clicked( )
 
 void IntensityMotionCheckPanel::on_pushButton_Save_clicked( )
 {
-	if(lineEdit_Protocal->text().length()>0)
+	if( lineEdit_Protocal->text().length()>0 )
 	{
 		XmlStreamWriter XmlWriter(treeWidget);
 		XmlWriter.writeXml(lineEdit_Protocal->text());
@@ -446,140 +424,21 @@ void IntensityMotionCheckPanel::on_pushButton_Save_clicked( )
 		 }
 	}
 
+	emit ProtocolChanged();
 	bProtocol = true;
 }
-/*
-void IntensityMotionCheckPanel::on_pushButton_Identity_clicked( )
-{
-	lineEdit_MeasurementFrame11->setText(tr("1.0000"));
-	lineEdit_MeasurementFrame12->setText(tr("0.0000"));
-	lineEdit_MeasurementFrame13->setText(tr("0.0000"));
 
-	lineEdit_MeasurementFrame21->setText(tr("0.0000"));
-	lineEdit_MeasurementFrame22->setText(tr("1.0000"));
-	lineEdit_MeasurementFrame23->setText(tr("0.0000"));
-
-	lineEdit_MeasurementFrame31->setText(tr("0.0000"));
-	lineEdit_MeasurementFrame32->setText(tr("0.0000"));
-	lineEdit_MeasurementFrame33->setText(tr("1.0000"));
-}
-
-void IntensityMotionCheckPanel::on_pushButton_ExchangeXY_clicked( )
-{
-	double temp;
-
-	temp = lineEdit_MeasurementFrame11->text().toDouble();
-	lineEdit_MeasurementFrame11->setText( QString::number( lineEdit_MeasurementFrame12->text().toDouble(),'f',4 ) );
-	lineEdit_MeasurementFrame12->setText( QString::number(temp,'f',4 ) );
-
-	temp = lineEdit_MeasurementFrame21->text().toDouble();
-	lineEdit_MeasurementFrame21->setText( QString::number( lineEdit_MeasurementFrame22->text().toDouble(),'f',4 ) );
-	lineEdit_MeasurementFrame22->setText( QString::number(temp,'f',4 ) );
-
-	temp = lineEdit_MeasurementFrame31->text().toDouble();
-	lineEdit_MeasurementFrame31->setText( QString::number( lineEdit_MeasurementFrame32->text().toDouble(),'f',4 ) );
-	lineEdit_MeasurementFrame32->setText( QString::number(temp,'f',4 ) );
-}
-
-
-void IntensityMotionCheckPanel::on_pushButton_ExchangeXZ_clicked( )
-{
-	double temp;
-
-	temp = lineEdit_MeasurementFrame11->text().toDouble();
-	lineEdit_MeasurementFrame11->setText( QString::number( lineEdit_MeasurementFrame13->text().toDouble(),'f',4 ) );
-	lineEdit_MeasurementFrame13->setText( QString::number(temp,'f',4 ) );
-
-	temp = lineEdit_MeasurementFrame21->text().toDouble();
-	lineEdit_MeasurementFrame21->setText( QString::number( lineEdit_MeasurementFrame23->text().toDouble(),'f',4 ) );
-	lineEdit_MeasurementFrame23->setText( QString::number(temp,'f',4 ) );
-
-	temp = lineEdit_MeasurementFrame31->text().toDouble();
-	lineEdit_MeasurementFrame31->setText( QString::number( lineEdit_MeasurementFrame33->text().toDouble(),'f',4 ) );
-	lineEdit_MeasurementFrame33->setText( QString::number(temp,'f',4 ) );
-
-}
-
-
-void IntensityMotionCheckPanel::on_pushButton_ExchangeYZ_clicked( )
-{
-	double temp;
-
-	temp = lineEdit_MeasurementFrame12->text().toDouble();
-	lineEdit_MeasurementFrame12->setText( QString::number( lineEdit_MeasurementFrame13->text().toDouble(),'f',4 ) );
-	lineEdit_MeasurementFrame13->setText( QString::number(temp,'f',4 ) );
-
-	temp = lineEdit_MeasurementFrame22->text().toDouble();
-	lineEdit_MeasurementFrame22->setText( QString::number( lineEdit_MeasurementFrame23->text().toDouble(),'f',4 ) );
-	lineEdit_MeasurementFrame23->setText( QString::number(temp,'f',4 ) );
-
-	temp = lineEdit_MeasurementFrame32->text().toDouble();
-	lineEdit_MeasurementFrame32->setText( QString::number( lineEdit_MeasurementFrame33->text().toDouble(),'f',4 ) );
-	lineEdit_MeasurementFrame33->setText( QString::number(temp,'f',4 ) );
-}
-
-
-void IntensityMotionCheckPanel::on_pushButton_FlipX_clicked( )
-{
-	double temp;
-
-	temp = lineEdit_MeasurementFrame11->text().toDouble();
-	lineEdit_MeasurementFrame11->setText( QString::number( -temp,'f',4 ) );
-
-	temp = lineEdit_MeasurementFrame21->text().toDouble();
-	lineEdit_MeasurementFrame21->setText( QString::number( -temp,'f',4 ) );
-
-	temp = lineEdit_MeasurementFrame31->text().toDouble();
-	lineEdit_MeasurementFrame31->setText( QString::number( -temp,'f',4 ) );
-}
-
-
-void IntensityMotionCheckPanel::on_pushButton_FlipY_clicked( )
-{
-	double temp;
-
-	temp = lineEdit_MeasurementFrame12->text().toDouble();
-	lineEdit_MeasurementFrame12->setText( QString::number( -temp,'f',4 ) );
-
-	temp = lineEdit_MeasurementFrame22->text().toDouble();
-	lineEdit_MeasurementFrame22->setText( QString::number( -temp,'f',4 ) );
-
-	temp = lineEdit_MeasurementFrame32->text().toDouble();
-	lineEdit_MeasurementFrame32->setText( QString::number( -temp,'f',4 ) );
-}
-
-
-void IntensityMotionCheckPanel::on_pushButton_FlipZ_clicked( )
-{
-	double temp;
-
-	temp = lineEdit_MeasurementFrame13->text().toDouble();
-	lineEdit_MeasurementFrame13->setText( QString::number( -temp,'f',4 ) );
-
-	temp = lineEdit_MeasurementFrame23->text().toDouble();
-	lineEdit_MeasurementFrame23->setText( QString::number( -temp,'f',4 ) );
-
-	temp = lineEdit_MeasurementFrame33->text().toDouble();
-	lineEdit_MeasurementFrame33->setText( QString::number( -temp,'f',4 ) );
-}
-*/
 void IntensityMotionCheckPanel::UpdatePanelDWI()
 {
+	this->qcResult.Clear();
 	treeWidget_Results->clear();
+	pushButton_DefaultQCResult->setEnabled( 1 );
+// 	pushButton_OpenQCReport->setEnabled( 1 );
 
 	treeWidget_DiffusionInformation->clear();
-	pushButton_SaveDWI->setEnabled( 0 );
-	pushButton_SaveDWIAs->setEnabled( 0 );
-
-	//pushButton_CreateDefaultProtocol->setEnabled( 1 );
-	pushButton_DefaultQCResult->setEnabled( 1 );
-	pushButton_OpenQCReport->setEnabled( 1 );
-
-	this->qcResult.Clear();
-
 	pushButton_DefaultProtocol->setEnabled( 1 );
-
-// 	std::cout<<"tree widgets cleared"<<std::endl;
+// 	pushButton_SaveDWI->setEnabled( 0 );
+	pushButton_SaveDWIAs->setEnabled( 0 );
 
 	lineEdit_SizeX->setText( QString::number(this->DwiImage->GetLargestPossibleRegion().GetSize()[0]) );
 	lineEdit_SizeY->setText( QString::number(this->DwiImage->GetLargestPossibleRegion().GetSize()[1]));
@@ -610,267 +469,158 @@ void IntensityMotionCheckPanel::UpdatePanelDWI()
 			);
 	}
 
-/////////////////////////////////////////////////
-
+	if( DwiImage->GetVectorLength() != GradientDirectionContainer->size() )
+		std::cout<< "Bad DWI: mismatch between gradient image # and gradient vector #" << std::endl;
 	itk::MetaDataDictionary imgMetaDictionary = DwiImage->GetMetaDataDictionary(); 
 	std::vector<std::string> imgMetaKeys = imgMetaDictionary.GetKeys();
 	std::vector<std::string>::const_iterator itKey = imgMetaKeys.begin();
 	std::string metaString;
 
-  //  measurement frame 
-  if(imgMetaDictionary.HasKey("NRRD_measurement frame"))
-  {
-    // measurement frame
-    vnl_matrix<double> mf(3,3);
-    // imaging frame
-    vnl_matrix<double> imgf(3,3);
-    std::vector<std::vector<double> > nrrdmf;
-    itk::ExposeMetaData<std::vector<std::vector<double> > >(imgMetaDictionary,"NRRD_measurement frame",nrrdmf);
+	//  measurement frame 
+	if(imgMetaDictionary.HasKey("NRRD_measurement frame"))
+	{
+		// measurement frame
+		vnl_matrix<double> mf(3,3);
+		// imaging frame
+		vnl_matrix<double> imgf(3,3);
+		std::vector<std::vector<double> > nrrdmf;
+		itk::ExposeMetaData<std::vector<std::vector<double> > >(imgMetaDictionary,"NRRD_measurement frame",nrrdmf);
 
-    imgf = DwiImage->GetDirection().GetVnlMatrix();
-    
-	//Image frame
-//     std::cout << "Image frame: " << std::endl;
-//     std::cout << imgf << std::endl;
+		imgf = DwiImage->GetDirection().GetVnlMatrix();
 
-	lineEdit_SpaceDir11->setText( QString::number(imgf(0,0), 'f'));
-	lineEdit_SpaceDir12->setText( QString::number(imgf(0,1), 'f'));
-	lineEdit_SpaceDir13->setText( QString::number(imgf(0,2), 'f'));
-	lineEdit_SpaceDir21->setText( QString::number(imgf(1,0), 'f'));
-	lineEdit_SpaceDir22->setText( QString::number(imgf(1,1), 'f'));
-	lineEdit_SpaceDir23->setText( QString::number(imgf(1,2), 'f'));
-	lineEdit_SpaceDir31->setText( QString::number(imgf(2,0), 'f'));
-	lineEdit_SpaceDir32->setText( QString::number(imgf(2,1), 'f'));
-	lineEdit_SpaceDir33->setText( QString::number(imgf(2,2), 'f'));
+		//Image frame
+		//     std::cout << "Image frame: " << std::endl;
+		//     std::cout << imgf << std::endl;
 
-    for(unsigned int i = 0; i < 3; ++i)
-    {
-      for(unsigned int j = 0; j < 3; ++j)
-      {
-        mf(i,j) = nrrdmf[j][i];
-        nrrdmf[j][i] = imgf(i,j);
-      }
-    }
-  
-	// Meausurement frame
-// 	std::cout << "Meausurement frame: " << std::endl;
-// 	std::cout << mf << std::endl;
+		lineEdit_SpaceDir11->setText( QString::number(imgf(0,0), 'f'));
+		lineEdit_SpaceDir12->setText( QString::number(imgf(0,1), 'f'));
+		lineEdit_SpaceDir13->setText( QString::number(imgf(0,2), 'f'));
+		lineEdit_SpaceDir21->setText( QString::number(imgf(1,0), 'f'));
+		lineEdit_SpaceDir22->setText( QString::number(imgf(1,1), 'f'));
+		lineEdit_SpaceDir23->setText( QString::number(imgf(1,2), 'f'));
+		lineEdit_SpaceDir31->setText( QString::number(imgf(2,0), 'f'));
+		lineEdit_SpaceDir32->setText( QString::number(imgf(2,1), 'f'));
+		lineEdit_SpaceDir33->setText( QString::number(imgf(2,2), 'f'));
 
-	lineEdit_MeasurementFrame11->setText( QString::number(mf(0,0), 'f'));
-	lineEdit_MeasurementFrame12->setText( QString::number(mf(0,1), 'f'));
-	lineEdit_MeasurementFrame13->setText( QString::number(mf(0,2), 'f'));
-	lineEdit_MeasurementFrame21->setText( QString::number(mf(1,0), 'f'));
-	lineEdit_MeasurementFrame22->setText( QString::number(mf(1,1), 'f'));
-	lineEdit_MeasurementFrame23->setText( QString::number(mf(1,2), 'f'));
-	lineEdit_MeasurementFrame31->setText( QString::number(mf(2,0), 'f'));
-	lineEdit_MeasurementFrame32->setText( QString::number(mf(2,1), 'f'));
-	lineEdit_MeasurementFrame33->setText( QString::number(mf(2,2), 'f'));
+		for(unsigned int i = 0; i < 3; ++i)
+		{
+			for(unsigned int j = 0; j < 3; ++j)
+			{
+				mf(i,j) = nrrdmf[j][i];
+				nrrdmf[j][i] = imgf(i,j);
+			}
+		}
 
- 
-    //itk::EncapsulateMetaData<std::vector<std::vector<double> > >(dict,NRRD_MEASUREMENT_KEY,nrrdmf);
-  }
+		// 	std::cout << "Meausurement frame: " << mf << std::endl;
 
-  // space
-  itk::ExposeMetaData<std::string> (imgMetaDictionary, "NRRD_space", metaString);
-  std::cout<<"space: "<<metaString.c_str()<<std::endl;
-  comboBox_Space->setCurrentIndex(  comboBox_Space->findText ( QString::fromStdString( metaString), Qt::MatchExactly));
+		lineEdit_MeasurementFrame11->setText( QString::number(mf(0,0), 'f'));
+		lineEdit_MeasurementFrame12->setText( QString::number(mf(0,1), 'f'));
+		lineEdit_MeasurementFrame13->setText( QString::number(mf(0,2), 'f'));
+		lineEdit_MeasurementFrame21->setText( QString::number(mf(1,0), 'f'));
+		lineEdit_MeasurementFrame22->setText( QString::number(mf(1,1), 'f'));
+		lineEdit_MeasurementFrame23->setText( QString::number(mf(1,2), 'f'));
+		lineEdit_MeasurementFrame31->setText( QString::number(mf(2,0), 'f'));
+		lineEdit_MeasurementFrame32->setText( QString::number(mf(2,1), 'f'));
+		lineEdit_MeasurementFrame33->setText( QString::number(mf(2,2), 'f'));		
+	}
+
+	// space
+	itk::ExposeMetaData<std::string> (imgMetaDictionary, "NRRD_space", metaString);
+// 	std::cout<<"space: "<<metaString.c_str()<<std::endl;
+	comboBox_Space->setCurrentIndex(  comboBox_Space->findText ( QString::fromStdString( metaString), Qt::MatchExactly));
 }
-
-///////////////////////////////////
-/*
-void IntensityMotionCheckPanel::on_pushButton_InformationCheck_clicked( )
-{
-
-}
-
-void IntensityMotionCheckPanel::on_pushButton_DWIInfoUpdateProtocal_clicked( )
-{
-
-}
-
-*/
-/*
-void IntensityMotionCheckPanel::on_toolButton_ReportFile_clicked( )
-{
-	 QString ReportFile = QFileDialog::getSaveFileName ( this, tr("Save Report File As"), lineEdit_ReportFile->text() , tr("text Files (*.txt)") );
-	 if (!ReportFile.isEmpty()) 
-	 {
-		 std::cout<<"Report File: "<<ReportFile.toStdString()<<std::endl;
-		 this->lineEdit_ReportFile->setText(ReportFile);
-	 }
-	 return;
-}
-
-void IntensityMotionCheckPanel::on_toolButton_QCOutputNrrd_clicked( )
-{
-	 QString QCOutputNrrd = QFileDialog::getSaveFileName ( this, tr("Save EddyMotion Output As"), lineEdit_QCOutputNrrd->text() , tr("nrrd Files (*.nhdr)") );
-	 if (!QCOutputNrrd.isEmpty()) 
-	 {
-		 std::cout<<"QCOutput Nrrd File: "<<QCOutputNrrd.toStdString()<<std::endl;
-		 this->lineEdit_QCOutputNrrd->setText(QCOutputNrrd);
-		 this->lineEdit_EddyMotionInput->setText(QCOutputNrrd);
-	 }
-	 return;
-}
-
-void IntensityMotionCheckPanel::on_pushButton_QCUpdateProtocol_clicked( )
-{
-
-}
-
-void IntensityMotionCheckPanel::on_pushButton_QCCheck_clicked( )
-{
-
-}
-*/
-/*
-void IntensityMotionCheckPanel::on_toolButton_EddyMotionCommand_clicked( )
-{
-	QString EddyMotionCommand= QFileDialog::getOpenFileName(this, tr("Set the dtiestim command"),lineEdit_EddyMotionCommand->text());
-	
-	 if (!EddyMotionCommand.isEmpty()) 
-	 {
-		 std::cout<<"EddyMotion  Command: "<<EddyMotionCommand.toStdString()<<std::endl;
-		 this->lineEdit_EddyMotionCommand->setText(EddyMotionCommand);
-	 }
-}
-
-void IntensityMotionCheckPanel::on_toolButton_EddyMotionInput_clicked( )
-{
-	QString EddyMotionInput= QFileDialog::getOpenFileName(this, tr("Set tEddyMotion Input"),lineEdit_EddyMotionInput->text(), tr("nrrd Files (*.nhdr)") );
-	
-	 if (!EddyMotionInput.isEmpty()) 
-	 {
-		 std::cout<<"EddyMotion Input: "<<EddyMotionInput.toStdString()<<std::endl;
-		 this->lineEdit_EddyMotionInput->setText(EddyMotionInput);
-	 }
-}
-
-void IntensityMotionCheckPanel::on_toolButton_EddyMotionOutput_clicked( )
-{
-	 QString EddyMotionOutput = QFileDialog::getSaveFileName ( this, tr("Save EddyMotion Output As"), lineEdit_EddyMotionOutput->text() , tr("nrrd Files (*.nhdr)") );
-	 if (!EddyMotionOutput.isEmpty()) 
-	 {
-		 std::cout<<"EddyMotion Output File: "<<EddyMotionOutput.toStdString()<<std::endl;
-		 this->lineEdit_EddyMotionOutput->setText(EddyMotionOutput);
-	 }
-	 return;
-}
-
-void IntensityMotionCheckPanel::on_pushButton_CorrectUpdateProtocol_clicked( )
-{
-
-}
-
-void IntensityMotionCheckPanel::on_pushButton_EddyMotionCorrect_clicked( )
-{
-
-}
-
-
-void IntensityMotionCheckPanel::on_toolButton_dtiestim_clicked( )
-{
-	QString dtiestimCommand= QFileDialog::getOpenFileName(this, tr("Set the dtiestim command"),lineEdit_dtiestim->text());
-	
-	 if (!dtiestimCommand.isEmpty()) 
-	 {
-		 std::cout<<"dtiestim command: "<<dtiestimCommand.toStdString()<<std::endl;
-		 this->lineEdit_dtiestim->setText(dtiestimCommand);
-	 }
-}
-
-void IntensityMotionCheckPanel::on_toolButton_dtiprocess_clicked( )
-{
-	QString dtiprocessCommand= QFileDialog::getOpenFileName(this, tr("Set the dtiprocess command"),lineEdit_dtiprocess->text());
-	
-	 if (!dtiprocessCommand.isEmpty()) 
-	 {
-		 std::cout<<"dtiprocess command: "<<dtiprocessCommand.toStdString()<<std::endl;
-		 this->lineEdit_dtiprocess->setText(dtiprocessCommand);
-	 }
-}
-
-void IntensityMotionCheckPanel::on_toolButton_MaskFile_clicked( )
-{
-	QString MaskFile= QFileDialog::getOpenFileName(this, tr("Set the Mask File"),lineEdit_MaskFile->text());
-	
-	 if (!MaskFile.isEmpty()) 
-	 {
-		 std::cout<<"Mask File: "<<MaskFile.toStdString()<<std::endl;
-		 this->lineEdit_MaskFile->setText(MaskFile);
-	 }
-
-}
-
-void IntensityMotionCheckPanel::on_toolButton_TensorFile_clicked( )
-{
-	 QString TensorFile = QFileDialog::getSaveFileName ( this, tr("Save Tensor Files As"), lineEdit_TensorFile->text() , tr("Tensor Files (*.nhdr)") );
-	 if (!TensorFile.isEmpty()) 
-	 {
-		 std::cout<<"Tensor File: "<<TensorFile.toStdString()<<std::endl;
-		 //nrrdPath=nrrFile;
-	     this->lineEdit_TensorFile->setText(TensorFile);
-	 }
-	 return;
-}
-
-
-void IntensityMotionCheckPanel::on_pushButton_DTIUpdateProtocol_clicked( )
-{
-
-}
-
-void IntensityMotionCheckPanel::on_pushButton_DTICompute_clicked( )
-{
-
-}
-*/
-
 
 
 void IntensityMotionCheckPanel::on_pushButton_DefaultProtocol_clicked( )
 {
-	CreateDefaultProtocol();
+//	CreateDefaultProtocol(); //old
+//	UpdateProtocolTree(); //old
 
+	if( DwiImage->GetVectorLength() != GradientDirectionContainer->size() )
+	{
+		std::cout<< "Bad DWI: mismatch between gradient image # and gradient vector #" << std::endl;
+		QMessageBox::critical(    this, tr("BAD DWI !"), tr("Bad DWI: mismatch between gradient image # and gradient vector # !"));
+		return;
+	}
+
+	DefaultProtocol();
+	UpdateProtocolToTreeWidget();
+
+	pushButton_RunPipeline->setEnabled(1);
 	pushButton_Save->setEnabled( 1 );
 	pushButton_SaveProtocolAs->setEnabled( 1 );
 	
+	emit ProtocolChanged();
 	bProtocolTreeEditable = true;
 }
 
-
-//void IntensityMotionCheckPanel::on_pushButton_CreateDefaultProtocol_clicked( )
-//{
-//  CreateDefaultProtocol();
-//}
-void IntensityMotionCheckPanel::CreateDefaultProtocol()
+//old
+void IntensityMotionCheckPanel::DefaultProtocol()
 {
-
 	this->GetProtocal().clear();
+	this->GetProtocal().initDTIProtocal();
 
-	this->GetProtocal().GetReportFileName() = "_QCReport.txt"; //////////////////
-
-	// image
+	this->GetProtocal().GetQCOutputDirectory() = ""; 
+	this->GetProtocal().GetQCedDWIFileNameSuffix() = "_QCed.nhdr"; 
+	this->GetProtocal().GetReportFileNameSuffix() = "_QCReport.txt"; 
+	this->GetProtocal().SetBadGradientPercentageTolerance(0.2);
+	
+	//***** image
 	this->GetProtocal().GetImageProtocal().bCheck = true;
 
+	// size
 	this->GetProtocal().GetImageProtocal().size[0] = DwiImage->GetLargestPossibleRegion().GetSize()[0];
 	this->GetProtocal().GetImageProtocal().size[1] = DwiImage->GetLargestPossibleRegion().GetSize()[1];
 	this->GetProtocal().GetImageProtocal().size[2] = DwiImage->GetLargestPossibleRegion().GetSize()[2];
 
+	//origin
 	this->GetProtocal().GetImageProtocal().origin[0] = DwiImage->GetOrigin()[0];
 	this->GetProtocal().GetImageProtocal().origin[1] = DwiImage->GetOrigin()[1];
 	this->GetProtocal().GetImageProtocal().origin[2] = DwiImage->GetOrigin()[2];
 
+	// spacing
 	this->GetProtocal().GetImageProtocal().spacing[0] = DwiImage->GetSpacing()[0];
 	this->GetProtocal().GetImageProtocal().spacing[1] = DwiImage->GetSpacing()[1];
 	this->GetProtocal().GetImageProtocal().spacing[2] = DwiImage->GetSpacing()[2];
 
+	// space
+	itk::MetaDataDictionary imgMetaDictionary = DwiImage->GetMetaDataDictionary(); 
+	std::vector<std::string> imgMetaKeys = imgMetaDictionary.GetKeys();
+	std::vector<std::string>::const_iterator itKey = imgMetaKeys.begin();
+	std::string metaString;
 
-	// diffusion
+	itk::ExposeMetaData<std::string> (imgMetaDictionary, "NRRD_space", metaString);
+	if( metaString == "left-anterior-inferior")
+		this->GetProtocal().GetImageProtocal().space = Protocal::SPACE_LAI;
+	else if( metaString =="left-anterior-superior")
+		this->GetProtocal().GetImageProtocal().space = Protocal::SPACE_LAS;
+	else if( metaString =="left-posterior-inferior")
+		this->GetProtocal().GetImageProtocal().space = Protocal::SPACE_LPI;
+	else if( metaString =="left-posterior-superior")
+		this->GetProtocal().GetImageProtocal().space = Protocal::SPACE_LPS;
+	else if( metaString =="right-anterior-inferior")
+		this->GetProtocal().GetImageProtocal().space = Protocal::SPACE_RAI;
+	else if( metaString =="right-anterior-superior")
+		this->GetProtocal().GetImageProtocal().space = Protocal::SPACE_RAS;
+	else if( metaString =="right-posterior-inferior")
+		this->GetProtocal().GetImageProtocal().space = Protocal::SPACE_RPI;
+	else if( metaString =="right-posterior-superior")
+		this->GetProtocal().GetImageProtocal().space = Protocal::SPACE_RPS;
+	else
+		this->GetProtocal().GetImageProtocal().space = Protocal::SPACE_UNKNOWN;
+
+	this->GetProtocal().GetImageProtocal().bCrop = true; 
+	this->GetProtocal().GetImageProtocal().croppedDWIFileNameSuffix = "_CroppedDWI.nhdr"; 
+
+
+	this->GetProtocal().GetImageProtocal().reportFileNameSuffix = "_QCReport.txt"; 
+	this->GetProtocal().GetImageProtocal().reportFileMode = 1;
+
+	//***** diffusion
 	GetGridentDirections( 0 );
 
 	this->GetProtocal().GetDiffusionProtocal().bCheck = true;
-	this->GetProtocal().GetDiffusionProtocal().b = this->b0;
+	this->GetProtocal().GetDiffusionProtocal().bValue = this->b0;
 
 	for(unsigned int i=0; i< GradientDirectionContainer->size();i++)
 	{
@@ -881,11 +631,6 @@ void IntensityMotionCheckPanel::CreateDefaultProtocol()
 
 		this->GetProtocal().GetDiffusionProtocal().gradients.push_back(vect);
 	}
-
-	itk::MetaDataDictionary imgMetaDictionary = DwiImage->GetMetaDataDictionary(); 
-	std::vector<std::string> imgMetaKeys = imgMetaDictionary.GetKeys();
-	std::vector<std::string>::const_iterator itKey = imgMetaKeys.begin();
-	std::string metaString;
 
 	//  measurement frame 
 	if(imgMetaDictionary.HasKey("NRRD_measurement frame"))
@@ -908,8 +653,7 @@ void IntensityMotionCheckPanel::CreateDefaultProtocol()
 		this->GetProtocal().GetImageProtocal().spacedirection[1][2] = imgf(1,2);
 		this->GetProtocal().GetImageProtocal().spacedirection[2][0] = imgf(2,0);
 		this->GetProtocal().GetImageProtocal().spacedirection[2][1] = imgf(2,1);
-		this->GetProtocal().GetImageProtocal().spacedirection[2][2] = imgf(2,2);
-		
+		this->GetProtocal().GetImageProtocal().spacedirection[2][2] = imgf(2,2);		
 
 		for(unsigned int i = 0; i < 3; ++i)
 		{
@@ -919,7 +663,6 @@ void IntensityMotionCheckPanel::CreateDefaultProtocol()
 				nrrdmf[j][i] = imgf(i,j);
 			}
 		}
-
 		// Meausurement frame
 		this->GetProtocal().GetDiffusionProtocal().measurementFrame[0][0] = mf(0,0);
 		this->GetProtocal().GetDiffusionProtocal().measurementFrame[0][1] = mf(0,1);
@@ -931,50 +674,43 @@ void IntensityMotionCheckPanel::CreateDefaultProtocol()
 		this->GetProtocal().GetDiffusionProtocal().measurementFrame[2][1] = mf(2,1);
 		this->GetProtocal().GetDiffusionProtocal().measurementFrame[2][2] = mf(2,2);
 	}
-	// space
-	itk::ExposeMetaData<std::string> (imgMetaDictionary, "NRRD_space", metaString);
 
-	if( metaString == "left-anterior-inferior")
-		this->GetProtocal().GetImageProtocal().space = Protocal::SPACE_LAI;
-	else if( metaString =="left-anterior-superior")
-		this->GetProtocal().GetImageProtocal().space = Protocal::SPACE_LAS;
-	else if( metaString =="left-posterior-inferior")
-		this->GetProtocal().GetImageProtocal().space = Protocal::SPACE_LPI;
-	else if( metaString =="left-posterior-superior")
-		this->GetProtocal().GetImageProtocal().space = Protocal::SPACE_LPS;
-	else if( metaString =="right-anterior-inferior")
-		this->GetProtocal().GetImageProtocal().space = Protocal::SPACE_RAI;
-	else if( metaString =="right-anterior-superior")
-		this->GetProtocal().GetImageProtocal().space = Protocal::SPACE_RAS;
-	else if( metaString =="right-posterior-inferior")
-		this->GetProtocal().GetImageProtocal().space = Protocal::SPACE_RPI;
-	else if( metaString =="right-posterior-superior")
-		this->GetProtocal().GetImageProtocal().space = Protocal::SPACE_RPS;
-	else
-		this->GetProtocal().GetImageProtocal().space = Protocal::SPACE_UNKNOWN;
+	this->GetProtocal().GetDiffusionProtocal().bUseDiffusionProtocal = true;
+	this->GetProtocal().GetDiffusionProtocal().diffusionReplacedDWIFileNameSuffix = "_DiffusionReplaced.nhdr";
 
-	// intensity Motion check
-	this->GetProtocal().GetIntensityMotionCheckProtocal().bCheck = true;
-	this->GetProtocal().GetIntensityMotionCheckProtocal().OutputFileName = "_QCOutput.nhdr"; //////////////////
-	this->GetProtocal().GetIntensityMotionCheckProtocal().badGradientPercentageTolerance = 0.1;
-
+	this->GetProtocal().GetDiffusionProtocal().reportFileNameSuffix = "_QCReport.txt"; 
+	this->GetProtocal().GetDiffusionProtocal().reportFileMode = 1;
+	
+	//***** slice check
 	emit status("Estimating protocol parameter  ...");
 	std::cout<< "Estimating protocol parameter  ..." <<std::endl;
 
-	double sliceBaselineThreshold, sliceGradientThreshold, devBaselineThreshold, devGradientThreshold;
-	GetSliceProtocolParameters( 
-		0.15, // get the 10% threshold and check with 15%: get 10%-90% image threshold and ckeck 15%-85% range
-		0.15, // get the 10% threshold and check with 15%
-		sliceBaselineThreshold ,  
-		sliceGradientThreshold ,
-		devBaselineThreshold, 
-		devGradientThreshold
-		);
-	std::cout << "sliceBaselineThreshold: "<<sliceBaselineThreshold<<std::endl;
-	std::cout << "sliceGradientThreshold: "<<sliceGradientThreshold<<std::endl;
-	std::cout << "devBaselineThreshold: "<<devBaselineThreshold<<std::endl;
-	std::cout << "devGradientThreshold: "<<devGradientThreshold<<std::endl;
+//	double sliceBaselineThreshold, sliceGradientThreshold, devBaselineThreshold, devGradientThreshold;
+//	GetSliceProtocolParameters( 
+//		0.10, 
+//		0.10, 
+//		sliceBaselineThreshold ,  
+//		sliceGradientThreshold ,
+//		devBaselineThreshold, 
+//		devGradientThreshold
+//		);
+//	std::cout << "sliceBaselineThreshold: "<<sliceBaselineThreshold<<std::endl;
+//	std::cout << "sliceGradientThreshold: "<<sliceGradientThreshold<<std::endl;
+//	std::cout << "devBaselineThreshold: "<<devBaselineThreshold<<std::endl;
+//	std::cout << "devGradientThreshold: "<<devGradientThreshold<<std::endl;
+	this->GetProtocal().GetSliceCheckProtocal().bCheck = true;
+// 	this->GetProtocal().GetSliceCheckProtocal().badGradientPercentageTolerance = 0.2;
+	this->GetProtocal().GetSliceCheckProtocal().checkTimes = 0;
+	this->GetProtocal().GetSliceCheckProtocal().headSkipSlicePercentage = 0.1; 
+	this->GetProtocal().GetSliceCheckProtocal().tailSkipSlicePercentage = 0.1;  
+	this->GetProtocal().GetSliceCheckProtocal().correlationDeviationThresholdbaseline = 3.0;
+	this->GetProtocal().GetSliceCheckProtocal().correlationDeviationThresholdgradient = 3.50;
 
+	this->GetProtocal().GetSliceCheckProtocal().outputDWIFileNameSuffix = ""; 
+	this->GetProtocal().GetSliceCheckProtocal().reportFileNameSuffix = "_QCReport.txt"; 
+	this->GetProtocal().GetSliceCheckProtocal().reportFileMode = 1;
+	
+	//***** interlace check
 	double interlaceBaselineThreshold, interlaceGradientThreshold, interlaceBaselineDev, interlaceGradientDev;
 	GetInterlaceProtocolParameters(
 		interlaceBaselineThreshold, 
@@ -982,83 +718,91 @@ void IntensityMotionCheckPanel::CreateDefaultProtocol()
 		interlaceBaselineDev,
 		interlaceGradientDev
 		);
-	std::cout << "interlaceBaselineThreshold: "<<interlaceBaselineThreshold<<std::endl;
-	std::cout << "interlaceGradientThreshold: "<<interlaceGradientThreshold<<std::endl;
-	std::cout << "interlaceBaselineDev: "<<interlaceBaselineDev<<std::endl;
-	std::cout << "interlaceGradientDev: "<<interlaceGradientDev<<std::endl;
+//	std::cout << "interlaceBaselineThreshold: "<<interlaceBaselineThreshold<<std::endl;
+//	std::cout << "interlaceGradientThreshold: "<<interlaceGradientThreshold<<std::endl;
+//	std::cout << "interlaceBaselineDev: "<<interlaceBaselineDev<<std::endl;
+//	std::cout << "interlaceGradientDev: "<<interlaceGradientDev<<std::endl;
 
-	emit status("done");
-	std::cout<< "Estimating protocol parameter  ... done" <<std::endl;
+	this->GetProtocal().GetInterlaceCheckProtocal().bCheck = true;
+// 	this->GetProtocal().GetInterlaceCheckProtocal().badGradientPercentageTolerance = 0.2;
+	this->GetProtocal().GetInterlaceCheckProtocal().correlationThresholdBaseline = interlaceBaselineThreshold*0.95; 
+	this->GetProtocal().GetInterlaceCheckProtocal().correlationDeviationBaseline = 2.50;
+	this->GetProtocal().GetInterlaceCheckProtocal().correlationThresholdGradient = interlaceGradientThreshold*0.95; 
+	this->GetProtocal().GetInterlaceCheckProtocal().correlationDeviationGradient = 3.00;
+	this->GetProtocal().GetInterlaceCheckProtocal().rotationThreshold = 0.5;// degree
+	this->GetProtocal().GetInterlaceCheckProtocal().translationThreshold =(this->GetProtocal().GetImageProtocal().spacing[0] +
+																					this->GetProtocal().GetImageProtocal().spacing[1] +
+																					this->GetProtocal().GetImageProtocal().spacing[2]   ) * 0.3333333333333;
+	this->GetProtocal().GetInterlaceCheckProtocal().outputDWIFileNameSuffix = ""; 
+	this->GetProtocal().GetInterlaceCheckProtocal().reportFileNameSuffix = "_QCReport.txt"; 
+	this->GetProtocal().GetInterlaceCheckProtocal().reportFileMode = 1;
 
+	//***** gradient check
+	this->GetProtocal().GetGradientCheckProtocal().bCheck = true;
+// 	this->GetProtocal().GetGradientCheckProtocal().badGradientPercentageTolerance = 0.2;
+	this->GetProtocal().GetGradientCheckProtocal().rotationThreshold = 0.5; //degree
+	this->GetProtocal().GetGradientCheckProtocal().translationThreshold = (	this->GetProtocal().GetImageProtocal().spacing[0] +
+																					this->GetProtocal().GetImageProtocal().spacing[1] +
+																					this->GetProtocal().GetImageProtocal().spacing[2]   ) * 0.3333333333333;
+	this->GetProtocal().GetGradientCheckProtocal().outputDWIFileNameSuffix = ""; 
+	this->GetProtocal().GetGradientCheckProtocal().reportFileNameSuffix = "_QCReport.txt"; 
+	this->GetProtocal().GetGradientCheckProtocal().reportFileMode = 1;
 
-	this->GetProtocal().GetIntensityMotionCheckProtocal().bSliceCheck = true;
-	this->GetProtocal().GetIntensityMotionCheckProtocal().badSlicePercentageTolerance = 0.0;
-	this->GetProtocal().GetIntensityMotionCheckProtocal().baselineCorrelationThreshold = sliceBaselineThreshold*0.90; //0.8; // to be optimized
-	this->GetProtocal().GetIntensityMotionCheckProtocal().baselineCorrelationDeviationThreshold = 3.0; //devBaselineThreshold*1.1;//3.50;
-	this->GetProtocal().GetIntensityMotionCheckProtocal().headSkipSlicePercentage = 0.15; 
-	this->GetProtocal().GetIntensityMotionCheckProtocal().tailSkipSlicePercentage = 0.15;  
-	this->GetProtocal().GetIntensityMotionCheckProtocal().sliceCorrelationThreshold = sliceGradientThreshold*0.90; //0.8;// to be optimized
-	this->GetProtocal().GetIntensityMotionCheckProtocal().sliceCorrelationDeviationThreshold = 3.50; //devGradientThreshold*1.1;//3.50;//
+	//***** baseline average
+	this->GetProtocal().GetBaselineAverageProtocal().bAverage = true;
 
-	this->GetProtocal().GetIntensityMotionCheckProtocal().bInterlaceCheck = true;
-	this->GetProtocal().GetIntensityMotionCheckProtocal().interlaceCorrelationThresholdBaseline = interlaceBaselineThreshold*0.9; //0.92;// to be optimized
-	this->GetProtocal().GetIntensityMotionCheckProtocal().interlaceCorrelationDeviationBaseline = 3.00;//interlaceBaselineDev*1.05;//3.00;//
-	this->GetProtocal().GetIntensityMotionCheckProtocal().interlaceCorrelationThresholdGradient = interlaceGradientThreshold*0.9; //0.90;//  to be optimized
-	this->GetProtocal().GetIntensityMotionCheckProtocal().interlaceCorrelationDeviationGradient = 3.00;//interlaceGradientDev*1.05;//3.00;//
-	this->GetProtocal().GetIntensityMotionCheckProtocal().interlaceRotationThreshold = 0.5;// degree
-	this->GetProtocal().GetIntensityMotionCheckProtocal().interlaceTranslationThreshold = ( this->GetProtocal().GetImageProtocal().spacing[0] +
-																							this->GetProtocal().GetImageProtocal().spacing[1] +
-																							this->GetProtocal().GetImageProtocal().spacing[2] )*0.33333333333;//1 xoxel;//
+	this->GetProtocal().GetBaselineAverageProtocal().averageMethod = 1;
+	this->GetProtocal().GetBaselineAverageProtocal().stopThreshold = 0.02;
 
-	this->GetProtocal().GetIntensityMotionCheckProtocal().bGradientCheck = true;
-	this->GetProtocal().GetIntensityMotionCheckProtocal().gradientRotationThreshold = 0.8; //degree
-	this->GetProtocal().GetIntensityMotionCheckProtocal().gradientTranslationThreshold = (	this->GetProtocal().GetImageProtocal().spacing[0] +
-																							this->GetProtocal().GetImageProtocal().spacing[1] +
-																							this->GetProtocal().GetImageProtocal().spacing[2] )*0.33333333333*1.50;//3 voxel;//
+	this->GetProtocal().GetBaselineAverageProtocal().outputDWIFileNameSuffix  = "";
+	this->GetProtocal().GetBaselineAverageProtocal().reportFileNameSuffix  = "_QCReport.txt";
+	this->GetProtocal().GetBaselineAverageProtocal().reportFileMode = 1;
 
-	// Eddy motion correction
+	//***** Eddy motion correction
 	this->GetProtocal().GetEddyMotionCorrectionProtocal().bCorrect = true;
-	this->GetProtocal().GetEddyMotionCorrectionProtocal().EddyMotionCommand = "/tools/bin_linux64/EddyMotionCorrector";
-	this->GetProtocal().GetEddyMotionCorrectionProtocal().InputFileName = "_QCOutput.nhdr";
-	this->GetProtocal().GetEddyMotionCorrectionProtocal().OutputFileName = "_EddyMotion_Output.nhdr";
+// 	this->GetProtocal().GetEddyMotionCorrectionProtocal().EddyMotionCommand = "/tools/bin_linux64/EddyMotionCorrector";
+//	this->GetProtocal().GetEddyMotionCorrectionProtocal().InputFileName = "_QCOutput.nhdr";
+//	this->GetProtocal().GetEddyMotionCorrectionProtocal().OutputFileName = "_EddyMotion_Output.nhdr";
 
-	// DTI
+	this->GetProtocal().GetEddyMotionCorrectionProtocal().numberOfBins		=	24;
+	this->GetProtocal().GetEddyMotionCorrectionProtocal().numberOfSamples	=	100000;
+	this->GetProtocal().GetEddyMotionCorrectionProtocal().translationScale	=	0.001;
+	this->GetProtocal().GetEddyMotionCorrectionProtocal().stepLength		=	0.1;
+	this->GetProtocal().GetEddyMotionCorrectionProtocal().relaxFactor		=	0.5;
+	this->GetProtocal().GetEddyMotionCorrectionProtocal().maxNumberOfIterations	=	500;
+
+	this->GetProtocal().GetEddyMotionCorrectionProtocal().outputDWIFileNameSuffix = "";
+	this->GetProtocal().GetEddyMotionCorrectionProtocal().reportFileNameSuffix = "_QCReport.txt";
+	this->GetProtocal().GetEddyMotionCorrectionProtocal().reportFileMode = 1;
+
+	//***** DTI
 	this->GetProtocal().GetDTIProtocal().bCompute = true;
 	this->GetProtocal().GetDTIProtocal().dtiestimCommand = "/tools/bin_linux64/dtiestim";
 	this->GetProtocal().GetDTIProtocal().dtiprocessCommand = "/tools/bin_linux64/dtiprocess";
-	this->GetProtocal().GetDTIProtocal().dtiPaddingCommand = "/tools/bin_linux64/CropDTI";
+	this->GetProtocal().GetDTIProtocal().method = Protocal::METHOD_WLS;
 	this->GetProtocal().GetDTIProtocal().baselineThreshold = 50; //
 	this->GetProtocal().GetDTIProtocal().mask = "";
-	this->GetProtocal().GetDTIProtocal().method = Protocal::METHOD_WLS;
-	this->GetProtocal().GetDTIProtocal().tensor = "_DTI.nhdr";
-	this->GetProtocal().GetDTIProtocal().bPadding = true;
-// 	this->GetProtocal().GetDTIProtocal().tensorPadded = "_DTI.nhdr";
-// 	this->GetProtocal().GetDTIProtocal().paddingParameters[0] = 0;
-// 	this->GetProtocal().GetDTIProtocal().paddingParameters[1] = 0;
-// 	this->GetProtocal().GetDTIProtocal().paddingParameters[2] = 0;
-// 	this->GetProtocal().GetDTIProtocal().paddingParameters[3] = 0;
-// 	this->GetProtocal().GetDTIProtocal().paddingParameters[4] = 0;
-// 	this->GetProtocal().GetDTIProtocal().paddingParameters[5] = 0;
+	this->GetProtocal().GetDTIProtocal().tensorSuffix = "_DTI.nhdr";
 	this->GetProtocal().GetDTIProtocal().bbaseline = true;
-	this->GetProtocal().GetDTIProtocal().baseline = "_Baseline.nhdr";
+	this->GetProtocal().GetDTIProtocal().baselineSuffix = "_Baseline.nhdr";
 	this->GetProtocal().GetDTIProtocal().bidwi = true;
-	this->GetProtocal().GetDTIProtocal().idwi = "_IDWI.nhdr";
+	this->GetProtocal().GetDTIProtocal().idwiSuffix = "_IDWI.nhdr";
 	this->GetProtocal().GetDTIProtocal().bfa = true;
-	this->GetProtocal().GetDTIProtocal().fa = "_FA.nhdr";
+	this->GetProtocal().GetDTIProtocal().faSuffix = "_FA.nhdr";
 	this->GetProtocal().GetDTIProtocal().bmd = true;
-	this->GetProtocal().GetDTIProtocal().md = "_MD.nhdr";
+	this->GetProtocal().GetDTIProtocal().mdSuffix = "_MD.nhdr";
 	this->GetProtocal().GetDTIProtocal().bcoloredfa = true;
-	this->GetProtocal().GetDTIProtocal().coloredfa = "_colorFA.nhdr";
+	this->GetProtocal().GetDTIProtocal().coloredfaSuffix = "_colorFA.nhdr";
 	this->GetProtocal().GetDTIProtocal().bfrobeniusnorm = true;
-	this->GetProtocal().GetDTIProtocal().frobeniusnorm = "_frobeniusnorm.nhdr";
+	this->GetProtocal().GetDTIProtocal().frobeniusnormSuffix = "_frobeniusnorm.nhdr";
 
-	//////////////////////////////////////////////////////////////////////////
-	UpdateProtocolTree();
-	pushButton_RunPipeline->setEnabled(1);
-	
-	//on_pushButton_Save_clicked( );
+	this->GetProtocal().GetDTIProtocal().reportFileNameSuffix = "_QCReport.txt";
+	this->GetProtocal().GetDTIProtocal().reportFileMode = 1;
 
 	bProtocol = true;
+	
+	emit status("done");
+	std::cout<< "Estimating protocol parameter  ... done" <<std::endl;
 }
 
 bool IntensityMotionCheckPanel::GetSliceProtocolParameters(
@@ -1243,10 +987,8 @@ bool IntensityMotionCheckPanel::GetSliceProtocolParameters(
 	std::cout <<"maxBaselineCorrelationDevTime: "<<maxBaselineCorrelationDevTime<<std::endl;
 	std::cout <<"maxGradientCorrelationDevTime: "<<maxGradientCorrelationDevTime<<std::endl;
 
-
 	return true;
 }
-
 
 bool IntensityMotionCheckPanel::GetInterlaceProtocolParameters(
 	double &correlationThresholdBaseline, 
@@ -1436,26 +1178,37 @@ bool IntensityMotionCheckPanel::GetInterlaceProtocolParameters(
 	return true;
 }
 
-void IntensityMotionCheckPanel::UpdateProtocolTree( )
+void IntensityMotionCheckPanel::UpdateProtocolToTreeWidget( )
 {
 	lineEdit_Protocal->clear();
 	treeWidget->clear();
 
-	//////////////////////////////////////////////////////////////////////////
-	QTreeWidgetItem *itemReportFileName = new QTreeWidgetItem(treeWidget);
-	itemReportFileName->setText(0, tr("ReportFileName"));
-	itemReportFileName->setText(1, QString::fromStdString(this->GetProtocal().GetReportFileName()) );
+	QTreeWidgetItem *itemQCOutputDirectory = new QTreeWidgetItem(treeWidget);
+	itemQCOutputDirectory->setText(0, tr("QC_QCOutputDirectory"));
+	itemQCOutputDirectory->setText(1, QString::fromStdString(this->GetProtocal().GetQCOutputDirectory()) );
+
+	QTreeWidgetItem *itemQCedDWIFileNameSuffix = new QTreeWidgetItem(treeWidget);
+	itemQCedDWIFileNameSuffix->setText(0, tr("QC_QCedDWIFileNameSuffix"));
+	itemQCedDWIFileNameSuffix->setText(1, QString::fromStdString(this->GetProtocal().GetQCedDWIFileNameSuffix()) );
+
+	QTreeWidgetItem *itemReportFileNameSuffix = new QTreeWidgetItem(treeWidget);
+	itemReportFileNameSuffix->setText(0, tr("QC_reportFileNameSuffix"));
+	itemReportFileNameSuffix->setText(1, QString::fromStdString(this->GetProtocal().GetReportFileNameSuffix()) );
+
+	QTreeWidgetItem *itemBadGradientPercentageTolerance = new QTreeWidgetItem(treeWidget);
+	itemBadGradientPercentageTolerance->setText(0, tr("QC_badGradientPercentageTolerance"));
+	itemBadGradientPercentageTolerance->setText(1,QString::number(this->GetProtocal().GetBadGradientPercentageTolerance(),  'f', 4));
 
 	// image
 	QTreeWidgetItem *itemImageInformation = new QTreeWidgetItem(treeWidget);
-	itemImageInformation->setText(0, tr("Image Check"));
+	itemImageInformation->setText(0, tr("IMAGE_bCheck"));
 	if(this->GetProtocal().GetImageProtocal().bCheck)
 		itemImageInformation->setText(1,tr("Yes"));
 	else
 		itemImageInformation->setText(1,tr("No"));
 
 	QTreeWidgetItem *itemSpace = new QTreeWidgetItem(itemImageInformation);
-	itemSpace->setText(0, tr("space"));
+	itemSpace->setText(0, tr("IMAGE_space"));
 	switch(this->GetProtocal().GetImageProtocal().space)
 	{
 		case Protocal::SPACE_LPS:
@@ -1488,7 +1241,7 @@ void IntensityMotionCheckPanel::UpdateProtocolTree( )
 	}
 
 	QTreeWidgetItem *itemSpaceDirections = new QTreeWidgetItem(itemImageInformation);
-	itemSpaceDirections->setText(0, tr("space directions"));
+	itemSpaceDirections->setText(0, tr("IMAGE_directions"));
 	itemSpaceDirections->setText(1, QString("%1 %2 %3, %4 %5 %6, %7 %8 %9")
 		.arg(this->GetProtocal().GetImageProtocal().spacedirection[0][0], 0, 'f', 6)
 		.arg(this->GetProtocal().GetImageProtocal().spacedirection[0][1], 0, 'f', 6)
@@ -1502,7 +1255,7 @@ void IntensityMotionCheckPanel::UpdateProtocolTree( )
 		);
 
 	QTreeWidgetItem *itemSizes = new QTreeWidgetItem(itemImageInformation);
-	itemSizes->setText(0, tr("sizes"));
+	itemSizes->setText(0, tr("IMAGE_size"));
 	itemSizes->setText(1, QString("%1, %2, %3")
 		.arg(this->GetProtocal().GetImageProtocal().size[0], 0,10)
 		.arg(this->GetProtocal().GetImageProtocal().size[1], 0,10)
@@ -1510,7 +1263,7 @@ void IntensityMotionCheckPanel::UpdateProtocolTree( )
 		);
 
 	QTreeWidgetItem *itemSpacing = new QTreeWidgetItem(itemImageInformation);
-	itemSpacing->setText(0, tr("spacing"));
+	itemSpacing->setText(0, tr("IMAGE_spacing"));
 	itemSpacing->setText(1, QString("%1, %2, %3")
 		.arg(this->GetProtocal().GetImageProtocal().spacing[0], 0, 'f', 6)
 		.arg(this->GetProtocal().GetImageProtocal().spacing[1], 0, 'f', 6)
@@ -1518,23 +1271,42 @@ void IntensityMotionCheckPanel::UpdateProtocolTree( )
 		);
 
 	QTreeWidgetItem *itemOrig = new QTreeWidgetItem(itemImageInformation);
-	itemOrig->setText(0, tr("origin"));
+	itemOrig->setText(0, tr("IMAGE_origin"));
 	itemOrig->setText(1, QString("%1, %2, %3")
 		.arg(this->GetProtocal().GetImageProtocal().origin[0], 0, 'f', 6)
 		.arg(this->GetProtocal().GetImageProtocal().origin[1], 0, 'f', 6)
 		.arg(this->GetProtocal().GetImageProtocal().origin[2], 0, 'f', 6)
 		);
 
+	QTreeWidgetItem *itemCrop = new QTreeWidgetItem(itemImageInformation);
+	itemCrop->setText(0, tr("IMAGE_bCrop"));
+	if(this->GetProtocal().GetImageProtocal().bCrop)
+		itemCrop->setText(1,tr("Yes"));
+	else
+		itemCrop->setText(1,tr("No"));
+
+	QTreeWidgetItem *itemCroppedDWIFileNameSuffix = new QTreeWidgetItem(itemImageInformation);
+	itemCroppedDWIFileNameSuffix->setText(0, tr("IMAGE_croppedDWIFileNameSuffix"));
+	itemCroppedDWIFileNameSuffix->setText(1, QString::fromStdString(this->GetProtocal().GetImageProtocal().croppedDWIFileNameSuffix) );
+
+	QTreeWidgetItem *itemImageReportFileNameSuffix = new QTreeWidgetItem(itemImageInformation);
+	itemImageReportFileNameSuffix->setText(0, tr("IMAGE_reportFileNameSuffix"));
+	itemImageReportFileNameSuffix->setText(1, QString::fromStdString(this->GetProtocal().GetImageProtocal().reportFileNameSuffix) );
+
+	QTreeWidgetItem *itemImageReportFileMode = new QTreeWidgetItem(itemImageInformation);
+	itemImageReportFileMode->setText(0, tr("IMAGE_reportFileMode"));
+	itemImageReportFileMode->setText(1, QString("%1").arg(this->GetProtocal().GetImageProtocal().reportFileMode, 0,10));
+
 	// diffusion
 	QTreeWidgetItem *itemDiffusionInformation = new QTreeWidgetItem(treeWidget);
-	itemDiffusionInformation->setText(0, tr("Diffusion Check"));
+	itemDiffusionInformation->setText(0, tr("DIFFUSION_bCheck"));
 	if(this->GetProtocal().GetDiffusionProtocal().bCheck)
 		itemDiffusionInformation->setText(1,tr("Yes"));
 	else
 		itemDiffusionInformation->setText(1,tr("No"));
 
 	QTreeWidgetItem *itemMeasurementFrame = new QTreeWidgetItem(itemDiffusionInformation);
-	itemMeasurementFrame->setText(0, tr("measurement frame"));
+	itemMeasurementFrame->setText(0, tr("DIFFUSION_measurementFrame"));
 	itemMeasurementFrame->setText(1, QString("%1 %2 %3, %4 %5 %6, %7 %8 %9")
 		.arg(this->GetProtocal().GetDiffusionProtocal().measurementFrame[0][0], 0, 'f', 6)
 		.arg(this->GetProtocal().GetDiffusionProtocal().measurementFrame[0][1], 0, 'f', 6)
@@ -1548,13 +1320,13 @@ void IntensityMotionCheckPanel::UpdateProtocolTree( )
 		);
 
 	QTreeWidgetItem *itemBValue = new QTreeWidgetItem(itemDiffusionInformation);
-	itemBValue->setText(0, tr("DWMRI_b-value"));
-	itemBValue->setText(1,QString("%1").arg(this->GetProtocal().GetDiffusionProtocal().b, 0, 'f', 4));
+	itemBValue->setText(0, tr("DIFFUSION_DWMRI_bValue"));
+	itemBValue->setText(1,QString("%1").arg(this->GetProtocal().GetDiffusionProtocal().bValue, 0, 'f', 4));
 
 	for(unsigned int i=0;i<this->GetProtocal().GetDiffusionProtocal().gradients.size();i++ )
 	{
 		QTreeWidgetItem *itemGradientDir = new QTreeWidgetItem(itemDiffusionInformation);
-		itemGradientDir->setText(0, QString("DWMRI_gradient_%1").arg(i, 4, 10, QLatin1Char( '0' )));
+		itemGradientDir->setText(0, QString("DIFFUSION_DWMRI_gradient_%1").arg(i, 4, 10, QLatin1Char( '0' )));
 		itemGradientDir->setText(1, QString("%1 %2 %3")
 			.arg(this->GetProtocal().GetDiffusionProtocal().gradients[i][0], 0, 'f', 6)
 			.arg(this->GetProtocal().GetDiffusionProtocal().gradients[i][1], 0, 'f', 6)
@@ -1562,144 +1334,252 @@ void IntensityMotionCheckPanel::UpdateProtocolTree( )
 			);
 	}
 
-	// QC
-	QTreeWidgetItem *itemQCCheck = new QTreeWidgetItem(treeWidget);
-	itemQCCheck->setText(0, tr("QC Check"));
-	if(this->GetProtocal().GetIntensityMotionCheckProtocal().bCheck)
-		itemQCCheck->setText(1,tr("Yes"));
+	QTreeWidgetItem *itembUseDiffusionProtocal = new QTreeWidgetItem(itemDiffusionInformation);
+	itembUseDiffusionProtocal->setText(0, tr("DIFFUSION_bUseDiffusionProtocal"));
+	if(this->GetProtocal().GetDiffusionProtocal().bUseDiffusionProtocal)
+		itembUseDiffusionProtocal->setText(1,tr("Yes"));
 	else
-		itemQCCheck->setText(1,tr("No"));
+		itembUseDiffusionProtocal->setText(1,tr("No"));
 
-	QTreeWidgetItem *itemQCOutputFilename = new QTreeWidgetItem(itemQCCheck);
-	itemQCOutputFilename->setText(0, tr("QCOutputFileName"));
-	itemQCOutputFilename->setText(1,QString::fromStdString(this->GetProtocal().GetIntensityMotionCheckProtocal().OutputFileName));
+	QTreeWidgetItem *itemDiffusionReplacedDWIFileNameSuffix = new QTreeWidgetItem(itemDiffusionInformation);
+	itemDiffusionReplacedDWIFileNameSuffix->setText(0, tr("DIFFUSION_diffusionReplacedDWIFileNameSuffix"));
+	itemDiffusionReplacedDWIFileNameSuffix->setText(1, QString::fromStdString(this->GetProtocal().GetDiffusionProtocal().diffusionReplacedDWIFileNameSuffix) );
 
-	QTreeWidgetItem *itemBadGradientTolerance = new QTreeWidgetItem(itemQCCheck);
-	itemBadGradientTolerance->setText(0, tr("bad gradient percentage tolerance"));
-	itemBadGradientTolerance->setText(1,QString::number(this->GetProtocal().GetIntensityMotionCheckProtocal().badGradientPercentageTolerance, 'f', 4));
+	QTreeWidgetItem *itemDiffusionReportFileNameSuffix = new QTreeWidgetItem(itemDiffusionInformation);
+	itemDiffusionReportFileNameSuffix->setText(0, tr("DIFFUSION_reportFileNameSuffix"));
+	itemDiffusionReportFileNameSuffix->setText(1, QString::fromStdString(this->GetProtocal().GetDiffusionProtocal().reportFileNameSuffix) );
 
-	//slice wise QC
-	QTreeWidgetItem *itemSliceWiseQCCheck = new QTreeWidgetItem(itemQCCheck);
-	itemSliceWiseQCCheck->setText(0, tr("slice wise threshold"));
-	if(this->GetProtocal().GetIntensityMotionCheckProtocal().bSliceCheck)
-		itemSliceWiseQCCheck->setText(1,tr("Yes"));
+	QTreeWidgetItem *itemDiffusionReportFileMode = new QTreeWidgetItem(itemDiffusionInformation);
+	itemDiffusionReportFileMode->setText(0, tr("DIFFUSION_reportFileMode"));
+	itemDiffusionReportFileMode->setText(1, QString("%1").arg(this->GetProtocal().GetDiffusionProtocal().reportFileMode, 0,10));
+
+	// Slice Check
+	QTreeWidgetItem *itemSliceCheck = new QTreeWidgetItem(treeWidget);
+	itemSliceCheck->setText(0, tr("SLICE_bCheck"));
+	if(this->GetProtocal().GetSliceCheckProtocal().bCheck)
+		itemSliceCheck->setText(1,tr("Yes"));
 	else
-		itemSliceWiseQCCheck->setText(1,tr("No"));
+		itemSliceCheck->setText(1,tr("No"));
 
-	QTreeWidgetItem *itemBeginSkip = new QTreeWidgetItem(itemSliceWiseQCCheck);
-	itemBeginSkip->setText(0, tr("head skip slice percentage"));
-	itemBeginSkip->setText(1,QString::number(this->GetProtocal().GetIntensityMotionCheckProtocal().headSkipSlicePercentage,  'f', 4));
+// 	QTreeWidgetItem *itemSliceBadGradientPercentageTolerance = new QTreeWidgetItem(itemSliceCheck);
+// 	itemSliceBadGradientPercentageTolerance->setText(0, tr("SLICE_badGradientPercentageTolerance"));
+// 	itemSliceBadGradientPercentageTolerance->setText(1,QString::number(this->GetProtocal().GetSliceCheckProtocal().badGradientPercentageTolerance,  'f', 4));
 
-	QTreeWidgetItem *itemEndLeft = new QTreeWidgetItem(itemSliceWiseQCCheck);
-	itemEndLeft->setText(0, tr("tail skip slice percentage"));
-	itemEndLeft->setText(1,QString::number(this->GetProtocal().GetIntensityMotionCheckProtocal().tailSkipSlicePercentage,  'f', 4));
+	QTreeWidgetItem *itemImageCheckTimes = new QTreeWidgetItem(itemSliceCheck);
+	itemImageCheckTimes->setText(0, tr("SLICE_checkTimes"));
+	itemImageCheckTimes->setText(1, QString("%1").arg(this->GetProtocal().GetSliceCheckProtocal().checkTimes, 0,10));
 
-	QTreeWidgetItem *itemBaselineCorrelation = new QTreeWidgetItem(itemSliceWiseQCCheck);
-	itemBaselineCorrelation->setText(0, tr("baseline correlation"));
-	itemBaselineCorrelation->setText(1,QString::number(this->GetProtocal().GetIntensityMotionCheckProtocal().baselineCorrelationThreshold,  'f', 4));
+	QTreeWidgetItem *itemBeginSkip = new QTreeWidgetItem(itemSliceCheck);
+	itemBeginSkip->setText(0, tr("SLICE_headSkipSlicePercentage"));
+	itemBeginSkip->setText(1,QString::number(this->GetProtocal().GetSliceCheckProtocal().headSkipSlicePercentage,  'f', 4));
 
-	QTreeWidgetItem *itemBaselineCorrelationDev = new QTreeWidgetItem(itemSliceWiseQCCheck);
-	itemBaselineCorrelationDev->setText(0, tr("baseline correlation deviation"));
-	itemBaselineCorrelationDev->setText(1,QString::number(this->GetProtocal().GetIntensityMotionCheckProtocal().baselineCorrelationDeviationThreshold,  'f', 4));
+	QTreeWidgetItem *itemEndLeft = new QTreeWidgetItem(itemSliceCheck);
+	itemEndLeft->setText(0, tr("SLICE_tailSkipSlicePercentage"));
+	itemEndLeft->setText(1,QString::number(this->GetProtocal().GetSliceCheckProtocal().tailSkipSlicePercentage,  'f', 4));
 
-	QTreeWidgetItem *itemSliceCorrelation = new QTreeWidgetItem(itemSliceWiseQCCheck);
-	itemSliceCorrelation->setText(0, tr("slice correlation"));
-	itemSliceCorrelation->setText(1,QString::number(this->GetProtocal().GetIntensityMotionCheckProtocal().sliceCorrelationThreshold, 'f', 4));
+	QTreeWidgetItem *itemBaselineCorrelationDev = new QTreeWidgetItem(itemSliceCheck);
+	itemBaselineCorrelationDev->setText(0, tr("SLICE_correlationDeviationThresholdbaseline"));
+	itemBaselineCorrelationDev->setText(1,QString::number(this->GetProtocal().GetSliceCheckProtocal().correlationDeviationThresholdbaseline,  'f', 4));
 
-	QTreeWidgetItem *itemSliceCorrelationDev = new QTreeWidgetItem(itemSliceWiseQCCheck);
-	itemSliceCorrelationDev->setText(0, tr("slice correlation deviation"));
-	itemSliceCorrelationDev->setText(1,QString::number(this->GetProtocal().GetIntensityMotionCheckProtocal().sliceCorrelationDeviationThreshold, 'f', 4));
+	QTreeWidgetItem *itemGradientCorrelationDev = new QTreeWidgetItem(itemSliceCheck);
+	itemGradientCorrelationDev->setText(0, tr("SLICE_correlationDeviationThresholdgradient"));
+	itemGradientCorrelationDev->setText(1,QString::number(this->GetProtocal().GetSliceCheckProtocal().correlationDeviationThresholdgradient, 'f', 4));
 	
-	QTreeWidgetItem *itemBadSliceToleration = new QTreeWidgetItem(itemSliceWiseQCCheck);
-	itemBadSliceToleration->setText(0, tr("bad slice percentage tolerance"));
-	itemBadSliceToleration->setText(1,QString::number(this->GetProtocal().GetIntensityMotionCheckProtocal().badSlicePercentageTolerance, 'f', 4));
-	
-	//interlace wise QC
-	QTreeWidgetItem *itemInterlaceWiseQCCheck = new QTreeWidgetItem(itemQCCheck);
-	itemInterlaceWiseQCCheck->setText(0, tr("interlace wise threshold"));
-	if(this->GetProtocal().GetIntensityMotionCheckProtocal().bInterlaceCheck)
-		itemInterlaceWiseQCCheck->setText(1,tr("Yes"));
+	QTreeWidgetItem *itemSliceOutputDWIFileNameSuffix = new QTreeWidgetItem(itemSliceCheck);
+	itemSliceOutputDWIFileNameSuffix->setText(0, tr("SLICE_outputDWIFileNameSuffix"));
+	itemSliceOutputDWIFileNameSuffix->setText(1, QString::fromStdString(this->GetProtocal().GetSliceCheckProtocal().outputDWIFileNameSuffix) );
+
+	QTreeWidgetItem *itemSliceReportFileNameSuffix = new QTreeWidgetItem(itemSliceCheck);
+	itemSliceReportFileNameSuffix->setText(0, tr("SLICE_reportFileNameSuffix"));
+	itemSliceReportFileNameSuffix->setText(1, QString::fromStdString(this->GetProtocal().GetSliceCheckProtocal().reportFileNameSuffix) );
+
+	QTreeWidgetItem *itemSliceReportFileMode = new QTreeWidgetItem(itemSliceCheck);
+	itemSliceReportFileMode->setText(0, tr("SLICE_reportFileMode"));
+	itemSliceReportFileMode->setText(1, QString("%1").arg(this->GetProtocal().GetSliceCheckProtocal().reportFileMode, 0,10));
+
+	//interlace check
+	QTreeWidgetItem *itemInterlaceCheck = new QTreeWidgetItem(treeWidget);
+	itemInterlaceCheck->setText(0, tr("INTERLACE_bCheck"));
+	if(this->GetProtocal().GetInterlaceCheckProtocal().bCheck )
+		itemInterlaceCheck->setText(1,tr("Yes"));
 	else
-		itemInterlaceWiseQCCheck->setText(1,tr("No"));
+		itemInterlaceCheck->setText(1,tr("No"));
 
-	QTreeWidgetItem *itemInterlaceCorrBaseline = new QTreeWidgetItem(itemInterlaceWiseQCCheck);
-	itemInterlaceCorrBaseline->setText(0, tr("interlace correlation baseline"));
-	itemInterlaceCorrBaseline->setText(1,QString::number(this->GetProtocal().GetIntensityMotionCheckProtocal().interlaceCorrelationThresholdBaseline, 'f', 4));
+// 	QTreeWidgetItem *itemInterlaceBadGradientPercentageTolerance = new QTreeWidgetItem(itemInterlaceCheck);
+// 	itemInterlaceBadGradientPercentageTolerance->setText(0, tr("INTERLACE_badGradientPercentageTolerance"));
+// 	itemInterlaceBadGradientPercentageTolerance->setText(1,QString::number(this->GetProtocal().GetInterlaceCheckProtocal().badGradientPercentageTolerance,  'f', 4));
+
+	QTreeWidgetItem *itemInterlaceCorrBaseline = new QTreeWidgetItem(itemInterlaceCheck);
+	itemInterlaceCorrBaseline->setText(0, tr("INTERLACE_correlationThresholdBaseline"));
+	itemInterlaceCorrBaseline->setText(1,QString::number(this->GetProtocal().GetInterlaceCheckProtocal().correlationThresholdBaseline, 'f', 4));
 	
-	QTreeWidgetItem *itemInterlaceCorrDevBaseline = new QTreeWidgetItem(itemInterlaceWiseQCCheck);
-	itemInterlaceCorrDevBaseline->setText(0, tr("interlace correlation deviation baseline"));
-	itemInterlaceCorrDevBaseline->setText(1,QString::number(this->GetProtocal().GetIntensityMotionCheckProtocal().interlaceCorrelationDeviationBaseline, 'f', 4));
+	QTreeWidgetItem *itemInterlaceCorrGrad = new QTreeWidgetItem(itemInterlaceCheck);
+	itemInterlaceCorrGrad->setText(0, tr("INTERLACE_correlationThresholdGradient"));
+	itemInterlaceCorrGrad->setText(1,QString::number(this->GetProtocal().GetInterlaceCheckProtocal().correlationThresholdGradient, 'f', 4));
 
-	QTreeWidgetItem *itemInterlaceCorrGrad = new QTreeWidgetItem(itemInterlaceWiseQCCheck);
-	itemInterlaceCorrGrad->setText(0, tr("interlace correlation gradient"));
-	itemInterlaceCorrGrad->setText(1,QString::number(this->GetProtocal().GetIntensityMotionCheckProtocal().interlaceCorrelationThresholdGradient, 'f', 4));
+	QTreeWidgetItem *itemInterlaceCorrDevBaseline = new QTreeWidgetItem(itemInterlaceCheck);
+	itemInterlaceCorrDevBaseline->setText(0, tr("INTERLACE_correlationDeviationBaseline"));
+	itemInterlaceCorrDevBaseline->setText(1,QString::number(this->GetProtocal().GetInterlaceCheckProtocal().correlationDeviationBaseline, 'f', 4));
 
-	QTreeWidgetItem *itemInterlaceCorrDevGrad = new QTreeWidgetItem(itemInterlaceWiseQCCheck);
-	itemInterlaceCorrDevGrad->setText(0, tr("interlace correlation deviation gradient"));
-	itemInterlaceCorrDevGrad->setText(1,QString::number(this->GetProtocal().GetIntensityMotionCheckProtocal().interlaceCorrelationDeviationGradient, 'f', 4));
+	QTreeWidgetItem *itemInterlaceCorrDevGrad = new QTreeWidgetItem(itemInterlaceCheck);
+	itemInterlaceCorrDevGrad->setText(0, tr("INTERLACE_correlationDeviationGradient"));
+	itemInterlaceCorrDevGrad->setText(1,QString::number(this->GetProtocal().GetInterlaceCheckProtocal().correlationDeviationGradient, 'f', 4));
 
-	QTreeWidgetItem *itemInterlaceTranslation = new QTreeWidgetItem(itemInterlaceWiseQCCheck);
-	itemInterlaceTranslation->setText(0, tr("interlace translation"));
-	itemInterlaceTranslation->setText(1,QString::number(this->GetProtocal().GetIntensityMotionCheckProtocal().interlaceTranslationThreshold, 'f', 4));
+	QTreeWidgetItem *itemInterlaceTranslation = new QTreeWidgetItem(itemInterlaceCheck);
+	itemInterlaceTranslation->setText(0, tr("INTERLACE_translationThreshold"));
+	itemInterlaceTranslation->setText(1,QString::number(this->GetProtocal().GetInterlaceCheckProtocal().translationThreshold, 'f', 4));
 
-	QTreeWidgetItem *itemInterlaceRotation = new QTreeWidgetItem(itemInterlaceWiseQCCheck);
-	itemInterlaceRotation->setText(0, tr("interlace rotation"));
-	itemInterlaceRotation->setText(1,QString::number(this->GetProtocal().GetIntensityMotionCheckProtocal().interlaceRotationThreshold, 'f', 4));
+	QTreeWidgetItem *itemInterlaceRotation = new QTreeWidgetItem(itemInterlaceCheck);
+	itemInterlaceRotation->setText(0, tr("INTERLACE_rotationThreshold"));
+	itemInterlaceRotation->setText(1,QString::number(this->GetProtocal().GetInterlaceCheckProtocal().rotationThreshold, 'f', 4));
 	
-	//gradient wise QC
-	QTreeWidgetItem *itemGradientWiseQCCheck = new QTreeWidgetItem(itemQCCheck);
-	itemGradientWiseQCCheck->setText(0, tr("gradient wise threshold"));
-	if(this->GetProtocal().GetIntensityMotionCheckProtocal().bGradientCheck)
-		itemGradientWiseQCCheck->setText(1,tr("Yes"));
+	QTreeWidgetItem *itemInterlaceOutputDWIFileNameSuffix = new QTreeWidgetItem(itemInterlaceCheck);
+	itemInterlaceOutputDWIFileNameSuffix->setText(0, tr("INTERLACE_outputDWIFileNameSuffix"));
+	itemInterlaceOutputDWIFileNameSuffix->setText(1, QString::fromStdString(this->GetProtocal().GetInterlaceCheckProtocal().outputDWIFileNameSuffix) );
+
+	QTreeWidgetItem *itemInterlaceReportFileNameSuffix = new QTreeWidgetItem(itemInterlaceCheck);
+	itemInterlaceReportFileNameSuffix->setText(0, tr("INTERLACE_reportFileNameSuffix"));
+	itemInterlaceReportFileNameSuffix->setText(1, QString::fromStdString(this->GetProtocal().GetInterlaceCheckProtocal().reportFileNameSuffix) );
+
+	QTreeWidgetItem *itemInterlaceReportFileMode = new QTreeWidgetItem(itemInterlaceCheck);
+	itemInterlaceReportFileMode->setText(0, tr("INTERLACE_reportFileMode"));
+	itemInterlaceReportFileMode->setText(1, QString("%1").arg(this->GetProtocal().GetInterlaceCheckProtocal().reportFileMode, 0,10));
+
+	//baseline average
+	QTreeWidgetItem *itemBaselineAverage = new QTreeWidgetItem(treeWidget);
+	itemBaselineAverage->setText(0, tr("BASELINE_bAverage"));
+	if(this->GetProtocal().GetBaselineAverageProtocal().bAverage)
+		itemBaselineAverage->setText(1,tr("Yes"));
 	else
-		itemGradientWiseQCCheck->setText(1,tr("No"));
+		itemBaselineAverage->setText(1,tr("No"));
 
-	QTreeWidgetItem *itemGradientTranslation = new QTreeWidgetItem(itemGradientWiseQCCheck);
-	itemGradientTranslation->setText(0, tr("gradient translation"));
-	itemGradientTranslation->setText(1,QString::number(this->GetProtocal().GetIntensityMotionCheckProtocal().gradientTranslationThreshold, 'f', 4));
+	QTreeWidgetItem *itemBaselineAverageMethod = new QTreeWidgetItem(itemBaselineAverage);
+	itemBaselineAverageMethod->setText(0, tr("BASELINE_averageMethod"));
+	itemBaselineAverageMethod->setText(1,QString("%1").arg(this->GetProtocal().GetBaselineAverageProtocal().averageMethod,  0, 10));
 
-	QTreeWidgetItem *itemGradientRotation = new QTreeWidgetItem(itemGradientWiseQCCheck);
-	itemGradientRotation->setText(0, tr("gradient rotation"));
-	itemGradientRotation->setText(1,QString::number(this->GetProtocal().GetIntensityMotionCheckProtocal().gradientRotationThreshold, 'f', 4));
+	QTreeWidgetItem *itemBaselineAverageStopThreshold = new QTreeWidgetItem(itemBaselineAverage);
+	itemBaselineAverageStopThreshold->setText(0, tr("BASELINE_stopThreshold"));
+	itemBaselineAverageStopThreshold->setText(1,QString::number(this->GetProtocal().GetBaselineAverageProtocal().stopThreshold, 'f', 4));
+
+	QTreeWidgetItem *itemBaselineAverageOutputDWIFileNameSuffix = new QTreeWidgetItem(itemBaselineAverage);
+	itemBaselineAverageOutputDWIFileNameSuffix->setText(0, tr("BASELINE_outputDWIFileNameSuffix"));
+	itemBaselineAverageOutputDWIFileNameSuffix->setText(1, QString::fromStdString(this->GetProtocal().GetBaselineAverageProtocal().outputDWIFileNameSuffix) );
+
+	QTreeWidgetItem *itemBaselineAverageReportFileNameSuffix = new QTreeWidgetItem(itemBaselineAverage);
+	itemBaselineAverageReportFileNameSuffix->setText(0, tr("BASELINE_reportFileNameSuffix"));
+	itemBaselineAverageReportFileNameSuffix->setText(1, QString::fromStdString(this->GetProtocal().GetBaselineAverageProtocal().reportFileNameSuffix) );
+
+	QTreeWidgetItem *itemBaselineReportFileMode = new QTreeWidgetItem(itemBaselineAverage);
+	itemBaselineReportFileMode->setText(0, tr("BASELINE_reportFileMode"));
+	itemBaselineReportFileMode->setText(1, QString("%1").arg(this->GetProtocal().GetBaselineAverageProtocal().reportFileMode, 0,10));
 
 	//EddyMotion
 	QTreeWidgetItem *itemEddyMotionCorrection = new QTreeWidgetItem(treeWidget);
-	itemEddyMotionCorrection->setText(0, tr("Eddy Motion Correction"));
+	itemEddyMotionCorrection->setText(0, tr("EDDYMOTION_bCorrect"));
 	if(this->GetProtocal().GetEddyMotionCorrectionProtocal().bCorrect)
 		itemEddyMotionCorrection->setText(1,tr("Yes"));
 	else
 		itemEddyMotionCorrection->setText(1,tr("No"));
 
-	QTreeWidgetItem *itemEddyMotionCommand = new QTreeWidgetItem(itemEddyMotionCorrection);
-	itemEddyMotionCommand->setText(0, tr("Eddy Motion Correction Command"));
-	itemEddyMotionCommand->setText(1,QString::fromStdString(this->GetProtocal().GetEddyMotionCorrectionProtocal().EddyMotionCommand));
+// 	QTreeWidgetItem *itemEddyMotionCommand = new QTreeWidgetItem(itemEddyMotionCorrection);
+// 	itemEddyMotionCommand->setText(0, tr("EDDYMOTION_command"));
+// 	itemEddyMotionCommand->setText(1,QString::fromStdString(this->GetProtocal().GetEddyMotionCorrectionProtocal().EddyMotionCommand));
 
-	QTreeWidgetItem *itemEddyMotionInputFilename = new QTreeWidgetItem(itemEddyMotionCorrection);
-	itemEddyMotionInputFilename->setText(0, tr("EddyMotionInputFileName"));
-	itemEddyMotionInputFilename->setText(1,QString::fromStdString(this->GetProtocal().GetEddyMotionCorrectionProtocal().InputFileName));
+//	QTreeWidgetItem *itemEddyMotionInputFilename = new QTreeWidgetItem(itemEddyMotionCorrection);
+//	itemEddyMotionInputFilename->setText(0, tr("EddyMotionInputFileName"));
+//	itemEddyMotionInputFilename->setText(1,QString::fromStdString(this->GetProtocal().GetEddyMotionCorrectionProtocal().inputFileName));
 
-	QTreeWidgetItem *itemEddyMotionOutputFilename = new QTreeWidgetItem(itemEddyMotionCorrection);
-	itemEddyMotionOutputFilename->setText(0, tr("EddyMotionOutputFileName"));
-	itemEddyMotionOutputFilename->setText(1,QString::fromStdString(this->GetProtocal().GetEddyMotionCorrectionProtocal().OutputFileName));
+//	QTreeWidgetItem *itemEddyMotionOutputFilename = new QTreeWidgetItem(itemEddyMotionCorrection);
+//	itemEddyMotionOutputFilename->setText(0, tr("EddyMotionOutputFileName"));
+//	itemEddyMotionOutputFilename->setText(1,QString::fromStdString(this->GetProtocal().GetEddyMotionCorrectionProtocal().outputFileName));
+
+	QTreeWidgetItem *itemNumberOfBins = new QTreeWidgetItem(itemEddyMotionCorrection);
+	itemNumberOfBins->setText(0, tr("EDDYMOTION_numberOfBins"));
+	itemNumberOfBins->setText(1,QString("%1").arg(this->GetProtocal().GetEddyMotionCorrectionProtocal().numberOfBins,  0, 10));
+
+	QTreeWidgetItem *itemNumberOfSamples = new QTreeWidgetItem(itemEddyMotionCorrection);
+	itemNumberOfSamples->setText(0, tr("EDDYMOTION_numberOfSamples"));
+	itemNumberOfSamples->setText(1,QString("%1").arg(this->GetProtocal().GetEddyMotionCorrectionProtocal().numberOfSamples,  0, 10));
+
+	QTreeWidgetItem *itemTranslationScale = new QTreeWidgetItem(itemEddyMotionCorrection);
+	itemTranslationScale->setText(0, tr("EDDYMOTION_translationScale"));
+	itemTranslationScale->setText(1,QString::number(this->GetProtocal().GetEddyMotionCorrectionProtocal().translationScale,  'f', 4));
+
+	QTreeWidgetItem *itemStepLength = new QTreeWidgetItem(itemEddyMotionCorrection);
+	itemStepLength->setText(0, tr("EDDYMOTION_stepLength"));
+	itemStepLength->setText(1,QString::number(this->GetProtocal().GetEddyMotionCorrectionProtocal().stepLength,  'f', 4));
+
+	QTreeWidgetItem *itemRelaxFactor = new QTreeWidgetItem(itemEddyMotionCorrection);
+	itemRelaxFactor->setText(0, tr("EDDYMOTION_relaxFactor"));
+	itemRelaxFactor->setText(1,QString::number(this->GetProtocal().GetEddyMotionCorrectionProtocal().relaxFactor,  'f', 4));
+
+	QTreeWidgetItem *itemMaxNumberOfIterations = new QTreeWidgetItem(itemEddyMotionCorrection);
+	itemMaxNumberOfIterations->setText(0, tr("EDDYMOTION_maxNumberOfIterations"));
+	itemMaxNumberOfIterations->setText(1,QString("%1").arg(this->GetProtocal().GetEddyMotionCorrectionProtocal().maxNumberOfIterations,  0, 10));
+//////////////////////////////////////////////////////////////////////////
+
+	QTreeWidgetItem *itemEddyMotionOutputDWIFileNameSuffix = new QTreeWidgetItem(itemEddyMotionCorrection);
+	itemEddyMotionOutputDWIFileNameSuffix->setText(0, tr("EDDYMOTION_outputDWIFileNameSuffix"));
+	itemEddyMotionOutputDWIFileNameSuffix->setText(1, QString::fromStdString(this->GetProtocal().GetEddyMotionCorrectionProtocal().outputDWIFileNameSuffix) );
+
+	QTreeWidgetItem *itemEddyMotionReportFileNameSuffix = new QTreeWidgetItem(itemEddyMotionCorrection);
+	itemEddyMotionReportFileNameSuffix->setText(0, tr("EDDYMOTION_reportFileNameSuffix"));
+	itemEddyMotionReportFileNameSuffix->setText(1, QString::fromStdString(this->GetProtocal().GetEddyMotionCorrectionProtocal().reportFileNameSuffix) );
+
+	QTreeWidgetItem *itemEddyMotionReportFileMode = new QTreeWidgetItem(itemEddyMotionCorrection);
+	itemEddyMotionReportFileMode->setText(0, tr("EDDYMOTION_reportFileMode"));
+	itemEddyMotionReportFileMode->setText(1, QString("%1").arg(this->GetProtocal().GetEddyMotionCorrectionProtocal().reportFileMode, 0,10));
+
+	//gradient wise check
+	QTreeWidgetItem *itemGradientCheck = new QTreeWidgetItem(treeWidget);
+	itemGradientCheck->setText(0, tr("GRADIENT_bCheck"));
+	if(this->GetProtocal().GetGradientCheckProtocal().bCheck)
+		itemGradientCheck->setText(1,tr("Yes"));
+	else
+		itemGradientCheck->setText(1,tr("No"));
+
+// 	QTreeWidgetItem *itemGradientBadGradientPercentageTolerance = new QTreeWidgetItem(itemGradientCheck);
+// 	itemGradientBadGradientPercentageTolerance->setText(0, tr("GRADIENT_badGradientPercentageTolerance"));
+// 	itemGradientBadGradientPercentageTolerance->setText(1,QString::number(this->GetProtocal().GetGradientCheckProtocal().badGradientPercentageTolerance,  'f', 4));
+
+	QTreeWidgetItem *itemGradientTranslation = new QTreeWidgetItem(itemGradientCheck);
+	itemGradientTranslation->setText(0, tr("GRADIENT_translationThrehshold"));
+	itemGradientTranslation->setText(1,QString::number(this->GetProtocal().GetGradientCheckProtocal().translationThreshold, 'f', 4));
+
+	QTreeWidgetItem *itemGradientRotation = new QTreeWidgetItem(itemGradientCheck);
+	itemGradientRotation->setText(0, tr("GRADIENT_rotationThreshold"));
+	itemGradientRotation->setText(1,QString::number(this->GetProtocal().GetGradientCheckProtocal().rotationThreshold, 'f', 4));
+
+	QTreeWidgetItem *itemGradientOutputDWIFileNameSuffix = new QTreeWidgetItem(itemGradientCheck);
+	itemGradientOutputDWIFileNameSuffix->setText(0, tr("GRADIENT_outputDWIFileNameSuffix"));
+	itemGradientOutputDWIFileNameSuffix->setText(1, QString::fromStdString(this->GetProtocal().GetGradientCheckProtocal().outputDWIFileNameSuffix) );
+
+	QTreeWidgetItem *itemGradientReportFileNameSuffix = new QTreeWidgetItem(itemGradientCheck);
+	itemGradientReportFileNameSuffix->setText(0, tr("GRADIENT_reportFileNameSuffix"));
+	itemGradientReportFileNameSuffix->setText(1, QString::fromStdString(this->GetProtocal().GetGradientCheckProtocal().reportFileNameSuffix) );
+
+	QTreeWidgetItem *itemGradientReportFileMode = new QTreeWidgetItem(itemGradientCheck);
+	itemGradientReportFileMode->setText(0, tr("GRADIENT_reportFileMode"));
+	itemGradientReportFileMode->setText(1, QString("%1").arg(this->GetProtocal().GetGradientCheckProtocal().reportFileMode, 0,10));
 
 	//DTI Computing
 	QTreeWidgetItem *itemDTIComputing = new QTreeWidgetItem(treeWidget);
-	itemDTIComputing->setText(0, tr("DTI Computing"));
+	itemDTIComputing->setText(0, tr("DTI_bCompute"));
 	if(this->GetProtocal().GetDTIProtocal().bCompute)
 		itemDTIComputing->setText(1,tr("Yes"));
 	else
 		itemDTIComputing->setText(1,tr("No"));
 
 	QTreeWidgetItem *itemDtiestimCommand = new QTreeWidgetItem(itemDTIComputing);
-	itemDtiestimCommand->setText(0, tr("dtiestim Command"));
+	itemDtiestimCommand->setText(0, tr("DTI_dtiestimCommand"));
 	itemDtiestimCommand->setText(1,QString::fromStdString(this->GetProtocal().GetDTIProtocal().dtiestimCommand));
 
 	QTreeWidgetItem *itemDtiprocessCommand = new QTreeWidgetItem(itemDTIComputing);
-	itemDtiprocessCommand->setText(0, tr("dtiprocess Command"));
+	itemDtiprocessCommand->setText(0, tr("DTI_dtiprocessCommand"));
 	itemDtiprocessCommand->setText(1,QString::fromStdString(this->GetProtocal().GetDTIProtocal().dtiprocessCommand));
 
 	QTreeWidgetItem *itemMethod = new QTreeWidgetItem(itemDTIComputing);
-	itemMethod->setText(0, tr("method"));
+	itemMethod->setText(0, tr("DTI_method"));
 	switch(this->GetProtocal().GetDTIProtocal().method)
 	{
 	case Protocal::METHOD_WLS:
@@ -1720,89 +1600,68 @@ void IntensityMotionCheckPanel::UpdateProtocolTree( )
 	}
 
 	QTreeWidgetItem *itemBaselineThreshold = new QTreeWidgetItem(itemDTIComputing);
-	itemBaselineThreshold->setText(0, tr("baseline threshold"));
+	itemBaselineThreshold->setText(0, tr("DTI_baselineThreshold"));
 	itemBaselineThreshold->setText(1,QString::number(this->GetProtocal().GetDTIProtocal().baselineThreshold));
 
 	QTreeWidgetItem *itemMaskFile = new QTreeWidgetItem(itemDTIComputing);
-	itemMaskFile->setText(0, tr("mask file"));
+	itemMaskFile->setText(0, tr("DTI_maskFileName"));
 	itemMaskFile->setText(1,QString::fromStdString(this->GetProtocal().GetDTIProtocal().mask ));
 
 	QTreeWidgetItem *itemTensorFile = new QTreeWidgetItem(itemDTIComputing);
-	itemTensorFile->setText(0, tr("tensor file"));
-	itemTensorFile->setText(1,QString::fromStdString(this->GetProtocal().GetDTIProtocal().tensor ));
+	itemTensorFile->setText(0, tr("DTI_tensor"));
+	itemTensorFile->setText(1,QString::fromStdString(this->GetProtocal().GetDTIProtocal().tensorSuffix ));
 
-	// padding
-	QTreeWidgetItem *itemDtiPaddingCommand = new QTreeWidgetItem(itemDTIComputing);
-	itemDtiPaddingCommand->setText(0, tr("CropDTI Command"));
-	itemDtiPaddingCommand->setText(1,QString::fromStdString(this->GetProtocal().GetDTIProtocal().dtiPaddingCommand));
-
-	QTreeWidgetItem *itemDtiPadding = new QTreeWidgetItem(itemDTIComputing);
-	itemDtiPadding->setText(0, tr("tensor padding"));
-	if(this->GetProtocal().GetDTIProtocal().bPadding)
-		itemDtiPadding->setText(1,tr("Yes"));
-	else
-		itemDtiPadding->setText(1,tr("No"));
-
-// 	QTreeWidgetItem *paddingParameters = new QTreeWidgetItem(itemDTIComputing);
-// 	paddingParameters->setText(0, tr("tensor padding parameters"));
-// 	paddingParameters->setText(1, QString("%1 %2 %3 %4 %5 %6")
-// 		.arg(this->GetProtocal().GetDTIProtocal().paddingParameters[0], 0,10)
-// 		.arg(this->GetProtocal().GetDTIProtocal().paddingParameters[1], 0,10)
-// 		.arg(this->GetProtocal().GetDTIProtocal().paddingParameters[2], 0,10)
-// 		.arg(this->GetProtocal().GetDTIProtocal().paddingParameters[3], 0,10)
-// 		.arg(this->GetProtocal().GetDTIProtocal().paddingParameters[4], 0,10)
-// 		.arg(this->GetProtocal().GetDTIProtocal().paddingParameters[5], 0,10)
-// 		);
-
-	// scalar images
-	QTreeWidgetItem *itemScalarMeasures = new QTreeWidgetItem(itemDTIComputing);
-	itemScalarMeasures->setText(0, tr("scalar measurements"));
-
-	QTreeWidgetItem *itemScalarBaseline = new QTreeWidgetItem(itemScalarMeasures);
-	itemScalarBaseline->setText(0, tr("baseline"));
+	// tensor scalar images
+	QTreeWidgetItem *itemScalarBaseline = new QTreeWidgetItem(itemDTIComputing);
+	itemScalarBaseline->setText(0, tr("DTI_baseline"));
 	if(this->GetProtocal().GetDTIProtocal().bbaseline)
-		itemScalarBaseline->setText(1,tr("Yes, ")+QString::fromStdString(this->GetProtocal().GetDTIProtocal().baseline ));
+		itemScalarBaseline->setText(1,tr("Yes, ")+QString::fromStdString(this->GetProtocal().GetDTIProtocal().baselineSuffix ));
 	else
-		itemScalarBaseline->setText(1,tr("No, ")+QString::fromStdString(this->GetProtocal().GetDTIProtocal().baseline ));
+		itemScalarBaseline->setText(1,tr("No, ")+QString::fromStdString(this->GetProtocal().GetDTIProtocal().baselineSuffix ));
 
-	QTreeWidgetItem *itemScalarIDWI = new QTreeWidgetItem(itemScalarMeasures);
-	itemScalarIDWI->setText(0, tr("idwi"));
+	QTreeWidgetItem *itemScalarIDWI = new QTreeWidgetItem(itemDTIComputing);
+	itemScalarIDWI->setText(0, tr("DTI_idwi"));
 	if(this->GetProtocal().GetDTIProtocal().bidwi)
-		itemScalarIDWI->setText(1,tr("Yes, ")+QString::fromStdString(this->GetProtocal().GetDTIProtocal().idwi ));
+		itemScalarIDWI->setText(1,tr("Yes, ")+QString::fromStdString(this->GetProtocal().GetDTIProtocal().idwiSuffix ));
 	else
-		itemScalarIDWI->setText(1,tr("No, ")+QString::fromStdString(this->GetProtocal().GetDTIProtocal().idwi ));
+		itemScalarIDWI->setText(1,tr("No, ")+QString::fromStdString(this->GetProtocal().GetDTIProtocal().idwiSuffix ));
 
-	QTreeWidgetItem *itemScalarFA = new QTreeWidgetItem(itemScalarMeasures);
-	itemScalarFA->setText(0, tr("fa"));
+	QTreeWidgetItem *itemScalarFA = new QTreeWidgetItem(itemDTIComputing);
+	itemScalarFA->setText(0, tr("DTI_fa"));
 	if(this->GetProtocal().GetDTIProtocal().bfa)
-		itemScalarFA->setText(1,tr("Yes, ")+QString::fromStdString(this->GetProtocal().GetDTIProtocal().fa ));
+		itemScalarFA->setText(1,tr("Yes, ")+QString::fromStdString(this->GetProtocal().GetDTIProtocal().faSuffix ));
 	else
-		itemScalarFA->setText(1,tr("No, ")+QString::fromStdString(this->GetProtocal().GetDTIProtocal().fa ));
+		itemScalarFA->setText(1,tr("No, ")+QString::fromStdString(this->GetProtocal().GetDTIProtocal().faSuffix ));
 
-	QTreeWidgetItem *itemScalarMD = new QTreeWidgetItem(itemScalarMeasures);
-	itemScalarMD->setText(0, tr("md"));
+	QTreeWidgetItem *itemScalarMD = new QTreeWidgetItem(itemDTIComputing);
+	itemScalarMD->setText(0, tr("DTI_md"));
 	if(this->GetProtocal().GetDTIProtocal().bmd)
-		itemScalarMD->setText(1,tr("Yes, ")+QString::fromStdString(this->GetProtocal().GetDTIProtocal().md ));
+		itemScalarMD->setText(1,tr("Yes, ")+QString::fromStdString(this->GetProtocal().GetDTIProtocal().mdSuffix ));
 	else
-		itemScalarMD->setText(1,tr("No, ")+QString::fromStdString(this->GetProtocal().GetDTIProtocal().md ));
+		itemScalarMD->setText(1,tr("No, ")+QString::fromStdString(this->GetProtocal().GetDTIProtocal().mdSuffix ));
 
-	QTreeWidgetItem *itemScalarcolorFA = new QTreeWidgetItem(itemScalarMeasures);
-	itemScalarcolorFA->setText(0, tr("colored fa"));
+	QTreeWidgetItem *itemScalarcolorFA = new QTreeWidgetItem(itemDTIComputing);
+	itemScalarcolorFA->setText(0, tr("DTI_colorfa"));
 	if(this->GetProtocal().GetDTIProtocal().bcoloredfa)
-		itemScalarcolorFA->setText(1,tr("Yes, ")+QString::fromStdString(this->GetProtocal().GetDTIProtocal().coloredfa ));
+		itemScalarcolorFA->setText(1,tr("Yes, ")+QString::fromStdString(this->GetProtocal().GetDTIProtocal().coloredfaSuffix ));
 	else
-		itemScalarcolorFA->setText(1,tr("No, ")+QString::fromStdString(this->GetProtocal().GetDTIProtocal().coloredfa ));
+		itemScalarcolorFA->setText(1,tr("No, ")+QString::fromStdString(this->GetProtocal().GetDTIProtocal().coloredfaSuffix ));
 
-	QTreeWidgetItem *itemScalarFrobenius = new QTreeWidgetItem(itemScalarMeasures);
-	itemScalarFrobenius->setText(0, tr("frobenius norm"));
+	QTreeWidgetItem *itemScalarFrobenius = new QTreeWidgetItem(itemDTIComputing);
+	itemScalarFrobenius->setText(0, tr("DTI_frobeniusnorm"));
 	if(this->GetProtocal().GetDTIProtocal().bfrobeniusnorm)
-		itemScalarFrobenius->setText(1,tr("Yes, ")+QString::fromStdString(this->GetProtocal().GetDTIProtocal().frobeniusnorm ));
+		itemScalarFrobenius->setText(1,tr("Yes, ")+QString::fromStdString(this->GetProtocal().GetDTIProtocal().frobeniusnormSuffix ));
 	else
-		itemScalarFrobenius->setText(1,tr("No, ")+QString::fromStdString(this->GetProtocal().GetDTIProtocal().frobeniusnorm ));
+		itemScalarFrobenius->setText(1,tr("No, ")+QString::fromStdString(this->GetProtocal().GetDTIProtocal().frobeniusnormSuffix ));
 
+	QTreeWidgetItem *itemDTIReportFileNameSuffix = new QTreeWidgetItem(itemDTIComputing);
+	itemDTIReportFileNameSuffix->setText(0, tr("DTI_reportFileNameSuffix"));
+	itemDTIReportFileNameSuffix->setText(1, QString::fromStdString(this->GetProtocal().GetDTIProtocal().reportFileNameSuffix) );
 
+	QTreeWidgetItem *itemEDTIReportFileMode = new QTreeWidgetItem(itemDTIComputing);
+	itemEDTIReportFileMode->setText(0, tr("DTI_reportFileMode"));
+	itemEDTIReportFileMode->setText(1, QString("%1").arg(this->GetProtocal().GetDTIProtocal().reportFileMode, 0,10));
 }
-
 
 void IntensityMotionCheckPanel::ResultUpdate()
 {
@@ -1884,124 +1743,74 @@ void IntensityMotionCheckPanel::ResultUpdate()
 			measurementFrame->setText(1, tr("Failed"));
 	}
 
-	// QC MotionCheckResult
-	if( protocal.GetIntensityMotionCheckProtocal().bCheck && (
-		protocal.GetIntensityMotionCheckProtocal().bSliceCheck ||
-		protocal.GetIntensityMotionCheckProtocal().bInterlaceCheck ||
-		protocal.GetIntensityMotionCheckProtocal().bGradientCheck)     )
+// itemIntensityMotionInformation
+	QTreeWidgetItem *itemIntensityMotionInformation = new QTreeWidgetItem(treeWidget_Results);
+	itemIntensityMotionInformation->setText(0, tr("IntensityMotion"));
+
+	for(unsigned int i=0;i<qcResult.GetIntensityMotionCheckResult().size();i++ )
 	{
-		QTreeWidgetItem *itemIntensityMotionInformation = new QTreeWidgetItem(treeWidget_Results);
-		itemIntensityMotionInformation->setText(0, tr("IntensityMotion"));
+		// gradient 
+		QTreeWidgetItem *gradient = new QTreeWidgetItem(itemIntensityMotionInformation);
 
+		//gradient->setText(0, tr("gradient ")+QString::number(i));
+		gradient->setText(0, QString("gradient_%1").arg(i, 4, 10, QLatin1Char( '0' )));
 
-		//std::cout<< "in panel qcResult.GetGradientProcess().size(): "<< qcResult.GetGradientProcess().size() <<std::endl;
-		for(unsigned int i=0;i<qcResult.GetIntensityMotionCheckResult().size();i++ )
+		//std::cout<<"1:ResultUpdate()"<<std::endl;
+		switch( qcResult.GetIntensityMotionCheckResult()[i].processing )
 		{
-
-			// gradient 
-			QTreeWidgetItem *gradient = new QTreeWidgetItem(itemIntensityMotionInformation);
-
-			//gradient->setText(0, tr("gradient ")+QString::number(i));
-			gradient->setText(0, QString("gradient_%1").arg(i, 4, 10, QLatin1Char( '0' )));
-
-			//std::cout<<"1:ResultUpdate()"<<std::endl;
-			if(qcResult.GetGradientProcess()[i] == QCResult::GRADIENT_EXCLUDE)
-				gradient->setText(2, tr("EXCLUDE"));
-			else if(qcResult.GetGradientProcess()[i] == QCResult::GRADIENT_INCLUDE)
-				gradient->setText(2, tr(""));
-			else
-				;
-
-			// slice wise
-			//std::cout<<"2:ResultUpdate()"<<std::endl;
-			QTreeWidgetItem *slice = new QTreeWidgetItem(gradient);
-			slice->setText(0, tr("slice check"));
-			if( !qcResult.GetIntensityMotionCheckResult()[i].bSliceCheckOK )
-				slice->setText(1, tr("failed"));
-			else
-				slice->setText(1, tr("pass"));
-
-			for(unsigned int j=0; j<qcResult.GetIntensityMotionCheckResult()[i].sliceCorrelation.size();j++)
-			{
-				QTreeWidgetItem *subslice = new QTreeWidgetItem(slice);
-				subslice->setText(0,  tr(" slice Correlation ")+QString::number(j+1));
-				subslice->setText(1, QString::number ( qcResult.GetIntensityMotionCheckResult()[i].sliceCorrelation[j], 'f', 3 ) );
-			}
-			//std::cout<<"3:ResultUpdate()"<<std::endl;
-			// interlace wise
-			QTreeWidgetItem *interlacewise = new QTreeWidgetItem(gradient);
-			interlacewise->setText(0, tr("interlace check"));
-			if( !qcResult.GetIntensityMotionCheckResult()[i].bInterlaceCheckOK )
-				interlacewise->setText(1, tr("failed"));
-			else
-				interlacewise->setText(1, tr("pass"));
-
-			QTreeWidgetItem *Correlation = new QTreeWidgetItem(interlacewise);
-			Correlation->setText(0, tr("Correlation"));
-			Correlation->setText(1,  QString::number ( qcResult.GetIntensityMotionCheckResult()[i].interlaceCorrelation, 'f', 3 ));
-
-			QTreeWidgetItem *RotationX = new QTreeWidgetItem(interlacewise);
-			RotationX->setText(0, tr("RotationX"));
-			RotationX->setText(1,  QString::number ( qcResult.GetIntensityMotionCheckResult()[i].interlaceRotationX, 'f', 3 ));
-
-			QTreeWidgetItem *RotationY = new QTreeWidgetItem(interlacewise);
-			RotationY->setText(0, tr("RotationY"));
-			RotationY->setText(1,  QString::number ( qcResult.GetIntensityMotionCheckResult()[i].interlaceRotationY, 'f', 3 ));
-
-			QTreeWidgetItem *RotationZ = new QTreeWidgetItem(interlacewise);
-			RotationZ->setText(0, tr("RotationZ"));
-			RotationZ->setText(1,  QString::number ( qcResult.GetIntensityMotionCheckResult()[i].interlaceRotationZ, 'f', 3 ));
-
-			QTreeWidgetItem *TranslationX = new QTreeWidgetItem(interlacewise);
-			TranslationX->setText(0, tr("TranslationX"));
-			TranslationX->setText(1,  QString::number ( qcResult.GetIntensityMotionCheckResult()[i].interlaceTranslationX, 'f', 3 ));
-
-			QTreeWidgetItem *TranslationY = new QTreeWidgetItem(interlacewise);
-			TranslationY->setText(0, tr("TranslationY"));
-			TranslationY->setText(1,  QString::number ( qcResult.GetIntensityMotionCheckResult()[i].interlaceTranslationY, 'f', 3 ));
-
-			QTreeWidgetItem *TranslationZ = new QTreeWidgetItem(interlacewise);
-			TranslationZ->setText(0, tr("TranslationZ"));
-			TranslationZ->setText(1,  QString::number ( qcResult.GetIntensityMotionCheckResult()[i].interlaceTranslationZ, 'f', 3 ));
-
-			// gradient wise
-			QTreeWidgetItem *gradientwise = new QTreeWidgetItem(gradient);
-			gradientwise->setText(0, tr("gradient check"));
-			if( !qcResult.GetIntensityMotionCheckResult()[i].bGradientCheckOK )
-				gradientwise->setText(1, tr("failed"));
-			else
-				gradientwise->setText(1, tr("pass"));
-
-			QTreeWidgetItem *gradientRotationX = new QTreeWidgetItem(gradientwise);
-			gradientRotationX->setText(0, tr("RotationX"));
-			gradientRotationX->setText(1,  QString::number ( qcResult.GetIntensityMotionCheckResult()[i].gradientRotationX, 'f', 3 ));
-
-			QTreeWidgetItem *gradientRotationY = new QTreeWidgetItem(gradientwise);
-			gradientRotationY->setText(0, tr("RotationY"));
-			gradientRotationY->setText(1,  QString::number ( qcResult.GetIntensityMotionCheckResult()[i].gradientRotationY, 'f', 3 ));
-
-			QTreeWidgetItem *gradientRotationZ = new QTreeWidgetItem(gradientwise);
-			gradientRotationZ->setText(0, tr("RotationZ"));
-			gradientRotationZ->setText(1,  QString::number ( qcResult.GetIntensityMotionCheckResult()[i].gradientRotationZ, 'f', 3 ));
-
-			QTreeWidgetItem *gradientTranslationX = new QTreeWidgetItem(gradientwise);
-			gradientTranslationX->setText(0, tr("TranslationX"));
-			gradientTranslationX->setText(1,  QString::number ( qcResult.GetIntensityMotionCheckResult()[i].gradientTranslationX, 'f', 3 ));
-
-			QTreeWidgetItem *gradientTranslationY = new QTreeWidgetItem(gradientwise);
-			gradientTranslationY->setText(0, tr("TranslationY"));
-			gradientTranslationY->setText(1,  QString::number ( qcResult.GetIntensityMotionCheckResult()[i].gradientTranslationY, 'f', 3 ));
-
-			QTreeWidgetItem *gradientTranslationZ = new QTreeWidgetItem(gradientwise);
-			gradientTranslationZ->setText(0, tr("TranslationZ"));
-			gradientTranslationZ->setText(1,  QString::number ( qcResult.GetIntensityMotionCheckResult()[i].gradientTranslationZ, 'f', 3 ));
+		case QCResult::GRADIENT_BASELINE_AVERAGED:
+			gradient->setText(2, tr("BASELINE_AVERAGED"));
+			break;
+		case QCResult::GRADIENT_EXCLUDE_SLICECHECK:
+			gradient->setText(2, tr("EXCLUDE_SLICECHECK"));
+			break;
+		case QCResult::GRADIENT_EXCLUDE_INTERLACECHECK:
+			gradient->setText(2, tr("EXCLUDE_INTERLACECHECK"));
+			break;
+		case QCResult::GRADIENT_EXCLUDE_GRADIENTCHECK:
+			gradient->setText(2, tr("EXCLUDE_GRADIENTCHECK"));
+			break;
+		case QCResult::GRADIENT_EXCLUDE_MANUALLY:
+			gradient->setText(2, tr("EXCLUDE"));
+			break;
+		case QCResult::GRADIENT_EDDY_MOTION_CORRECTED:
+			gradient->setText(2, tr("EDDY_MOTION_CORRECTED"));
+			break;
+		case QCResult::GRADIENT_INCLUDE:
+		default:
+			gradient->setText(2, tr("INCLUDE"));
+			break;
 		}
-	}
-	//std::cout<<"4:ResultUpdate()"<<std::endl;
 
-	bResultTreeEditable = true;
-	pushButton_SaveDWI->setEnabled( 1 );
+		QTreeWidgetItem *itemOriginalGradientDir = new QTreeWidgetItem(gradient);
+		itemOriginalGradientDir->setText(0, tr("OriginalDir"));
+		itemOriginalGradientDir->setText(1, QString("%1 %2 %3")
+			.arg(qcResult.GetIntensityMotionCheckResult()[i].OriginalDir[0], 0, 'f', 6)
+			.arg(qcResult.GetIntensityMotionCheckResult()[i].OriginalDir[1], 0, 'f', 6)
+			.arg(qcResult.GetIntensityMotionCheckResult()[i].OriginalDir[2], 0, 'f', 6)
+			);
+
+		QTreeWidgetItem *itemReplacedGradientDir = new QTreeWidgetItem(gradient);
+		itemReplacedGradientDir->setText(0, tr("ReplacedDir"));
+		itemReplacedGradientDir->setText(1, QString("%1 %2 %3")
+			.arg(qcResult.GetIntensityMotionCheckResult()[i].ReplacedDir[0], 0, 'f', 6)
+			.arg(qcResult.GetIntensityMotionCheckResult()[i].ReplacedDir[1], 0, 'f', 6)
+			.arg(qcResult.GetIntensityMotionCheckResult()[i].ReplacedDir[2], 0, 'f', 6)
+			);
+
+		QTreeWidgetItem *itemCorrectedGradientDir = new QTreeWidgetItem(gradient);
+		itemCorrectedGradientDir->setText(0, tr("CorrectedDir"));
+		itemCorrectedGradientDir->setText(1, QString("%1 %2 %3")
+			.arg(qcResult.GetIntensityMotionCheckResult()[i].CorrectedDir[0], 0, 'f', 6)
+			.arg(qcResult.GetIntensityMotionCheckResult()[i].CorrectedDir[1], 0, 'f', 6)
+			.arg(qcResult.GetIntensityMotionCheckResult()[i].CorrectedDir[2], 0, 'f', 6)
+			);
+	}
+
+	bResultTreeEditable = false; // no edit to automatically generated results
 	pushButton_SaveDWIAs->setEnabled( 1 );
+
+	emit UpdateOutputDWIDiffusionVectorActors();
 
 	return ;
 }
@@ -2019,9 +1828,9 @@ void IntensityMotionCheckPanel::GenerateCheckOutputImage( std::string filename)
 	}
 
 	unsigned int gradientLeft=0;
-	for(unsigned int i=0;i< qcResult.GetGradientProcess().size();i++)
+	for(unsigned int i=0;i< qcResult.GetIntensityMotionCheckResult().size();i++)
 	{
-		if(qcResult.GetGradientProcess()[i] == QCResult::GRADIENT_INCLUDE)
+		if( qcResult.GetIntensityMotionCheckResult()[i].processing == QCResult::GRADIENT_INCLUDE )
 			gradientLeft++;
 	}
 
@@ -2031,7 +1840,7 @@ void IntensityMotionCheckPanel::GenerateCheckOutputImage( std::string filename)
 
 	if(bProtocol)
 	{
-		if( 1.0-(float)((float)gradientLeft/(float)qcResult.GetGradientProcess().size()) >= this->protocal.GetIntensityMotionCheckProtocal().badGradientPercentageTolerance)
+		if( 1.0-(float)((float)gradientLeft/(float)qcResult.GetIntensityMotionCheckResult().size()) >= this->protocal.GetBadGradientPercentageTolerance() )
 		{
 			QMessageBox::StandardButton reply;
 			reply = QMessageBox::question(this, tr("Attention"),
@@ -2042,7 +1851,7 @@ void IntensityMotionCheckPanel::GenerateCheckOutputImage( std::string filename)
 		}
 	}
 
-	if( gradientLeft == qcResult.GetGradientProcess().size())
+	if( gradientLeft == qcResult.GetIntensityMotionCheckResult().size())
 	{
 		itk::NrrdImageIO::Pointer  NrrdImageIO = itk::NrrdImageIO::New();
 		try
@@ -2083,9 +1892,9 @@ void IntensityMotionCheckPanel::GenerateCheckOutputImage( std::string filename)
 	while (!oit.IsAtEnd())
 	{
 		int element = 0;
-		for( unsigned int i = 0 ; i < qcResult.GetGradientProcess().size(); i++ )
+		for( unsigned int i = 0 ; i < qcResult.GetIntensityMotionCheckResult().size(); i++ )
 		{
-			if(qcResult.GetGradientProcess()[i] == QCResult::GRADIENT_INCLUDE)
+			if(qcResult.GetIntensityMotionCheckResult()[i].processing == QCResult::GRADIENT_INCLUDE)
 			{
 				value.SetElement( element , oit.Get()[i] ) ;
 				element++;
@@ -2173,7 +1982,7 @@ void IntensityMotionCheckPanel::GenerateCheckOutputImage( std::string filename)
 			continue;
 		}
 
-		std::cout  << metaString << std::endl;    
+		//std::cout  << metaString << std::endl;    
 		header << "modality:=" << metaString << std::endl;
 	}
 
@@ -2188,7 +1997,7 @@ void IntensityMotionCheckPanel::GenerateCheckOutputImage( std::string filename)
 			continue;
 		}
 
-		std::cout  << metaString << std::endl;    
+		//std::cout  << metaString << std::endl;    
 		header << "DWMRI_b-value:=" << metaString << std::endl;
 	}
 
@@ -2196,7 +2005,7 @@ void IntensityMotionCheckPanel::GenerateCheckOutputImage( std::string filename)
 	int temp=0;
 	for(unsigned int i=0;i< GradientDirectionContainer->size();i++ )
 	{
-		if(qcResult.GetGradientProcess()[i] == QCResult::GRADIENT_INCLUDE)
+		if(qcResult.GetIntensityMotionCheckResult()[i].processing == QCResult::GRADIENT_INCLUDE)
 		{
 			header	<< "DWMRI_gradient_" << std::setw(4) << std::setfill('0') << temp << ":=" 
 				<< GradientDirectionContainer->ElementAt(i)[0] << "   " 
@@ -2270,10 +2079,10 @@ bool IntensityMotionCheckPanel::GetGridentDirections()
 
 	for( unsigned int i = 0; i<DwiImage->GetVectorLength();i++ )//GradientDirectionContainer->Size()
 	{
-		std::cout<<"Gradient Direction "<<i<<": \t[";
-		std::cout<<GradientDirectionContainer->at(i)[0]<<",\t";
-		std::cout<<GradientDirectionContainer->at(i)[1]<<",\t";
-		std::cout<<GradientDirectionContainer->at(i)[2]<<" ]"<<std::endl;
+//		std::cout<<"Gradient Direction "<<i<<": \t[";
+//		std::cout<<GradientDirectionContainer->at(i)[0]<<",\t";
+//		std::cout<<GradientDirectionContainer->at(i)[1]<<",\t";
+//		std::cout<<GradientDirectionContainer->at(i)[2]<<" ]"<<std::endl;
 	}
 
 	bGetGridentDirections=true;
@@ -2294,37 +2103,20 @@ void IntensityMotionCheckPanel::on_pushButton_SaveDWIAs_clicked( )
 	}
 }
 
-
-void IntensityMotionCheckPanel::on_pushButton_SaveDWI_clicked( )
-{
-	if(!bProtocol)
-	{
-		std::cout<<"No protocol information"<<std::endl;
-		QMessageBox::information( this, tr("Warning"), tr("No protocol information!"));
-
-		return;
-	}
-	if(this->GetProtocal().GetIntensityMotionCheckProtocal().OutputFileName.length()>0)
-	{
-		std::cout<<"Save DWI into file: "<< this->GetProtocal().GetIntensityMotionCheckProtocal().OutputFileName <<std::endl;
-		
-		std::string OutputFileName;
-		OutputFileName=DwiFileName.substr(0,DwiFileName.find_last_of('.') );
-		OutputFileName.append(this->GetProtocal().GetIntensityMotionCheckProtocal().OutputFileName);
-
-		this->GenerateCheckOutputImage( OutputFileName);
-	}
-	else
-	{
-		std::cout<<"DWI file name NOT set in protocol"<<std::endl;
-	}
-}
-
 void IntensityMotionCheckPanel::on_pushButton_DefaultQCResult_clicked( )
 {
+	if( DwiImage->GetVectorLength() != GradientDirectionContainer->size() )
+	{
+		std::cout<< "Bad DWI: mismatch between gradient image # and gradient vector #" << std::endl;
+		QMessageBox::critical(    this, tr("BAD DWI !"), tr("Bad DWI: mismatch between gradient image # and gradient vector # !"));
+		return;
+	}
+
 	DefaultProcess( );
-	//pushButton_SaveQCReport->setEnabled(1);
-	//pushButton_SaveQCReportAs->setEnabled(1);
+
+	bResultTreeEditable = true;
+
+	emit UpdateOutputDWIDiffusionVectorActors();
 }
 
 void IntensityMotionCheckPanel::DefaultProcess( )
@@ -2332,215 +2124,37 @@ void IntensityMotionCheckPanel::DefaultProcess( )
 	this->qcResult.Clear();
 
 	GradientIntensityMotionCheckResult  IntensityMotionCheckResult;
-
-	IntensityMotionCheckResult.bGradientCheckOK = true;
-	IntensityMotionCheckResult.gradientRotationX = 0.0;
-	IntensityMotionCheckResult.gradientRotationY = 0.0;
-	IntensityMotionCheckResult.gradientRotationZ = 0.0;
-	IntensityMotionCheckResult.gradientTranslationX = 0.0;
-	IntensityMotionCheckResult.gradientTranslationY = 0.0;
-	IntensityMotionCheckResult.gradientTranslationZ = 0.0;
-
-	IntensityMotionCheckResult.bInterlaceCheckOK = true;
-	IntensityMotionCheckResult.interlaceCorrelation = 0.0;
-	IntensityMotionCheckResult.interlaceRotationX = 0.0;
-	IntensityMotionCheckResult.interlaceRotationY = 0.0;
-	IntensityMotionCheckResult.interlaceRotationZ = 0.0;
-	IntensityMotionCheckResult.interlaceTranslationX = 0.0;
-	IntensityMotionCheckResult.interlaceTranslationY = 0.0;
-	IntensityMotionCheckResult.interlaceTranslationZ = 0.0;
-
-	IntensityMotionCheckResult.bSliceCheckOK = true;
-	for(unsigned int i=0;i<this->DwiImage->GetLargestPossibleRegion().GetSize()[2];i++)
-		IntensityMotionCheckResult.sliceCorrelation.push_back(0.0);
+	IntensityMotionCheckResult.processing = QCResult::GRADIENT_INCLUDE;
 
 	for( unsigned int i=0;i< this->DwiImage->GetVectorLength(); i++)
 	{
-		this->qcResult.GetGradientProcess().push_back(QCResult::GRADIENT_INCLUDE);
-		this->qcResult.GetIntensityMotionCheckResult().push_back(IntensityMotionCheckResult);
+		IntensityMotionCheckResult.OriginalDir[0] = this->GradientDirectionContainer->ElementAt(i)[0];
+		IntensityMotionCheckResult.OriginalDir[1] = this->GradientDirectionContainer->ElementAt(i)[1];
+		IntensityMotionCheckResult.OriginalDir[2] = this->GradientDirectionContainer->ElementAt(i)[2];
+
+		IntensityMotionCheckResult.ReplacedDir[0] = this->GradientDirectionContainer->ElementAt(i)[0];
+		IntensityMotionCheckResult.ReplacedDir[1] = this->GradientDirectionContainer->ElementAt(i)[1];
+		IntensityMotionCheckResult.ReplacedDir[2] = this->GradientDirectionContainer->ElementAt(i)[2];
+
+		IntensityMotionCheckResult.CorrectedDir[0] = this->GradientDirectionContainer->ElementAt(i)[0];
+		IntensityMotionCheckResult.CorrectedDir[1] = this->GradientDirectionContainer->ElementAt(i)[1];
+		IntensityMotionCheckResult.CorrectedDir[2] = this->GradientDirectionContainer->ElementAt(i)[2];
+
+		qcResult.GetIntensityMotionCheckResult().push_back(IntensityMotionCheckResult);
 	}
 
 	protocal.clear();
 	protocal.GetImageProtocal().bCheck = true;
 	protocal.GetDiffusionProtocal().bCheck = true;
-	protocal.GetIntensityMotionCheckProtocal().bCheck = true;
-	protocal.GetIntensityMotionCheckProtocal().bSliceCheck = true;
-	protocal.GetIntensityMotionCheckProtocal().bInterlaceCheck = true;
-	protocal.GetIntensityMotionCheckProtocal().bGradientCheck = true;
+
+	protocal.GetSliceCheckProtocal().bCheck = true;
+	protocal.GetInterlaceCheckProtocal().bCheck = true;
+	protocal.GetGradientCheckProtocal().bCheck = true;
+	protocal.GetBaselineAverageProtocal().bAverage = true;
+	protocal.GetEddyMotionCorrectionProtocal().bCorrect = true;
 
 	ResultUpdate();
 
 	pushButton_SaveDWIAs->setEnabled(1);
-	pushButton_SaveDWI->setEnabled(1);
 }
 
-void IntensityMotionCheckPanel::on_pushButton_OpenQCReport_clicked( )
-{
-	OpenQCReport( );
-	//pushButton_SaveQCReport->setEnabled(1);
-	//pushButton_SaveQCReportAs->setEnabled(1);
-}
-
-void IntensityMotionCheckPanel::OpenQCReport( )
-{
-	std::string ReportFileName;
-	ReportFileName=DwiFileName.substr(0,DwiFileName.find_last_of('.') );
-
-	if( this->protocal.GetReportFileName().length() != 0)
-		ReportFileName.append( this->protocal.GetReportFileName() );// "IntensityMotionCheckReports.txt"		
-	else
-		ReportFileName.append( "_QC_CheckReports.txt");
-
-	QString reportFile = QFileDialog::getOpenFileName ( this, tr("Open QC Result"), QString::fromStdString(ReportFileName), tr("txt Files (*.txt)") );
-	if( reportFile.length() <= 0 )
-		return;
-
-	this->qcResult.Clear();
-
-	GradientIntensityMotionCheckResult  IntensityMotionCheckResult;
-
-	IntensityMotionCheckResult.bGradientCheckOK = true;
-	IntensityMotionCheckResult.gradientRotationX = 0.0;
-	IntensityMotionCheckResult.gradientRotationY = 0.0;
-	IntensityMotionCheckResult.gradientRotationZ = 0.0;
-	IntensityMotionCheckResult.gradientTranslationX = 0.0;
-	IntensityMotionCheckResult.gradientTranslationY = 0.0;
-	IntensityMotionCheckResult.gradientTranslationZ = 0.0;
-
-	IntensityMotionCheckResult.bInterlaceCheckOK = true;
-	IntensityMotionCheckResult.interlaceCorrelation = 0.0;
-	IntensityMotionCheckResult.interlaceRotationX = 0.0;
-	IntensityMotionCheckResult.interlaceRotationY = 0.0;
-	IntensityMotionCheckResult.interlaceRotationZ = 0.0;
-	IntensityMotionCheckResult.interlaceTranslationX = 0.0;
-	IntensityMotionCheckResult.interlaceTranslationY = 0.0;
-	IntensityMotionCheckResult.interlaceTranslationZ = 0.0;
-
-	IntensityMotionCheckResult.bSliceCheckOK = true;
-	for(unsigned int i=0;i<this->DwiImage->GetLargestPossibleRegion().GetSize()[2];i++)
-		IntensityMotionCheckResult.sliceCorrelation.push_back(0.0);
-
-	for( unsigned int i=0;i< this->DwiImage->GetVectorLength(); i++)
-	{
-		this->qcResult.GetGradientProcess().push_back(QCResult::GRADIENT_INCLUDE);
-		this->qcResult.GetIntensityMotionCheckResult().push_back(IntensityMotionCheckResult);
-	}
-
-	protocal.clear();
-	protocal.GetImageProtocal().bCheck = true;
-	protocal.GetDiffusionProtocal().bCheck = true;
-	protocal.GetIntensityMotionCheckProtocal().bCheck = true;
-	protocal.GetIntensityMotionCheckProtocal().bSliceCheck = true;
-	protocal.GetIntensityMotionCheckProtocal().bInterlaceCheck = true;
-	protocal.GetIntensityMotionCheckProtocal().bGradientCheck = true;
-
-	////////////////////////////////////////////////////////////////////////////
-	std::vector< int > GradientProcess;
-	bool bAllIncluded = false;
-
-	if(reportFile.length()>0)
-	{
-		std::ifstream infile; 
-		infile.open( reportFile.toStdString().c_str());
-
-		std::string strTemp;
-		bool excludeStart=false, includeStart=false;
-		std::string strExclude ("Gradient(s) excluded:");
-		std::string strInclude ("Gradients included:");
-		std::string strGradient ("Gradient");
-		std::string strAllGradient ("No gradient data excluded");
-
-		excludeStart=false;
-		includeStart=false;
-
-		while(!infile.eof())
-		{
-			std::getline ( infile, strTemp );
-			std::cout<<"std::getline:"<<strTemp<<std::endl;
-
-			size_t found;
-
-			found=strTemp.find(strAllGradient);
-			if (found!=std::string::npos)
-			{
-				//excludeStart=true;
-				//includeStart=false;
-				std::cout<<"No gradient data excluded."<<std::endl;
-				bAllIncluded = true;
-				break;
-			}
-
-			found=strTemp.find(strGradient);
-			if (found == std::string::npos) 
-			{
-				excludeStart=false;
-				includeStart=false;
-				continue;
-			}
-
-			found=strTemp.find(strExclude);
-			if (found!=std::string::npos)
-			{
-				excludeStart=true;
-				includeStart=false;
-				std::cout<<"std::getline:"<<strTemp<<std::endl;
-				continue;
-			}
-
-			found=strTemp.find(strInclude);
-			if (found!=std::string::npos)
-			{
-				excludeStart=false;
-				includeStart=true;
-				std::cout<<"std::getline:"<<strTemp<<std::endl;
-				continue;
-			}
-
-			if(excludeStart)
-			{
-				strTemp=strTemp.substr(strTemp.find(strGradient)+strGradient.length()+1,strTemp.length()-strGradient.length()-1 );
-				GradientProcess.push_back( -atoi(strTemp.c_str()));
-				std::cout<<"strTemp.substr:"<<strTemp<<" = "<<-atoi(strTemp.c_str())<<std::endl;
-			}
-
-			if(includeStart)
-			{
-				strTemp=strTemp.substr(strTemp.find(strGradient)+strGradient.length()+1,strTemp.length()-strGradient.length()-1 );
-				GradientProcess.push_back( atoi(strTemp.c_str()));
-				std::cout<<"strTemp.substr:"<<strTemp<<" = "<<atoi(strTemp.c_str())<<std::endl;
-			}
-		}
-	}
-
-	if(bAllIncluded)
-	{
-		GradientProcess.clear();
-		for( unsigned int i=0;i< this->DwiImage->GetVectorLength(); i++)
-		{
-			GradientProcess.push_back(i);
-		}
-	}
-
-	std::cout<<"GradientProcess.size():"<<GradientProcess.size() <<std::endl;
-	std::cout<<"this->qcResult.GetGradientProcess().size(): "<< this->qcResult.GetGradientProcess().size()<<std::endl;
-	if( GradientProcess.size() != this->qcResult.GetGradientProcess().size())
-	{
-
-		QMessageBox::warning(this, tr("Warning"),tr("Gradient Numbers mismatch between DWI and QC Report file."));
-		std::cout<<"Gradient Numbers mismatch between DWI and QC Report file."<<std::endl;
-		return;
-	}
-
-	for(unsigned int i=0;i< GradientProcess.size();i++)
-	{
-		if(GradientProcess[i]< 0 ) 
-			this->qcResult.GetGradientProcess()[-GradientProcess[i]]=QCResult::GRADIENT_EXCLUDE;
-		else
-			this->qcResult.GetGradientProcess()[GradientProcess[i]]=QCResult::GRADIENT_INCLUDE;
-	}
-
-	ResultUpdate();
-
-	pushButton_SaveDWIAs->setEnabled(1);
-	pushButton_SaveDWI->setEnabled(1);
-}

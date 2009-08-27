@@ -13,11 +13,6 @@ class vtkActor;
 class vtkRenderer;
 
 class Dicom2NrrdPanel;
-class DiffusionCheckPanel;
-class DiffusionEditPanel;
-class DTIEstimatePanel;
-class EddyMotionCorrectPanel;
-class ImageView2DPanel;
 class IntensityMotionCheckPanel;
 class ImageView2DPanelWithControls;
 
@@ -47,8 +42,6 @@ class QMenu;
 #include "vtkTubeFilter.h"
 #include "vtkLight.h"
 
-
-
 class QStyleFactory;
 
 class vtkEventQtSlotConnect;
@@ -76,7 +69,6 @@ private slots:
 	// open menu
 	void on_actionOpenDWINrrd_triggered();
 	void on_actionOpen_XML_triggered();
-	void on_actionOpen_QC_Report_triggered();
 
 	// styles menu
 	void on_actionWindows_triggered();
@@ -87,10 +79,13 @@ private slots:
 	void on_actionCleanlooks_triggered();
 
 	// vector view
+	void UpdateProtocolDiffusionVectorActors();
+	void UpdateDWIDiffusionVectorActors();
+	void UpdateOutputDWIDiffusionVectorActors();
+
 	void on_actionFrom_Protocol_toggled( bool);
 	void on_actionFrom_DWI_toggled( bool);
 	void on_actionIncluded_toggled( bool);
-	void on_actionExcluded_toggled( bool);
 	void on_actionSphere_toggled( bool);
 
 	void on_actionExit_triggered();
@@ -111,14 +106,11 @@ private slots:
 	void InterpolationSyn(bool synx);
 	void OrientationSyn(bool syn);
 
-
-
 	// Qt-vtk connections
 	void BackGroundColor(QAction*);
 	void popup(vtkObject * obj, unsigned long, void * client_data, void *,vtkCommand * command);
 
 	void WindowLevelChanged(vtkObject * obj, unsigned long, void * client_data, void *,vtkCommand * command);
-
 //
 	void SetAllWindowLevel(double window, double level);
 
@@ -137,15 +129,9 @@ private:
 	vtkPropAssembly *actorDirProtocol;
 	vtkPropAssembly *actorDirFile;
 	vtkPropAssembly *actorDirInclude;
-	vtkPropAssembly *actorDirExclude;
-
 
 // docking panels
 	Dicom2NrrdPanel		    *dicom2NrrdPanel;
-	DiffusionCheckPanel		*diffusionCheckPanel;
-	DiffusionEditPanel		*diffusionEditPanel;
-	DTIEstimatePanel		*dTIEstimatePanel;
-	EddyMotionCorrectPanel	*eddyMotionCorrectPanel;
 	IntensityMotionCheckPanel	*DTIPrepPanel;
 
 //docking 2D image planes

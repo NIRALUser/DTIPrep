@@ -1,7 +1,6 @@
 #ifndef ThreadIntensityMotionCheck_H
 #define ThreadIntensityMotionCheck_H
 
-
 #include <QThread>
 
 class Protocal;
@@ -19,12 +18,13 @@ public:
     void SetFileName(std::string filename){ DWINrrdFilename = filename;};
 	void SetProtocal( Protocal *p) { protocal = p;};
 	void SetQCResult( QCResult *r) { qcResult = r;};
+
 signals:
     void allDone(const QString &);
     void ResultUpdate();
+
     void QQQ(int);
     void kkk( int );
-
 
 protected:
     void run();

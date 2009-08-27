@@ -85,7 +85,8 @@ See also titleBarWidget() and DockWidgetVerticalTitleBar.
 
   vtkImage = vtkImageData::New();
   this->ImageViewer2=vtkImageViewer2::New();  
- /*
+ 
+/*
   // Geometry
   source = vtkCylinderSource::New();
 

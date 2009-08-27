@@ -10,7 +10,16 @@
 
 #include <iostream>
 #include <string>
-//#include <QObject>
+
+#include "itkNrrdImageIO.h"
+
+#include "itkDWICropper.h"
+#include "itkDWIQCSliceChecker.h"
+#include "itkDWIQCInterlaceChecker.h"
+#include "itkDWIBaselineAverager.h"
+#include "itkDWIQCGradientChecker.h"
+#include "itkDWIEddyCurrentHeadMotionCorrector.h"
+
 class CIntensityMotionCheck //: public QObject
 {
 	//Q_OBJECT
@@ -37,71 +46,62 @@ public:
 	typedef itk::DiffusionTensor3DReconstructionImageFilter< DwiPixelType, DwiPixelType, double >		TensorReconstructionImageFilterType;
 	typedef	TensorReconstructionImageFilterType::GradientDirectionContainerType							GradientDirectionContainerType;
 
+	typedef itk::DWICropper<DwiImageType>							CropperType;
+	typedef itk::DWIQCSliceChecker<DwiImageType>					SliceCheckerType;
+	typedef itk::DWIQCInterlaceChecker<DwiImageType>				InterlaceCheckerType;
+	typedef itk::DWIBaselineAverager<DwiImageType>					BaselineAveragerType;
+	typedef itk::DWIQCGradientChecker<DwiImageType>					GradientCheckerType;
+
+	typedef itk::DWIEddyCurrentHeadMotionCorrector<DwiImageType>	EddyMotionCorrectorType;
+	DwiWriterType::Pointer		DwiWriter;
+	itk::NrrdImageIO::Pointer	NrrdImageIO;
+
+	CropperType::Pointer				Cropper	;
+	SliceCheckerType::Pointer			SliceChecker;
+	InterlaceCheckerType::Pointer		InterlaceChecker;
+	BaselineAveragerType::Pointer		BaselineAverager;
+	GradientCheckerType::Pointer		GradientChecker;
+	EddyMotionCorrectorType::Pointer	EddyMotionCorrector;
+
 	void SetFileName(std::string filename) {DwiFileName = filename; };
 	
 	void GetImagesInformation();
 	unsigned int GetGradientsNumber() { return numGradients;};
-
+	
 	bool GetGridentDirections();
-	//bool GetGridentImages();
+	bool GetGridentDirections( DwiImageType::Pointer dwi,double &bValue, GradientDirectionContainerType::Pointer	GradDireContainer);
 
-	unsigned char  CheckByProtocal();
+	unsigned char  CheckByProtocal(); //old
+
+	bool ImageCheck( DwiImageType::Pointer dwi );
+	bool DiffusionCheck( DwiImageType::Pointer dwi );
+	bool SliceWiseCheck( DwiImageType::Pointer dwi );
+	bool InterlaceWiseCheck( DwiImageType::Pointer dwi );
+	bool BaselineAverage( DwiImageType::Pointer dwi );
+ 	bool EddyMotionCorrect( DwiImageType::Pointer dwi );
+	bool GradientWiseCheck( DwiImageType::Pointer dwi );
+	bool SaveQCedDWI(DwiImageType::Pointer dwi);
+	void collectLeftDiffusionStatistics( DwiImageType::Pointer dwi, std::string reportfilename );
+// 	bool DTIComputing(std::string input);
 
 	bool ImageCheck();
 	bool DiffusionCheck();
-	bool IntraCheck( );
-	bool InterlaceCheck();
-	bool InterCheck();
-	void GenerateCheckOutputImage();
-	void GenerateCheckOutputImage( std::string filename);
-	void EddyMotionCorrection();
+	bool SliceWiseCheck();
+	bool InterlaceWiseCheck();
+	bool BaselineAverage();
+ 	bool EddyMotionCorrect();
+	bool GradientWiseCheck();
+	void collectLeftDiffusionStatistics( int dumb);
+	bool SaveQCedDWI();
 
 	bool dtiestim();
-	bool CropDTI();
-	bool dtiprocess();
 	bool DTIComputing();
-
-	bool IntraCheck( 
-		bool bRegister, 
-		double beginSkip, 
-		double endSkip, 
-		double baselineCorrelationThreshold ,  
-		double baselineCorrelationDeviationThreshold, 
-		double CorrelationThreshold ,  
-		double CorrelationDeviationThreshold
-		);
-
-	bool InterlaceCheck(
-		double angleThreshold, 
-		double transThreshold, 
-		double correlationThresholdBaseline, 
-		double correlationThresholdGradient,
-		double corrBaselineDev,	
-		double corrGradientDev
-		);
+	bool dtiprocess();
 
 
-	bool InterCheck(
-		unsigned int BinNumb, 
-		double PercentagePixel, 
-		bool UseExplicitPDFDerivatives, 
-		double angleThreshold,
-		double transThreshold
-		);
+	void GenerateCheckOutputImage( std::string filename);
 
-	void SetProtocal(Protocal *p) 
-	{ 
-		protocal = p;
-
-		if( DwiFileName.length() != 0 && ReportFileName.length() == 0 )
-		{
-			ReportFileName=DwiFileName.substr(0,DwiFileName.find_last_of('.') );
-			if( protocal->GetReportFileName().length() != 0)
-				ReportFileName.append( protocal->GetReportFileName() );// "IntensityMotionCheckReports.txt"		
-			else
-				ReportFileName.append( "_QC_CheckReports.txt");
-		}
-	};
+	void SetProtocal(Protocal *p) { protocal = p;};
 	void SetQCResult(QCResult *r) { qcResult = r;};
 
 	QCResult *GetQCResult() { return qcResult;};
@@ -126,15 +126,20 @@ public:
 														// C: Too many bad gradient directions found!
 														// 0: valid
 
-
-	void PrintResult();
+	unsigned char  RunPipelineByProtocal();
 
 //signals:
  //   void Progress( int );
 
-	
-private:
+
+public:
+	inline DwiImageType::Pointer GetDwiImage(){ return DwiImage;};
+	inline DwiImageType::Pointer GetDwiImageTemp(){ return DwiImageTemp;};
+	inline GradientDirectionContainerType::Pointer GetGradientDirectionContainer(){ return GradientDirectionContainer;};
+	inline bool GetDwiLoadStatus(){ return bDwiLoaded;};
+	inline std::string GetDwiFileName(){ return DwiFileName;};
 	bool LoadDwiImage();
+private:
 	bool bDwiLoaded;
 
 	int baselineNumber;
@@ -151,20 +156,17 @@ private:
 
 
 	bool bGetGridentDirections;
-//	bool bGetGridentImages;
 
 	std::string DwiFileName;
 	std::string ReportFileName;
 
-//	struSettings IntraSettings;
-//	struSettings InterSettings;
+	DwiImageType::Pointer DwiImageTemp;    
 
 	DwiImageType::Pointer DwiImage;    
 	DwiReaderType::Pointer DwiReader;
 
 	unsigned int numGradients;
 
-	//std::vector<GradientImageType::Pointer>    GradientImageContainer;
 	GradientDirectionContainerType::Pointer	   GradientDirectionContainer;
 
 	//for all gradients  slice wise correlation
@@ -183,8 +185,6 @@ private:
 	double interlaceGradientMeans;
 	double interlaceGradientDeviations;
 
-	//std::vector<struIntra2DResults>    Results;
-	//std::vector<struIntra2DResults>    ResultsContainer;
 
 	Protocal *protocal;
 	QCResult *qcResult;
