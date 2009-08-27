@@ -64,6 +64,12 @@ private slots:
 	void save();
 	void print();
 	void about();
+	void help();
+
+	// help menu
+	void on_actionAbout_triggered();
+	void on_action_Help_triggered();
+
 
 
 	// open menu
@@ -112,9 +118,7 @@ private slots:
 
 	void WindowLevelChanged(vtkObject * obj, unsigned long, void * client_data, void *,vtkCommand * command);
 //
-	void SetAllWindowLevel(double window, double level);
-
-	
+	void SetAllWindowLevel(double window, double level);	
 
 private:
 	bool bDwiLoaded;//=false;

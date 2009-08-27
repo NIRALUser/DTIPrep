@@ -601,12 +601,29 @@ void GMainWindow::save()
 
 void GMainWindow::about()
 {
-   QMessageBox::about(this, tr("About Dock Widgets"),
-            tr("The <b>Dock Widgets</b> example demonstrates how to "
-               "use Qt's dock widgets. You can enter your own text, "
-               "click a customer to add a customer name and "
-               "address, and click standard paragraphs to add them."));
+	QMessageBox::about(this, tr("About DTIPrep"),
+		tr("A Tool to do QC/Prep work for DWI/DTI. "
+		"\nCopyright(c) NIRAL, UNC. All rights reserved. "
+		"\nSee http://www.niral.unc.edu for details."));		
 }
+
+void GMainWindow::help()
+{
+ 	QUrl url("http://www.niral.unc.edu");
+//	QUrl url("http://www.ia.unc.edu/wiki/index.php/DTI:_Group_Analysis_Pipeline");
+	url.setScheme("http");
+	QDesktopServices::openUrl(url);	
+}
+
+void GMainWindow::on_actionAbout_triggered()
+{
+	about();
+}
+void GMainWindow::on_action_Help_triggered()
+{
+	help();
+}
+
 
 void GMainWindow::createActions()
 {
