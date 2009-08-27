@@ -3,8 +3,8 @@
 Program:   NeuroLib
 Module:    $file: itkDWICropper.cpp $
 Language:  C++
-Date:      $Date: 2009-08-27 01:35:37 $
-Version:   $Revision: 1.1 $
+Date:      $Date: 2009-08-27 01:39:28 $
+Version:   $Revision: 1.2 $
 Author:    Zhexing Liu (liuzhexing@gmail.com)
 
 Copyright (c) NIRAL, UNC. All rights reserved.
