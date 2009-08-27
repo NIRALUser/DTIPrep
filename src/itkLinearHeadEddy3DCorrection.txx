@@ -239,7 +239,7 @@ LinearHeadEddy3DCorrection<TScalarType, NInputDimensions, NOutputDimensions>
   const InputVectorType v2 = v1 - this->GetCenter(); //v2 is for eddy current transformation Jacobian
 
   EddyCurrentTransformTypeParametersType eddy_current_parameter = m_eddy_current_transform->GetParameters();
-  const double c0 = eddy_current_parameter[3];  //y axis global translation
+  //const double c0 = eddy_current_parameter[3];  //y axis global translation
   const double c1 = eddy_current_parameter[0];  //x axis shear
   const double c2 = eddy_current_parameter[1];  //y axis scale
   const double c3 = eddy_current_parameter[2];  //z axis shear

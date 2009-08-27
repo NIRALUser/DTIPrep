@@ -354,7 +354,7 @@ LinearEddyCurrentTransform<TScalarType, NInputDimensions, NOutputDimensions>
 ::SetParameters( const ParametersType & parameters )
 {
 
-  unsigned int par = 0;
+  //unsigned int par = 0;
 
   this->m_Parameters = parameters;
 

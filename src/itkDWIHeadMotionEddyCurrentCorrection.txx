@@ -23,7 +23,7 @@ inline VectorImage<float, 3>::Pointer  DWIHeadMotionEddyCurrentCorrection::Regis
 
     dwiContainer.push_back( fixedImage );
     //generate target images
-	for(int i=1; i<=movingImages.size(); i++){
+	for(unsigned int i=1; i<=movingImages.size(); i++){
 		ImageType::Pointer dwi = ImageType::New();
 		dwi->CopyInformation(fixedImage);
 		dwi->SetRegions(fixedImage->GetLargestPossibleRegion());
@@ -32,12 +32,12 @@ inline VectorImage<float, 3>::Pointer  DWIHeadMotionEddyCurrentCorrection::Regis
 		dwiContainer.push_back( dwi );
 	}
 	
-    for(int i=0; i<movingImages.size(); i++){
+    for(unsigned int i=0; i<movingImages.size(); i++){
 	std::cout << "************************************************" << std::endl;
 	std::cout << "registration DWI:" << i << std::endl;
          
-    bool flag = RegistrationSingleDWI( fixedImage, movingImages.at(i),
-					  originDirs.at(i), i);
+    /*const bool flag = i*/
+    RegistrationSingleDWI( fixedImage, movingImages.at(i), originDirs.at(i), i);
 					
     std::cout<< "origin dir: " << originDirs.at(i) << std::endl;
     std::cout<< "update dir: " << updateDirs.at(i)<< std::endl;
@@ -48,7 +48,7 @@ inline VectorImage<float, 3>::Pointer  DWIHeadMotionEddyCurrentCorrection::Regis
     
     typedef ImageRegionIterator< ImageType > IteratorImageType ;
     std::vector< IteratorImageType > in ;
-	for(int i = 0 ; i < dwis->GetVectorLength() ; i++ ){
+	for(unsigned int i = 0 ; i < dwis->GetVectorLength() ; i++ ){
 		IteratorImageType intemp( dwiContainer.at( i ) , dwiContainer.at( i )->GetLargestPossibleRegion() ) ;
 		intemp.GoToBegin();
 		in.push_back( intemp ) ;
@@ -57,7 +57,7 @@ inline VectorImage<float, 3>::Pointer  DWIHeadMotionEddyCurrentCorrection::Regis
     VectorImageType::PixelType value ;
     value.SetSize( dwiContainer.size() ) ;
     for( out.GoToBegin() ; !out.IsAtEnd() ; ++out ){
-	for( int i = 0 ; i < dwis->GetVectorLength() ; i++ ){
+	for( unsigned int i = 0 ; i < dwis->GetVectorLength() ; i++ ){
 	      value.SetElement( i , in.at( i ).Get() ) ;
 	      ++in[ i ] ;
 	}

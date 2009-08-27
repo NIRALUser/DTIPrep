@@ -83,7 +83,7 @@ if [ 1 == 1 ];then  ## Temporary bypass of building ITK
     mkdir -p ${ITK_SOURCE}
     pushd ${COMPILE_DIR}
     cvs -d :pserver:anoncvs:@www.vtk.org:/cvsroot/Insight login
-    cvs -d :pserver:anoncvs@www.vtk.org:/cvsroot/Insight checkout -D 20090621 Insight
+    cvs -d :pserver:anoncvs@www.vtk.org:/cvsroot/Insight checkout -D 20090827 Insight
     popd
   fi
   mkdir -p ${ITK_BUILD}
@@ -110,6 +110,7 @@ if [ 1 == 1 ];then  ## Temporary bypass of building ITK
 fi  ## Temporary bypass of building ITK
 
 export QTDIR=/opt/qt-4.5.2
+export PATH=${QTDIR}/bin:${PATH}
   #################################################################################
   #Get and build VTK-CVS
   VTK_SOURCE=${COMPILE_DIR}/VTK
@@ -131,6 +132,7 @@ export QTDIR=/opt/qt-4.5.2
     -DBUILDNAME:STRING=${VTK_BUILD_NAME} \
     -DVTK_USE_CARBON:BOOL=OFF \
     -DVTK_USE_COCOA:BOOL=ON \
+    -DVTK_USE_QT:BOOL=ON \
     -DVTK_USE_QVTK:BOOL=ON \
     -DVTK_USE_GUISUPPORT:BOOL=ON \
     -DQT_QMAKE_EXECUTABLE:FILEPATH=${QTDIR}/bin/qmake \

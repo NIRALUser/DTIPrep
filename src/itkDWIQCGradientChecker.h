@@ -3,8 +3,8 @@
 Program:   NeuroLib
 Module:    $file: itkDWIQCGradientChecker.h $
 Language:  C++
-Date:      $Date: 2009-08-27 01:39:40 $
-Version:   $Revision: 1.2 $
+Date:      $Date: 2009-08-27 10:55:01 $
+Version:   $Revision: 1.3 $
 Author:    Zhexing Liu (liuzhexing@gmail.com)
 
 Copyright (c) NIRAL, UNC. All rights reserved.
@@ -130,7 +130,7 @@ namespace itk
 			* \sa ProcessObject::GenerateOutputInformaton() */
 		virtual void GenerateOutputInformation();
 
-		inline std::vector<bool> GetQCResults() { return qcResults };
+		inline std::vector<bool> GetQCResults() { return qcResults ; };
 		
 	protected:
 		DWIQCGradientChecker();
