@@ -724,7 +724,7 @@ void Protocal::collectDiffusionStatistics()
 	{ 
 		if( repetNum[i] != repetNum[0])
 		{
-			std::cout<<"Protocol error. Not all the gradient directions have same repetition. "<<std::endl;
+			std::cout<<"Warrning: Not all the gradient directions have same repetition. "<<std::endl;
 			repetitionNumber = -1;			
 		}
 	}

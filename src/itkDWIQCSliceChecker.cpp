@@ -3,8 +3,8 @@
 Program:   NeuroLib
 Module:    $file: itkDWIQCSliceChecker.cpp $
 Language:  C++
-Date:      $Date: 2009-09-03 14:42:59 $
-Version:   $Revision: 1.3 $
+Date:      $Date: 2009-09-03 15:13:35 $
+Version:   $Revision: 1.4 $
 Author:    Zhexing Liu (liuzhexing@gmail.com)
 
 Copyright (c) NIRAL, UNC. All rights reserved.
@@ -1805,7 +1805,7 @@ namespace itk
 		{ 
 			if( repetNum[i] != repetNum[0])
 			{
-				std::cout<<"Protocol error. Not all the gradient directions have same repetition. "<<std::endl;
+				std::cout<<"Warrning: Not all the gradient directions have same repetition. "<<std::endl;
 				repetitionNumber = -1;			
 			}
 		}

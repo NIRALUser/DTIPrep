@@ -722,8 +722,8 @@ void IntensityMotionCheckPanel::DefaultProtocol()
 	this->GetProtocal().GetSliceCheckProtocal().checkTimes = 0;
 	this->GetProtocal().GetSliceCheckProtocal().headSkipSlicePercentage = 0.1; 
 	this->GetProtocal().GetSliceCheckProtocal().tailSkipSlicePercentage = 0.1;  
-	this->GetProtocal().GetSliceCheckProtocal().correlationDeviationThresholdbaseline = 3.0;
-	this->GetProtocal().GetSliceCheckProtocal().correlationDeviationThresholdgradient = 3.50;
+	this->GetProtocal().GetSliceCheckProtocal().correlationDeviationThresholdbaseline = 3.50;
+	this->GetProtocal().GetSliceCheckProtocal().correlationDeviationThresholdgradient = 4.00;
 
 	this->GetProtocal().GetSliceCheckProtocal().outputDWIFileNameSuffix = ""; 
 	this->GetProtocal().GetSliceCheckProtocal().reportFileNameSuffix = "_QCReport.txt"; 
