@@ -42,6 +42,7 @@ private slots:
 		void on_treeWidget_currentItemChanged( QTreeWidgetItem *current,  QTreeWidgetItem *previous);
 
 		void on_treeWidget_DiffusionInformation_itemClicked( QTreeWidgetItem *item,  int column);
+		void on_treeWidget_DiffusionInformation_currentItemChanged( QTreeWidgetItem *current,  QTreeWidgetItem *previous);
 
 		void on_treeWidget_Results_itemDoubleClicked(QTreeWidgetItem * item, int column) ;
 		void on_treeWidget_Results_currentItemChanged( QTreeWidgetItem *current,  QTreeWidgetItem *previous);

@@ -98,6 +98,18 @@ void IntensityMotionCheckPanel::on_treeWidget_DiffusionInformation_itemClicked( 
   }
 }
 
+void IntensityMotionCheckPanel::on_treeWidget_DiffusionInformation_currentItemChanged( QTreeWidgetItem *current,  QTreeWidgetItem *previous)
+{
+	std::string str = current->text(0).toStdString() ;
+
+	if ( str.find("gradient") != std::string::npos)
+	{
+		emit currentGradient( 0, atoi( str.substr(str.length()-4, 4).c_str() ) );
+		emit currentGradient( 1, atoi( str.substr(str.length()-4, 4).c_str() ) );
+		emit currentGradient( 2, atoi( str.substr(str.length()-4, 4).c_str() ) );
+	}
+}
+
 void IntensityMotionCheckPanel::on_treeWidget_Results_itemClicked( QTreeWidgetItem *item,  int column)
 {
 	std::string str = item->text(0).toStdString() ;
@@ -109,6 +121,18 @@ void IntensityMotionCheckPanel::on_treeWidget_Results_itemClicked( QTreeWidgetIt
   }
 }
 
+void IntensityMotionCheckPanel::on_treeWidget_Results_currentItemChanged( QTreeWidgetItem *current,  QTreeWidgetItem *previous)
+{
+	treeWidget_Results->closePersistentEditor(previous,2); // does nothing if none open
+
+	std::string str = current->text(0).toStdString() ;
+	if ( str.find("gradient") != std::string::npos)
+	{
+		emit currentGradient( 0, atoi( str.substr(str.length()-4, 4).c_str() ) );
+		emit currentGradient( 1, atoi( str.substr(str.length()-4, 4).c_str() ) );
+		emit currentGradient( 2, atoi( str.substr(str.length()-4, 4).c_str() ) );
+	}
+}
 
 void IntensityMotionCheckPanel::on_treeWidget_itemDoubleClicked(QTreeWidgetItem* item,int col)
 {
@@ -120,11 +144,6 @@ void IntensityMotionCheckPanel::on_treeWidget_Results_itemDoubleClicked(QTreeWid
 {
 	if( bResultTreeEditable && column == 2 && item->text(0).left(8) == tr("gradient"))
 		treeWidget_Results->openPersistentEditor(item,column);
-}
-
-void IntensityMotionCheckPanel::on_treeWidget_Results_currentItemChanged( QTreeWidgetItem *current,  QTreeWidgetItem *previous)
-{
-	treeWidget_Results->closePersistentEditor(previous,2); // does nothing if none open
 }
 
 void IntensityMotionCheckPanel::on_treeWidget_Results_itemChanged(QTreeWidgetItem * item, int column) 
