@@ -3,8 +3,8 @@
 Program:   NeuroLib
 Module:    $file: itkDWIQCSliceChecker.h $
 Language:  C++
-Date:      $Date: 2009-08-27 01:39:40 $
-Version:   $Revision: 1.2 $
+Date:      $Date: 2009-09-03 14:42:59 $
+Version:   $Revision: 1.3 $
 Author:    Zhexing Liu (liuzhexing@gmail.com)
 
 Copyright (c) NIRAL, UNC. All rights reserved.
@@ -110,6 +110,16 @@ namespace itk
 		itkGetConstMacro(CheckDone, bool);
 		itkSetMacro(CheckDone, bool);
 
+		/** Get & Set the QuadFit indicator */
+		itkBooleanMacro( QuadFit );
+		itkGetConstMacro( QuadFit, bool );
+		itkSetMacro( QuadFit, bool );
+
+		/** Get & Set the SubRegionalCheck indicator */
+		itkBooleanMacro( SubRegionalCheck );
+		itkGetConstMacro( SubRegionalCheck, bool );
+		itkSetMacro( SubRegionalCheck, bool );
+
 		/** Get & Set the report file mode */
 		itkGetConstMacro( ReportFileMode, int );
 		itkSetMacro( ReportFileMode, int  );
@@ -157,7 +167,6 @@ namespace itk
 		/** report file mode */
 		int m_ReportFileMode ;
 
-
 		/** excluded gradients filename */
 		OutputImagePointer      excludedDwiImage;
 
@@ -174,6 +183,12 @@ namespace itk
 		int gradientDirLeftNumber;
 		int gradientLeftNumber;
 		std::vector<int> repetitionLeftNumber;
+
+		/** quadratic fitting? */
+		bool m_QuadFit;
+
+		/** quadratic fitting? */
+		bool m_SubRegionalCheck;
 
 		/** b value */
 		double b0 ;
@@ -202,17 +217,28 @@ namespace itk
 		std::vector<double> quardraticFittedMeans;
 		std::vector<double> quardraticFittedDeviations;
 
-
 		/** initialize qcResullts */
 		std::vector< std::vector<double> >	ResultsContainer;// starts from #1 slice, "correlation<=0" means a "bad slice"
-		std::vector<bool> qcResults;							
+
+		std::vector< std::vector<double> >	ResultsContainer0;// starts from #1 slice, "correlation<=0" means a "bad slice"
+		std::vector< std::vector<double> >	ResultsContainer1;// starts from #1 slice, "correlation<=0" means a "bad slice"
+		std::vector< std::vector<double> >	ResultsContainer2;// starts from #1 slice, "correlation<=0" means a "bad slice"
+		std::vector< std::vector<double> >	ResultsContainer3;// starts from #1 slice, "correlation<=0" means a "bad slice"
+		std::vector< std::vector<double> >	ResultsContainer4;// starts from #1 slice, "correlation<=0" means a "bad slice"
+		// 0      1
+		//     2
+		// 3      4
+		std::vector<bool> qcResults;		
+
+		std::vector< std::vector<double> > normalizedMetric;
 
 		void parseGridentDirections();
 		void collectDiffusionStatistics();
 		void initializeQCResullts();
 		void calculateCorrelations();
-		void report();
+		void calculateSubRegionalCorrelations();
 		void check();
+		void LeaveOneOutcheck();
 		void iterativeCheck();
 		void collectLeftDiffusionStatistics();
 		void writeReport();
