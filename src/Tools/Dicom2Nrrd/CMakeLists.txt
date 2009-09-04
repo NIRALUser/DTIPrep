@@ -8,14 +8,18 @@ ELSE(ITK_FOUND)
     "ITK not found. Please set ITK_DIR.")
 ENDIF(ITK_FOUND)
 
-ADD_EXECUTABLE( DicomToNrrdConverter DicomToNrrdConverter.cxx )
-TARGET_LINK_LIBRARIES(  DicomToNrrdConverter   	${ITK_LIBRARIES} )
+ADD_EXECUTABLE(
+DicomToNrrdConverter 
+DicomToNrrdConverter.cxx )
 
-INSTALL(TARGETS DicomToNrrdConverter
-#LIBRARY DESTINATION lib
-#ARCHIVE DESTINATION lib
-RUNTIME DESTINATION bin
+TARGET_LINK_LIBRARIES( 
+DicomToNrrdConverter   	
+${ITK_LIBRARIES} 
 )
 
-
-
+INSTALL(
+TARGETS
+DicomToNrrdConverter
+#LIBRARY DESTINATION lib
+#ARCHIVE DESTINATION lib
+RUNTIME DESTINATION bin)
