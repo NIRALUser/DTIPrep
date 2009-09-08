@@ -1634,7 +1634,7 @@ bool CIntensityMotionCheck::EddyMotionCorrectIowa( DwiImageType::Pointer dwi )
 // 		EddyMotionCorrectorIowa->SetStepLength(protocal->GetEddyMotionCorrectionProtocal().stepLength );
 // 		EddyMotionCorrectorIowa->SetFactor( protocal->GetEddyMotionCorrectionProtocal().relaxFactor );
 // 		EddyMotionCorrectorIowa->SetMaxNumberOfIterations( protocal->GetEddyMotionCorrectionProtocal().maxNumberOfIterations );
-// 
+ 
 // 		float m_TranslationScale;
 // 		float m_MaximumStepLength;
 // 		float m_MinimumStepLength;
