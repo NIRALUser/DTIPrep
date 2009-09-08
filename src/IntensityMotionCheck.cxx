@@ -1655,24 +1655,26 @@ bool CIntensityMotionCheck::EddyMotionCorrectIowa( DwiImageType::Pointer dwi )
 		this->DwiImageTemp = EddyMotionCorrectorIowa->GetOutput();
 
 // read the meta info from output and fill in qcResult
-		imgMetaDictionary = EddyMotionCorrectorIowa->GetOutput()->GetMetaDataDictionary();
+		itk::MetaDataDictionary outputMetaDictionary = EddyMotionCorrectorIowa->GetOutput()->GetMetaDataDictionary();
+		std::vector<std::string> outputImgMetaKeys = outputMetaDictionary.GetKeys();
+		std::vector<std::string>::const_iterator outputItKey = outputImgMetaKeys.begin();
 
-		GradientDirectionContainerType::Pointer GradDirContainer = GradientDirectionContainerType::New();
-		GradientDirectionContainer->clear();
+		GradientDirectionContainerType::Pointer outputGradDirContainer = GradientDirectionContainerType::New();
+		outputGradDirContainer->clear();
 
-		itKey = imgMetaKeys.begin();
-		for ( ; itKey != imgMetaKeys.end(); itKey ++)
+		outputItKey = outputImgMetaKeys.begin();
+		for ( ; outputItKey != outputImgMetaKeys.end(); outputItKey ++)
 		{
-			itk::ExposeMetaData<std::string> (imgMetaDictionary, *itKey, metaString);
-			if (itKey->find("DWMRI_gradient") != std::string::npos)
+			itk::ExposeMetaData<std::string> (outputMetaDictionary, *outputItKey, metaString);
+			if (outputItKey->find("DWMRI_gradient") != std::string::npos)
 			{ 
 				std::istringstream iss(metaString);
 				iss >> vect3d[0] >> vect3d[1] >> vect3d[2];
-				GradDirContainer->push_back(vect3d);
+				outputGradDirContainer->push_back(vect3d);
 			}
 		}
 
-		for( unsigned int i=0; i< GradDirContainer->size(); i++)
+		for( unsigned int i=0; i< outputGradDirContainer->size(); i++)
 		{
 			for( unsigned int j=0; j< this->qcResult->GetIntensityMotionCheckResult().size(); j++)
 			{
@@ -1684,9 +1686,9 @@ bool CIntensityMotionCheck::EddyMotionCorrectIowa( DwiImageType::Pointer dwi )
 					continue;
 				}
 
-				if( GradDirContainer->at(i)[0] ==  this->qcResult->GetIntensityMotionCheckResult()[j].ReplacedDir[0] &&
-					GradDirContainer->at(i)[1] ==  this->qcResult->GetIntensityMotionCheckResult()[j].ReplacedDir[1] &&
-					GradDirContainer->at(i)[2] ==  this->qcResult->GetIntensityMotionCheckResult()[j].ReplacedDir[2]  )
+				if( outputGradDirContainer->at(i)[0] ==  this->qcResult->GetIntensityMotionCheckResult()[j].ReplacedDir[0] &&
+					outputGradDirContainer->at(i)[1] ==  this->qcResult->GetIntensityMotionCheckResult()[j].ReplacedDir[1] &&
+					outputGradDirContainer->at(i)[2] ==  this->qcResult->GetIntensityMotionCheckResult()[j].ReplacedDir[2]  )
 				{
 					if( this->qcResult->GetIntensityMotionCheckResult()[j].processing > QCResult::GRADIENT_EDDY_MOTION_CORRECTED) //GRADIENT_EXCLUDE_SLICECHECK,
 																														//GRADIENT_EXCLUDE_INTERLACECHECK,
@@ -1698,9 +1700,9 @@ bool CIntensityMotionCheck::EddyMotionCorrectIowa( DwiImageType::Pointer dwi )
 					else
 					{
 						this->qcResult->GetIntensityMotionCheckResult()[j].processing = QCResult::GRADIENT_EDDY_MOTION_CORRECTED;
-						this->qcResult->GetIntensityMotionCheckResult()[j].CorrectedDir[0] = GradDirContainer->at(i)[0];
-						this->qcResult->GetIntensityMotionCheckResult()[j].CorrectedDir[1] = GradDirContainer->at(i)[1];
-						this->qcResult->GetIntensityMotionCheckResult()[j].CorrectedDir[2] = GradDirContainer->at(i)[2];
+						this->qcResult->GetIntensityMotionCheckResult()[j].CorrectedDir[0] = outputGradDirContainer->at(i)[0];
+						this->qcResult->GetIntensityMotionCheckResult()[j].CorrectedDir[1] = outputGradDirContainer->at(i)[1];
+						this->qcResult->GetIntensityMotionCheckResult()[j].CorrectedDir[2] = outputGradDirContainer->at(i)[2];
 					}
 				}
 			}
