@@ -1660,6 +1660,7 @@ bool CIntensityMotionCheck::EddyMotionCorrectIowa( DwiImageType::Pointer dwi )
 		GradientDirectionContainerType::Pointer GradDirContainer = GradientDirectionContainerType::New();
 		GradientDirectionContainer->clear();
 
+		itKey = imgMetaKeys.begin();
 		for ( ; itKey != imgMetaKeys.end(); itKey ++)
 		{
 			itk::ExposeMetaData<std::string> (imgMetaDictionary, *itKey, metaString);
