@@ -3,8 +3,8 @@
  Program:   GTRACT (Guided Tensor Restore Anatomical Connectivity Tractography)
  Module:    $RCSfile: itkVectorImageRegisterAffineFilter.txx,v $
  Language:  C++
- Date:      $Date: 2009-09-08 13:47:35 $
- Version:   $Revision: 1.1 $
+ Date:      $Date: 2009-09-08 15:39:11 $
+ Version:   $Revision: 1.2 $
 
    Copyright (c) University of Iowa Department of Radiology. All rights reserved.
    See GTRACT-Copyright.txt or http://mri.radiology.uiowa.edu/copyright/GTRACT-Copyright.txt 
@@ -40,7 +40,7 @@ VectorImageRegisterAffineFilter<TInputImage, TOutputImage>
 ::VectorImageRegisterAffineFilter()
 {
   m_NumberOfSpatialSamples = 100000;
-  m_NumberOfIterations = 500;
+  m_NumberOfIterations = 1000;
   m_TranslationScale = 1000.0;
   m_MaximumStepLength = 0.2;
   m_MinimumStepLength = 0.0001;
@@ -108,10 +108,12 @@ void VectorImageRegisterAffineFilter<TInputImage, TOutputImage>
     }
       
 
+  std::cout <<"Register Volume " ; //liuzx
   for (int i=0;i<static_cast<int>(this->GetInput()->GetVectorLength());i++)
     {
     itkDebugMacro("\tRegister Volume: " << i);
-
+	std::cout <<"." ; //liuzx
+	
     extractImageFilter->SetIndex( i );
     extractImageFilter->Update( );
     
@@ -268,6 +270,8 @@ void VectorImageRegisterAffineFilter<TInputImage, TOutputImage>
     /* Update Progress */
     this->UpdateProgress((float)(i+1)/(float)(this->GetInput()->GetVectorLength()));      
     }
+    
+    std::cout <<std::endl ; //liuzx
     
   if (m_OutputParameterFile.length() != 0)
     {

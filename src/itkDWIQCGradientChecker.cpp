@@ -3,8 +3,8 @@
 Program:   NeuroLib
 Module:    $file: itkDWIQCGradientChecker.cpp $
 Language:  C++
-Date:      $Date: 2009-09-03 15:13:35 $
-Version:   $Revision: 1.3 $
+Date:      $Date: 2009-09-08 15:39:11 $
+Version:   $Revision: 1.4 $
 Author:    Zhexing Liu (liuzhexing@gmail.com)
 
 Copyright (c) NIRAL, UNC. All rights reserved.
@@ -195,7 +195,7 @@ namespace itk
 		optimizer->SetMaximumStepLength( 0.2000  ); 
 		optimizer->SetMinimumStepLength( 0.0001 );
 
-		optimizer->SetNumberOfIterations( 200 );
+		optimizer->SetNumberOfIterations( 500 );
 		metric->SetNumberOfHistogramBins( numberOfBins );
 
 		//std::cout<<"UseNumberOfSpatialSamples: "<<(int)(fixedImage->GetPixelContainer()->Size() * percentOfSamples)<<std::endl;

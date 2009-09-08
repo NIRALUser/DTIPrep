@@ -71,12 +71,12 @@ void CIntraGradientRigidRegistration::SetupParameters()
 	optimizerScales[2] = translationScale;
 	optimizerScales[3] = translationScale;
 	optimizerScales[4] = translationScale;
-	optimizer->SetScales( optimizerScales );
 
+	optimizer->SetScales( optimizerScales );
 	optimizer->SetRelaxationFactor( 0.6 );
-	optimizer->SetMaximumStepLength( 0.1 ); 
-	optimizer->SetMinimumStepLength( 0.001 );
-	optimizer->SetNumberOfIterations( 200 );
+	optimizer->SetMaximumStepLength( 0.2 ); 
+	optimizer->SetMinimumStepLength( 0.0001 );
+	optimizer->SetNumberOfIterations( 500 );
 }
 
 struIntra2DResults CIntraGradientRigidRegistration::Run( bool bRegister )

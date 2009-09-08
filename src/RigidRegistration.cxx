@@ -95,7 +95,7 @@ void CRigidRegistration::SetupParameters()
 	optimizer->SetMaximumStepLength( 0.2000  ); 
 	optimizer->SetMinimumStepLength( 0.0001 );
 
-	optimizer->SetNumberOfIterations( 200 );
+	optimizer->SetNumberOfIterations( 500 );
 
 	//numberOfBins = 25;
 	//percentOfSamples = 0.10; // 1% ~ 20%

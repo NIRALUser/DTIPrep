@@ -1504,7 +1504,6 @@ bool CIntensityMotionCheck::EddyMotionCorrectIowa( DwiImageType::Pointer dwi )
 // 			ReportFileName.append( protocal->GetEddyMotionCorrectionProtocal().reportFileNameSuffix );	
 			if( protocal->GetQCOutputDirectory().length()>0 )
 			{
-
 				if( protocal->GetQCOutputDirectory().at( protocal->GetQCOutputDirectory().length()-1 ) == '\\' || 
 					protocal->GetQCOutputDirectory().at( protocal->GetQCOutputDirectory().length()-1 ) == '/' 		)
 					ReportFileName = protocal->GetQCOutputDirectory().substr( 0,protocal->GetQCOutputDirectory().find_last_of("/\\") );
@@ -1526,9 +1525,11 @@ bool CIntensityMotionCheck::EddyMotionCorrectIowa( DwiImageType::Pointer dwi )
 			}
 		}
 
+//		std::cout<<"ReportFileName: "<< ReportFileName <<std::endl;
+
 
 		// get the inputgradDir 
-		itk::MetaDataDictionary imgMetaDictionary = EddyMotionCorrectorIowa->GetOutput()->GetMetaDataDictionary();    //
+		itk::MetaDataDictionary imgMetaDictionary = dwi->GetMetaDataDictionary();    //
 		std::vector<std::string> imgMetaKeys = imgMetaDictionary.GetKeys();
 		std::vector<std::string>::const_iterator itKey = imgMetaKeys.begin();
 		std::string metaString;
@@ -1537,7 +1538,7 @@ bool CIntensityMotionCheck::EddyMotionCorrectIowa( DwiImageType::Pointer dwi )
 		GradientDirectionContainerType::Pointer inputGradDirContainer = GradientDirectionContainerType::New();
 		inputGradDirContainer->clear();
 
-		int baselinrNumber = 0;
+		int baselineNumber = 0;
 
 		for ( ; itKey != imgMetaKeys.end(); itKey ++)
 		{
@@ -1548,22 +1549,21 @@ bool CIntensityMotionCheck::EddyMotionCorrectIowa( DwiImageType::Pointer dwi )
 				iss >> vect3d[0] >> vect3d[1] >> vect3d[2];
 				inputGradDirContainer->push_back(vect3d);
 				if( vect3d[0]==0.0 && vect3d[1]==0.0 && vect3d[2]==0.0 )
-					baselinrNumber ++;
+					baselineNumber ++;
 			}
 		}
 
+//		std::cout<<"baselineNumber: "<< baselineNumber <<std::endl;
+
 		// filtering for fixed image
 		typedef itk::Image<signed short,3>  GradientImageType;
-		typedef itk::VectorIndexSelectionCastImageFilter< DwiImageType, GradientImageType > FilterType;
-		FilterType::Pointer componentExtractor = FilterType::New();
-		componentExtractor->SetInput( dwi);
 
 		EddyMotionCorrectorIowa = EddyMotionCorrectorTypeIowa::New();
 		EddyMotionCorrectorIowa->SetInput( dwi );
 
 		// find the gradient with the smallest b-value
 		int smallestGradient = -1;
-		if( baselinrNumber==0)
+		if( baselineNumber == 0 )
 		{
 			double smallestBValue = 9999999999999999.0;
 			for( int i = 0; i< inputGradDirContainer->size(); i++ )
@@ -1578,8 +1578,16 @@ bool CIntensityMotionCheck::EddyMotionCorrectIowa( DwiImageType::Pointer dwi )
 					smallestGradient = i;
 				}
 			}
+
+//			std::cout<<"smallestGradient: "<< smallestGradient <<std::endl;
+
+			typedef itk::VectorIndexSelectionCastImageFilter< DwiImageType, GradientImageType > FilterType;
+			FilterType::Pointer componentExtractor = FilterType::New();
+
+			componentExtractor->SetInput( dwi);
 			componentExtractor->SetIndex( smallestGradient );
 			componentExtractor->Update();
+
 			EddyMotionCorrectorIowa->SetFixedImage(componentExtractor->GetOutput());
 		}
 		else
@@ -1599,6 +1607,7 @@ bool CIntensityMotionCheck::EddyMotionCorrectIowa( DwiImageType::Pointer dwi )
 			dwiImageConstPointer  inputPtr = static_cast<dwiImageConstPointer> (dwi);
 			GradientImageType::IndexType pixelIndex;
 			double pixelValue ;
+
 			while ( !aIt.IsAtEnd() ) 
 			{
 				// determine the index of the output pixel
@@ -1610,8 +1619,7 @@ bool CIntensityMotionCheck::EddyMotionCorrectIowa( DwiImageType::Pointer dwi )
 						inputGradDirContainer->ElementAt(i)[1] == 0.0 && 
 						inputGradDirContainer->ElementAt(i)[2] == 0.0     )
 					{
-						//std::cout<<" GetPixel(pixelIndex): "<< inputPtr->GetPixel(pixelIndex)[i] <<std::endl;
-						pixelValue += inputPtr->GetPixel(pixelIndex)[i]/(static_cast<double>(baselinrNumber));					
+						pixelValue += inputPtr->GetPixel(pixelIndex)[i]/(static_cast<double>(baselineNumber));					
 					}
 				}
 				aIt.Set( static_cast<unsigned short>(pixelValue) );
@@ -1619,6 +1627,21 @@ bool CIntensityMotionCheck::EddyMotionCorrectIowa( DwiImageType::Pointer dwi )
 			}		
 			EddyMotionCorrectorIowa->SetFixedImage(fixed);
 		}
+
+// 		EddyMotionCorrectorIowa->SetNumberOfBins(protocal->GetEddyMotionCorrectionProtocal().numberOfBins );
+// 		EddyMotionCorrectorIowa->SetSamples( protocal->GetEddyMotionCorrectionProtocal().numberOfSamples );
+// 		EddyMotionCorrectorIowa->SetTranslationScale( protocal->GetEddyMotionCorrectionProtocal().translationScale );
+// 		EddyMotionCorrectorIowa->SetStepLength(protocal->GetEddyMotionCorrectionProtocal().stepLength );
+// 		EddyMotionCorrectorIowa->SetFactor( protocal->GetEddyMotionCorrectionProtocal().relaxFactor );
+// 		EddyMotionCorrectorIowa->SetMaxNumberOfIterations( protocal->GetEddyMotionCorrectionProtocal().maxNumberOfIterations );
+// 
+// 		float m_TranslationScale;
+// 		float m_MaximumStepLength;
+// 		float m_MinimumStepLength;
+// 		float m_RelaxationFactor;
+// 		int   m_NumberOfSpatialSamples;
+// 		int   m_NumberOfIterations;
+// 		std::string m_OutputParameterFile;
 
 		try
 		{
@@ -1631,12 +1654,8 @@ bool CIntensityMotionCheck::EddyMotionCorrectIowa( DwiImageType::Pointer dwi )
 
 		this->DwiImageTemp = EddyMotionCorrectorIowa->GetOutput();
 
-		////////////////////////////////////////////////////////////////
-// 		itk::MetaDataDictionary imgMetaDictionary = EddyMotionCorrectorIowa->GetOutput()->GetMetaDataDictionary();    //
-// 		std::vector<std::string> imgMetaKeys = imgMetaDictionary.GetKeys();
-// 		std::vector<std::string>::const_iterator itKey = imgMetaKeys.begin();
-// 		std::string metaString;
-// 		TensorReconstructionImageFilterType::GradientDirectionType vect3d;
+// read the meta info from output and fill in qcResult
+		imgMetaDictionary = EddyMotionCorrectorIowa->GetOutput()->GetMetaDataDictionary();
 
 		GradientDirectionContainerType::Pointer GradDirContainer = GradientDirectionContainerType::New();
 		GradientDirectionContainer->clear();
@@ -1713,7 +1732,6 @@ bool CIntensityMotionCheck::EddyMotionCorrectIowa( DwiImageType::Pointer dwi )
 				outputDWIFileName = DwiFileName.substr(0,DwiFileName.find_last_of('.') );
 				outputDWIFileName.append( protocal->GetEddyMotionCorrectionProtocal().outputDWIFileNameSuffix );			
 			}
-
 
 			try
 			{
