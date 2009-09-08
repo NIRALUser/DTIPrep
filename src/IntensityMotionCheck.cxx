@@ -1595,8 +1595,8 @@ bool CIntensityMotionCheck::EddyMotionCorrectIowa( DwiImageType::Pointer dwi )
 			averagedBaselineIterator aIt(fixed, fixed->GetLargestPossibleRegion());
 			aIt.GoToBegin();
 
-			typedef DwiImageType::ConstPointer  InputImageConstPointer;
-			InputImageConstPointer  inputPtr = dwi;
+			typedef DwiImageType::ConstPointer  dwiImageConstPointer;
+			dwiImageConstPointer  inputPtr = static_cast<dwiImageConstPointer> (dwi);
 			GradientImageType::IndexType pixelIndex;
 			double pixelValue ;
 			while ( !aIt.IsAtEnd() ) 
