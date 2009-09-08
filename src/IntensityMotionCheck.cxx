@@ -1540,6 +1540,7 @@ bool CIntensityMotionCheck::EddyMotionCorrectIowa( DwiImageType::Pointer dwi )
 
 		int baselineNumber = 0;
 
+		itKey = imgMetaKeys.begin();
 		for ( ; itKey != imgMetaKeys.end(); itKey ++)
 		{
 			itk::ExposeMetaData<std::string> (imgMetaDictionary, *itKey, metaString);
@@ -1674,7 +1675,13 @@ bool CIntensityMotionCheck::EddyMotionCorrectIowa( DwiImageType::Pointer dwi )
 			}
 		}
 
-		for( unsigned int i=0; i< outputGradDirContainer->size(); i++)
+		if( inputGradDirContainer->size() != outputGradDirContainer->size())
+		{
+			std::cout<<"error: Gradient number mismatch between input and output."<<std::endl;
+			return false;
+		}
+
+		for( unsigned int i=0; i< inputGradDirContainer->size(); i++)
 		{
 			for( unsigned int j=0; j< this->qcResult->GetIntensityMotionCheckResult().size(); j++)
 			{
@@ -1686,9 +1693,9 @@ bool CIntensityMotionCheck::EddyMotionCorrectIowa( DwiImageType::Pointer dwi )
 					continue;
 				}
 
-				if( outputGradDirContainer->at(i)[0] ==  this->qcResult->GetIntensityMotionCheckResult()[j].ReplacedDir[0] &&
-					outputGradDirContainer->at(i)[1] ==  this->qcResult->GetIntensityMotionCheckResult()[j].ReplacedDir[1] &&
-					outputGradDirContainer->at(i)[2] ==  this->qcResult->GetIntensityMotionCheckResult()[j].ReplacedDir[2]  )
+				if( inputGradDirContainer->at(i)[0] ==  this->qcResult->GetIntensityMotionCheckResult()[j].ReplacedDir[0] &&
+					inputGradDirContainer->at(i)[1] ==  this->qcResult->GetIntensityMotionCheckResult()[j].ReplacedDir[1] &&
+					inputGradDirContainer->at(i)[2] ==  this->qcResult->GetIntensityMotionCheckResult()[j].ReplacedDir[2]  )
 				{
 					if( this->qcResult->GetIntensityMotionCheckResult()[j].processing > QCResult::GRADIENT_EDDY_MOTION_CORRECTED) //GRADIENT_EXCLUDE_SLICECHECK,
 																														//GRADIENT_EXCLUDE_INTERLACECHECK,
