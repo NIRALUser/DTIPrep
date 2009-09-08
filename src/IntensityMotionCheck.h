@@ -18,7 +18,10 @@
 #include "itkDWIQCInterlaceChecker.h"
 #include "itkDWIBaselineAverager.h"
 #include "itkDWIQCGradientChecker.h"
-#include "itkDWIEddyCurrentHeadMotionCorrector.h"
+
+#include "itkDWIEddyCurrentHeadMotionCorrector.h" //eddy-motion Utah
+#include "itkVectorImageRegisterAffineFilter.h" // eddy-motion IOWA
+
 
 class CIntensityMotionCheck //: public QObject
 {
@@ -34,7 +37,6 @@ public:
 		std::vector< double > gradientDir;
 		int repetitionNumber;
 	};
-
 
 	typedef unsigned short DwiPixelType;
 	typedef itk::Image<DwiPixelType, 2>			SliceImageType;
@@ -52,7 +54,9 @@ public:
 	typedef itk::DWIBaselineAverager<DwiImageType>					BaselineAveragerType;
 	typedef itk::DWIQCGradientChecker<DwiImageType>					GradientCheckerType;
 
-	typedef itk::DWIEddyCurrentHeadMotionCorrector<DwiImageType>	EddyMotionCorrectorType;
+	typedef itk::DWIEddyCurrentHeadMotionCorrector<DwiImageType>	EddyMotionCorrectorType; //eddy-motion Utah
+	typedef itk::VectorImageRegisterAffineFilter<DwiImageType, DwiImageType >	EddyMotionCorrectorTypeIowa;  //eddy-motion Iowa
+
 	DwiWriterType::Pointer		DwiWriter;
 	itk::NrrdImageIO::Pointer	NrrdImageIO;
 
@@ -61,7 +65,8 @@ public:
 	InterlaceCheckerType::Pointer		InterlaceChecker;
 	BaselineAveragerType::Pointer		BaselineAverager;
 	GradientCheckerType::Pointer		GradientChecker;
-	EddyMotionCorrectorType::Pointer	EddyMotionCorrector;
+	EddyMotionCorrectorType::Pointer	EddyMotionCorrector; //eddy-motion Utah
+	EddyMotionCorrectorTypeIowa::Pointer	EddyMotionCorrectorIowa; //eddy-motion Iowa
 
 	void SetFileName(std::string filename) {DwiFileName = filename; };
 	
@@ -79,6 +84,7 @@ public:
 	bool InterlaceWiseCheck( DwiImageType::Pointer dwi );
 	bool BaselineAverage( DwiImageType::Pointer dwi );
  	bool EddyMotionCorrect( DwiImageType::Pointer dwi );
+	bool EddyMotionCorrectIowa( DwiImageType::Pointer dwi );
 	bool GradientWiseCheck( DwiImageType::Pointer dwi );
 	bool SaveQCedDWI(DwiImageType::Pointer dwi);
 	void collectLeftDiffusionStatistics( DwiImageType::Pointer dwi, std::string reportfilename );

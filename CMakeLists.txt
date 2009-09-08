@@ -59,9 +59,13 @@ SET( DTIPrep_SRCS
   src/itkDWIQCInterlaceChecker.cpp   
   src/itkDWIQCGradientChecker.cpp
   src/itkDWIEddyCurrentHeadMotionCorrector.cpp
-#  src/itkDWIHeadMotionEddyCurrentCorrection.cxx
+# Utah
+#  src/itkDWIHeadMotionEddyCurrentCorrection.txx
   src/itkGradientSteepestDescentBaseOptimizer.cxx 
   src/itkGradientSteepestDescentOptimizer.cxx
+# Iowa
+  src/itkVectorImageRegisterAffineFilter.h
+  src/itkVectorImageRegisterAffineFilter.txx 
 )
 
 SET( DTIPrep_HRDS  

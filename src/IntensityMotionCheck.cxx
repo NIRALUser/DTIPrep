@@ -1491,6 +1491,254 @@ bool CIntensityMotionCheck::BaselineAverage( DwiImageType::Pointer dwi )
 	return true;
 }
 
+bool CIntensityMotionCheck::EddyMotionCorrectIowa( DwiImageType::Pointer dwi )
+{
+	if( protocal->GetEddyMotionCorrectionProtocal().bCorrect )
+	{
+		std::cout<<"Eddy-current and head motion correction using IOWA tool."<<std::endl;
+
+		std::string ReportFileName;
+		if( protocal->GetEddyMotionCorrectionProtocal().reportFileNameSuffix.length()>0 )
+		{
+// 			ReportFileName=DwiFileName.substr(0,DwiFileName.find_last_of('.') );
+// 			ReportFileName.append( protocal->GetEddyMotionCorrectionProtocal().reportFileNameSuffix );	
+			if( protocal->GetQCOutputDirectory().length()>0 )
+			{
+
+				if( protocal->GetQCOutputDirectory().at( protocal->GetQCOutputDirectory().length()-1 ) == '\\' || 
+					protocal->GetQCOutputDirectory().at( protocal->GetQCOutputDirectory().length()-1 ) == '/' 		)
+					ReportFileName = protocal->GetQCOutputDirectory().substr( 0,protocal->GetQCOutputDirectory().find_last_of("/\\") );
+				else
+					ReportFileName = protocal->GetQCOutputDirectory();
+
+				ReportFileName.append( "/" );
+
+				std::string str = DwiFileName.substr( 0,DwiFileName.find_last_of('.') );
+				str = str.substr( str.find_last_of("/\\")+1);
+
+				ReportFileName.append( str );
+				ReportFileName.append( protocal->GetEddyMotionCorrectionProtocal().reportFileNameSuffix );	
+			}
+			else
+			{
+				ReportFileName = DwiFileName.substr(0,DwiFileName.find_last_of('.') );
+				ReportFileName.append( protocal->GetEddyMotionCorrectionProtocal().reportFileNameSuffix );			
+			}
+		}
+
+
+		// get the inputgradDir 
+		itk::MetaDataDictionary imgMetaDictionary = EddyMotionCorrectorIowa->GetOutput()->GetMetaDataDictionary();    //
+		std::vector<std::string> imgMetaKeys = imgMetaDictionary.GetKeys();
+		std::vector<std::string>::const_iterator itKey = imgMetaKeys.begin();
+		std::string metaString;
+		TensorReconstructionImageFilterType::GradientDirectionType vect3d;
+
+		GradientDirectionContainerType::Pointer inputGradDirContainer = GradientDirectionContainerType::New();
+		inputGradDirContainer->clear();
+
+		int baselinrNumber = 0;
+
+		for ( ; itKey != imgMetaKeys.end(); itKey ++)
+		{
+			itk::ExposeMetaData<std::string> (imgMetaDictionary, *itKey, metaString);
+			if (itKey->find("DWMRI_gradient") != std::string::npos)
+			{ 
+				std::istringstream iss(metaString);
+				iss >> vect3d[0] >> vect3d[1] >> vect3d[2];
+				inputGradDirContainer->push_back(vect3d);
+				if( vect3d[0]==0.0 && vect3d[1]==0.0 && vect3d[2]==0.0 )
+					baselinrNumber ++;
+			}
+		}
+
+		// filtering for fixed image
+		typedef itk::Image<signed short,3>  GradientImageType;
+		typedef itk::VectorIndexSelectionCastImageFilter< DwiImageType, GradientImageType > FilterType;
+		FilterType::Pointer componentExtractor = FilterType::New();
+		componentExtractor->SetInput( dwi);
+
+		EddyMotionCorrectorIowa = EddyMotionCorrectorTypeIowa::New();
+		EddyMotionCorrectorIowa->SetInput( dwi );
+
+		// find the gradient with the smallest b-value
+		int smallestGradient = -1;
+		if( baselinrNumber==0)
+		{
+			double smallestBValue = 9999999999999999.0;
+			for( int i = 0; i< inputGradDirContainer->size(); i++ )
+			{
+				double temp;
+				temp =  inputGradDirContainer->ElementAt(i)[0]*inputGradDirContainer->ElementAt(i)[0] +
+						inputGradDirContainer->ElementAt(i)[1]*inputGradDirContainer->ElementAt(i)[1] +
+						inputGradDirContainer->ElementAt(i)[2]*inputGradDirContainer->ElementAt(i)[2]  ;
+				if( temp < smallestBValue )
+				{
+					smallestBValue = temp;
+					smallestGradient = i;
+				}
+			}
+			componentExtractor->SetIndex( smallestGradient );
+			componentExtractor->Update();
+			EddyMotionCorrectorIowa->SetFixedImage(componentExtractor->GetOutput());
+		}
+		else
+		{
+			GradientImageType::Pointer fixed = GradientImageType::New();
+
+			fixed->CopyInformation( dwi );
+			fixed->SetRegions( dwi->GetLargestPossibleRegion());
+			fixed->Allocate();
+			fixed->FillBuffer(0);
+
+			typedef itk::ImageRegionIteratorWithIndex< GradientImageType > averagedBaselineIterator;
+			averagedBaselineIterator aIt(fixed, fixed->GetLargestPossibleRegion());
+			aIt.GoToBegin();
+
+			typedef DwiImageType::ConstPointer  InputImageConstPointer;
+			InputImageConstPointer  inputPtr = dwi;
+			GradientImageType::IndexType pixelIndex;
+			double pixelValue ;
+			while ( !aIt.IsAtEnd() ) 
+			{
+				// determine the index of the output pixel
+				pixelIndex = aIt.GetIndex();
+				pixelValue = 0.0;
+				for( int i = 0 ; i < inputPtr->GetVectorLength(); i++ )
+				{
+					if( inputGradDirContainer->ElementAt(i)[0] == 0.0 &&
+						inputGradDirContainer->ElementAt(i)[1] == 0.0 && 
+						inputGradDirContainer->ElementAt(i)[2] == 0.0     )
+					{
+						//std::cout<<" GetPixel(pixelIndex): "<< inputPtr->GetPixel(pixelIndex)[i] <<std::endl;
+						pixelValue += inputPtr->GetPixel(pixelIndex)[i]/(static_cast<double>(baselinrNumber));					
+					}
+				}
+				aIt.Set( static_cast<unsigned short>(pixelValue) );
+				++aIt;
+			}		
+			EddyMotionCorrectorIowa->SetFixedImage(fixed);
+		}
+
+		try
+		{
+			EddyMotionCorrectorIowa->Update();
+		}
+		catch(itk::ExceptionObject & e)
+		{
+			std::cout<< e.GetDescription()<<std::endl;			
+		}
+
+		this->DwiImageTemp = EddyMotionCorrectorIowa->GetOutput();
+
+		////////////////////////////////////////////////////////////////
+// 		itk::MetaDataDictionary imgMetaDictionary = EddyMotionCorrectorIowa->GetOutput()->GetMetaDataDictionary();    //
+// 		std::vector<std::string> imgMetaKeys = imgMetaDictionary.GetKeys();
+// 		std::vector<std::string>::const_iterator itKey = imgMetaKeys.begin();
+// 		std::string metaString;
+// 		TensorReconstructionImageFilterType::GradientDirectionType vect3d;
+
+		GradientDirectionContainerType::Pointer GradDirContainer = GradientDirectionContainerType::New();
+		GradientDirectionContainer->clear();
+
+		for ( ; itKey != imgMetaKeys.end(); itKey ++)
+		{
+			itk::ExposeMetaData<std::string> (imgMetaDictionary, *itKey, metaString);
+			if (itKey->find("DWMRI_gradient") != std::string::npos)
+			{ 
+				std::istringstream iss(metaString);
+				iss >> vect3d[0] >> vect3d[1] >> vect3d[2];
+				GradDirContainer->push_back(vect3d);
+			}
+		}
+
+		for( unsigned int i=0; i< GradDirContainer->size(); i++)
+		{
+			for( unsigned int j=0; j< this->qcResult->GetIntensityMotionCheckResult().size(); j++)
+			{
+				if( 0.0 ==  this->qcResult->GetIntensityMotionCheckResult()[j].ReplacedDir[0] &&
+					0.0 ==  this->qcResult->GetIntensityMotionCheckResult()[j].ReplacedDir[1] &&
+					0.0 ==  this->qcResult->GetIntensityMotionCheckResult()[j].ReplacedDir[2]  )
+				{
+					this->qcResult->GetIntensityMotionCheckResult()[j].processing = QCResult::GRADIENT_BASELINE_AVERAGED;
+					continue;
+				}
+
+				if( GradDirContainer->at(i)[0] ==  this->qcResult->GetIntensityMotionCheckResult()[j].ReplacedDir[0] &&
+					GradDirContainer->at(i)[1] ==  this->qcResult->GetIntensityMotionCheckResult()[j].ReplacedDir[1] &&
+					GradDirContainer->at(i)[2] ==  this->qcResult->GetIntensityMotionCheckResult()[j].ReplacedDir[2]  )
+				{
+					if( this->qcResult->GetIntensityMotionCheckResult()[j].processing > QCResult::GRADIENT_EDDY_MOTION_CORRECTED) //GRADIENT_EXCLUDE_SLICECHECK,
+																														//GRADIENT_EXCLUDE_INTERLACECHECK,
+																														//GRADIENT_EXCLUDE_GRADIENTCHECK,
+																														//GRADIENT_EXCLUDE_MANUALLY,
+					{
+						std::cout<< "gradient " << i << "has been excluded!" <<std::endl;
+					}
+					else
+					{
+						this->qcResult->GetIntensityMotionCheckResult()[j].processing = QCResult::GRADIENT_EDDY_MOTION_CORRECTED;
+						this->qcResult->GetIntensityMotionCheckResult()[j].CorrectedDir[0] = GradDirContainer->at(i)[0];
+						this->qcResult->GetIntensityMotionCheckResult()[j].CorrectedDir[1] = GradDirContainer->at(i)[1];
+						this->qcResult->GetIntensityMotionCheckResult()[j].CorrectedDir[2] = GradDirContainer->at(i)[2];
+					}
+				}
+			}
+		}
+
+		if( protocal->GetGradientCheckProtocal().outputDWIFileNameSuffix.length()>0 )
+		{
+			std::string outputDWIFileName;
+// 			outputDWIFileName=DwiFileName.substr(0,DwiFileName.find_last_of('.') );
+// 			outputDWIFileName.append( protocal->GetEddyMotionCorrectionProtocal().outputDWIFileNameSuffix );	
+			if( protocal->GetQCOutputDirectory().length()>0 )
+			{
+
+				if( protocal->GetQCOutputDirectory().at( protocal->GetQCOutputDirectory().length()-1 ) == '\\' || 
+					protocal->GetQCOutputDirectory().at( protocal->GetQCOutputDirectory().length()-1 ) == '/' 		)
+					outputDWIFileName = protocal->GetQCOutputDirectory().substr( 0,protocal->GetQCOutputDirectory().find_last_of("/\\") );
+				else
+					outputDWIFileName = protocal->GetQCOutputDirectory();
+
+				outputDWIFileName.append( "/" );
+
+				std::string str = DwiFileName.substr( 0,DwiFileName.find_last_of('.') );
+				str = str.substr( str.find_last_of("/\\")+1);
+
+				outputDWIFileName.append( str );
+				outputDWIFileName.append( protocal->GetEddyMotionCorrectionProtocal().outputDWIFileNameSuffix );	
+			}
+			else
+			{
+				outputDWIFileName = DwiFileName.substr(0,DwiFileName.find_last_of('.') );
+				outputDWIFileName.append( protocal->GetEddyMotionCorrectionProtocal().outputDWIFileNameSuffix );			
+			}
+
+
+			try
+			{
+				std::cout<< "Saving output of eddy current motion correction: "<< outputDWIFileName <<" ... ";
+				DwiWriter->SetImageIO(NrrdImageIO);
+				DwiWriter->SetFileName( outputDWIFileName );
+				DwiWriter->SetInput( DwiImageTemp);
+				DwiWriter->UseCompressionOn();
+				DwiWriter->Update();
+			}
+			catch(itk::ExceptionObject & e)
+			{
+				std::cout<< e.GetDescription()<<std::endl;
+			}
+			std::cout<< "DONE"<<std::endl;
+		}
+	}
+	else
+	{
+		std::cout<<"Eddy-current and head motion correction NOT set."<<std::endl;
+	}
+	return true;
+}
+
+
 
 bool CIntensityMotionCheck::EddyMotionCorrect( DwiImageType::Pointer dwi )
 {
@@ -1633,6 +1881,7 @@ bool CIntensityMotionCheck::EddyMotionCorrect( DwiImageType::Pointer dwi )
 	}
 	return true;
 }
+
 
 
 bool CIntensityMotionCheck::GradientWiseCheck( DwiImageType::Pointer dwi )
@@ -1942,7 +2191,8 @@ unsigned char  CIntensityMotionCheck::RunPipelineByProtocal()
 	// EddyMotionCorrect
 	std::cout<<"====================="<<std::endl;
 	std::cout<<"EddyCurrentHeadMotionCorrect ... "<<std::endl;
-	EddyMotionCorrect( DwiImageTemp );
+	//EddyMotionCorrect( DwiImageTemp );
+	EddyMotionCorrectIowa(DwiImageTemp);
 	std::cout<<"EddyCurrentHeadMotionCorrect DONE "<<std::endl;
 
 	// GradientChecker
@@ -3474,9 +3724,10 @@ bool CIntensityMotionCheck::SaveQCedDWI()
  		catch(itk::ExceptionObject & e)
  		{
  			std::cout<< e.GetDescription()<<std::endl;
- 			return -1;
+ 			return false;
  		}
  	}
+	return true;
 }
 void CIntensityMotionCheck::collectLeftDiffusionStatistics( int dumb)
 {

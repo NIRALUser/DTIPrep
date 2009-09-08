@@ -676,23 +676,7 @@ void GMainWindow::createStatusBar()
 
 void GMainWindow::createDockPanels()
 {
-/*
-	diffusionCheckPanel = new DiffusionCheckPanel(this);
-    diffusionCheckPanel->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea | Qt::BottomDockWidgetArea    );
-    addDockWidget(Qt::LeftDockWidgetArea,diffusionCheckPanel );
 
-    diffusionEditPanel = new DiffusionEditPanel(this);
-    diffusionEditPanel->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea | Qt::BottomDockWidgetArea    );
-    addDockWidget(Qt::LeftDockWidgetArea, diffusionEditPanel);
-
-    dTIEstimatePanel = new DTIEstimatePanel(this);
-    dTIEstimatePanel->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea | Qt::BottomDockWidgetArea    );
-    addDockWidget(Qt::LeftDockWidgetArea, dTIEstimatePanel);
-
-    eddyMotionCorrectPanel = new EddyMotionCorrectPanel(this);
-    eddyMotionCorrectPanel->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea |  Qt::BottomDockWidgetArea    );
-    addDockWidget(Qt::LeftDockWidgetArea, eddyMotionCorrectPanel);
-*/
     DTIPrepPanel = new IntensityMotionCheckPanel(this);
     DTIPrepPanel->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea |  Qt::BottomDockWidgetArea  );
     addDockWidget(Qt::LeftDockWidgetArea, DTIPrepPanel);
@@ -701,29 +685,12 @@ void GMainWindow::createDockPanels()
     dicom2NrrdPanel->setAllowedAreas(	Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea | Qt::BottomDockWidgetArea    );
     addDockWidget(Qt::LeftDockWidgetArea, dicom2NrrdPanel);
 
-//    tabifyDockWidget ( diffusionCheckPanel,diffusionEditPanel );
-//    tabifyDockWidget ( diffusionEditPanel,dTIEstimatePanel );
-//    tabifyDockWidget ( dTIEstimatePanel,eddyMotionCorrectPanel );
-//    tabifyDockWidget ( eddyMotionCorrectPanel,DTIPrepPanel );
 //    tabifyDockWidget ( DTIPrepPanel,dicom2NrrdPanel );
     tabifyDockWidget ( dicom2NrrdPanel, DTIPrepPanel );
 
-   // diffusionCheckPanel->hide();
-   // diffusionEditPanel->hide();
-   // dTIEstimatePanel->hide();
-   // eddyMotionCorrectPanel->hide();
     //DTIPrepPanel->hide();
     //dicom2NrrdPanel ->hide();
 
-/*
-	reader = ReaderType::New();
-	reader->SetFileName("d:\\DTI3_256x256x159_6.mha");
-	//reader->SetFileName("/projects2/work2/zhliu/MarksStudy/AtlasTensorsFibers_Larry/Atlas/tensor/AtlasFA_x.mha");
-	reader->Update();
-	connecter = ItkVtkImageFilterTypeUShort::New();
-	connecter->SetInput( reader->GetOutput());
-	connecter->Update();
-	*/
 /*
     imageView2DPanel1 = new ImageView2DPanel(tr("Image2DView 1: Axial"),this);
     imageView2DPanel1->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea | Qt::TopDockWidgetArea  | Qt::BottomDockWidgetArea    );
