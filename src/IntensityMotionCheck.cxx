@@ -2234,28 +2234,7 @@ unsigned char  CIntensityMotionCheck::RunPipelineByProtocal()
  	std::cout<<"====================="<<std::endl;
  	std::cout<<"Save QC'ed DWI ... ";
 	SaveQCedDWI(DwiImageTemp);
-	/*
- 	if( protocal->GetQCedDWIFileNameSuffix().length()>0 )
- 	{
- 		std::string outputDWIFileName;
- 		outputDWIFileName=DwiFileName.substr(0,DwiFileName.find_last_of('.') );
- 		outputDWIFileName.append( protocal->GetQCedDWIFileNameSuffix());	
- 		try
- 		{
- 			DwiWriter->SetImageIO(NrrdImageIO);
- 			DwiWriter->SetFileName( outputDWIFileName );
- 			DwiWriter->SetInput( DwiImageTemp );
- 			DwiWriter->UseCompressionOn();
- 			DwiWriter->Update();
- 		}
- 		catch(itk::ExceptionObject & e)
- 		{
- 			std::cout<< e.GetDescription()<<std::endl;
- 			return -1;
- 		}
- 		std::cout<< "DONE"<<std::endl;
- 	}
-	*/
+
 	std::cout<< "DONE"<<std::endl;
 
 	// DTIComputing
@@ -2677,16 +2656,71 @@ bool CIntensityMotionCheck::dtiestim()
 	str.append(protocal->GetDTIProtocal().dtiestimCommand); 
 	str.append(" ");
 
-	std::string OutputDwiFileName;
-	OutputDwiFileName=DwiFileName.substr(0,DwiFileName.find_last_of('.') );
-	OutputDwiFileName.append( protocal->GetQCedDWIFileNameSuffix() );	
+	std::string outputDWIFileName;
+	if( protocal->GetQCedDWIFileNameSuffix().length()>0 )
+	{
+		if( protocal->GetQCOutputDirectory().length()>0 )
+		{
 
-	str.append(OutputDwiFileName);
+			if( protocal->GetQCOutputDirectory().at( protocal->GetQCOutputDirectory().length()-1 ) == '\\' || 
+				protocal->GetQCOutputDirectory().at( protocal->GetQCOutputDirectory().length()-1 ) == '/' 		)
+				outputDWIFileName = protocal->GetQCOutputDirectory().substr( 0,protocal->GetQCOutputDirectory().find_last_of("/\\") );
+			else
+				outputDWIFileName = protocal->GetQCOutputDirectory();
+
+			outputDWIFileName.append( "/" );
+
+			std::string str = DwiFileName.substr( 0,DwiFileName.find_last_of('.') );
+			str = str.substr( str.find_last_of("/\\")+1);
+
+			outputDWIFileName.append( str );
+			outputDWIFileName.append( protocal->GetQCedDWIFileNameSuffix() );	
+		}
+		else
+		{
+			outputDWIFileName = DwiFileName.substr(0,DwiFileName.find_last_of('.') );
+			outputDWIFileName.append( protocal->GetQCedDWIFileNameSuffix() );			
+		}
+	}
+	else
+	{
+		outputDWIFileName=DwiFileName.substr(0,DwiFileName.find_last_of('.') );
+		outputDWIFileName.append( protocal->GetQCedDWIFileNameSuffix() );	
+	}
+	str.append(outputDWIFileName);
 	str.append(" ");
 
 	std::string OutputTensor;
-	OutputTensor=DwiFileName.substr(0,DwiFileName.find_last_of('.') );
-	OutputTensor.append( protocal->GetDTIProtocal().tensorSuffix);
+	if( protocal->GetQCedDWIFileNameSuffix().length()>0 )
+	{
+		if( protocal->GetQCOutputDirectory().length()>0 )
+		{
+
+			if( protocal->GetQCOutputDirectory().at( protocal->GetQCOutputDirectory().length()-1 ) == '\\' || 
+				protocal->GetQCOutputDirectory().at( protocal->GetQCOutputDirectory().length()-1 ) == '/' 		)
+				OutputTensor = protocal->GetQCOutputDirectory().substr( 0,protocal->GetQCOutputDirectory().find_last_of("/\\") );
+			else
+				OutputTensor = protocal->GetQCOutputDirectory();
+
+			OutputTensor.append( "/" );
+
+			std::string str = DwiFileName.substr( 0,DwiFileName.find_last_of('.') );
+			str = str.substr( str.find_last_of("/\\")+1);
+
+			OutputTensor.append( str );
+			OutputTensor.append( protocal->GetDTIProtocal().tensorSuffix );	
+		}
+		else
+		{
+			OutputTensor = DwiFileName.substr(0,DwiFileName.find_last_of('.') );
+			OutputTensor.append( protocal->GetDTIProtocal().tensorSuffix );			
+		}
+	}
+	else
+	{
+		OutputTensor=DwiFileName.substr(0,DwiFileName.find_last_of('.') );
+		OutputTensor.append( protocal->GetDTIProtocal().tensorSuffix);
+	}
 	str.append(OutputTensor); 
 	
 	if(protocal->GetDTIProtocal().method == Protocal::METHOD_WLS )
@@ -2752,16 +2786,43 @@ bool CIntensityMotionCheck::dtiprocess()
 	string.append(" "); 
 
 	std::string dtiprocessInput;
-	dtiprocessInput=DwiFileName.substr(0,DwiFileName.find_last_of('.') );
-	dtiprocessInput.append(protocal->GetDTIProtocal().tensorSuffix);
+	if( protocal->GetQCedDWIFileNameSuffix().length()>0 )
+	{
+		if( protocal->GetQCOutputDirectory().length()>0 )
+		{
 
+			if( protocal->GetQCOutputDirectory().at( protocal->GetQCOutputDirectory().length()-1 ) == '\\' || 
+				protocal->GetQCOutputDirectory().at( protocal->GetQCOutputDirectory().length()-1 ) == '/' 		)
+				dtiprocessInput = protocal->GetQCOutputDirectory().substr( 0,protocal->GetQCOutputDirectory().find_last_of("/\\") );
+			else
+				dtiprocessInput = protocal->GetQCOutputDirectory();
+
+			dtiprocessInput.append( "/" );
+
+			std::string str = DwiFileName.substr( 0,DwiFileName.find_last_of('.') );
+			str = str.substr( str.find_last_of("/\\")+1);
+
+			dtiprocessInput.append( str );
+			dtiprocessInput.append( protocal->GetDTIProtocal().tensorSuffix );	
+		}
+		else
+		{
+			dtiprocessInput = DwiFileName.substr(0,DwiFileName.find_last_of('.') );
+			dtiprocessInput.append( protocal->GetDTIProtocal().tensorSuffix );			
+		}
+	}
+	else
+	{
+		dtiprocessInput=DwiFileName.substr(0,DwiFileName.find_last_of('.') );
+		dtiprocessInput.append( protocal->GetDTIProtocal().tensorSuffix);
+	}
 	string.append(dtiprocessInput);	
 
 	if( protocal->GetDTIProtocal().bfa)
 	{
 		string.append(" -f ");
 		std::string fa;
-		fa=DwiFileName.substr(0,DwiFileName.find_last_of('.') );
+		fa=dtiprocessInput.substr(0,dtiprocessInput.find_last_of('.') );
 		fa.append(protocal->GetDTIProtocal().faSuffix);
 		string.append(fa); 
 	}
@@ -2770,7 +2831,7 @@ bool CIntensityMotionCheck::dtiprocess()
 	{
 		string.append(" -m "); 
 		std::string md;
-		md=DwiFileName.substr(0,DwiFileName.find_last_of('.') );
+		md=dtiprocessInput.substr(0,dtiprocessInput.find_last_of('.') );
 		md.append(protocal->GetDTIProtocal().mdSuffix);
 		string.append(md); 
 	}
@@ -2779,7 +2840,7 @@ bool CIntensityMotionCheck::dtiprocess()
 	{
 		string.append(" -c "); 
 		std::string cfa;
-		cfa=DwiFileName.substr(0,DwiFileName.find_last_of('.') );
+		cfa=dtiprocessInput.substr(0,dtiprocessInput.find_last_of('.') );
 		cfa.append(protocal->GetDTIProtocal().coloredfaSuffix);
 		string.append(cfa); 
 	}
@@ -2788,7 +2849,7 @@ bool CIntensityMotionCheck::dtiprocess()
 	{
 		string.append(" --frobenius-norm-output "); 
 		std::string fn;
-		fn=DwiFileName.substr(0,DwiFileName.find_last_of('.') );
+		fn=dtiprocessInput.substr(0,dtiprocessInput.find_last_of('.') );
 		fn.append(protocal->GetDTIProtocal().frobeniusnormSuffix);
 		string.append(fn); 
 	}
@@ -2798,11 +2859,6 @@ bool CIntensityMotionCheck::dtiprocess()
 
 	return true;
 }
-
-
-
-
-
 
 //////////////////////////////
 bool CIntensityMotionCheck::ImageCheck( )
