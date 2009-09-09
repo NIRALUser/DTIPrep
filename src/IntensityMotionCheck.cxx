@@ -2691,36 +2691,8 @@ bool CIntensityMotionCheck::dtiestim()
 	str.append(" ");
 
 	std::string OutputTensor;
-	if( protocal->GetQCedDWIFileNameSuffix().length()>0 )
-	{
-		if( protocal->GetQCOutputDirectory().length()>0 )
-		{
-
-			if( protocal->GetQCOutputDirectory().at( protocal->GetQCOutputDirectory().length()-1 ) == '\\' || 
-				protocal->GetQCOutputDirectory().at( protocal->GetQCOutputDirectory().length()-1 ) == '/' 		)
-				OutputTensor = protocal->GetQCOutputDirectory().substr( 0,protocal->GetQCOutputDirectory().find_last_of("/\\") );
-			else
-				OutputTensor = protocal->GetQCOutputDirectory();
-
-			OutputTensor.append( "/" );
-
-			std::string str = DwiFileName.substr( 0,DwiFileName.find_last_of('.') );
-			str = str.substr( str.find_last_of("/\\")+1);
-
-			OutputTensor.append( str );
-			OutputTensor.append( protocal->GetDTIProtocal().tensorSuffix );	
-		}
-		else
-		{
-			OutputTensor = DwiFileName.substr(0,DwiFileName.find_last_of('.') );
-			OutputTensor.append( protocal->GetDTIProtocal().tensorSuffix );			
-		}
-	}
-	else
-	{
-		OutputTensor=DwiFileName.substr(0,DwiFileName.find_last_of('.') );
-		OutputTensor.append( protocal->GetDTIProtocal().tensorSuffix);
-	}
+	OutputTensor=outputDWIFileName.substr(0,outputDWIFileName.find_last_of('.') );
+	OutputTensor.append( protocal->GetDTIProtocal().tensorSuffix);
 	str.append(OutputTensor); 
 	
 	if(protocal->GetDTIProtocal().method == Protocal::METHOD_WLS )
@@ -2747,7 +2719,7 @@ bool CIntensityMotionCheck::dtiestim()
 	{
 		str.append(" --idwi "); 
 		std::string idwi;
-		idwi=DwiFileName.substr(0,DwiFileName.find_last_of('.') );
+		idwi=OutputTensor.substr(0,OutputTensor.find_last_of('.') );
 		idwi.append(protocal->GetDTIProtocal().idwiSuffix);
 		str.append(idwi);
 	}
@@ -2756,7 +2728,7 @@ bool CIntensityMotionCheck::dtiestim()
 	{
 		str.append(" --B0 "); 
 		std::string baseline;
-		baseline=DwiFileName.substr(0,DwiFileName.find_last_of('.') );
+		baseline=OutputTensor.substr(0,OutputTensor.find_last_of('.') );
 		baseline.append(protocal->GetDTIProtocal().baselineSuffix);
 		str.append(baseline);
 	}
