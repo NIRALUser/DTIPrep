@@ -3,8 +3,8 @@
 Program:   NeuroLib
 Module:    $file: itkDWIQCSliceChecker.h $
 Language:  C++
-Date:      $Date: 2009-09-03 14:42:59 $
-Version:   $Revision: 1.3 $
+Date:      $Date: 2009-09-10 02:09:37 $
+Version:   $Revision: 1.4 $
 Author:    Zhexing Liu (liuzhexing@gmail.com)
 
 Copyright (c) NIRAL, UNC. All rights reserved.
@@ -115,6 +115,11 @@ namespace itk
 		itkGetConstMacro( QuadFit, bool );
 		itkSetMacro( QuadFit, bool );
 
+		/** Get & Set the smoothing indicator */
+		itkBooleanMacro( Smoothing );
+		itkGetConstMacro( Smoothing, bool );
+		itkSetMacro( Smoothing, bool );
+
 		/** Get & Set the SubRegionalCheck indicator */
 		itkBooleanMacro( SubRegionalCheck );
 		itkGetConstMacro( SubRegionalCheck, bool );
@@ -128,6 +133,13 @@ namespace itk
 		itkGetConstMacro( ReportFileName, std::string );
 		itkSetMacro( ReportFileName, std::string  );
 
+		/** Get & Set the GaussianVariance */
+		itkGetConstMacro( GaussianVariance, double );
+		itkSetMacro( GaussianVariance, double  );
+
+		/** Get & Set the MaxKernelWidth */
+		itkGetConstMacro( MaxKernelWidth, double );
+		itkSetMacro( MaxKernelWidth, double  );
 
 		/** DWIQCSliceChecker produces an image which is a different vector length
 			* than its input image. As such, DWIQCSliceChecker needs to provide
@@ -148,6 +160,10 @@ namespace itk
 	private:
 		DWIQCSliceChecker(const Self&); //purposely not implemented
 		void operator=(const Self&);    //purposely not implemented
+
+		/** Gaussian smoothing parameters */
+		double m_GaussianVariance ;
+		double m_MaxKernelWidth ;
 
 		/** check parameters */
 		float m_HeadSkipRatio ;
@@ -184,10 +200,13 @@ namespace itk
 		int gradientLeftNumber;
 		std::vector<int> repetitionLeftNumber;
 
+		/** smoothing */
+		bool m_Smoothing;
+
 		/** quadratic fitting? */
 		bool m_QuadFit;
 
-		/** quadratic fitting? */
+		/** conduct subregional check */
 		bool m_SubRegionalCheck;
 
 		/** b value */
@@ -228,6 +247,19 @@ namespace itk
 		// 0      1
 		//     2
 		// 3      4
+		/** for all gradients  slice wise correlation */
+		std::vector<double> gradientMeans0;
+		std::vector<double> gradientDeviations0;
+		std::vector<double> gradientMeans1;
+		std::vector<double> gradientDeviations1;
+		std::vector<double> gradientMeans2;
+		std::vector<double> gradientDeviations2;
+		std::vector<double> gradientMeans3;
+		std::vector<double> gradientDeviations3;
+		std::vector<double> gradientMeans4;
+		std::vector<double> gradientDeviations4;
+
+
 		std::vector<bool> qcResults;		
 
 		std::vector< std::vector<double> > normalizedMetric;
@@ -235,9 +267,10 @@ namespace itk
 		void parseGridentDirections();
 		void collectDiffusionStatistics();
 		void initializeQCResullts();
-		void calculateCorrelations();
+		void calculateCorrelations( bool smoothing );
 		void calculateSubRegionalCorrelations();
 		void check();
+		void SubRegionalcheck();
 		void LeaveOneOutcheck();
 		void iterativeCheck();
 		void collectLeftDiffusionStatistics();

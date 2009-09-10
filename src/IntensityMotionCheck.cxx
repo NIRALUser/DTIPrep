@@ -1147,6 +1147,12 @@ bool CIntensityMotionCheck::SliceWiseCheck( DwiImageType::Pointer dwi )
 		SliceChecker->SetReportFileName( ReportFileName );
 		SliceChecker->SetReportFileMode( protocal->GetSliceCheckProtocal().reportFileMode );
 
+		SliceChecker->SetSubRegionalCheck( true ); 
+// results get worse using smoothing
+// 		SliceChecker->SetSmoothing( false );
+// 		SliceChecker->SetGaussianVariance( 4.0 );
+// 		SliceChecker->SetMaxKernelWidth( 8.0 );
+
 		try
 		{
 			SliceChecker->Update();

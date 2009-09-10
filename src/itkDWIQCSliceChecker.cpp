@@ -3,8 +3,8 @@
 Program:   NeuroLib
 Module:    $file: itkDWIQCSliceChecker.cpp $
 Language:  C++
-Date:      $Date: 2009-09-03 15:13:35 $
-Version:   $Revision: 1.4 $
+Date:      $Date: 2009-09-10 02:09:37 $
+Version:   $Revision: 1.5 $
 Author:    Zhexing Liu (liuzhexing@gmail.com)
 
 Copyright (c) NIRAL, UNC. All rights reserved.
@@ -31,6 +31,8 @@ PURPOSE.  See the above copyright notices for more information.
 #include "vnl/vnl_matrix.h"
 #include "vnl/algo/vnl_matrix_inverse.h"
 
+#include "itkDiscreteGaussianImageFilter.h"
+
 #include <iostream>
 #include <iomanip>
 #include <fstream>
@@ -50,6 +52,10 @@ namespace itk
 		m_TailSkipRatio = 0.1;
 		m_BaselineStdevTimes = 3.5;
 		m_GradientStdevTimes = 3.5;
+
+		m_Smoothing = false;
+		m_GaussianVariance = 2.0 ;
+		m_MaxKernelWidth = 6.0;
 
 		b0 = -1.0 ;
 		m_QuadFit = false;
@@ -133,10 +139,9 @@ namespace itk
 		parseGridentDirections();
 		collectDiffusionStatistics();
 		initializeQCResullts() ;
-		calculateCorrelations();
-		//if(m_SubRegionalCheck)
-		//	calculateSubRegionalCorrelations();
-		//LeaveOneOutcheck();
+		calculateCorrelations( m_Smoothing );
+		if(m_SubRegionalCheck)
+			calculateSubRegionalCorrelations();
 		iterativeCheck();
 		//validateLeftDiffusionStatistics();
 		writeReport();
@@ -241,7 +246,7 @@ namespace itk
 	template <class TImageType>
 	void 
 		DWIQCSliceChecker<TImageType>
-		::calculateCorrelations()
+		::calculateCorrelations(  bool smoothing )
 	{
 		std::cout<<"Slice calculating .";
 
@@ -291,9 +296,50 @@ namespace itk
 				filter1->Update();
 				filter2->Update();
 
+				SliceImageType::Pointer image1;
+				SliceImageType::Pointer image2;
+
+				if( smoothing)
+				{
+					typedef short ShortPixelType;
+					typedef itk::Image< ShortPixelType, 2 > ShortSliceImageType;
+
+					typedef itk::DiscreteGaussianImageFilter< SliceImageType, ShortSliceImageType > FilterType;
+					FilterType::Pointer smoother1 = FilterType::New();
+					FilterType::Pointer smoother2 = FilterType::New();
+
+					smoother1->SetInput( filter1->GetOutput() );
+					smoother1->SetVariance( m_GaussianVariance );
+					smoother1->SetMaximumKernelWidth( m_MaxKernelWidth );
+					//smoother1->Update();
+
+					smoother2->SetInput( filter2->GetOutput() );
+					smoother2->SetVariance( m_GaussianVariance );
+					smoother2->SetMaximumKernelWidth( m_MaxKernelWidth );
+					//smoother2->Update();
+
+					typedef itk::CastImageFilter< ShortSliceImageType, SliceImageType > CastFilterType;
+					CastFilterType::Pointer castFilter1 = CastFilterType::New();
+					CastFilterType::Pointer castFilter2 = CastFilterType::New();
+
+					castFilter1->SetInput( smoother1->GetOutput() );
+					castFilter2->SetInput( smoother2->GetOutput() );
+
+					castFilter1->Update();
+					castFilter2->Update();
+
+					image1 = castFilter1->GetOutput();
+					image2 = castFilter2->GetOutput();
+				}
+				else
+				{
+					image1 = filter1->GetOutput();
+					image2 = filter2->GetOutput();
+				}
+
 				typedef itk::ImageRegionConstIterator<SliceImageType>  citType;
-				citType cit1( filter1->GetOutput(), filter1->GetOutput()->GetLargestPossibleRegion() );
-				citType cit2( filter2->GetOutput(), filter2->GetOutput()->GetLargestPossibleRegion() );
+				citType cit1( image1, image1->GetLargestPossibleRegion() );
+				citType cit2( image2, image2->GetLargestPossibleRegion() );
 				cit1.GoToBegin();
 				cit2.GoToBegin();
 
@@ -310,7 +356,6 @@ namespace itk
 					sAB += A*B;
 					sA2 += A*A;
 					sB2 += B*B;
-
 
 					++cit1;
 					++cit2;
@@ -896,8 +941,491 @@ namespace itk
 		return;
 	}
 
+	/** 
+	*
+	*/
+	template <class TImageType>
+	void 
+		DWIQCSliceChecker<TImageType>
+		::SubRegionalcheck()
+	{
+		collectLeftDiffusionStatistics();
+		int DWICount;
+		DWICount		= getGradientLeftNumber();
 
+		this->gradientMeans0.clear();
+		this->gradientDeviations0.clear();
+		this->gradientMeans1.clear();
+		this->gradientDeviations1.clear();
+		this->gradientMeans2.clear();
+		this->gradientDeviations2.clear();
+		this->gradientMeans3.clear();
+		this->gradientDeviations3.clear();
+		this->gradientMeans4.clear();
+		this->gradientDeviations4.clear();
 
+// region 0
+		for(int j=0;j<ResultsContainer0[0].size();j++)
+		{
+			double DWImean=0.0, DWIdeviation=0.0; 
+			for(int i=0; i<this->ResultsContainer0.size(); i++)
+			{
+				if(this->qcResults[i])
+				{
+					if ( this->m_GradientDirectionContainer->at(i)[0] == 0.0 && 
+						 this->m_GradientDirectionContainer->at(i)[1] == 0.0 && 
+						 this->m_GradientDirectionContainer->at(i)[2] == 0.0     )
+					{
+						;// only check the DWIs, not including the baseline
+					}
+					else
+					{
+						DWImean+=this->ResultsContainer0[i][j]/(double)(DWICount);
+					}
+				}
+			}
+
+			for(int i=0; i<this->ResultsContainer0.size(); i++)
+			{
+				if(this->qcResults[i])
+				{
+					if ( this->m_GradientDirectionContainer->at(i)[0] == 0.0 && 
+						 this->m_GradientDirectionContainer->at(i)[1] == 0.0 && 
+						 this->m_GradientDirectionContainer->at(i)[2] == 0.0     )
+					{
+						;// only check the DWIs, not including the baseline
+					}
+					else
+					{
+						if(DWICount>=1)
+							DWIdeviation+=(ResultsContainer0[i][j]-DWImean)*(ResultsContainer0[i][j]-DWImean)/(double)(DWICount);
+						else
+							DWIdeviation=0.0;
+					}
+				}
+			}
+			this->gradientMeans0.push_back(DWImean);
+			this->gradientDeviations0.push_back(sqrt(DWIdeviation));
+		}
+
+// region 1
+		for(int j=0;j<ResultsContainer1[0].size();j++)
+		{
+			double DWImean=0.0, DWIdeviation=0.0; 
+			for(int i=0; i<this->ResultsContainer1.size(); i++)
+			{
+				if(this->qcResults[i])
+				{
+					if ( this->m_GradientDirectionContainer->at(i)[0] == 0.0 && 
+						 this->m_GradientDirectionContainer->at(i)[1] == 0.0 && 
+						 this->m_GradientDirectionContainer->at(i)[2] == 0.0     )
+					{
+						;// only check the DWIs, not including the baseline
+					}
+					else
+					{
+						DWImean+=this->ResultsContainer1[i][j]/(double)(DWICount);
+					}
+				}
+			}
+
+			for(int i=0; i<this->ResultsContainer1.size(); i++)
+			{
+				if(this->qcResults[i])
+				{
+					if ( this->m_GradientDirectionContainer->at(i)[0] == 0.0 && 
+						 this->m_GradientDirectionContainer->at(i)[1] == 0.0 && 
+						 this->m_GradientDirectionContainer->at(i)[2] == 0.0     )
+					{
+						;// only check the DWIs, not including the baseline
+					}
+					else
+					{
+						if(DWICount>=1)
+							DWIdeviation+=(ResultsContainer1[i][j]-DWImean)*(ResultsContainer1[i][j]-DWImean)/(double)(DWICount);
+						else
+							DWIdeviation=0.0;
+					}
+				}
+			}
+			this->gradientMeans1.push_back(DWImean);
+			this->gradientDeviations1.push_back(sqrt(DWIdeviation));
+		}
+
+// region 2
+		for(int j=0;j<ResultsContainer2[0].size();j++)
+		{
+			double DWImean=0.0, DWIdeviation=0.0; 
+			for(int i=0; i<this->ResultsContainer2.size(); i++)
+			{
+				if(this->qcResults[i])
+				{
+					if ( this->m_GradientDirectionContainer->at(i)[0] == 0.0 && 
+						this->m_GradientDirectionContainer->at(i)[1] == 0.0 && 
+						this->m_GradientDirectionContainer->at(i)[2] == 0.0     )
+					{
+						;// only check the DWIs, not including the baseline
+					}
+					else
+					{
+						DWImean+=this->ResultsContainer2[i][j]/(double)(DWICount);
+					}
+				}
+			}
+
+			for(int i=0; i<this->ResultsContainer2.size(); i++)
+			{
+				if(this->qcResults[i])
+				{
+					if ( this->m_GradientDirectionContainer->at(i)[0] == 0.0 && 
+						this->m_GradientDirectionContainer->at(i)[1] == 0.0 && 
+						this->m_GradientDirectionContainer->at(i)[2] == 0.0     )
+					{
+						;// only check the DWIs, not including the baseline
+					}
+					else
+					{
+						if(DWICount>=1)
+							DWIdeviation+=(ResultsContainer2[i][j]-DWImean)*(ResultsContainer2[i][j]-DWImean)/(double)(DWICount);
+						else
+							DWIdeviation=0.0;
+					}
+				}
+			}
+			this->gradientMeans2.push_back(DWImean);
+			this->gradientDeviations2.push_back(sqrt(DWIdeviation));
+		}
+
+// region 3
+		for(int j=0;j<ResultsContainer3[0].size();j++)
+		{
+			double DWImean=0.0, DWIdeviation=0.0; 
+			for(int i=0; i<this->ResultsContainer3.size(); i++)
+			{
+				if(this->qcResults[i])
+				{
+					if ( this->m_GradientDirectionContainer->at(i)[0] == 0.0 && 
+						this->m_GradientDirectionContainer->at(i)[1] == 0.0 && 
+						this->m_GradientDirectionContainer->at(i)[2] == 0.0     )
+					{
+						;// only check the DWIs, not including the baseline
+					}
+					else
+					{
+						DWImean+=this->ResultsContainer3[i][j]/(double)(DWICount);
+					}
+				}
+			}
+
+			for(int i=0; i<this->ResultsContainer3.size(); i++)
+			{
+				if(this->qcResults[i])
+				{
+					if ( this->m_GradientDirectionContainer->at(i)[0] == 0.0 && 
+						this->m_GradientDirectionContainer->at(i)[1] == 0.0 && 
+						this->m_GradientDirectionContainer->at(i)[2] == 0.0     )
+					{
+						;// only check the DWIs, not including the baseline
+					}
+					else
+					{
+						if(DWICount>=1)
+							DWIdeviation+=(ResultsContainer3[i][j]-DWImean)*(ResultsContainer3[i][j]-DWImean)/(double)(DWICount);
+						else
+							DWIdeviation=0.0;
+					}
+				}
+			}
+			this->gradientMeans3.push_back(DWImean);
+			this->gradientDeviations3.push_back(sqrt(DWIdeviation));
+		}
+		
+// region 4
+		for(int j=0;j<ResultsContainer4[0].size();j++)
+		{
+			double DWImean=0.0, DWIdeviation=0.0; 
+			for(int i=0; i<this->ResultsContainer4.size(); i++)
+			{
+				if(this->qcResults[i])
+				{
+					if ( this->m_GradientDirectionContainer->at(i)[0] == 0.0 && 
+						this->m_GradientDirectionContainer->at(i)[1] == 0.0 && 
+						this->m_GradientDirectionContainer->at(i)[2] == 0.0     )
+					{
+						;// only check the DWIs, not including the baseline
+					}
+					else
+					{
+						DWImean+=this->ResultsContainer4[i][j]/(double)(DWICount);
+					}
+				}
+			}
+
+			for(int i=0; i<this->ResultsContainer4.size(); i++)
+			{
+				if(this->qcResults[i])
+				{
+					if ( this->m_GradientDirectionContainer->at(i)[0] == 0.0 && 
+						this->m_GradientDirectionContainer->at(i)[1] == 0.0 && 
+						this->m_GradientDirectionContainer->at(i)[2] == 0.0     )
+					{
+						;// only check the DWIs, not including the baseline
+					}
+					else
+					{
+						if(DWICount>=1)
+							DWIdeviation+=(ResultsContainer4[i][j]-DWImean)*(ResultsContainer4[i][j]-DWImean)/(double)(DWICount);
+						else
+							DWIdeviation=0.0;
+					}
+				}
+			}
+			this->gradientMeans4.push_back(DWImean);
+			this->gradientDeviations4.push_back(sqrt(DWIdeviation));
+		}
+
+// to check
+		int badcount=0;
+		int baselineBadcount=0;
+		InputImageConstPointer  inputPtr = this->GetInput();
+
+// check region0
+		for(int i=0;i<ResultsContainer0.size();i++)
+		{
+			baselineBadcount = 0;
+			badcount=0;
+			if(this->qcResults[i]) // only check the left gradients
+			{
+				if ( this->m_GradientDirectionContainer->at(i)[0] == 0.0 &&
+					this->m_GradientDirectionContainer->at(i)[1] == 0.0 && 
+					this->m_GradientDirectionContainer->at(i)[2] == 0.0     )
+				{	
+					; //skip baselines
+				}
+				else // gradients
+				{			
+					for(int j=0 + (int)(inputPtr->GetLargestPossibleRegion().GetSize()[2]*this->m_HeadSkipRatio);
+						j<ResultsContainer0[0].size() - (int)(inputPtr->GetLargestPossibleRegion().GetSize()[2]*this->m_TailSkipRatio); j++) 
+					{
+						////// to avoid reporting too many "good" as bad
+						double MeanStdev=0.0;
+						unsigned int effectiveSliceNumber=0;
+
+						for(unsigned int k = (j-3>0? j-3:0); k < (j+3<inputPtr->GetLargestPossibleRegion().GetSize()[2]? j+3:inputPtr->GetLargestPossibleRegion().GetSize()[2]) ; k++ ) 
+						{
+							MeanStdev += this->gradientDeviations0[k];		
+							effectiveSliceNumber++;
+						}
+						MeanStdev = MeanStdev/(double)effectiveSliceNumber;	
+
+						double stddev=0.0;
+						if( this->gradientDeviations0[j]< MeanStdev )
+							stddev = MeanStdev;
+						else
+							stddev = this->gradientDeviations0[j];
+
+						if( ResultsContainer0[i][j] < this->gradientMeans0[j] - stddev * this->m_GradientStdevTimes) // ok
+						{
+							this->ResultsContainer0[i][j] = -this->ResultsContainer0[i][j]; // to indicate a bad slice
+							badcount++;
+						}
+					}
+					if( badcount > 0 )
+						this->qcResults[i] = 0;
+				}
+			}
+		}
+
+// check region1
+		for(int i=0;i<ResultsContainer1.size();i++)
+		{
+			baselineBadcount = 0;
+			badcount=0;
+			if(this->qcResults[i]) // only check the left gradients
+			{
+				if ( this->m_GradientDirectionContainer->at(i)[0] == 0.0 &&
+					this->m_GradientDirectionContainer->at(i)[1] == 0.0 && 
+					this->m_GradientDirectionContainer->at(i)[2] == 0.0     )
+				{	
+					; //skip baselines
+				}
+				else // gradients
+				{			
+					for(int j=0 + (int)(inputPtr->GetLargestPossibleRegion().GetSize()[2]*this->m_HeadSkipRatio);
+						j<ResultsContainer1[0].size() - (int)(inputPtr->GetLargestPossibleRegion().GetSize()[2]*this->m_TailSkipRatio); j++) 
+					{
+						////// to avoid reporting too many "good" as bad
+						double MeanStdev=0.0;
+						unsigned int effectiveSliceNumber=0;
+
+						for(unsigned int k = (j-3>0? j-3:0); k < (j+3<inputPtr->GetLargestPossibleRegion().GetSize()[2]? j+3:inputPtr->GetLargestPossibleRegion().GetSize()[2]) ; k++ ) 
+						{
+							MeanStdev += this->gradientDeviations1[k];		
+							effectiveSliceNumber++;
+						}
+						MeanStdev = MeanStdev/(double)effectiveSliceNumber;	
+
+						double stddev=0.0;
+						if( this->gradientDeviations1[j]< MeanStdev )
+							stddev = MeanStdev;
+						else
+							stddev = this->gradientDeviations1[j];
+
+						if( ResultsContainer1[i][j] < this->gradientMeans1[j] - stddev * this->m_GradientStdevTimes) // ok
+						{
+							this->ResultsContainer1[i][j] = -this->ResultsContainer1[i][j]; // to indicate a bad slice
+							badcount++;
+						}
+					}
+					if( badcount > 0 )
+						this->qcResults[i] = 0;
+				}
+			}
+		}
+
+// check region2
+		for(int i=0;i<ResultsContainer2.size();i++)
+		{
+			baselineBadcount = 0;
+			badcount=0;
+			if(this->qcResults[i]) // only check the left gradients
+			{
+				if ( this->m_GradientDirectionContainer->at(i)[0] == 0.0 &&
+					this->m_GradientDirectionContainer->at(i)[1] == 0.0 && 
+					this->m_GradientDirectionContainer->at(i)[2] == 0.0     )
+				{	
+					; //skip baselines
+				}
+				else // gradients
+				{			
+					for(int j=0 + (int)(inputPtr->GetLargestPossibleRegion().GetSize()[2]*this->m_HeadSkipRatio);
+						j<ResultsContainer2[0].size() - (int)(inputPtr->GetLargestPossibleRegion().GetSize()[2]*this->m_TailSkipRatio); j++) 
+					{
+						////// to avoid reporting too many "good" as bad
+						double MeanStdev=0.0;
+						unsigned int effectiveSliceNumber=0;
+
+						for(unsigned int k = (j-3>0? j-3:0); k < (j+3<inputPtr->GetLargestPossibleRegion().GetSize()[2]? j+3:inputPtr->GetLargestPossibleRegion().GetSize()[2]) ; k++ ) 
+						{
+							MeanStdev += this->gradientDeviations2[k];		
+							effectiveSliceNumber++;
+						}
+						MeanStdev = MeanStdev/(double)effectiveSliceNumber;	
+
+						double stddev=0.0;
+						if( this->gradientDeviations2[j]< MeanStdev )
+							stddev = MeanStdev;
+						else
+							stddev = this->gradientDeviations2[j];
+
+						if( ResultsContainer2[i][j] < this->gradientMeans2[j] - stddev * this->m_GradientStdevTimes) // ok
+						{
+							this->ResultsContainer2[i][j] = -this->ResultsContainer2[i][j]; // to indicate a bad slice
+							badcount++;
+						}
+					}
+					if( badcount > 0 )
+						this->qcResults[i] = 0;
+				}
+			}
+		}
+
+// check region3
+		for(int i=0;i<ResultsContainer3.size();i++)
+		{
+			baselineBadcount = 0;
+			badcount=0;
+			if(this->qcResults[i]) // only check the left gradients
+			{
+				if ( this->m_GradientDirectionContainer->at(i)[0] == 0.0 &&
+					this->m_GradientDirectionContainer->at(i)[1] == 0.0 && 
+					this->m_GradientDirectionContainer->at(i)[2] == 0.0     )
+				{	
+					; //skip baselines
+				}
+				else // gradients
+				{			
+					for(int j=0 + (int)(inputPtr->GetLargestPossibleRegion().GetSize()[2]*this->m_HeadSkipRatio);
+						j<ResultsContainer3[0].size() - (int)(inputPtr->GetLargestPossibleRegion().GetSize()[2]*this->m_TailSkipRatio); j++) 
+					{
+						////// to avoid reporting too many "good" as bad
+						double MeanStdev=0.0;
+						unsigned int effectiveSliceNumber=0;
+
+						for(unsigned int k = (j-3>0? j-3:0); k < (j+3<inputPtr->GetLargestPossibleRegion().GetSize()[2]? j+3:inputPtr->GetLargestPossibleRegion().GetSize()[2]) ; k++ ) 
+						{
+							MeanStdev += this->gradientDeviations3[k];		
+							effectiveSliceNumber++;
+						}
+						MeanStdev = MeanStdev/(double)effectiveSliceNumber;	
+
+						double stddev=0.0;
+						if( this->gradientDeviations3[j]< MeanStdev )
+							stddev = MeanStdev;
+						else
+							stddev = this->gradientDeviations3[j];
+
+						if( ResultsContainer3[i][j] < this->gradientMeans3[j] - stddev * this->m_GradientStdevTimes) // ok
+						{
+							this->ResultsContainer3[i][j] = -this->ResultsContainer3[i][j]; // to indicate a bad slice
+							badcount++;
+						}
+					}
+					if( badcount > 0 )
+						this->qcResults[i] = 0;
+				}
+			}
+		}
+
+// check region4
+		for(int i=0;i<ResultsContainer4.size();i++)
+		{
+			baselineBadcount = 0;
+			badcount=0;
+			if(this->qcResults[i]) // only check the left gradients
+			{
+				if ( this->m_GradientDirectionContainer->at(i)[0] == 0.0 &&
+					this->m_GradientDirectionContainer->at(i)[1] == 0.0 && 
+					this->m_GradientDirectionContainer->at(i)[2] == 0.0     )
+				{	
+					; //skip baselines
+				}
+				else // gradients
+				{			
+					for(int j=0 + (int)(inputPtr->GetLargestPossibleRegion().GetSize()[2]*this->m_HeadSkipRatio);
+						j<ResultsContainer4[0].size() - (int)(inputPtr->GetLargestPossibleRegion().GetSize()[2]*this->m_TailSkipRatio); j++) 
+					{
+						////// to avoid reporting too many "good" as bad
+						double MeanStdev=0.0;
+						unsigned int effectiveSliceNumber=0;
+
+						for(unsigned int k = (j-3>0? j-3:0); k < (j+3<inputPtr->GetLargestPossibleRegion().GetSize()[2]? j+3:inputPtr->GetLargestPossibleRegion().GetSize()[2]) ; k++ ) 
+						{
+							MeanStdev += this->gradientDeviations4[k];		
+							effectiveSliceNumber++;
+						}
+						MeanStdev = MeanStdev/(double)effectiveSliceNumber;	
+
+						double stddev=0.0;
+						if( this->gradientDeviations4[j]< MeanStdev )
+							stddev = MeanStdev;
+						else
+							stddev = this->gradientDeviations4[j];
+
+						if( ResultsContainer4[i][j] < this->gradientMeans4[j] - stddev * this->m_GradientStdevTimes) // ok
+						{
+							this->ResultsContainer4[i][j] = -this->ResultsContainer4[i][j]; // to indicate a bad slice
+							badcount++;
+						}
+					}
+					if( badcount > 0 )
+						this->qcResults[i] = 0;
+				}
+			}
+		}
+
+		return;
+	}
 
 	/** 
 	*
@@ -934,7 +1462,7 @@ namespace itk
 			normalizedMetric.push_back(temp);
 		}
 
-		// 		std::cout<<"normalizedMetric.size(): "<<normalizedMetric.size()<< std::endl;
+		//std::cout<<"normalizedMetric.size(): "<<normalizedMetric.size()<< std::endl;
 
 		if( (getBValueLeftNumber() >=3 || (getBValueLeftNumber() ==2 && getBaselineLeftNumber()>0)) && m_QuadFit   ) // ensure a quardratic fit
 			// multiple b valued DWI, do a quadratic-curve fitting between b-value and image correlation at each slice position
@@ -1222,8 +1750,10 @@ namespace itk
 			for(int i=0;i<this->m_CheckTimes; i++)
 			{
 				std::cout<<" count: "<<i+1<<"...";
-				//check();
-				LeaveOneOutcheck();
+				check();
+				if(m_SubRegionalCheck)
+					SubRegionalcheck();
+				//LeaveOneOutcheck();
 			}
 		}
 		else
@@ -1239,8 +1769,10 @@ namespace itk
 				// 				std::cout <<"BaselineCount: "<<BaselineCount<<std::endl;
 				// 				std::cout <<"DWICount: "<<DWICount<<std::endl;
 
-				//check();
-				LeaveOneOutcheck();
+				check();
+				if(m_SubRegionalCheck)
+					SubRegionalcheck();
+				//LeaveOneOutcheck();
 				collectLeftDiffusionStatistics();
 				i++;
 			} while ( BaselineCount!=getBaselineLeftNumber() || DWICount!=getGradientLeftNumber());
@@ -1329,7 +1861,6 @@ namespace itk
 
 		if(m_SubRegionalCheck)
 		{
-
 			//region 0
 			outfile <<std::endl<<"======"<<std::endl;
 			outfile <<"Slice-wise correlations of region 0: "<<std::endl<<std::endl;
@@ -1437,10 +1968,9 @@ namespace itk
 			}
 		}
 
-
 		outfile <<std::endl<<"======"<<std::endl;
 		outfile <<"Slice-wise Check Artifacts:"<<std::endl;
-		outfile <<"\t"<<std::setw(10)<<"Gradient#"<<"\t"<<std::setw(10)<<"Slice#"<<"\t"<<std::setw(10)<<"Correlation"<<std::endl;
+		outfile <<"Region\t"<<std::setw(10)<<"Gradient#"<<"\t"<<std::setw(10)<<"Slice#"<<"\t"<<std::setw(10)<<"Correlation"<<std::endl;
 
 		for(int i=0;i<this->ResultsContainer.size();i++)
 		{
@@ -1450,11 +1980,95 @@ namespace itk
 				outfile.setf(std::ios_base::showpoint|std::ios_base::right) ;
 
 				if( this->ResultsContainer[i][j] <=0 )
-					outfile	<<"\t"<<std::setw(9)<<i
+					outfile	<<"whole\t"<<std::setw(9)<<i
 							<<"\t"<<std::setw(9)<<j+1
 							<<"\t"<<std::setw(9)<<std::setiosflags(std::ios::fixed)<< std::setprecision(6)<<std::setiosflags(std::ios::right)
 							<<-ResultsContainer[i][j]<<std::endl;
 					//outfile  <<"\t"<<std::setw(10)<<i<<"\t"<<std::setw(10)<<j+1<<"\t"<<-ResultsContainer[i][j]<<std::endl;
+			}
+		}
+
+
+		if(m_SubRegionalCheck)
+		{
+			for(int i=0;i<this->ResultsContainer0.size();i++)
+			{
+				for(int j=0; j<ResultsContainer0[0].size(); j++ ) 
+				{
+					outfile.precision(6);
+					outfile.setf(std::ios_base::showpoint|std::ios_base::right) ;
+
+					if( this->ResultsContainer0[i][j] <=0 )
+						outfile	<<"region0\t"<<std::setw(9)<<i
+						<<"\t"<<std::setw(9)<<j+1
+						<<"\t"<<std::setw(9)<<std::setiosflags(std::ios::fixed)<< std::setprecision(6)<<std::setiosflags(std::ios::right)
+						<<-ResultsContainer0[i][j]<<std::endl;
+					//outfile  <<"\t"<<std::setw(10)<<i<<"\t"<<std::setw(10)<<j+1<<"\t"<<-ResultsContainer[i][j]<<std::endl;
+				}
+			}
+
+			for(int i=0;i<this->ResultsContainer1.size();i++)
+			{
+				for(int j=0; j<ResultsContainer1[0].size(); j++ ) 
+				{
+					outfile.precision(6);
+					outfile.setf(std::ios_base::showpoint|std::ios_base::right) ;
+
+					if( this->ResultsContainer1[i][j] <=0 )
+						outfile	<<"region1\t"<<std::setw(9)<<i
+						<<"\t"<<std::setw(9)<<j+1
+						<<"\t"<<std::setw(9)<<std::setiosflags(std::ios::fixed)<< std::setprecision(6)<<std::setiosflags(std::ios::right)
+						<<-ResultsContainer1[i][j]<<std::endl;
+					//outfile  <<"\t"<<std::setw(10)<<i<<"\t"<<std::setw(10)<<j+1<<"\t"<<-ResultsContainer[i][j]<<std::endl;
+				}
+			}
+
+			for(int i=0;i<this->ResultsContainer2.size();i++)
+			{
+				for(int j=0; j<ResultsContainer2[0].size(); j++ ) 
+				{
+					outfile.precision(6);
+					outfile.setf(std::ios_base::showpoint|std::ios_base::right) ;
+
+					if( this->ResultsContainer2[i][j] <=0 )
+						outfile	<<"region2\t"<<std::setw(9)<<i
+						<<"\t"<<std::setw(9)<<j+1
+						<<"\t"<<std::setw(9)<<std::setiosflags(std::ios::fixed)<< std::setprecision(6)<<std::setiosflags(std::ios::right)
+						<<-ResultsContainer2[i][j]<<std::endl;
+					//outfile  <<"\t"<<std::setw(10)<<i<<"\t"<<std::setw(10)<<j+1<<"\t"<<-ResultsContainer[i][j]<<std::endl;
+				}
+			}
+
+			for(int i=0;i<this->ResultsContainer3.size();i++)
+			{
+				for(int j=0; j<ResultsContainer3[0].size(); j++ ) 
+				{
+					outfile.precision(6);
+					outfile.setf(std::ios_base::showpoint|std::ios_base::right) ;
+
+					if( this->ResultsContainer3[i][j] <=0 )
+						outfile	<<"region3\t"<<std::setw(9)<<i
+						<<"\t"<<std::setw(9)<<j+1
+						<<"\t"<<std::setw(9)<<std::setiosflags(std::ios::fixed)<< std::setprecision(6)<<std::setiosflags(std::ios::right)
+						<<-ResultsContainer3[i][j]<<std::endl;
+					//outfile  <<"\t"<<std::setw(10)<<i<<"\t"<<std::setw(10)<<j+1<<"\t"<<-ResultsContainer[i][j]<<std::endl;
+				}
+			}
+
+			for(int i=0;i<this->ResultsContainer4.size();i++)
+			{
+				for(int j=0; j<ResultsContainer4[0].size(); j++ ) 
+				{
+					outfile.precision(6);
+					outfile.setf(std::ios_base::showpoint|std::ios_base::right) ;
+
+					if( this->ResultsContainer4[i][j] <=0 )
+						outfile	<<"region4\t"<<std::setw(9)<<i
+						<<"\t"<<std::setw(9)<<j+1
+						<<"\t"<<std::setw(9)<<std::setiosflags(std::ios::fixed)<< std::setprecision(6)<<std::setiosflags(std::ios::right)
+						<<-ResultsContainer4[i][j]<<std::endl;
+					//outfile  <<"\t"<<std::setw(10)<<i<<"\t"<<std::setw(10)<<j+1<<"\t"<<-ResultsContainer[i][j]<<std::endl;
+				}
 			}
 		}
 
