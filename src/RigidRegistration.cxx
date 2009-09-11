@@ -95,15 +95,15 @@ void CRigidRegistration::SetupParameters()
 	optimizer->SetMaximumStepLength( 0.2000  ); 
 	optimizer->SetMinimumStepLength( 0.0001 );
 
-	optimizer->SetNumberOfIterations( 500 );
+	optimizer->SetNumberOfIterations( 1000 );
 
 	//numberOfBins = 25;
 	//percentOfSamples = 0.10; // 1% ~ 20%
 
 	 metric->SetNumberOfHistogramBins( numberOfBins );
 
-	 std::cout<<"UseNumberOfSpatialSamples: "<<(int)(fixedImage->GetPixelContainer()->Size() * percentOfSamples)<<std::endl;
-	 if(percentOfSamples>0)	 metric->SetNumberOfSpatialSamples( (int)(fixedImage->GetPixelContainer()->Size() * percentOfSamples) );
+	 int SampleSize = (int)(fixedImage->GetPixelContainer()->Size() * percentOfSamples);
+	 if( SampleSize> 100000 )	 metric->SetNumberOfSpatialSamples( SampleSize );
 	 else  metric->UseAllPixelsOn();
 	 //metric->SetUseExplicitPDFDerivatives( useExplicitPDFDerivatives ); //true for small # of parameters; false for big # of transform paramrters
 

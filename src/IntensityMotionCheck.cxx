@@ -617,8 +617,15 @@ bool CIntensityMotionCheck::ImageCheck( DwiImageType::Pointer dwi )
 		{
 			qcResult->GetImageInformationCheckResult().origin = false;
 			if(bReport)
-				outfile<<"Image Origin Check: " << "\t\tFAILED"<<std::endl;
+			{
+				outfile<<"Image Origin Check: "	<< "\t\tFAILED"<<std::endl;
+				outfile<<"\tImage Origin: "		<< dwi->GetOrigin() <<std::endl;
+				outfile<<"\tprotocal Origin: "	<< protocal->GetImageProtocal().origin <<std::endl;
+			}
 			std::cout<<"Image Origin Check: " << "\t\tFAILED"<<std::endl;
+			std::cout<<"\tImage Origin: "	  << dwi->GetOrigin() <<std::endl;
+			std::cout<<"\tprotocal Origin: "  << protocal->GetImageProtocal().origin <<std::endl;
+
 			returnValue = false;
 		}
 		//spacing
@@ -637,8 +644,15 @@ bool CIntensityMotionCheck::ImageCheck( DwiImageType::Pointer dwi )
 		{
 			qcResult->GetImageInformationCheckResult().spacing = false;
 			if(bReport)
+			{
 				outfile<<"Image Spacing Check: " << "\t\tFAILED"<<std::endl;
+				outfile<<"\tImage Spacing: "	<< dwi->GetSpacing() <<std::endl;
+				outfile<<"\tprotocal Spacing: "	<< protocal->GetImageProtocal().spacing <<std::endl;
+			}
 			std::cout<<"Image Spacing Check: " << "\t\tFAILED"<<std::endl;
+			std::cout<<"\tImage Spacing: "	<< dwi->GetSpacing() <<std::endl;
+			std::cout<<"\tprotocal Spacing: "	<< protocal->GetImageProtocal().spacing <<std::endl;
+
 			returnValue = false;
 		}
 		// space direction
@@ -664,8 +678,15 @@ bool CIntensityMotionCheck::ImageCheck( DwiImageType::Pointer dwi )
 		{
 			qcResult->GetImageInformationCheckResult().spacedirection = false;
 			if(bReport)
+			{
 				outfile<<"Image spacedirection Check: " << "\tFAILED"<<std::endl;
+				outfile<<"\tImage GetDirection: "	<< imgf <<std::endl;
+				outfile<<"\tprotocal GetDirection: "<< protocal->GetImageProtocal().spacedirection<<std::endl;
+			}
 			std::cout<<"Image spacedirection Check: " << "\tFAILED"<<std::endl;
+			std::cout<<"\tImage GetDirection: "	<< imgf <<std::endl;
+			std::cout<<"\tprotocal GetDirection: "<< protocal->GetImageProtocal().spacedirection<<std::endl;
+
 			returnValue = false;
 		}
 
@@ -680,8 +701,8 @@ bool CIntensityMotionCheck::ImageCheck( DwiImageType::Pointer dwi )
 		int space;
 		if(		 metaString.compare( "left-posterior-superior") ==0 )	space = Protocal::SPACE_LPS;
 		else if( metaString.compare( "left-posterior-inferior") ==0 )	space = Protocal::SPACE_LPI;
-		else if( metaString.compare( "left-anterior-superior" )==0 )	space = Protocal::SPACE_LAS;
-		else if( metaString.compare( "left-anterior-inferior" )==0 )	space = Protocal::SPACE_LAI;
+		else if( metaString.compare( "left-anterior-superior" ) ==0 )	space = Protocal::SPACE_LAS;
+		else if( metaString.compare( "left-anterior-inferior" ) ==0 )	space = Protocal::SPACE_LAI;
 		else if( metaString.compare( "right-posterior-superior")==0 )	space = Protocal::SPACE_RPS;
 		else if( metaString.compare( "right-posterior-inferior")==0 )	space = Protocal::SPACE_RPI;
 		else if( metaString.compare( "right-anterior-superior" )==0 )	space = Protocal::SPACE_RAS;
@@ -699,8 +720,15 @@ bool CIntensityMotionCheck::ImageCheck( DwiImageType::Pointer dwi )
 		{
 			qcResult->GetImageInformationCheckResult().space = false;
 			if(bReport)
+			{
 				outfile<<"Image space Check: " << "\t\tFAILED"<<std::endl;
+				std::cout<<"\tImage space: "	<< space <<std::endl;
+				std::cout<<"\tprotocal space: "<< protocal->GetImageProtocal().space<<std::endl;
+			}
 			std::cout<<"Image space Check: " << "\t\tFAILED"<<std::endl;
+			std::cout<<"\tImage space: "	<< space <<std::endl;
+			std::cout<<"\tprotocal space: "<< protocal->GetImageProtocal().space<<std::endl;
+
 			returnValue = false;
 		}
 	}

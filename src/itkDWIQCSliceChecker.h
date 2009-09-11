@@ -3,8 +3,8 @@
 Program:   NeuroLib
 Module:    $file: itkDWIQCSliceChecker.h $
 Language:  C++
-Date:      $Date: 2009-09-10 02:09:37 $
-Version:   $Revision: 1.4 $
+Date:      $Date: 2009-09-11 10:40:28 $
+Version:   $Revision: 1.5 $
 Author:    Zhexing Liu (liuzhexing@gmail.com)
 
 Copyright (c) NIRAL, UNC. All rights reserved.
@@ -259,9 +259,9 @@ namespace itk
 		std::vector<double> gradientMeans4;
 		std::vector<double> gradientDeviations4;
 
+		std::vector< std::vector<double> >	HistogramCorrelationContainer;// starts from #1 slice, "correlation<=0" means a "bad slice"
 
 		std::vector<bool> qcResults;		
-
 		std::vector< std::vector<double> > normalizedMetric;
 
 		void parseGridentDirections();
@@ -275,6 +275,9 @@ namespace itk
 		void iterativeCheck();
 		void collectLeftDiffusionStatistics();
 		void writeReport();
+
+		// calculate slice-wise histogram correlations
+		void calculateSliceWiseHistogramCorrelations( bool smoothing, double GaussianVariance, double	MaxKernelWidth );
 
 	public:
 		OutputImagePointer GetExcludedGradiennts();

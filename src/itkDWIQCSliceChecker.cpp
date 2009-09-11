@@ -3,8 +3,8 @@
 Program:   NeuroLib
 Module:    $file: itkDWIQCSliceChecker.cpp $
 Language:  C++
-Date:      $Date: 2009-09-10 02:09:37 $
-Version:   $Revision: 1.5 $
+Date:      $Date: 2009-09-11 10:40:28 $
+Version:   $Revision: 1.6 $
 Author:    Zhexing Liu (liuzhexing@gmail.com)
 
 Copyright (c) NIRAL, UNC. All rights reserved.
@@ -32,6 +32,9 @@ PURPOSE.  See the above copyright notices for more information.
 #include "vnl/algo/vnl_matrix_inverse.h"
 
 #include "itkDiscreteGaussianImageFilter.h"
+#include "itkCastImageFilter.h"
+
+#include "itkScalarImageToHistogramGenerator.h"
 
 #include <iostream>
 #include <iomanip>
@@ -248,7 +251,7 @@ namespace itk
 		DWIQCSliceChecker<TImageType>
 		::calculateCorrelations(  bool smoothing )
 	{
-		std::cout<<"Slice calculating .";
+		std::cout<<"Slice correlation calculating .";
 
 		InputImageConstPointer  inputPtr = this->GetInput();
 
@@ -305,8 +308,8 @@ namespace itk
 					typedef itk::Image< ShortPixelType, 2 > ShortSliceImageType;
 
 					typedef itk::DiscreteGaussianImageFilter< SliceImageType, ShortSliceImageType > FilterType;
-					FilterType::Pointer smoother1 = FilterType::New();
-					FilterType::Pointer smoother2 = FilterType::New();
+					typename FilterType::Pointer smoother1 = FilterType::New();
+					typename FilterType::Pointer smoother2 = FilterType::New();
 
 					smoother1->SetInput( filter1->GetOutput() );
 					smoother1->SetVariance( m_GaussianVariance );
@@ -319,8 +322,8 @@ namespace itk
 					//smoother2->Update();
 
 					typedef itk::CastImageFilter< ShortSliceImageType, SliceImageType > CastFilterType;
-					CastFilterType::Pointer castFilter1 = CastFilterType::New();
-					CastFilterType::Pointer castFilter2 = CastFilterType::New();
+					typename CastFilterType::Pointer castFilter1 = CastFilterType::New();
+					typename CastFilterType::Pointer castFilter2 = CastFilterType::New();
 
 					castFilter1->SetInput( smoother1->GetOutput() );
 					castFilter2->SetInput( smoother2->GetOutput() );
@@ -464,8 +467,8 @@ namespace itk
 				filter2->Update();
 
 				typedef itk::ImageRegionConstIterator<SliceImageType>  citType;
-				citType cit1( filter1->GetOutput(), filter1->GetOutput()->GetLargestPossibleRegion() );
-				citType cit2( filter2->GetOutput(), filter2->GetOutput()->GetLargestPossibleRegion() );
+				citType cit1( filter1->GetOutput(), filter1->GetOutput()->GetRequestedRegion() );
+				citType cit2( filter2->GetOutput(), filter2->GetOutput()->GetRequestedRegion() );
 				cit1.GoToBegin();
 				cit2.GoToBegin();
 
@@ -498,8 +501,8 @@ namespace itk
 				}
 
 				typedef itk::ImageRegionConstIterator<SliceImageType>  citOutputType;
-				citOutputType citOutput1( RegionFilter1->GetOutput(), RegionFilter1->GetOutput()->GetLargestPossibleRegion() );
-				citOutputType citOutput2( RegionFilter2->GetOutput(), RegionFilter2->GetOutput()->GetLargestPossibleRegion() );
+				citOutputType citOutput1( RegionFilter1->GetOutput(), RegionFilter1->GetOutput()->GetRequestedRegion() );
+				citOutputType citOutput2( RegionFilter2->GetOutput(), RegionFilter2->GetOutput()->GetRequestedRegion() );
 
 				citOutput1.GoToBegin();
 				citOutput2.GoToBegin();
@@ -596,7 +599,6 @@ namespace itk
 				Results1.push_back(correlation);
 
 // region2
-{
 				RegionStart[0] = static_cast<int> (componentExtractor->GetOutput()->GetLargestPossibleRegion().GetSize()[0]/4.0);
 				RegionStart[1] = static_cast<int> (componentExtractor->GetOutput()->GetLargestPossibleRegion().GetSize()[1]/4.0);
 				RegionSize[0] = static_cast<int> (componentExtractor->GetOutput()->GetLargestPossibleRegion().GetSize()[0]/2.0);
@@ -659,8 +661,6 @@ namespace itk
 				}
 				Results2.push_back(correlation);
 
-}
-			
 // region3
 				RegionStart[0] = 0;
 				RegionStart[1] = static_cast<int> (componentExtractor->GetOutput()->GetLargestPossibleRegion().GetSize()[1]/2.0);
@@ -1224,7 +1224,7 @@ namespace itk
 						else
 							stddev = this->gradientDeviations0[j];
 
-						if( ResultsContainer0[i][j] < this->gradientMeans0[j] - stddev * this->m_GradientStdevTimes) // ok
+						if( ResultsContainer0[i][j] < this->gradientMeans0[j] - stddev * this->m_GradientStdevTimes*1.1) // ok
 						{
 							this->ResultsContainer0[i][j] = -this->ResultsContainer0[i][j]; // to indicate a bad slice
 							badcount++;
@@ -1271,7 +1271,7 @@ namespace itk
 						else
 							stddev = this->gradientDeviations1[j];
 
-						if( ResultsContainer1[i][j] < this->gradientMeans1[j] - stddev * this->m_GradientStdevTimes) // ok
+						if( ResultsContainer1[i][j] < this->gradientMeans1[j] - stddev * this->m_GradientStdevTimes*1.1) // ok
 						{
 							this->ResultsContainer1[i][j] = -this->ResultsContainer1[i][j]; // to indicate a bad slice
 							badcount++;
@@ -1318,7 +1318,7 @@ namespace itk
 						else
 							stddev = this->gradientDeviations2[j];
 
-						if( ResultsContainer2[i][j] < this->gradientMeans2[j] - stddev * this->m_GradientStdevTimes) // ok
+						if( ResultsContainer2[i][j] < this->gradientMeans2[j] - stddev * this->m_GradientStdevTimes*1.1) // ok
 						{
 							this->ResultsContainer2[i][j] = -this->ResultsContainer2[i][j]; // to indicate a bad slice
 							badcount++;
@@ -1365,7 +1365,7 @@ namespace itk
 						else
 							stddev = this->gradientDeviations3[j];
 
-						if( ResultsContainer3[i][j] < this->gradientMeans3[j] - stddev * this->m_GradientStdevTimes) // ok
+						if( ResultsContainer3[i][j] < this->gradientMeans3[j] - stddev * this->m_GradientStdevTimes*1.1) // ok
 						{
 							this->ResultsContainer3[i][j] = -this->ResultsContainer3[i][j]; // to indicate a bad slice
 							badcount++;
@@ -1412,7 +1412,7 @@ namespace itk
 						else
 							stddev = this->gradientDeviations4[j];
 
-						if( ResultsContainer4[i][j] < this->gradientMeans4[j] - stddev * this->m_GradientStdevTimes) // ok
+						if( ResultsContainer4[i][j] < this->gradientMeans4[j] - stddev * this->m_GradientStdevTimes*1.1) // ok
 						{
 							this->ResultsContainer4[i][j] = -this->ResultsContainer4[i][j]; // to indicate a bad slice
 							badcount++;
@@ -2725,6 +2725,208 @@ namespace itk
 	/** 
 	*
 	*/
+	template <class TImageType>
+	void
+		DWIQCSliceChecker<TImageType>
+		::calculateSliceWiseHistogramCorrelations( bool smoothing, double GaussianVariance, double	MaxKernelWidth )
+	{
+
+		std::cout<<"Slice histogram correlation calculating .";
+
+		InputImageConstPointer  inputPtr = this->GetInput();
+
+		typedef itk::VectorIndexSelectionCastImageFilter< TImageType, GradientImageType > FilterType;
+		typename FilterType::Pointer componentExtractor = FilterType::New();
+		componentExtractor->SetInput(inputPtr);
+
+		typedef itk::ExtractImageFilter< GradientImageType, SliceImageType > ExtractFilterType;
+		typename ExtractFilterType::Pointer filter1 = ExtractFilterType::New();
+		typename ExtractFilterType::Pointer filter2 = ExtractFilterType::New();
+
+		for( unsigned int j = 0; j<inputPtr->GetVectorLength(); j++ )
+		{
+			componentExtractor->SetIndex( j );
+			componentExtractor->Update();
+
+			GradientImageType::RegionType inputRegion =componentExtractor->GetOutput()->GetLargestPossibleRegion();
+			GradientImageType::SizeType size = inputRegion.GetSize();
+			size[2] = 0;
+
+			GradientImageType::IndexType start1 = inputRegion.GetIndex();
+			GradientImageType::IndexType start2 = inputRegion.GetIndex();
+
+			//std::cout<<"Gradient "<<j<<std::endl;
+
+			filter1->SetInput( componentExtractor->GetOutput() );
+			filter2->SetInput( componentExtractor->GetOutput() );
+
+			std::vector< double > Results;
+			for(int i=1; i<componentExtractor->GetOutput()->GetLargestPossibleRegion().GetSize()[2]; i++)
+			{
+				start1[2] = i-1;
+				start2[2] = i;
+
+				typename GradientImageType::RegionType desiredRegion1;
+				desiredRegion1.SetSize( size );
+				desiredRegion1.SetIndex( start1 );
+				filter1->SetExtractionRegion( desiredRegion1 );
+
+				typename GradientImageType::RegionType desiredRegion2;
+				desiredRegion2.SetSize( size );
+				desiredRegion2.SetIndex( start2 );
+				filter2->SetExtractionRegion( desiredRegion2 );
+
+				filter1->Update();
+				filter2->Update();
+
+				SliceImageType::Pointer image1;
+				SliceImageType::Pointer image2;
+
+				if( smoothing)
+				{
+					typedef short ShortPixelType;
+					typedef itk::Image< ShortPixelType, 2 > ShortSliceImageType;
+
+					typedef itk::DiscreteGaussianImageFilter< SliceImageType, ShortSliceImageType > FilterType;
+					typename FilterType::Pointer smoother1 = FilterType::New();
+					typename FilterType::Pointer smoother2 = FilterType::New();
+
+					smoother1->SetInput( filter1->GetOutput() );
+					smoother1->SetVariance( GaussianVariance );
+					smoother1->SetMaximumKernelWidth( MaxKernelWidth );
+					//smoother1->Update();
+
+					smoother2->SetInput( filter2->GetOutput() );
+					smoother2->SetVariance( GaussianVariance );
+					smoother2->SetMaximumKernelWidth( MaxKernelWidth );
+					//smoother2->Update();
+
+					typedef itk::CastImageFilter< ShortSliceImageType, SliceImageType > CastFilterType;
+					typename CastFilterType::Pointer castFilter1 = CastFilterType::New();
+					typename CastFilterType::Pointer castFilter2 = CastFilterType::New();
+
+					castFilter1->SetInput( smoother1->GetOutput() );
+					castFilter2->SetInput( smoother2->GetOutput() );
+
+					castFilter1->Update();
+					castFilter2->Update();
+
+					image1 = castFilter1->GetOutput();
+					image2 = castFilter2->GetOutput();
+				}
+				else
+				{
+					image1 = filter1->GetOutput();
+					image2 = filter2->GetOutput();
+				}
+
+				// compute the histogram
+				typedef itk::Statistics::ScalarImageToHistogramGenerator< SliceImageType >   HistogramGeneratorType;
+
+				typename HistogramGeneratorType::Pointer histogramGenerator1 = HistogramGeneratorType::New();
+				histogramGenerator1->SetInput(  image1 );
+				histogramGenerator1->SetNumberOfBins( 256 );
+				histogramGenerator1->SetMarginalScale( 10.0 );
+				histogramGenerator1->SetHistogramMin(  -0.5 );
+				histogramGenerator1->SetHistogramMax( 255.5 );				
+				histogramGenerator1->Compute();
+
+				typename HistogramGeneratorType::Pointer histogramGenerator2 = HistogramGeneratorType::New();
+				histogramGenerator2->SetInput(  image2 );
+				histogramGenerator2->SetNumberOfBins( 256 );
+				histogramGenerator2->SetMarginalScale( 10.0 );
+				histogramGenerator2->SetHistogramMin(  -0.5 );
+				histogramGenerator2->SetHistogramMax( 255.5 );				
+				histogramGenerator2->Compute();
+
+
+				typedef HistogramGeneratorType::HistogramType  HistogramType;
+				const HistogramType * histogram1 = histogramGenerator1->GetOutput();
+				const HistogramType * histogram2 = histogramGenerator1->GetOutput();
+
+				const unsigned int histogramSize1 = histogram1->Size();
+				std::cout << "Histogram1 size " << histogramSize1 << std::endl;
+
+				unsigned int bin;
+				for( bin=0; bin < histogramSize1; bin++ )
+				{
+					std::cout << "bin = " << bin << " frequency = ";
+					std::cout << histogram1->GetFrequency( bin, 0 ) << std::endl;
+				}
+
+				const unsigned int histogramSize2 = histogram2->Size();
+				std::cout << "Histogram2 size " << histogramSize2 << std::endl;
+
+				for( bin=0; bin < histogramSize2; bin++ )
+				{
+					std::cout << "bin = " << bin << " frequency = ";
+					std::cout << histogram2->GetFrequency( bin, 0 ) << std::endl;
+				}
+
+				HistogramType::ConstIterator itr1 = histogram1->Begin();
+				HistogramType::ConstIterator end1 = histogram1->End();
+
+				HistogramType::ConstIterator itr2 = histogram2->Begin();
+				HistogramType::ConstIterator end2 = histogram2->End();
+
+				//////////////////////////////////////////////////////////////////////////
+				double correlation;
+				double meanA=0.0, meanB = 0.0;
+				double sAB=0.0,sA2=0.0,sB2=0.0;
+
+				unsigned int binNumber = 0;
+				while (itr1 != end1 && itr2 != end2)
+				{
+					double A = itr1.GetFrequency();
+					double B = itr2.GetFrequency();
+
+					meanA += A;
+					meanB += B;
+
+					++itr1;
+					++itr2;
+					++binNumber;
+				}
+				meanA /= binNumber;
+				meanB /= binNumber;
+
+				itr1 = histogram1->Begin();
+				itr2 = histogram2->Begin();
+				while (itr1 != end1 && itr2 != end2)
+				{
+					double A = itr1.GetFrequency();
+					double B = itr2.GetFrequency();
+
+					sAB += (A-meanA)*(B-meanB);
+					sA2 += (A-meanA)*(A-meanA);
+					sB2 += (B-meanB)*(B-meanB);
+
+					++itr1;
+					++itr2;
+				}
+				if( sA2*sB2 == 0.0 )
+				{
+					//if(sA2==sB2)
+					correlation = 1.0;
+					//else
+					//	correlation = 0.0;
+				}
+				else
+				{
+					correlation = sAB/sqrt(sA2*sB2);
+				}
+				Results.push_back(correlation);
+			}			
+			this->HistogramCorrelationContainer.push_back(Results);			
+			std::cout<<".";
+		}
+		std::cout<<" DONE"<<std::endl;
+
+		return;
+
+	}
+
+
 
 }
 
