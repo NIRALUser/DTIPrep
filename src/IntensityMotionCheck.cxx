@@ -631,9 +631,9 @@ bool CIntensityMotionCheck::ImageCheck( DwiImageType::Pointer dwi )
 		//spacing
 		//std::cout<<"spacing: "<< protocal->GetImageProtocal().spacing[0]<<" "<<protocal->GetImageProtocal().spacing[1]<<" "<<protocal->GetImageProtocal().spacing[2]<<std::endl;
 		//std::cout<<"spacing: "<< DwiImage->GetSpacing()[0]<<" "<<DwiImage->GetSpacing()[1]<<" "<<DwiImage->GetSpacing()[2]<<std::endl;
-		if( protocal->GetImageProtocal().spacing[0] ==	dwi->GetSpacing()[0]	&& 
-			protocal->GetImageProtocal().spacing[1] ==	dwi->GetSpacing()[1]	&& 
-			protocal->GetImageProtocal().spacing[2] ==	dwi->GetSpacing()[2]	 	)
+		if( fabs( protocal->GetImageProtocal().spacing[0] - dwi->GetSpacing()[0] ) < 0.000001	&& 
+			fabs( protocal->GetImageProtocal().spacing[1] - dwi->GetSpacing()[1] ) < 0.000001   && 
+			fabs( protocal->GetImageProtocal().spacing[2] - dwi->GetSpacing()[2] ) < 0.000001	 	)
 		{
 			qcResult->GetImageInformationCheckResult().spacing = true;
 			if(bReport)
@@ -647,11 +647,17 @@ bool CIntensityMotionCheck::ImageCheck( DwiImageType::Pointer dwi )
 			{
 				outfile<<"Image Spacing Check: " << "\t\tFAILED"<<std::endl;
 				outfile<<"\tImage Spacing: "	<< dwi->GetSpacing() <<std::endl;
-				outfile<<"\tprotocal Spacing: "	<< protocal->GetImageProtocal().spacing <<std::endl;
+				outfile<<"\tprotocal Spacing: "	<< 
+					protocal->GetImageProtocal().spacing[0]<<" " <<
+					protocal->GetImageProtocal().spacing[1]<<" " <<
+					protocal->GetImageProtocal().spacing[2]<<" " <<std::endl;
 			}
 			std::cout<<"Image Spacing Check: " << "\t\tFAILED"<<std::endl;
 			std::cout<<"\tImage Spacing: "	<< dwi->GetSpacing() <<std::endl;
-			std::cout<<"\tprotocal Spacing: "	<< protocal->GetImageProtocal().spacing <<std::endl;
+			std::cout<<"\tprotocal Spacing: "	<< 
+				protocal->GetImageProtocal().spacing[0]<<" " <<
+				protocal->GetImageProtocal().spacing[1]<<" " <<
+				protocal->GetImageProtocal().spacing[2]<<" " <<std::endl;
 
 			returnValue = false;
 		}
@@ -659,15 +665,15 @@ bool CIntensityMotionCheck::ImageCheck( DwiImageType::Pointer dwi )
 		vnl_matrix<double> imgf(3,3);
 		imgf = dwi->GetDirection().GetVnlMatrix();
 
-		if( protocal->GetImageProtocal().spacedirection[0][0] ==	imgf(0,0)	&& 
-			protocal->GetImageProtocal().spacedirection[0][1] ==	imgf(0,1)	&&
-			protocal->GetImageProtocal().spacedirection[0][2] ==	imgf(0,2)	&&
-			protocal->GetImageProtocal().spacedirection[1][0] ==	imgf(1,0)	&&
-			protocal->GetImageProtocal().spacedirection[1][1] ==	imgf(1,1)	&&
-			protocal->GetImageProtocal().spacedirection[1][2] ==	imgf(1,2)	&&
-			protocal->GetImageProtocal().spacedirection[2][0] ==	imgf(2,0)	&&
-			protocal->GetImageProtocal().spacedirection[2][1] ==	imgf(2,1)	&&
-			protocal->GetImageProtocal().spacedirection[2][2] ==	imgf(2,2)	    )		
+		if( fabs( protocal->GetImageProtocal().spacedirection[0][0] - imgf(0,0)	) < 0.000001 && 
+			fabs( protocal->GetImageProtocal().spacedirection[0][1] - imgf(0,1)	) < 0.000001 && 
+			fabs( protocal->GetImageProtocal().spacedirection[0][2] - imgf(0,2)	) < 0.000001 && 
+			fabs( protocal->GetImageProtocal().spacedirection[1][0] - imgf(1,0)	) < 0.000001 && 
+			fabs( protocal->GetImageProtocal().spacedirection[1][1] - imgf(1,1)	) < 0.000001 && 
+			fabs( protocal->GetImageProtocal().spacedirection[1][2] - imgf(1,2)	) < 0.000001 && 
+			fabs( protocal->GetImageProtocal().spacedirection[2][0] - imgf(2,0)	) < 0.000001 && 
+			fabs( protocal->GetImageProtocal().spacedirection[2][1] - imgf(2,1)	) < 0.000001 && 
+			fabs( protocal->GetImageProtocal().spacedirection[2][2] - imgf(2,2)	) < 0.000001 )		
 		{
 			qcResult->GetImageInformationCheckResult().spacedirection = true;
 			if(bReport)
@@ -681,11 +687,17 @@ bool CIntensityMotionCheck::ImageCheck( DwiImageType::Pointer dwi )
 			{
 				outfile<<"Image spacedirection Check: " << "\tFAILED"<<std::endl;
 				outfile<<"\tImage GetDirection: "	<< imgf <<std::endl;
-				outfile<<"\tprotocal GetDirection: "<< protocal->GetImageProtocal().spacedirection<<std::endl;
+				outfile<<"\tprotocal GetDirection: "<<std::endl;
+				outfile<< "\t\t"<<protocal->GetImageProtocal().spacedirection[0][0]<<" "<<protocal->GetImageProtocal().spacedirection[0][1]<<" " <<protocal->GetImageProtocal().spacedirection[0][2]<<std::endl;
+				outfile<< "\t\t"<<protocal->GetImageProtocal().spacedirection[1][0]<<" "<<protocal->GetImageProtocal().spacedirection[1][1]<<" " <<protocal->GetImageProtocal().spacedirection[1][2]<<std::endl;
+				outfile<< "\t\t"<<protocal->GetImageProtocal().spacedirection[2][0]<<" "<<protocal->GetImageProtocal().spacedirection[2][1]<<" " <<protocal->GetImageProtocal().spacedirection[2][2]<<std::endl;
 			}
 			std::cout<<"Image spacedirection Check: " << "\tFAILED"<<std::endl;
 			std::cout<<"\tImage GetDirection: "	<< imgf <<std::endl;
-			std::cout<<"\tprotocal GetDirection: "<< protocal->GetImageProtocal().spacedirection<<std::endl;
+			std::cout<<"\tprotocal GetDirection: "<<std::endl;
+			std::cout<< "\t\t"<<protocal->GetImageProtocal().spacedirection[0][0]<<" "<<protocal->GetImageProtocal().spacedirection[0][1]<<" " <<protocal->GetImageProtocal().spacedirection[0][2]<<std::endl;
+			std::cout<< "\t\t"<<protocal->GetImageProtocal().spacedirection[1][0]<<" "<<protocal->GetImageProtocal().spacedirection[1][1]<<" " <<protocal->GetImageProtocal().spacedirection[1][2]<<std::endl;
+			std::cout<< "\t\t"<<protocal->GetImageProtocal().spacedirection[2][0]<<" "<<protocal->GetImageProtocal().spacedirection[2][1]<<" " <<protocal->GetImageProtocal().spacedirection[2][2]<<std::endl;
 
 			returnValue = false;
 		}
@@ -1202,8 +1214,7 @@ bool CIntensityMotionCheck::SliceWiseCheck( DwiImageType::Pointer dwi )
 				{
 					if( this->qcResult->GetIntensityMotionCheckResult()[j].processing != QCResult::GRADIENT_INCLUDE)
 					{
-						std::cout<< "gradient " << i << "has been excluded!" <<std::endl;
-
+						//std::cout<< "gradient " << i << " has been excluded!" <<std::endl;
 					}
 					else
 					{
@@ -1334,8 +1345,7 @@ bool CIntensityMotionCheck::InterlaceWiseCheck( DwiImageType::Pointer dwi )
 				{
 					if( this->qcResult->GetIntensityMotionCheckResult()[j].processing != QCResult::GRADIENT_INCLUDE)
 					{
-						std::cout<< "gradient " << i << "has been excluded!" <<std::endl;
-
+						//std::cout<< "gradient " << i << " has been excluded!" <<std::endl;
 					}
 					else
 					{
@@ -1736,7 +1746,7 @@ bool CIntensityMotionCheck::EddyMotionCorrectIowa( DwiImageType::Pointer dwi )
 																														//GRADIENT_EXCLUDE_GRADIENTCHECK,
 																														//GRADIENT_EXCLUDE_MANUALLY,
 					{
-						std::cout<< "gradient " << i << "has been excluded!" <<std::endl;
+						//std::cout<< "gradient " << i << " has been excluded!" <<std::endl;
 					}
 					else
 					{
@@ -1879,7 +1889,7 @@ bool CIntensityMotionCheck::EddyMotionCorrect( DwiImageType::Pointer dwi )
 																														//GRADIENT_EXCLUDE_GRADIENTCHECK,
 																														//GRADIENT_EXCLUDE_MANUALLY,
 					{
-						std::cout<< "gradient " << i << "has been excluded!" <<std::endl;
+						//std::cout<< "gradient " << i << " has been excluded!" <<std::endl;
 					}
 					else
 					{
@@ -2008,8 +2018,7 @@ bool CIntensityMotionCheck::GradientWiseCheck( DwiImageType::Pointer dwi )
 				{
 					if( this->qcResult->GetIntensityMotionCheckResult()[j].processing > QCResult::GRADIENT_EDDY_MOTION_CORRECTED )
 					{
-						std::cout<< "gradient " << j << "has been excluded!" <<std::endl;
-
+						//std::cout<< "gradient " << j << " has been excluded!" <<std::endl;
 					}
 					else
 					{
@@ -3403,8 +3412,7 @@ bool CIntensityMotionCheck::SliceWiseCheck( )
 				{
 					if( this->qcResult->GetIntensityMotionCheckResult()[j].processing != QCResult::GRADIENT_INCLUDE)
 					{
-						std::cout<< "gradient " << i << "has been excluded!" <<std::endl;
-
+						//std::cout<< "gradient " << i << " has been excluded!" <<std::endl;
 					}
 					else
 					{
@@ -3492,8 +3500,7 @@ bool CIntensityMotionCheck::InterlaceWiseCheck( )
 				{
 					if( this->qcResult->GetIntensityMotionCheckResult()[j].processing != QCResult::GRADIENT_INCLUDE)
 					{
-						std::cout<< "gradient " << i << "has been excluded!" <<std::endl;
-
+						//std::cout<< "gradient " << i << "has been excluded!" <<std::endl;
 					}
 					else
 					{
@@ -3670,7 +3677,7 @@ bool CIntensityMotionCheck::EddyMotionCorrect( )
 																														//GRADIENT_EXCLUDE_GRADIENTCHECK,
 																														//GRADIENT_EXCLUDE_MANUALLY,
 					{
-						std::cout<< "gradient " << i << "has been excluded!" <<std::endl;
+						//std::cout<< "gradient " << i << " has been excluded!" <<std::endl;
 					}
 					else
 					{
@@ -3755,8 +3762,7 @@ bool CIntensityMotionCheck::GradientWiseCheck( )
 				{
 					if( this->qcResult->GetIntensityMotionCheckResult()[j].processing > QCResult::GRADIENT_EDDY_MOTION_CORRECTED )
 					{
-						std::cout<< "gradient " << j << "has been excluded!" <<std::endl;
-
+						//std::cout<< "gradient " << j << " has been excluded!" <<std::endl;
 					}
 					else
 					{
