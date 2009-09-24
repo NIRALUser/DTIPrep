@@ -1611,7 +1611,7 @@ bool CIntensityMotionCheck::EddyMotionCorrectIowa( DwiImageType::Pointer dwi )
 		if( baselineNumber == 0 )
 		{
 			double smallestBValue = 9999999999999999.0;
-			for( int i = 0; i< inputGradDirContainer->size(); i++ )
+			for( unsigned int i = 0; i< inputGradDirContainer->size(); i++ )
 			{
 				double temp;
 				temp =  inputGradDirContainer->ElementAt(i)[0]*inputGradDirContainer->ElementAt(i)[0] +
@@ -1658,7 +1658,7 @@ bool CIntensityMotionCheck::EddyMotionCorrectIowa( DwiImageType::Pointer dwi )
 				// determine the index of the output pixel
 				pixelIndex = aIt.GetIndex();
 				pixelValue = 0.0;
-				for( int i = 0 ; i < inputPtr->GetVectorLength(); i++ )
+				for( unsigned int i = 0 ; i < inputPtr->GetVectorLength(); i++ )
 				{
 					if( inputGradDirContainer->ElementAt(i)[0] == 0.0 &&
 						inputGradDirContainer->ElementAt(i)[1] == 0.0 && 
@@ -3830,7 +3830,7 @@ bool CIntensityMotionCheck::SaveQCedDWI()
  	}
 	return true;
 }
-void CIntensityMotionCheck::collectLeftDiffusionStatistics( int dumb)
+void CIntensityMotionCheck::collectLeftDiffusionStatistics( int /* dumb */)
 {
 	DwiImageType::Pointer dwi = DwiImageTemp;
 

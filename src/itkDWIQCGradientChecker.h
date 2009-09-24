@@ -3,8 +3,8 @@
 Program:   NeuroLib
 Module:    $file: itkDWIQCGradientChecker.h $
 Language:  C++
-Date:      $Date: 2009-08-27 10:55:01 $
-Version:   $Revision: 1.3 $
+Date:      $Date: 2009-09-24 15:12:36 $
+Version:   $Revision: 1.4 $
 Author:    Zhexing Liu (liuzhexing@gmail.com)
 
 Copyright (c) NIRAL, UNC. All rights reserved.
@@ -144,7 +144,7 @@ namespace itk
 		void operator=(const Self&);    //purposely not implemented
 
 		/** check parameters */
-		int m_ReferenceIndex;
+		unsigned int m_ReferenceIndex;
 
 		float m_TranslationThreshold ;
 		float m_RotationThreshold ;

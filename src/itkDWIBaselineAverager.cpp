@@ -3,8 +3,8 @@
 Program:   NeuroLib
 Module:    $file: itkDWIBaselineAverger.cpp $
 Language:  C++
-Date:      $Date: 2009-09-11 10:40:28 $
-Version:   $Revision: 1.5 $
+Date:      $Date: 2009-09-24 15:12:36 $
+Version:   $Revision: 1.6 $
 Author:    Zhexing Liu (liuzhexing@gmail.com)
 
 Copyright (c) NIRAL, UNC. All rights reserved.
@@ -150,7 +150,7 @@ namespace itk
 		// thickness
 		if(imgMetaDictionary.HasKey("NRRD_thicknesses[2]"))
 		{
-			double thickness;
+			double thickness=-12345;
 			itk::ExposeMetaData<double>(imgMetaDictionary, "NRRD_thickness[2]", thickness);
 			itk::EncapsulateMetaData<double>( outputMetaDictionary, "NRRD_thickness[2]", thickness);
   			itk::EncapsulateMetaData<double>( outputMetaDictionary, "NRRD_thickness[0]", -1);
@@ -199,7 +199,7 @@ namespace itk
 
 			// gradient dir vectors
 			int temp=1;
-			for(int i=0;i< this->m_GradientDirectionContainer -> Size();i++ )
+			for(unsigned int i=0;i< this->m_GradientDirectionContainer -> Size();i++ )
 			{
 				if( 0.0 ==	this->m_GradientDirectionContainer->ElementAt(i)[0] &&
 					0.0 ==	this->m_GradientDirectionContainer->ElementAt(i)[1] &&
@@ -223,7 +223,7 @@ namespace itk
 		}
 		else  // no baseline
 		{
-			for(int i=0;i< this->m_GradientDirectionContainer -> Size();i++ )
+			for(unsigned int i=0;i< this->m_GradientDirectionContainer -> Size();i++ )
 			{
 				std::ostringstream ossKey;
 				ossKey << "DWMRI_gradient_" << std::setw(4) << std::setfill('0') << i ;
@@ -348,7 +348,7 @@ namespace itk
 		}
 
 		bool bRegister = true;
-		int inertationCount = 0;
+		unsigned int inertationCount = 0;
 		std::cout<<"Gradient optamized averaging baseline ...";
 		do 
 		{
@@ -448,7 +448,9 @@ namespace itk
 // 				std::cout<<"StopThreshold: "<<m_StopThreshold<<std::endl;
 
 				if( ratio < m_StopThreshold ) //0.02
+          {
 					bRegister = false;
+          }
 			}
 
 		} while ( bRegister && inertationCount<= GetMaxIteration() );
@@ -568,7 +570,7 @@ namespace itk
 			Results.push_back(result);
 		}
 		bool bRegister = true;
-		int inertationCount = 0;
+		unsigned int inertationCount = 0;
 
 		std::cout<<"Baseline optimized averaging baseline ...";
 		do 
@@ -680,7 +682,9 @@ namespace itk
 // 				std::cout<<"StopThreshold: "<<m_StopThreshold<<std::endl;
 
 				if( ratio < m_StopThreshold ) //0.01
-					bRegister = false;
+          {
+          bRegister = false;
+          }
 			}
 
 		} while ( bRegister && inertationCount<= GetMaxIteration()   );
@@ -711,7 +715,7 @@ namespace itk
 			// determine the index of the output pixel
 			pixelIndex = aIt.GetIndex();
 			pixelValue = 0.0;
-			for( int i = 0 ; i < inputPtr->GetVectorLength(); i++ )
+			for(unsigned int i = 0 ; i < inputPtr->GetVectorLength(); i++ )
 			{
 				if( this->m_GradientDirectionContainer->ElementAt(i)[0] == 0.0 &&
 					this->m_GradientDirectionContainer->ElementAt(i)[1] == 0.0 && 
@@ -777,7 +781,7 @@ namespace itk
 		outfile<<"\trepetitionNumber: " <<repetitionNumber	<<std::endl;
 
 		outfile<<std::endl<<"\t# "<<"\tDirVector"<<std::endl;
-		for(int i=0;i< this->m_GradientDirectionContainer->size();i++)
+		for(unsigned int i=0;i< this->m_GradientDirectionContainer->size();i++)
 		{
 			outfile<<"\t"<<i<<"\t[ " 
 				<<std::setw(9)<<std::setiosflags(std::ios::fixed)<< std::setprecision(6)<<std::setiosflags(std::ios::right)
@@ -808,7 +812,7 @@ namespace itk
 			temp=1;
 		}
 
-		for(int i=0;i< this->m_GradientDirectionContainer->size();i++)
+		for(unsigned int i=0;i< this->m_GradientDirectionContainer->size();i++)
 		{
 
 			if( 0.0 ==	this->m_GradientDirectionContainer->ElementAt(i)[0] &&
@@ -842,12 +846,12 @@ namespace itk
 		std::vector<struDiffusionDir> DiffusionDirections;
 		DiffusionDirections.clear();
 
-		for( int i=0; i< this->m_GradientDirectionContainer->size();i++) 
+		for( unsigned int i=0; i< this->m_GradientDirectionContainer->size();i++) 
 		{
 			if(DiffusionDirections.size()>0)
 			{
 				bool newDir = true;
-				for(int j=0;j<DiffusionDirections.size();j++)
+				for(unsigned int j=0;j<DiffusionDirections.size();j++)
 				{
 					if( this->m_GradientDirectionContainer->ElementAt(i)[0] == DiffusionDirections[j].gradientDir[0] && 
 						this->m_GradientDirectionContainer->ElementAt(i)[1] == DiffusionDirections[j].gradientDir[1] && 
@@ -893,8 +897,8 @@ namespace itk
 		std::vector<double> dirNorm;
 		dirNorm.clear();
 
-		double modeTemp = 0.0;
-		for( int i=0; i<DiffusionDirections.size(); i++)
+		//double modeTemp = 0.0;
+		for( unsigned int i=0; i<DiffusionDirections.size(); i++)
 		{
 			if( DiffusionDirections[i].gradientDir[0] == 0.0 &&
 				DiffusionDirections[i].gradientDir[1] == 0.0 &&
@@ -915,7 +919,7 @@ namespace itk
 				if( dirNorm.size() > 0)
 				{
 					bool newDirMode = true;
-					for(int j=0;j< dirNorm.size();j++)
+					for(unsigned int j=0;j< dirNorm.size();j++)
 					{
 						if( fabs(normSqr-dirNorm[j])<0.001)   // 1 DIFFERENCE for b value
 						{
@@ -939,7 +943,7 @@ namespace itk
 		this->bValueNumber = dirNorm.size();
 
 		repetitionNumber = repetNum[0];
-		for( int i=1; i<repetNum.size(); i++)
+		for( unsigned int i=1; i<repetNum.size(); i++)
 		{ 
 			if( repetNum[i] != repetNum[0])
 			{
@@ -1000,7 +1004,7 @@ namespace itk
 			return ;
 		}
 
-		for(int i=0;i< this->m_GradientDirectionContainer -> Size();i++ )
+		for(unsigned int i=0;i< this->m_GradientDirectionContainer -> Size();i++ )
 		{
 			bValues.push_back(	static_cast< int >((	this->m_GradientDirectionContainer->ElementAt(i)[0]*this->m_GradientDirectionContainer->ElementAt(i)[0] +
 				this->m_GradientDirectionContainer->ElementAt(i)[1]*this->m_GradientDirectionContainer->ElementAt(i)[1] +
@@ -1008,7 +1012,7 @@ namespace itk
 		}
 
 		// 		std::cout << "b values:" << std::endl;
-		// 		for(int i=0;i< this->m_GradientDirectionContainer -> Size();i++ )
+		// 		for(unsigned int i=0;i< this->m_GradientDirectionContainer -> Size();i++ )
 		// 		{
 		// 			std::cout << bValues[i] << std::endl;
 		// 		}
@@ -1084,7 +1088,7 @@ namespace itk
 				value.SetElement(0, averagedBaseline->GetPixel(inputIndex));
 
 				int element = 1;
-				for( int i = 0 ; i < inputPtr->GetVectorLength(); i++ )
+				for( unsigned int i = 0 ; i < inputPtr->GetVectorLength(); i++ )
 				{
 					if( this->m_GradientDirectionContainer->ElementAt(i)[0] == 0.0 &&
 						this->m_GradientDirectionContainer->ElementAt(i)[1] == 0.0 && 
@@ -1116,7 +1120,7 @@ namespace itk
 		UnsignedImageType::Pointer moving,
 		unsigned int	BinsNumber,
 		double			SamplesPercent,
-		bool			ExplicitPDFDerivatives,
+		bool			/* ExplicitPDFDerivatives */,
 		struRigidRegResult&  regResult,
 		int baselineORidwi // 0: baseline; otherwise: idwi
 		)
@@ -1144,7 +1148,7 @@ namespace itk
 
 		unsigned int numberOfBins = BinsNumber;
 		double  percentOfSamples = SamplesPercent;			// 1% ~ 20%
-		bool	useExplicitPDFDerivatives = ExplicitPDFDerivatives;
+		//bool	useExplicitPDFDerivatives = ExplicitPDFDerivatives;
 
 		registration->SetMetric(        metric        );
 		registration->SetOptimizer(     optimizer     );
@@ -1228,7 +1232,7 @@ namespace itk
 		const double finalTranslationY     = finalParameters[4];
 		const double finalTranslationZ     = finalParameters[5];
 
-		const unsigned int numberOfIterations = optimizer->GetCurrentIteration();
+		//const unsigned int numberOfIterations = optimizer->GetCurrentIteration();
 		const double bestValue = optimizer->GetValue();
 
 		// Print out results
@@ -1317,7 +1321,7 @@ namespace itk
 			// determine the index of the output pixel
 			pixelIndex = idwiIt.GetIndex();
 			pixelValue = 1.0;
-			for( int i = 0 ; i < inputPtr->GetVectorLength(); i++ )
+			for(unsigned int i = 0 ; i < inputPtr->GetVectorLength(); i++ )
 			{
 				if( this->m_GradientDirectionContainer->ElementAt(i)[0] != 0.0 ||
 					this->m_GradientDirectionContainer->ElementAt(i)[1] != 0.0 || 

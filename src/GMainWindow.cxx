@@ -440,7 +440,7 @@ void GMainWindow::ImageIndexChanged(int winID, int index)
 	qvtkWidget->GetRenderWindow()->Render();
 }
 
-void GMainWindow::ContentsChanged(int WinID, int index)
+void GMainWindow::ContentsChanged(int /* WinID */, int index)
 {
 	if(bContentSyn)
 	{
@@ -1297,7 +1297,7 @@ bool GMainWindow::CreateImagePlaneWidgets( vtkImageData *GradientImage1, vtkImag
 	return TRUE;
 }
 
-void GMainWindow::UpdateImagePlaneWidgets(int gradient)
+void GMainWindow::UpdateImagePlaneWidgets(int /* gradient */)
 {
 	//componentExtractor = FilterType::New();
 	//gradientConnecter = ItkVtkImageFilterTypeUShort::New();
@@ -1312,7 +1312,7 @@ void GMainWindow::UpdateImagePlaneWidgets(int gradient)
 	
 }
 
-void GMainWindow::UpdateImagePlaneWidgets(int gradient1, int gradient2, int gradient3)
+void GMainWindow::UpdateImagePlaneWidgets(int /* gradient1 */, int /* gradient2 */, int /* gradient3 */)
 {
 	//componentExtractor = FilterType::New();
 	//gradientConnecter = ItkVtkImageFilterTypeUShort::New();
@@ -1329,7 +1329,7 @@ void GMainWindow::UpdateImagePlaneWidgets(int gradient1, int gradient2, int grad
 				gradientConnecter3->GetOutput());
 }
 
-void GMainWindow::UpdateImageView2DWindows(int gradient, int numbGradients)
+void GMainWindow::UpdateImageView2DWindows(int /* gradient */, int numbGradients)
 {
 	//componentExtractor = FilterType::New();
 	//gradientConnecter = ItkVtkImageFilterTypeUShort::New();
@@ -1346,7 +1346,7 @@ void GMainWindow::UpdateImageView2DWindows(int gradient, int numbGradients)
 
 }
 
-void GMainWindow::UpdateImageView2DWindows(int gradient1, int gradient2, int gradient3, int numbGradients)
+void GMainWindow::UpdateImageView2DWindows(int /* gradient1 */, int /* gradient2 */, int /* gradient3 */, int numbGradients)
 {
 	//componentExtractor = FilterType::New();
 	//gradientConnecter = ItkVtkImageFilterTypeUShort::New();
@@ -1553,7 +1553,7 @@ void GMainWindow::BackGroundColor(QAction* color)
   this->pvtkRenderer->GetRenderWindow()->Render();
 }
 
-void GMainWindow::popup(vtkObject * obj, unsigned long, void * client_data, void *, vtkCommand * command)
+void GMainWindow::popup(vtkObject * obj, unsigned long, void * /* client_data */, void *, vtkCommand * /* command */)
 {
   // A note about context menus in Qt and the QVTKWidget
   // You may find it easy to just do context menus on right button up,
@@ -1625,7 +1625,7 @@ void GMainWindow::SetAllWindowLevel(double window, double level)
 
 
 
-void GMainWindow::WindowLevelChanged(vtkObject * obj, unsigned long, void * client_data, void *,vtkCommand * command)
+void GMainWindow::WindowLevelChanged(vtkObject * /* obj */, unsigned long, void * client_data, void *,vtkCommand * /* command */)
 {
 	int *whichwindow;
 	whichwindow=(int *)client_data;

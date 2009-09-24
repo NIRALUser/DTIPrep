@@ -3,8 +3,8 @@
 Program:   NeuroLib
 Module:    $file: itkDWIEddyCurrentHeadMotionCorrector.cpp $
 Language:  C++
-Date:      $Date: 2009-09-03 15:13:35 $
-Version:   $Revision: 1.3 $
+Date:      $Date: 2009-09-24 15:12:36 $
+Version:   $Revision: 1.4 $
 Author:    Zhexing Liu (liuzhexing@gmail.com)
 
 Copyright (c) NIRAL, UNC. All rights reserved.
@@ -151,7 +151,7 @@ namespace itk
 		// thickness
 		if(imgMetaDictionary.HasKey("NRRD_thicknesses[2]"))
 		{
-			double thickness;
+			double thickness=-12345;
 			itk::ExposeMetaData<double>(imgMetaDictionary, "NRRD_thickness[2]", thickness);
 			itk::EncapsulateMetaData<double>( outputMetaDictionary, "NRRD_thickness[2]", thickness);
   			itk::EncapsulateMetaData<double>( outputMetaDictionary, "NRRD_thickness[0]", -1);
@@ -189,7 +189,7 @@ namespace itk
 
 		itk::EncapsulateMetaData<std::string>( outputMetaDictionary, "DWMRI_gradient_0000", " 0.000000     0.000000     0.000000");
 
-		for(int i=0;i< this->re.GetGradients().size(); i++ )
+		for(unsigned int i=0;i< this->re.GetGradients().size(); i++ )
 		{
 			std::ostringstream ossKey;
 			std::ostringstream ossMetaString;
@@ -243,7 +243,7 @@ namespace itk
 		m_FeedinGradientDirectionContainer = GradientDirectionContainerType::New();
 		m_OutputGradientDirectionContainer = GradientDirectionContainerType::New();
 
-		bool Baseline = true;
+		//bool Baseline = true;
 		int nBaseline = 0;
 
 		std::vector<unsigned int> baselineIndicator( 0 );
@@ -293,7 +293,7 @@ namespace itk
 
 		for (itB0.GoToBegin(); !itB0.IsAtEnd(); ++itB0)
 		{
-			for (int k = 0; k < dim; k++)
+			for (unsigned int k = 0; k < dim; k++)
 				nrrdIdx[k] = itB0.GetIndex()[k];
 
 			double b = 0;
@@ -325,7 +325,7 @@ namespace itk
 				baseline->GetLargestPossibleRegion());
 
 			for (itBaseLine.GoToBegin(); !itBaseLine.IsAtEnd(); ++itBaseLine) {
-				for (int j = 0; j < dim; j++)
+				for (unsigned int j = 0; j < dim; j++)
 					nrrdIdx[j] = itBaseLine.GetIndex()[j];
 
 				double b 
@@ -337,7 +337,7 @@ namespace itk
 		}
 
 		//separate moving images
-		for (int k = 0; k < nMeasurement; k++){
+		for (unsigned int k = 0; k < nMeasurement; k++){
 			ScalarImageType::Pointer dwi = ScalarImageType::New();
 			dwi->CopyInformation( inputPtr );
 			dwi->SetRegions( dwi->GetLargestPossibleRegion());
@@ -346,7 +346,7 @@ namespace itk
 				dwi->GetLargestPossibleRegion());
 
 			for (itDWI.GoToBegin(); !itDWI.IsAtEnd(); ++itDWI) {
-				for (int j = 0; j < dim; j++)
+				for (unsigned int j = 0; j < dim; j++)
 					nrrdIdx[j] = itDWI.GetIndex()[j];
 
 				double b = static_cast<double> ( inputPtr->GetPixel(nrrdIdx)[diffusionIndicator[k]] );
@@ -366,7 +366,7 @@ namespace itk
  		this->corr = this->re.Registration( );
 
 		m_OutputGradientDirectionContainer = GradientDirectionContainerType::New();
-		for(int i=0;i< this->re.GetGradients().size(); i++ )
+		for(unsigned int i=0;i< this->re.GetGradients().size(); i++ )
 		{
 			vect3d[0] = this->re.GetGradients().at(i)[0];
 			vect3d[1] = this->re.GetGradients().at(i)[1];
@@ -418,7 +418,7 @@ namespace itk
 		outfile<<"\tgradientDirLeftNumber: "<<gradientDirLeftNumber	<<std::endl;
 
 		outfile<<std::endl<<"\t# "<<"\tDirVector"<<std::setw(34)<<std::setiosflags(std::ios::left)<<"\tIncluded"<<std::endl;
-		for(int i=0;i< this->m_GradientDirectionContainer->size();i++)
+		for(unsigned int i=0;i< this->m_GradientDirectionContainer->size();i++)
 		{
 			outfile<<"\t"<<i<<"\t[ " 
 				<<std::setw(9)<<std::setiosflags(std::ios::fixed)<< std::setprecision(6)<<std::setiosflags(std::ios::right)
@@ -433,7 +433,7 @@ namespace itk
 		outfile<<std::endl<<"Output Gradient Direction Histogram: "<<std::endl;
 		outfile<<"\t# "<<"\tDirVector"<<std::setw(34)<<std::setiosflags(std::ios::left)<<"\tRepLeft"<<std::endl;
 
-		for(int i=0;i< this->DiffusionDirHistOutput.size();i++)
+		for(unsigned int i=0;i< this->DiffusionDirHistOutput.size();i++)
 		{
 			if( GetReportFileName().length()>0)
 				outfile<<"\t"<<i<<"\t[ " 
@@ -473,12 +473,12 @@ namespace itk
 
 		DiffusionDirHistOutput.push_back(diffusionDir);
 
-		for( int i=0; i< this->re.GetGradients().size();i++) 
+		for( unsigned int i=0; i< this->re.GetGradients().size();i++) 
 		{
 			if(DiffusionDirHistOutput.size()>0)
 			{
 				bool newDir = true;
-				for(int j=0;j<DiffusionDirHistOutput.size();j++)
+				for(unsigned int j=0;j<DiffusionDirHistOutput.size();j++)
 				{
 					if( this->re.GetGradients().at(i)[0] == DiffusionDirHistOutput[j].gradientDir[0] && 
 						this->re.GetGradients().at(i)[1] == DiffusionDirHistOutput[j].gradientDir[1] && 
@@ -522,8 +522,8 @@ namespace itk
 
 		this->baselineLeftNumber=0;
 		this->gradientLeftNumber=0;
-		double modeTemp = 0.0;
-		for( int i=0; i<DiffusionDirHistOutput.size(); i++)
+		//double modeTemp = 0.0;
+		for( unsigned int i=0; i<DiffusionDirHistOutput.size(); i++)
 		{
 			if( DiffusionDirHistOutput[i].gradientDir[0] == 0.0 &&
 				DiffusionDirHistOutput[i].gradientDir[1] == 0.0 &&
@@ -545,7 +545,7 @@ namespace itk
 				if( dirNorm.size() > 0)
 				{
 					bool newDirMode = true;
-					for(int j=0;j< dirNorm.size();j++)
+					for(unsigned int j=0;j< dirNorm.size();j++)
 					{
 						if( fabs(normSqr-dirNorm[j])<0.001)   // 1 DIFFERENCE for b value
 						{
@@ -573,7 +573,7 @@ namespace itk
 
 		this->gradientDirLeftNumber = 0;
 		this->gradientLeftNumber = 0;
-		for(int i=0; i<this->repetitionLeftNumber.size(); i++)
+		for(unsigned int i=0; i<this->repetitionLeftNumber.size(); i++)
 		{
 			this->gradientLeftNumber+=this->repetitionLeftNumber[i];
 			if(this->repetitionLeftNumber[i]>0)
@@ -596,12 +596,12 @@ namespace itk
 		std::vector<struDiffusionDir> DiffusionDirections;
 		DiffusionDirections.clear();
 
-		for( int i=0; i< this->m_GradientDirectionContainer->size();i++) 
+		for( unsigned int i=0; i< this->m_GradientDirectionContainer->size();i++) 
 		{
 			if(DiffusionDirections.size()>0)
 			{
 				bool newDir = true;
-				for(int j=0;j<DiffusionDirections.size();j++)
+				for(unsigned int j=0;j<DiffusionDirections.size();j++)
 				{
 					if( this->m_GradientDirectionContainer->ElementAt(i)[0] == DiffusionDirections[j].gradientDir[0] && 
 						this->m_GradientDirectionContainer->ElementAt(i)[1] == DiffusionDirections[j].gradientDir[1] && 
@@ -647,8 +647,8 @@ namespace itk
 		std::vector<double> dirNorm;
 		dirNorm.clear();
 
-		double modeTemp = 0.0;
-		for( int i=0; i<DiffusionDirections.size(); i++)
+		//double modeTemp = 0.0;
+		for( unsigned int i=0; i<DiffusionDirections.size(); i++)
 		{
 			if( DiffusionDirections[i].gradientDir[0] == 0.0 &&
 				DiffusionDirections[i].gradientDir[1] == 0.0 &&
@@ -669,7 +669,7 @@ namespace itk
 				if( dirNorm.size() > 0)
 				{
 					bool newDirMode = true;
-					for(int j=0;j< dirNorm.size();j++)
+					for(unsigned int j=0;j< dirNorm.size();j++)
 					{
 						if( fabs(normSqr-dirNorm[j])<0.001)   // 1 DIFFERENCE for b value
 						{
@@ -693,7 +693,7 @@ namespace itk
 		this->bValueNumber = dirNorm.size();
 
 		repetitionNumber = repetNum[0];
-		for( int i=1; i<repetNum.size(); i++)
+		for( unsigned int i=1; i<repetNum.size(); i++)
 		{ 
 			if( repetNum[i] != repetNum[0])
 			{
@@ -755,7 +755,7 @@ namespace itk
 			return ;
 		}
 
-		for(int i=0;i< this->m_GradientDirectionContainer -> Size();i++ )
+		for(unsigned int i=0;i< this->m_GradientDirectionContainer -> Size();i++ )
 		{
 			bValues.push_back(	static_cast< int >((	this->m_GradientDirectionContainer->ElementAt(i)[0]*this->m_GradientDirectionContainer->ElementAt(i)[0] +
 									this->m_GradientDirectionContainer->ElementAt(i)[1]*this->m_GradientDirectionContainer->ElementAt(i)[1] +
@@ -824,8 +824,8 @@ namespace itk
 			// determine the input pixel location associated with this output pixel
 			inputIndex = outputIndex;
 
-			int element = 0;
-			for( int i = 0 ; i < this->corr->GetVectorLength(); i++ )
+			//int element = 0;
+			for( unsigned int i = 0 ; i < this->corr->GetVectorLength(); i++ )
 			{
 					value.SetElement( i , static_cast< unsigned int > (this->corr->GetPixel(inputIndex)[i])) ;
 			}

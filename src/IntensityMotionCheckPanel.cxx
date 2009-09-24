@@ -86,7 +86,7 @@ IntensityMotionCheckPanel::IntensityMotionCheckPanel(QMainWindow *parent):QDockW
 
 }
 
-void IntensityMotionCheckPanel::on_treeWidget_DiffusionInformation_itemClicked( QTreeWidgetItem *item,  int column)
+void IntensityMotionCheckPanel::on_treeWidget_DiffusionInformation_itemClicked( QTreeWidgetItem *item,  int /* column */)
 {
 	std::string str = item->text(0).toStdString() ;
 	
@@ -98,7 +98,7 @@ void IntensityMotionCheckPanel::on_treeWidget_DiffusionInformation_itemClicked( 
   }
 }
 
-void IntensityMotionCheckPanel::on_treeWidget_DiffusionInformation_currentItemChanged( QTreeWidgetItem *current,  QTreeWidgetItem *previous)
+void IntensityMotionCheckPanel::on_treeWidget_DiffusionInformation_currentItemChanged( QTreeWidgetItem *current,  QTreeWidgetItem * /* previous */)
 {
 	std::string str = current->text(0).toStdString() ;
 
@@ -110,7 +110,7 @@ void IntensityMotionCheckPanel::on_treeWidget_DiffusionInformation_currentItemCh
 	}
 }
 
-void IntensityMotionCheckPanel::on_treeWidget_Results_itemClicked( QTreeWidgetItem *item,  int column)
+void IntensityMotionCheckPanel::on_treeWidget_Results_itemClicked( QTreeWidgetItem *item,  int /* column */)
 {
 	std::string str = item->text(0).toStdString() ;
 	if ( str.find("gradient") != std::string::npos)
@@ -146,7 +146,7 @@ void IntensityMotionCheckPanel::on_treeWidget_Results_itemDoubleClicked(QTreeWid
 		treeWidget_Results->openPersistentEditor(item,column);
 }
 
-void IntensityMotionCheckPanel::on_treeWidget_Results_itemChanged(QTreeWidgetItem * item, int column) 
+void IntensityMotionCheckPanel::on_treeWidget_Results_itemChanged(QTreeWidgetItem * item, int /* column */)
 {
 	if(bResultTreeEditable)
 	{
@@ -165,7 +165,7 @@ void IntensityMotionCheckPanel::on_treeWidget_Results_itemChanged(QTreeWidgetIte
 	}
 }
 
-void IntensityMotionCheckPanel::on_treeWidget_currentItemChanged( QTreeWidgetItem *current,  QTreeWidgetItem *previous)
+void IntensityMotionCheckPanel::on_treeWidget_currentItemChanged( QTreeWidgetItem * /* current */,  QTreeWidgetItem *previous)
 {
 	treeWidget->closePersistentEditor(previous,1); // does nothing if none open
 }
@@ -381,7 +381,7 @@ bool IntensityMotionCheckPanel::GetGridentDirections( bool bDisplay)
 }
 
 
-void IntensityMotionCheckPanel::on_treeWidget_itemChanged(QTreeWidgetItem * item, int column)
+void IntensityMotionCheckPanel::on_treeWidget_itemChanged(QTreeWidgetItem * /* item */, int /* column */)
 {
 	//pushButton_Save->setEnabled(pushButton_Editable->isCheckable());
 }

@@ -3,8 +3,8 @@
 Program:   NeuroLib
 Module:    $file: itkDWIQCSliceChecker.cpp $
 Language:  C++
-Date:      $Date: 2009-09-11 10:40:28 $
-Version:   $Revision: 1.6 $
+Date:      $Date: 2009-09-24 15:12:36 $
+Version:   $Revision: 1.7 $
 Author:    Zhexing Liu (liuzhexing@gmail.com)
 
 Copyright (c) NIRAL, UNC. All rights reserved.
@@ -186,7 +186,7 @@ namespace itk
 		// thickness
 		if(imgMetaDictionary.HasKey("NRRD_thicknesses[2]"))
 		{
-			double thickness;
+			double thickness=-12345;
 			itk::ExposeMetaData<double>(imgMetaDictionary, "NRRD_thickness[2]", thickness);
 			itk::EncapsulateMetaData<double>( outputMetaDictionary, "NRRD_thickness[2]", thickness);
   			itk::EncapsulateMetaData<double>( outputMetaDictionary, "NRRD_thickness[0]", -1);
@@ -220,7 +220,7 @@ namespace itk
 
 		// gradient vectors
 		int temp=0;
-		for(int i=0;i< this->m_GradientDirectionContainer -> Size();i++ )
+		for(unsigned int i=0;i< this->m_GradientDirectionContainer -> Size();i++ )
 		{
 			if(this->qcResults[i])
 			{
@@ -281,7 +281,7 @@ namespace itk
 			filter2->SetInput( componentExtractor->GetOutput() );
 
 			std::vector< double > Results;
-			for(int i=1; i<componentExtractor->GetOutput()->GetLargestPossibleRegion().GetSize()[2]; i++)
+			for(unsigned int i=1; i<componentExtractor->GetOutput()->GetLargestPossibleRegion().GetSize()[2]; i++)
 			{
 				start1[2] = i-1;
 				start2[2] = i;
@@ -411,7 +411,11 @@ namespace itk
 		RegionFilterType::Pointer RegionFilter2 = RegionFilterType::New();
 
 		SliceImageType::IndexType RegionStart;
+    RegionStart[0]=0;
+    RegionStart[1]=0;
 		SliceImageType::SizeType RegionSize;
+    RegionSize[0]=inputPtr->GetLargestPossibleRegion().GetSize()[0];
+    RegionSize[1]=inputPtr->GetLargestPossibleRegion().GetSize()[1];
 		SliceImageType::RegionType desiredRegion;
 
 		desiredRegion.SetSize( RegionSize );
@@ -448,7 +452,7 @@ namespace itk
 			std::vector< double > Results3;
 			std::vector< double > Results4;
 
-			for(int i=1; i<componentExtractor->GetOutput()->GetLargestPossibleRegion().GetSize()[2]; i++)
+			for(unsigned int i=1; i<componentExtractor->GetOutput()->GetLargestPossibleRegion().GetSize()[2]; i++)
 			{
 				start1[2] = i-1;
 				start2[2] = i;
@@ -805,7 +809,7 @@ namespace itk
 		int DWIBadcount=0;
 		int baselineBadcount=0;
 		InputImageConstPointer  inputPtr = this->GetInput();
-		for(int i=0;i<ResultsContainer.size();i++)
+		for(unsigned int i=0;i<ResultsContainer.size();i++)
 		{
 			baselineBadcount = 0;
 			DWIBadcount=0;
@@ -816,13 +820,13 @@ namespace itk
 					this->m_GradientDirectionContainer->at(i)[2] == 0.0     )
 				{	
 					//baseline
-					for(int j = 0 + (int)(inputPtr->GetLargestPossibleRegion().GetSize()[2] * this->m_HeadSkipRatio);
+					for(unsigned int j = 0 + (int)(inputPtr->GetLargestPossibleRegion().GetSize()[2] * this->m_HeadSkipRatio);
 						j < ResultsContainer[0].size() - (int)( inputPtr->GetLargestPossibleRegion().GetSize()[2]*this->m_TailSkipRatio); j++ ) 
 					{
 						double meanBaseline =0.0, stdevBaseline=0.0;
 						int effectCount=0;
 						// compute the mean and stdev
-						for(int k=0;k<ResultsContainer.size();k++)
+						for(unsigned int k=0;k<ResultsContainer.size();k++)
 						{
 							//if(k==i)
 							//	continue; // leave self out
@@ -841,7 +845,7 @@ namespace itk
 						//	meanBaseline = meanBaseline/(double)effectCount;
 						meanBaseline = meanBaseline/(double)BaselineCount;
 // 						std::cout<< "meanBaseline: "<<meanBaseline<<std::endl;
-						for(int k=0;k<ResultsContainer.size();k++)
+						for(unsigned int k=0;k<ResultsContainer.size();k++)
 						{
 							//if(k==i)
 							//	continue; // leave self out
@@ -879,13 +883,13 @@ namespace itk
 				}
 				else // gradients
 				{			
-					for(int j=0 + (int)(inputPtr->GetLargestPossibleRegion().GetSize()[2]*this->m_HeadSkipRatio);
+					for(unsigned int j=0 + (int)(inputPtr->GetLargestPossibleRegion().GetSize()[2]*this->m_HeadSkipRatio);
 						j<ResultsContainer[0].size() - (int)(inputPtr->GetLargestPossibleRegion().GetSize()[2]*this->m_TailSkipRatio); j++) 
 					{
 						double meanDWI =0.0, stdevDWI=0.0;
 						int effectCount=0;
 						// compute the mean and stdev
-						for(int k=0;k<ResultsContainer.size();k++)
+						for(unsigned int k=0;k<ResultsContainer.size();k++)
 						{
 							if(k==i)
 								continue; // leave self out
@@ -903,7 +907,7 @@ namespace itk
 						if(effectCount>=1)
 							meanDWI = meanDWI/(double)effectCount;
 // 						std::cout<< "meanDWI: "<<meanDWI<<std::endl;
-						for(int k=0;k<ResultsContainer.size();k++)
+						for(unsigned int k=0;k<ResultsContainer.size();k++)
 						{
 							if(k==i)
 								continue; // leave self out
@@ -965,10 +969,10 @@ namespace itk
 		this->gradientDeviations4.clear();
 
 // region 0
-		for(int j=0;j<ResultsContainer0[0].size();j++)
+		for(unsigned int j=0;j<ResultsContainer0[0].size();j++)
 		{
 			double DWImean=0.0, DWIdeviation=0.0; 
-			for(int i=0; i<this->ResultsContainer0.size(); i++)
+			for(unsigned int i=0; i<this->ResultsContainer0.size(); i++)
 			{
 				if(this->qcResults[i])
 				{
@@ -985,7 +989,7 @@ namespace itk
 				}
 			}
 
-			for(int i=0; i<this->ResultsContainer0.size(); i++)
+			for(unsigned int i=0; i<this->ResultsContainer0.size(); i++)
 			{
 				if(this->qcResults[i])
 				{
@@ -1009,10 +1013,10 @@ namespace itk
 		}
 
 // region 1
-		for(int j=0;j<ResultsContainer1[0].size();j++)
+		for(unsigned int j=0;j<ResultsContainer1[0].size();j++)
 		{
 			double DWImean=0.0, DWIdeviation=0.0; 
-			for(int i=0; i<this->ResultsContainer1.size(); i++)
+			for(unsigned int i=0; i<this->ResultsContainer1.size(); i++)
 			{
 				if(this->qcResults[i])
 				{
@@ -1029,7 +1033,7 @@ namespace itk
 				}
 			}
 
-			for(int i=0; i<this->ResultsContainer1.size(); i++)
+			for(unsigned int i=0; i<this->ResultsContainer1.size(); i++)
 			{
 				if(this->qcResults[i])
 				{
@@ -1053,10 +1057,10 @@ namespace itk
 		}
 
 // region 2
-		for(int j=0;j<ResultsContainer2[0].size();j++)
+		for(unsigned int j=0;j<ResultsContainer2[0].size();j++)
 		{
 			double DWImean=0.0, DWIdeviation=0.0; 
-			for(int i=0; i<this->ResultsContainer2.size(); i++)
+			for(unsigned int i=0; i<this->ResultsContainer2.size(); i++)
 			{
 				if(this->qcResults[i])
 				{
@@ -1073,7 +1077,7 @@ namespace itk
 				}
 			}
 
-			for(int i=0; i<this->ResultsContainer2.size(); i++)
+			for(unsigned int i=0; i<this->ResultsContainer2.size(); i++)
 			{
 				if(this->qcResults[i])
 				{
@@ -1097,10 +1101,10 @@ namespace itk
 		}
 
 // region 3
-		for(int j=0;j<ResultsContainer3[0].size();j++)
+		for(unsigned int j=0;j<ResultsContainer3[0].size();j++)
 		{
 			double DWImean=0.0, DWIdeviation=0.0; 
-			for(int i=0; i<this->ResultsContainer3.size(); i++)
+			for(unsigned int i=0; i<this->ResultsContainer3.size(); i++)
 			{
 				if(this->qcResults[i])
 				{
@@ -1117,7 +1121,7 @@ namespace itk
 				}
 			}
 
-			for(int i=0; i<this->ResultsContainer3.size(); i++)
+			for(unsigned int i=0; i<this->ResultsContainer3.size(); i++)
 			{
 				if(this->qcResults[i])
 				{
@@ -1141,10 +1145,10 @@ namespace itk
 		}
 		
 // region 4
-		for(int j=0;j<ResultsContainer4[0].size();j++)
+		for(unsigned int j=0;j<ResultsContainer4[0].size();j++)
 		{
 			double DWImean=0.0, DWIdeviation=0.0; 
-			for(int i=0; i<this->ResultsContainer4.size(); i++)
+			for(unsigned int i=0; i<this->ResultsContainer4.size(); i++)
 			{
 				if(this->qcResults[i])
 				{
@@ -1161,7 +1165,7 @@ namespace itk
 				}
 			}
 
-			for(int i=0; i<this->ResultsContainer4.size(); i++)
+			for(unsigned int i=0; i<this->ResultsContainer4.size(); i++)
 			{
 				if(this->qcResults[i])
 				{
@@ -1190,7 +1194,7 @@ namespace itk
 		InputImageConstPointer  inputPtr = this->GetInput();
 
 // check region0
-		for(int i=0;i<ResultsContainer0.size();i++)
+		for(unsigned int i=0;i<ResultsContainer0.size();i++)
 		{
 			baselineBadcount = 0;
 			badcount=0;
@@ -1204,7 +1208,7 @@ namespace itk
 				}
 				else // gradients
 				{			
-					for(int j=0 + (int)(inputPtr->GetLargestPossibleRegion().GetSize()[2]*this->m_HeadSkipRatio);
+					for(unsigned int j=0 + (int)(inputPtr->GetLargestPossibleRegion().GetSize()[2]*this->m_HeadSkipRatio);
 						j<ResultsContainer0[0].size() - (int)(inputPtr->GetLargestPossibleRegion().GetSize()[2]*this->m_TailSkipRatio); j++) 
 					{
 						////// to avoid reporting too many "good" as bad
@@ -1237,7 +1241,7 @@ namespace itk
 		}
 
 // check region1
-		for(int i=0;i<ResultsContainer1.size();i++)
+		for(unsigned int i=0;i<ResultsContainer1.size();i++)
 		{
 			baselineBadcount = 0;
 			badcount=0;
@@ -1251,7 +1255,7 @@ namespace itk
 				}
 				else // gradients
 				{			
-					for(int j=0 + (int)(inputPtr->GetLargestPossibleRegion().GetSize()[2]*this->m_HeadSkipRatio);
+					for(unsigned int j=0 + (int)(inputPtr->GetLargestPossibleRegion().GetSize()[2]*this->m_HeadSkipRatio);
 						j<ResultsContainer1[0].size() - (int)(inputPtr->GetLargestPossibleRegion().GetSize()[2]*this->m_TailSkipRatio); j++) 
 					{
 						////// to avoid reporting too many "good" as bad
@@ -1284,7 +1288,7 @@ namespace itk
 		}
 
 // check region2
-		for(int i=0;i<ResultsContainer2.size();i++)
+		for(unsigned int i=0;i<ResultsContainer2.size();i++)
 		{
 			baselineBadcount = 0;
 			badcount=0;
@@ -1298,7 +1302,7 @@ namespace itk
 				}
 				else // gradients
 				{			
-					for(int j=0 + (int)(inputPtr->GetLargestPossibleRegion().GetSize()[2]*this->m_HeadSkipRatio);
+					for(unsigned int j=0 + (int)(inputPtr->GetLargestPossibleRegion().GetSize()[2]*this->m_HeadSkipRatio);
 						j<ResultsContainer2[0].size() - (int)(inputPtr->GetLargestPossibleRegion().GetSize()[2]*this->m_TailSkipRatio); j++) 
 					{
 						////// to avoid reporting too many "good" as bad
@@ -1331,7 +1335,7 @@ namespace itk
 		}
 
 // check region3
-		for(int i=0;i<ResultsContainer3.size();i++)
+		for(unsigned int i=0;i<ResultsContainer3.size();i++)
 		{
 			baselineBadcount = 0;
 			badcount=0;
@@ -1345,7 +1349,7 @@ namespace itk
 				}
 				else // gradients
 				{			
-					for(int j=0 + (int)(inputPtr->GetLargestPossibleRegion().GetSize()[2]*this->m_HeadSkipRatio);
+					for(unsigned int j=0 + (int)(inputPtr->GetLargestPossibleRegion().GetSize()[2]*this->m_HeadSkipRatio);
 						j<ResultsContainer3[0].size() - (int)(inputPtr->GetLargestPossibleRegion().GetSize()[2]*this->m_TailSkipRatio); j++) 
 					{
 						////// to avoid reporting too many "good" as bad
@@ -1378,7 +1382,7 @@ namespace itk
 		}
 
 // check region4
-		for(int i=0;i<ResultsContainer4.size();i++)
+		for(unsigned int i=0;i<ResultsContainer4.size();i++)
 		{
 			baselineBadcount = 0;
 			badcount=0;
@@ -1392,7 +1396,7 @@ namespace itk
 				}
 				else // gradients
 				{			
-					for(int j=0 + (int)(inputPtr->GetLargestPossibleRegion().GetSize()[2]*this->m_HeadSkipRatio);
+					for(unsigned int j=0 + (int)(inputPtr->GetLargestPossibleRegion().GetSize()[2]*this->m_HeadSkipRatio);
 						j<ResultsContainer4[0].size() - (int)(inputPtr->GetLargestPossibleRegion().GetSize()[2]*this->m_TailSkipRatio); j++) 
 					{
 						////// to avoid reporting too many "good" as bad
@@ -1452,10 +1456,10 @@ namespace itk
 
 		// 		std::vector< std::vector<double> > normalizedMetric; //moved into .h
 		normalizedMetric.clear();
-		for (int i=0; i<ResultsContainer.size(); i++ )
+		for (unsigned int i=0; i<ResultsContainer.size(); i++ )
 		{
 			std::vector<double> temp;
-			for (int j=0; j<ResultsContainer[0].size(); j++ )
+			for (unsigned int j=0; j<ResultsContainer[0].size(); j++ )
 			{
 				temp.push_back(-1.0);
 			}
@@ -1468,12 +1472,12 @@ namespace itk
 			// multiple b valued DWI, do a quadratic-curve fitting between b-value and image correlation at each slice position
 		{
 
-			for(int j=0;j<ResultsContainer[0].size();j++) // for each slice
+			for(unsigned int j=0;j<ResultsContainer[0].size();j++) // for each slice
 			{
 				vnl_matrix<double> bMatrix( getBaselineLeftNumber()+getGradientLeftNumber() , 3);
 				vnl_matrix<double> correlationVector(getBaselineLeftNumber()+getGradientLeftNumber() , 1);
 				int matrixLineNumber = 0;
-				for(int i=0; i<this->ResultsContainer.size(); i++) // for each gradient
+				for(unsigned int i=0; i<this->ResultsContainer.size(); i++) // for each gradient
 				{
 					if(this->qcResults[i])
 					{
@@ -1491,7 +1495,7 @@ namespace itk
 				coefficients = vnl_matrix_inverse<double>(bMatrix.transpose()*bMatrix);
 				coefficients = coefficients*bMatrix.transpose()*correlationVector;
 
-				for(int i=0; i<this->ResultsContainer.size(); i++) // for each gradient
+				for(unsigned int i=0; i<this->ResultsContainer.size(); i++) // for each gradient
 				{
 					if(this->qcResults[i])
 					{
@@ -1501,10 +1505,10 @@ namespace itk
 			}
 
 			// to calculate the mean and stdev of the quardratic fitted correlations
-			for(int j=0;j<ResultsContainer[0].size();j++)
+			for(unsigned int j=0;j<ResultsContainer[0].size();j++)
 			{
 				double mean=0.0, deviation=0.0; 
-				for(int i=0; i<this->ResultsContainer.size(); i++)
+				for(unsigned int i=0; i<this->ResultsContainer.size(); i++)
 				{
 					if(this->qcResults[i])
 					{
@@ -1515,7 +1519,7 @@ namespace itk
 				mean = mean/static_cast<double>(DWICount+BaselineCount);
 				// 				std::cout<<"DWICount: "<<DWICount <<std::endl;
 				// 				std::cout<<"BaselineCount: "<<BaselineCount <<std::endl;
-				for(int i=0; i<this->ResultsContainer.size(); i++)
+				for(unsigned int i=0; i<this->ResultsContainer.size(); i++)
 				{
 					if(this->qcResults[i])
 					{
@@ -1542,10 +1546,10 @@ namespace itk
 			// 			std::cout<<" single b value( baseline + bvalue or 2 different b values, [2 different b values not yet implemented]"<<std::endl;
 			// 			std::cout<<" performing single b value checking computing"<<std::endl;
 
-			for(int j=0;j<ResultsContainer[0].size();j++)
+			for(unsigned int j=0;j<ResultsContainer[0].size();j++)
 			{
 				double baselinemean=0.0, DWImean=0.0, baselinedeviation=0.0, DWIdeviation=0.0; 
-				for(int i=0; i<this->ResultsContainer.size(); i++)
+				for(unsigned int i=0; i<this->ResultsContainer.size(); i++)
 				{
 					if(this->qcResults[i])
 					{
@@ -1562,7 +1566,7 @@ namespace itk
 					}
 				}
 
-				for(int i=0; i<this->ResultsContainer.size(); i++)
+				for(unsigned int i=0; i<this->ResultsContainer.size(); i++)
 				{
 					if(this->qcResults[i])
 					{
@@ -1604,13 +1608,13 @@ namespace itk
 			// multiple b valued DWI, do a quadratic-curve fitting between b-value and image correlation at each slice position
 		{
 			// 			std::cout<<" performing multiple b value checking"<<std::endl;
-			for(int i=0;i<ResultsContainer.size();i++)
+			for(unsigned int i=0;i<ResultsContainer.size();i++)
 			{
 				baselineBadcount = 0;
 				badcount=0;
 				if(this->qcResults[i]) // only check the left gradients
 				{
-					for(int j=0 + (int)(inputPtr->GetLargestPossibleRegion().GetSize()[2]*this->m_HeadSkipRatio);
+					for(unsigned int j=0 + (int)(inputPtr->GetLargestPossibleRegion().GetSize()[2]*this->m_HeadSkipRatio);
 						j<ResultsContainer[0].size() - (int)(inputPtr->GetLargestPossibleRegion().GetSize()[2]*this->m_TailSkipRatio); j++) 
 					{
 						////// to avoid report too many "good" as bad
@@ -1655,7 +1659,7 @@ namespace itk
 		{
 			//  			std::cout<<" performing single b value checking"<<std::endl;
 
-			for(int i=0;i<ResultsContainer.size();i++)
+			for(unsigned int i=0;i<ResultsContainer.size();i++)
 			{
 				baselineBadcount = 0;
 				badcount=0;
@@ -1666,7 +1670,7 @@ namespace itk
 						this->m_GradientDirectionContainer->at(i)[2] == 0.0     )
 					{	
 						//baseline
-						for(int j = 0 + (int)(inputPtr->GetLargestPossibleRegion().GetSize()[2] * this->m_HeadSkipRatio);
+						for(unsigned int j = 0 + (int)(inputPtr->GetLargestPossibleRegion().GetSize()[2] * this->m_HeadSkipRatio);
 							j < ResultsContainer[0].size() - (int)( inputPtr->GetLargestPossibleRegion().GetSize()[2]*this->m_TailSkipRatio); j++ ) 
 						{
 							////// to avoid report too many "good" as bad
@@ -1698,7 +1702,7 @@ namespace itk
 					}
 					else // gradients
 					{			
-						for(int j=0 + (int)(inputPtr->GetLargestPossibleRegion().GetSize()[2]*this->m_HeadSkipRatio);
+						for(unsigned int j=0 + (int)(inputPtr->GetLargestPossibleRegion().GetSize()[2]*this->m_HeadSkipRatio);
 							j<ResultsContainer[0].size() - (int)(inputPtr->GetLargestPossibleRegion().GetSize()[2]*this->m_TailSkipRatio); j++) 
 						{
 							////// to avoid report too many "good" as bad
@@ -1814,7 +1818,7 @@ namespace itk
 
 		outfile <<std::endl<<"======"<<std::endl;
 		outfile <<"Slice-wise correlations: "<<std::endl<<std::endl;
-		for(int i=0; i<this->ResultsContainer.size(); i++)
+		for(unsigned int i=0; i<this->ResultsContainer.size(); i++)
 		{
 			outfile <<"\t"<<"Gradient"<<i;
 		}
@@ -1825,10 +1829,10 @@ namespace itk
 		BaselineCount	= getBaselineNumber();
 		DWICount		= getGradientNumber();
 
-		for(int j=0;j<this->ResultsContainer[0].size();j++)
+		for(unsigned int j=0;j<this->ResultsContainer[0].size();j++)
 		{
-			double baselinemean=0.0, DWImean=0.0, baselinedeviation=0.0, DWIdeviation=0.0;
-			for(int i=0; i<ResultsContainer.size(); i++)
+			//double baselinemean=0.0, DWImean=0.0, baselinedeviation=0.0, DWIdeviation=0.0;
+			for(unsigned int i=0; i<ResultsContainer.size(); i++)
 			{
 
 				outfile <<"\t"<<std::setw(9)<<std::setiosflags(std::ios::fixed)<< std::setprecision(6)<<std::setiosflags(std::ios::right)
@@ -1841,15 +1845,15 @@ namespace itk
 		{
 			outfile <<std::endl<<"======"<<std::endl;
 			outfile <<"Slice-wise Quadratic correlations: "<<std::endl<<std::endl;
-			for(int i=0; i<this->normalizedMetric.size(); i++)
+			for(unsigned int i=0; i<this->normalizedMetric.size(); i++)
 			{
 				outfile <<"\t"<<"Gradient"<<i;
 			}
 			outfile <<std::endl;
 
-			for(int j=0;j<this->normalizedMetric[0].size();j++)
+			for(unsigned int j=0;j<this->normalizedMetric[0].size();j++)
 			{
-				for(int i=0; i<normalizedMetric.size(); i++)
+				for(unsigned int i=0; i<normalizedMetric.size(); i++)
 				{
 					outfile <<"\t"<<std::setw(9)<<std::setiosflags(std::ios::fixed)<< std::setprecision(6)<<std::setiosflags(std::ios::right)
 						<<normalizedMetric[i][j];
@@ -1864,17 +1868,17 @@ namespace itk
 			//region 0
 			outfile <<std::endl<<"======"<<std::endl;
 			outfile <<"Slice-wise correlations of region 0: "<<std::endl<<std::endl;
-			for(int i=0; i<this->ResultsContainer0.size(); i++)
+			for(unsigned int i=0; i<this->ResultsContainer0.size(); i++)
 			{
 				outfile <<"\t"<<"Gradient"<<i;
 			}
 			outfile <<std::endl;
 			// 		outfile <<"\tbaselineMean"<<"\tbaselineDeviation"<<"\tmean"<<"\tdeviation"<<std::endl;
 
-			for(int j=0;j<this->ResultsContainer0[0].size();j++)
+			for(unsigned int j=0;j<this->ResultsContainer0[0].size();j++)
 			{
-				double baselinemean=0.0, DWImean=0.0, baselinedeviation=0.0, DWIdeviation=0.0;
-				for(int i=0; i<ResultsContainer0.size(); i++)
+				//double baselinemean=0.0, DWImean=0.0, baselinedeviation=0.0, DWIdeviation=0.0;
+				for(unsigned int i=0; i<ResultsContainer0.size(); i++)
 				{
 
 					outfile <<"\t"<<std::setw(9)<<std::setiosflags(std::ios::fixed)<< std::setprecision(6)<<std::setiosflags(std::ios::right)
@@ -1885,17 +1889,17 @@ namespace itk
 			//region 1
 			outfile <<std::endl<<"======"<<std::endl;
 			outfile <<"Slice-wise correlations of region 1: "<<std::endl<<std::endl;
-			for(int i=0; i<this->ResultsContainer1.size(); i++)
+			for(unsigned int i=0; i<this->ResultsContainer1.size(); i++)
 			{
 				outfile <<"\t"<<"Gradient"<<i;
 			}
 			outfile <<std::endl;
 			// 		outfile <<"\tbaselineMean"<<"\tbaselineDeviation"<<"\tmean"<<"\tdeviation"<<std::endl;
 
-			for(int j=0;j<this->ResultsContainer1[0].size();j++)
+			for(unsigned int j=0;j<this->ResultsContainer1[0].size();j++)
 			{
-				double baselinemean=0.0, DWImean=0.0, baselinedeviation=0.0, DWIdeviation=0.0;
-				for(int i=0; i<ResultsContainer1.size(); i++)
+				//double baselinemean=0.0, DWImean=0.0, baselinedeviation=0.0, DWIdeviation=0.0;
+				for(unsigned int i=0; i<ResultsContainer1.size(); i++)
 				{
 
 					outfile <<"\t"<<std::setw(9)<<std::setiosflags(std::ios::fixed)<< std::setprecision(6)<<std::setiosflags(std::ios::right)
@@ -1906,17 +1910,17 @@ namespace itk
 			//region 2
 			outfile <<std::endl<<"======"<<std::endl;
 			outfile <<"Slice-wise correlations of region 2: "<<std::endl<<std::endl;
-			for(int i=0; i<this->ResultsContainer2.size(); i++)
+			for(unsigned int i=0; i<this->ResultsContainer2.size(); i++)
 			{
 				outfile <<"\t"<<"Gradient"<<i;
 			}
 			outfile <<std::endl;
 			// 		outfile <<"\tbaselineMean"<<"\tbaselineDeviation"<<"\tmean"<<"\tdeviation"<<std::endl;
 
-			for(int j=0;j<this->ResultsContainer2[0].size();j++)
+			for(unsigned int j=0;j<this->ResultsContainer2[0].size();j++)
 			{
-				double baselinemean=0.0, DWImean=0.0, baselinedeviation=0.0, DWIdeviation=0.0;
-				for(int i=0; i<ResultsContainer2.size(); i++)
+				//double baselinemean=0.0, DWImean=0.0, baselinedeviation=0.0, DWIdeviation=0.0;
+				for(unsigned int i=0; i<ResultsContainer2.size(); i++)
 				{
 
 					outfile <<"\t"<<std::setw(9)<<std::setiosflags(std::ios::fixed)<< std::setprecision(6)<<std::setiosflags(std::ios::right)
@@ -1927,17 +1931,17 @@ namespace itk
 			//region 3
 			outfile <<std::endl<<"======"<<std::endl;
 			outfile <<"Slice-wise correlations of region 3: "<<std::endl<<std::endl;
-			for(int i=0; i<this->ResultsContainer3.size(); i++)
+			for(unsigned int i=0; i<this->ResultsContainer3.size(); i++)
 			{
 				outfile <<"\t"<<"Gradient"<<i;
 			}
 			outfile <<std::endl;
 			// 		outfile <<"\tbaselineMean"<<"\tbaselineDeviation"<<"\tmean"<<"\tdeviation"<<std::endl;
 
-			for(int j=0;j<this->ResultsContainer3[0].size();j++)
+			for(unsigned int j=0;j<this->ResultsContainer3[0].size();j++)
 			{
-				double baselinemean=0.0, DWImean=0.0, baselinedeviation=0.0, DWIdeviation=0.0;
-				for(int i=0; i<ResultsContainer3.size(); i++)
+				//double baselinemean=0.0, DWImean=0.0, baselinedeviation=0.0, DWIdeviation=0.0;
+				for(unsigned int i=0; i<ResultsContainer3.size(); i++)
 				{
 
 					outfile <<"\t"<<std::setw(9)<<std::setiosflags(std::ios::fixed)<< std::setprecision(6)<<std::setiosflags(std::ios::right)
@@ -1948,17 +1952,17 @@ namespace itk
 			//region 4
 			outfile <<std::endl<<"======"<<std::endl;
 			outfile <<"Slice-wise correlations region of 4: "<<std::endl<<std::endl;
-			for(int i=0; i<this->ResultsContainer4.size(); i++)
+			for(unsigned int i=0; i<this->ResultsContainer4.size(); i++)
 			{
 				outfile <<"\t"<<"Gradient"<<i;
 			}
 			outfile <<std::endl;
 			// 		outfile <<"\tbaselineMean"<<"\tbaselineDeviation"<<"\tmean"<<"\tdeviation"<<std::endl;
 
-			for(int j=0;j<this->ResultsContainer4[0].size();j++)
+			for(unsigned int j=0;j<this->ResultsContainer4[0].size();j++)
 			{
-				double baselinemean=0.0, DWImean=0.0, baselinedeviation=0.0, DWIdeviation=0.0;
-				for(int i=0; i<ResultsContainer4.size(); i++)
+				//double baselinemean=0.0, DWImean=0.0, baselinedeviation=0.0, DWIdeviation=0.0;
+				for(unsigned int i=0; i<ResultsContainer4.size(); i++)
 				{
 
 					outfile <<"\t"<<std::setw(9)<<std::setiosflags(std::ios::fixed)<< std::setprecision(6)<<std::setiosflags(std::ios::right)
@@ -1972,9 +1976,9 @@ namespace itk
 		outfile <<"Slice-wise Check Artifacts:"<<std::endl;
 		outfile <<"Region\t"<<std::setw(10)<<"Gradient#"<<"\t"<<std::setw(10)<<"Slice#"<<"\t"<<std::setw(10)<<"Correlation"<<std::endl;
 
-		for(int i=0;i<this->ResultsContainer.size();i++)
+		for(unsigned int i=0;i<this->ResultsContainer.size();i++)
 		{
-			for(int j=0; j<ResultsContainer[0].size(); j++ ) 
+			for(unsigned int j=0; j<ResultsContainer[0].size(); j++ ) 
 			{
 				outfile.precision(6);
 				outfile.setf(std::ios_base::showpoint|std::ios_base::right) ;
@@ -1991,9 +1995,9 @@ namespace itk
 
 		if(m_SubRegionalCheck)
 		{
-			for(int i=0;i<this->ResultsContainer0.size();i++)
+			for(unsigned int i=0;i<this->ResultsContainer0.size();i++)
 			{
-				for(int j=0; j<ResultsContainer0[0].size(); j++ ) 
+				for(unsigned int j=0; j<ResultsContainer0[0].size(); j++ ) 
 				{
 					outfile.precision(6);
 					outfile.setf(std::ios_base::showpoint|std::ios_base::right) ;
@@ -2007,9 +2011,9 @@ namespace itk
 				}
 			}
 
-			for(int i=0;i<this->ResultsContainer1.size();i++)
+			for(unsigned int i=0;i<this->ResultsContainer1.size();i++)
 			{
-				for(int j=0; j<ResultsContainer1[0].size(); j++ ) 
+				for(unsigned int j=0; j<ResultsContainer1[0].size(); j++ ) 
 				{
 					outfile.precision(6);
 					outfile.setf(std::ios_base::showpoint|std::ios_base::right) ;
@@ -2023,9 +2027,9 @@ namespace itk
 				}
 			}
 
-			for(int i=0;i<this->ResultsContainer2.size();i++)
+			for(unsigned int i=0;i<this->ResultsContainer2.size();i++)
 			{
-				for(int j=0; j<ResultsContainer2[0].size(); j++ ) 
+				for(unsigned int j=0; j<ResultsContainer2[0].size(); j++ ) 
 				{
 					outfile.precision(6);
 					outfile.setf(std::ios_base::showpoint|std::ios_base::right) ;
@@ -2039,9 +2043,9 @@ namespace itk
 				}
 			}
 
-			for(int i=0;i<this->ResultsContainer3.size();i++)
+			for(unsigned int i=0;i<this->ResultsContainer3.size();i++)
 			{
-				for(int j=0; j<ResultsContainer3[0].size(); j++ ) 
+				for(unsigned int j=0; j<ResultsContainer3[0].size(); j++ ) 
 				{
 					outfile.precision(6);
 					outfile.setf(std::ios_base::showpoint|std::ios_base::right) ;
@@ -2055,9 +2059,9 @@ namespace itk
 				}
 			}
 
-			for(int i=0;i<this->ResultsContainer4.size();i++)
+			for(unsigned int i=0;i<this->ResultsContainer4.size();i++)
 			{
-				for(int j=0; j<ResultsContainer4[0].size(); j++ ) 
+				for(unsigned int j=0; j<ResultsContainer4[0].size(); j++ ) 
 				{
 					outfile.precision(6);
 					outfile.setf(std::ios_base::showpoint|std::ios_base::right) ;
@@ -2079,7 +2083,7 @@ namespace itk
 		outfile<<"\tgradientDirLeftNumber: "<<gradientDirLeftNumber	<<std::endl;
 
 		outfile<<std::endl<<"\t# "<<"\tDirVector"<<std::setw(34)<<std::setiosflags(std::ios::left)<<"\tIncluded"<<std::endl;
-		for(int i=0;i< this->m_GradientDirectionContainer->size();i++)
+		for(unsigned int i=0;i< this->m_GradientDirectionContainer->size();i++)
 		{
 			outfile<<"\t"<<i<<"\t[ " 
 				<<std::setw(9)<<std::setiosflags(std::ios::fixed)<< std::setprecision(6)<<std::setiosflags(std::ios::right)
@@ -2094,7 +2098,7 @@ namespace itk
 		outfile<<std::endl<<"Left Gradient Direction Histogram: "<<std::endl;
 		outfile<<"\t# "<<"\tDirVector"<<std::setw(34)<<std::setiosflags(std::ios::left)<<"\tRepLeft"<<std::endl;
 
-		for(int i=0;i< this->DiffusionDirHistOutput.size();i++)
+		for(unsigned int i=0;i< this->DiffusionDirHistOutput.size();i++)
 		{
 			if(GetReportFileName().length()>0)
 				outfile<<"\t"<<i<<"\t[ " 
@@ -2122,12 +2126,12 @@ namespace itk
 		this->DiffusionDirHistOutput.clear();
 		this->repetitionLeftNumber.clear();
 
-		for( int i=0; i< this->m_GradientDirectionContainer->size();i++) 
+		for(unsigned int i=0; i< this->m_GradientDirectionContainer->size();i++) 
 		{
 			if(DiffusionDirHistOutput.size()>0)
 			{
 				bool newDir = true;
-				for(int j=0;j<DiffusionDirHistOutput.size();j++)
+				for(unsigned int j=0;j<DiffusionDirHistOutput.size();j++)
 				{
 					if( this->m_GradientDirectionContainer->ElementAt(i)[0] == DiffusionDirHistOutput[j].gradientDir[0] && 
 						this->m_GradientDirectionContainer->ElementAt(i)[1] == DiffusionDirHistOutput[j].gradientDir[1] && 
@@ -2178,8 +2182,8 @@ namespace itk
 
 		this->baselineLeftNumber=0;
 		this->gradientLeftNumber=0;
-		double modeTemp = 0.0;
-		for( int i=0; i<DiffusionDirHistOutput.size(); i++)
+		//double modeTemp = 0.0;
+		for(unsigned int i=0; i<DiffusionDirHistOutput.size(); i++)
 		{
 			if( DiffusionDirHistOutput[i].gradientDir[0] == 0.0 &&
 				DiffusionDirHistOutput[i].gradientDir[1] == 0.0 &&
@@ -2201,7 +2205,7 @@ namespace itk
 				if( dirNorm.size() > 0)
 				{
 					bool newDirMode = true;
-					for(int j=0;j< dirNorm.size();j++)
+					for(unsigned int j=0;j< dirNorm.size();j++)
 					{
 						if( fabs(normSqr-dirNorm[j])<0.001)   // 1 DIFFERENCE for b value
 						{
@@ -2229,7 +2233,7 @@ namespace itk
 
 		this->gradientDirLeftNumber = 0;
 		this->gradientLeftNumber = 0;
-		for(int i=0; i<this->repetitionLeftNumber.size(); i++)
+		for(unsigned int i=0; i<this->repetitionLeftNumber.size(); i++)
 		{
 			this->gradientLeftNumber+=this->repetitionLeftNumber[i];
 			if(this->repetitionLeftNumber[i]>0)
@@ -2256,7 +2260,7 @@ namespace itk
 		// 
 		// 		std::cout<<std::endl<<"\t# "<<"\t"<<std::setw(34)<<"DirVector"<<"\tIncluded"<<std::endl;
 		// 		outfile  <<std::endl<<"\t# "<<"\t"<<std::setw(34)<<"DirVector"<<"\tIncluded"<<std::endl;
-		// 		for(int i=0;i< this->m_GradientDirectionContainer->size();i++)
+		// 		for(unsigned int i=0;i< this->m_GradientDirectionContainer->size();i++)
 		// 		{
 		// 			outfile<<"\t"<<i<<"\t[ " 
 		// 				<<std::setw(9)<<std::setiosflags(std::ios::fixed)<< std::setprecision(6)<<std::setiosflags(std::ios::right)
@@ -2280,7 +2284,7 @@ namespace itk
 		// 		std::cout<<"\t# "<<"\t"<<std::setw(34)<<"DirVector"<<"\tRepLeft#"<<std::endl;
 		// 		outfile  <<std::endl<<"Left Gradient Direction Histogram: "<<std::endl;
 		// 		outfile  <<"\t# "<<"\t"<<std::setw(34)<<"DirVector"<<"\tRepLeft#"<<std::endl;
-		// 		for(int i=0;i< DiffusionDirHistOutput.size();i++)
+		// 		for(unsigned int i=0;i< DiffusionDirHistOutput.size();i++)
 		// 		{
 		// 			std::cout<<"\t"<<i<<"\t[ " 
 		// 				<<std::setw(9)<<std::setiosflags(std::ios::fixed)<< std::setprecision(6)<<std::setiosflags(std::ios::right)
@@ -2318,12 +2322,12 @@ namespace itk
 		std::vector<struDiffusionDir> DiffusionDirections;
 		DiffusionDirections.clear();
 
-		for( int i=0; i< this->m_GradientDirectionContainer->size();i++) 
+		for( unsigned int i=0; i< this->m_GradientDirectionContainer->size();i++) 
 		{
 			if(DiffusionDirections.size()>0)
 			{
 				bool newDir = true;
-				for(int j=0;j<DiffusionDirections.size();j++)
+				for(unsigned int j=0;j<DiffusionDirections.size();j++)
 				{
 					if( this->m_GradientDirectionContainer->ElementAt(i)[0] == DiffusionDirections[j].gradientDir[0] && 
 						this->m_GradientDirectionContainer->ElementAt(i)[1] == DiffusionDirections[j].gradientDir[1] && 
@@ -2369,8 +2373,8 @@ namespace itk
 		std::vector<double> dirNorm;
 		dirNorm.clear();
 
-		double modeTemp = 0.0;
-		for( int i=0; i<DiffusionDirections.size(); i++)
+		//double modeTemp = 0.0;
+		for( unsigned int i=0; i<DiffusionDirections.size(); i++)
 		{
 			if( DiffusionDirections[i].gradientDir[0] == 0.0 &&
 				DiffusionDirections[i].gradientDir[1] == 0.0 &&
@@ -2391,7 +2395,7 @@ namespace itk
 				if( dirNorm.size() > 0)
 				{
 					bool newDirMode = true;
-					for(int j=0;j< dirNorm.size();j++)
+					for(unsigned int j=0;j< dirNorm.size();j++)
 					{
 						if( fabs(normSqr-dirNorm[j])<0.001)   // 1 DIFFERENCE for b value
 						{
@@ -2415,7 +2419,7 @@ namespace itk
 		this->bValueNumber = dirNorm.size();
 
 		repetitionNumber = repetNum[0];
-		for( int i=1; i<repetNum.size(); i++)
+		for( unsigned int i=1; i<repetNum.size(); i++)
 		{ 
 			if( repetNum[i] != repetNum[0])
 			{
@@ -2476,7 +2480,7 @@ namespace itk
 			return ;
 		}
 
-		for(int i=0;i< this->m_GradientDirectionContainer -> Size();i++ )
+		for(unsigned int i=0;i< this->m_GradientDirectionContainer -> Size();i++ )
 		{
 			bValues.push_back(	static_cast< int >((	this->m_GradientDirectionContainer->ElementAt(i)[0]*this->m_GradientDirectionContainer->ElementAt(i)[0] +
 									this->m_GradientDirectionContainer->ElementAt(i)[1]*this->m_GradientDirectionContainer->ElementAt(i)[1] +
@@ -2484,7 +2488,7 @@ namespace itk
 		}
 
 // 		std::cout << "b values:" << std::endl;
-// 		for(int i=0;i< this->m_GradientDirectionContainer -> Size();i++ )
+// 		for(unsigned int i=0;i< this->m_GradientDirectionContainer -> Size();i++ )
 // 		{
 // 			std::cout << bValues[i] << std::endl;
 // 		}
@@ -2546,7 +2550,7 @@ namespace itk
 			inputIndex = outputIndex;
 
 			int element = 0;
-			for( int i = 0 ; i < this->qcResults.size(); i++ )
+			for( unsigned int i = 0 ; i < this->qcResults.size(); i++ )
 			{
 				if(this->qcResults[i])
 				{
@@ -2658,7 +2662,7 @@ namespace itk
 
 			// gradient vectors
 			int temp=0;
-			for(int i=0;i< this->m_GradientDirectionContainer -> Size();i++ )
+			for(unsigned int i=0;i< this->m_GradientDirectionContainer -> Size();i++ )
 			{
 				if(!this->qcResults[i])
 				{
@@ -2761,7 +2765,7 @@ namespace itk
 			filter2->SetInput( componentExtractor->GetOutput() );
 
 			std::vector< double > Results;
-			for(int i=1; i<componentExtractor->GetOutput()->GetLargestPossibleRegion().GetSize()[2]; i++)
+			for(unsigned int i=1; i<componentExtractor->GetOutput()->GetLargestPossibleRegion().GetSize()[2]; i++)
 			{
 				start1[2] = i-1;
 				start2[2] = i;

@@ -3,8 +3,8 @@
 Program:   NeuroLib
 Module:    $file: itkDWIQCGradientChecker.cpp $
 Language:  C++
-Date:      $Date: 2009-09-11 10:40:28 $
-Version:   $Revision: 1.5 $
+Date:      $Date: 2009-09-24 15:12:36 $
+Version:   $Revision: 1.6 $
 Author:    Zhexing Liu (liuzhexing@gmail.com)
 
 Copyright (c) NIRAL, UNC. All rights reserved.
@@ -114,7 +114,7 @@ namespace itk
 		GradientImageType::Pointer moving,
 		unsigned int	BinsNumber,
 		double			SamplesPercent ,
-		bool			ExplicitPDFDerivatives,
+		bool			/* ExplicitPDFDerivatives */,
 		GradientResult&  regResult
 		)
 	{
@@ -141,7 +141,7 @@ namespace itk
 
 		unsigned int numberOfBins = BinsNumber;
 		double  percentOfSamples = SamplesPercent;			// 1% ~ 20%
-		bool	useExplicitPDFDerivatives = ExplicitPDFDerivatives;
+		//bool	useExplicitPDFDerivatives = ExplicitPDFDerivatives;
 
 		registration->SetMetric(        metric        );
 		registration->SetOptimizer(     optimizer     );
@@ -225,7 +225,7 @@ namespace itk
 		const double finalTranslationY     = finalParameters[4];
 		const double finalTranslationZ     = finalParameters[5];
 
-		const unsigned int numberOfIterations = optimizer->GetCurrentIteration();
+		//const unsigned int numberOfIterations = optimizer->GetCurrentIteration();
 		const double bestValue = optimizer->GetValue();
 
 		// Print out results
@@ -277,7 +277,7 @@ namespace itk
 
 		// set the first baseline or first gradient as a reference if no baseline found
 		this->m_ReferenceIndex = 0;
-		for(int i=0; i<ResultsContainer.size(); i++)
+		for(unsigned int i=0; i<ResultsContainer.size(); i++)
 		{
 			if (this->m_GradientDirectionContainer->at(i)[0] == 0.0 && 
 				this->m_GradientDirectionContainer->at(i)[1] == 0.0 && 
@@ -428,7 +428,7 @@ namespace itk
 
 		// gradient vectors
 		int temp=0;
-		for(int i=0;i< this->m_GradientDirectionContainer -> Size();i++ )
+		for(unsigned int i=0;i< this->m_GradientDirectionContainer -> Size();i++ )
 		{
 			if( m_ExcludeGradientsWithLargeMotionArtifacts )
 			{
@@ -490,7 +490,7 @@ namespace itk
 // 		std::cout<<"m_RotationThreshold: "<<m_RotationThreshold<<std::endl;
 // 		std::cout<<"m_TranslationThreshold: "<<m_TranslationThreshold<<std::endl;
 
-		for(int i=0;i< this->ResultsContainer.size();i++)
+		for(unsigned int i=0;i< this->ResultsContainer.size();i++)
 		{
 			if( fabs(this->ResultsContainer[i].AngleX) > m_RotationThreshold		  || fabs(this->ResultsContainer[i].AngleY) > m_RotationThreshold			||
 				fabs(this->ResultsContainer[i].AngleZ) > m_RotationThreshold		  || fabs(this->ResultsContainer[i].TranslationX) > m_TranslationThreshold	|| 
@@ -541,7 +541,7 @@ namespace itk
 
 		collectLeftDiffusionStatistics();  //update
 
-		for(int i=0;i<this->ResultsContainer.size();i++)
+		for(unsigned int i=0;i<this->ResultsContainer.size();i++)
 		{
 			if( m_ReferenceIndex == i) continue;
 			outfile.precision(6);
@@ -571,7 +571,7 @@ namespace itk
 			std::setw(10)<<"AngleZ\t"<<std::setw(10)<<"TranslationX\t"<<std::setw(10)<<"TranslationY\t"<<
 			std::setw(10)<<"TranslationZ\t"<<std::setw(10)<<"Metric(MI)"<<std::endl;
 
-		for(int i=0;i<this->ResultsContainer.size();i++)
+		for(unsigned int i=0;i<this->ResultsContainer.size();i++)
 		{
 			if(!this->qcResults[i])
 			{
@@ -605,7 +605,7 @@ namespace itk
 		outfile<<"\tgradientDirLeftNumber: "<<gradientDirLeftNumber	<<std::endl;
 
 		outfile<<std::endl<<"\t# "<<"\tDirVector"<<std::setw(34)<<std::setiosflags(std::ios::left)<<"\tIncluded"<<std::endl;
-		for(int i=0;i< this->m_GradientDirectionContainer->size();i++)
+		for(unsigned int i=0;i< this->m_GradientDirectionContainer->size();i++)
 		{
 			outfile<<"\t"<<i<<"\t[ " 
 				<<std::setw(9)<<std::setiosflags(std::ios::fixed)<< std::setprecision(6)<<std::setiosflags(std::ios::right)
@@ -620,7 +620,7 @@ namespace itk
 		outfile<<std::endl<<"Left Gradient Direction Histogram: "<<std::endl;
 		outfile<<"\t# "<<"\tDirVector"<<std::setw(34)<<std::setiosflags(std::ios::left)<<"\tRepLeft"<<std::endl;
 
-		for(int i=0;i< this->DiffusionDirHistOutput.size();i++)
+		for(unsigned int i=0;i< this->DiffusionDirHistOutput.size();i++)
 		{
 			if(m_ReportFileName.length()>0)
 				outfile<<"\t"<<i<<"\t[ " 
@@ -648,12 +648,12 @@ namespace itk
 		this->DiffusionDirHistOutput.clear();
 		this->repetitionLeftNumber.clear();
 
-		for( int i=0; i< this->m_GradientDirectionContainer->size();i++) 
+		for(unsigned int i=0; i< this->m_GradientDirectionContainer->size();i++) 
 		{
 			if(DiffusionDirHistOutput.size()>0)
 			{
 				bool newDir = true;
-				for(int j=0;j<DiffusionDirHistOutput.size();j++)
+				for(unsigned int j=0;j<DiffusionDirHistOutput.size();j++)
 				{
 					if( this->m_GradientDirectionContainer->ElementAt(i)[0] == DiffusionDirHistOutput[j].gradientDir[0] && 
 						this->m_GradientDirectionContainer->ElementAt(i)[1] == DiffusionDirHistOutput[j].gradientDir[1] && 
@@ -704,8 +704,8 @@ namespace itk
 
 		this->baselineLeftNumber=0;
 		this->gradientLeftNumber=0;
-		double modeTemp = 0.0;
-		for( int i=0; i<DiffusionDirHistOutput.size(); i++)
+		//double modeTemp = 0.0;
+		for(unsigned int i=0; i<DiffusionDirHistOutput.size(); i++)
 		{
 			if( DiffusionDirHistOutput[i].gradientDir[0] == 0.0 &&
 				DiffusionDirHistOutput[i].gradientDir[1] == 0.0 &&
@@ -727,7 +727,7 @@ namespace itk
 				if( dirNorm.size() > 0)
 				{
 					bool newDirMode = true;
-					for(int j=0;j< dirNorm.size();j++)
+					for(unsigned int j=0;j< dirNorm.size();j++)
 					{
 						if( fabs(normSqr-dirNorm[j])<0.001)   // 1 DIFFERENCE for b value
 						{
@@ -755,7 +755,7 @@ namespace itk
 
 		this->gradientDirLeftNumber = 0;
 		this->gradientLeftNumber = 0;
-		for(int i=0; i<this->repetitionLeftNumber.size(); i++)
+		for(unsigned int i=0; i<this->repetitionLeftNumber.size(); i++)
 		{
 			this->gradientLeftNumber+=this->repetitionLeftNumber[i];
 			if(this->repetitionLeftNumber[i]>0)
@@ -782,7 +782,7 @@ namespace itk
 // 
 // 		std::cout<<std::endl<<"\t# "<<"\t"<<std::setw(34)<<"DirVector"<<"\tIncluded"<<std::endl;
 // 		outfile  <<std::endl<<"\t# "<<"\t"<<std::setw(34)<<"DirVector"<<"\tIncluded"<<std::endl;
-// 		for(int i=0;i< this->m_GradientDirectionContainer->size();i++)
+// 		for(unsigned int i=0;i< this->m_GradientDirectionContainer->size();i++)
 // 		{
 // 			outfile<<"\t"<<i<<"\t[ " 
 // 				<<std::setw(9)<<std::setiosflags(std::ios::fixed)<< std::setprecision(6)<<std::setiosflags(std::ios::right)
@@ -806,7 +806,7 @@ namespace itk
 // 		std::cout<<"\t# "<<"\t"<<std::setw(34)<<"DirVector"<<"\tRepLeft#"<<std::endl;
 // 		outfile  <<std::endl<<"Left Gradient Direction Histogram: "<<std::endl;
 // 		outfile  <<"\t# "<<"\t"<<std::setw(34)<<"DirVector"<<"\tRepLeft#"<<std::endl;
-// 		for(int i=0;i< DiffusionDirHistOutput.size();i++)
+// 		for(unsigned int i=0;i< DiffusionDirHistOutput.size();i++)
 // 		{
 // 			std::cout<<"\t"<<i<<"\t[ " 
 // 				<<std::setw(9)<<std::setiosflags(std::ios::fixed)<< std::setprecision(6)<<std::setiosflags(std::ios::right)
@@ -844,12 +844,12 @@ namespace itk
 		std::vector<struDiffusionDir> DiffusionDirections;
 		DiffusionDirections.clear();
 
-		for( int i=0; i< this->m_GradientDirectionContainer->size();i++) 
+		for( unsigned int i=0; i< this->m_GradientDirectionContainer->size();i++) 
 		{
 			if(DiffusionDirections.size()>0)
 			{
 				bool newDir = true;
-				for(int j=0;j<DiffusionDirections.size();j++)
+				for(unsigned int j=0;j<DiffusionDirections.size();j++)
 				{
 					if( this->m_GradientDirectionContainer->ElementAt(i)[0] == DiffusionDirections[j].gradientDir[0] && 
 						this->m_GradientDirectionContainer->ElementAt(i)[1] == DiffusionDirections[j].gradientDir[1] && 
@@ -895,8 +895,8 @@ namespace itk
 		std::vector<double> dirNorm;
 		dirNorm.clear();
 
-		double modeTemp = 0.0;
-		for( int i=0; i<DiffusionDirections.size(); i++)
+		//double modeTemp = 0.0;
+		for( unsigned int i=0; i<DiffusionDirections.size(); i++)
 		{
 			if( DiffusionDirections[i].gradientDir[0] == 0.0 &&
 				DiffusionDirections[i].gradientDir[1] == 0.0 &&
@@ -917,7 +917,7 @@ namespace itk
 				if( dirNorm.size() > 0)
 				{
 					bool newDirMode = true;
-					for(int j=0;j< dirNorm.size();j++)
+					for(unsigned int j=0;j< dirNorm.size();j++)
 					{
 						if( fabs(normSqr-dirNorm[j])<0.001)   // 1 DIFFERENCE for b value
 						{
@@ -941,7 +941,7 @@ namespace itk
 		this->bValueNumber = dirNorm.size();
 
 		repetitionNumber = repetNum[0];
-		for( int i=1; i<repetNum.size(); i++)
+		for( unsigned int i=1; i<repetNum.size(); i++)
 		{ 
 			if( repetNum[i] != repetNum[0])
 			{
@@ -1002,7 +1002,7 @@ namespace itk
 			return ;
 		}
 
-		for(int i=0;i< this->m_GradientDirectionContainer -> Size();i++ )
+		for(unsigned int i=0;i< this->m_GradientDirectionContainer -> Size();i++ )
 		{
 			bValues.push_back(	static_cast< int >((	this->m_GradientDirectionContainer->ElementAt(i)[0]*this->m_GradientDirectionContainer->ElementAt(i)[0] +
 				this->m_GradientDirectionContainer->ElementAt(i)[1]*this->m_GradientDirectionContainer->ElementAt(i)[1] +
@@ -1010,7 +1010,7 @@ namespace itk
 		}
 
 		// 		std::cout << "b values:" << std::endl;
-		// 		for(int i=0;i< this->m_GradientDirectionContainer -> Size();i++ )
+		// 		for(unsigned int i=0;i< this->m_GradientDirectionContainer -> Size();i++ )
 		// 		{
 		// 			std::cout << bValues[i] << std::endl;
 		// 		}
@@ -1074,7 +1074,7 @@ namespace itk
 			inputIndex = outputIndex;
 			
 			int element = 0;
-			for( int i = 0 ; i < this->qcResults.size(); i++ )
+			for( unsigned int i = 0 ; i < this->qcResults.size(); i++ )
 			{
 				if( m_ExcludeGradientsWithLargeMotionArtifacts )
 				{
@@ -1190,7 +1190,7 @@ namespace itk
 
 			// gradient vectors
 			int temp=0;
-			for(int i=0;i< this->m_GradientDirectionContainer -> Size();i++ )
+			for(unsigned int i=0;i< this->m_GradientDirectionContainer -> Size();i++ )
 			{
 				if(!this->qcResults[i])
 				{
@@ -1234,7 +1234,7 @@ namespace itk
 				inputIndex = outputIndex;
 
 				int element = 0;
-				for( int i = 0 ; i < this->qcResults.size(); i++ )
+				for(unsigned int i = 0 ; i < this->qcResults.size(); i++ )
 				{
 					if(!this->qcResults[i])
 					{

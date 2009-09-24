@@ -520,7 +520,7 @@ void ImageView2DPanelWithControls::on_horizontalSlider_Gradient_valueChanged(int
  
 
 
-void ImageView2DPanelWithControls::SliceIndexChanged(vtkObject * obj, unsigned long, void * client_data, void *,vtkCommand * command)
+void ImageView2DPanelWithControls::SliceIndexChanged(vtkObject * obj, unsigned long, void * client_data, void *,vtkCommand * /* command */)
 {
 	vtkImagePlaneWidget *planeWidget = reinterpret_cast<vtkImagePlaneWidget*>(obj);
 	int *whichwindow;
@@ -539,7 +539,7 @@ void ImageView2DPanelWithControls::SliceIndexChanged(vtkObject * obj, unsigned l
 }
 
 
-void ImageView2DPanelWithControls::WindowLevelChanged(vtkObject * obj, unsigned long, void * client_data, void *,vtkCommand * command)
+void ImageView2DPanelWithControls::WindowLevelChanged(vtkObject * obj, unsigned long, void * client_data, void *,vtkCommand * /* command */)
 {
 	vtkImagePlaneWidget *planeWidget = reinterpret_cast<vtkImagePlaneWidget*>(obj);
 	int *whichwindow;

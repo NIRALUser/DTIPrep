@@ -3,8 +3,8 @@
 Program:   NeuroLib
 Module:    $file: itkDWICropper.cpp $
 Language:  C++
-Date:      $Date: 2009-09-03 15:13:35 $
-Version:   $Revision: 1.3 $
+Date:      $Date: 2009-09-24 15:12:36 $
+Version:   $Revision: 1.4 $
 Author:    Zhexing Liu (liuzhexing@gmail.com)
 
 Copyright (c) NIRAL, UNC. All rights reserved.
@@ -100,7 +100,7 @@ namespace itk
 
 		if(size)
 		{
-// 			for(int i=0;i<3;i++)
+// 			for(unsigned int i=0;i<3;i++)
 // 				std::cout<<"size["<<i<<"]: "<<size[i]<<std::endl;
 
 			region[0] = ((int)imageOriginalSize[0] - size[0])/2; 
@@ -111,7 +111,7 @@ namespace itk
 			region[4] = size[1]; 
 			region[5] = size[2]; 
 
-// 			for(int i=0;i<6;i++)
+// 			for(unsigned int i=0;i<6;i++)
 // 				std::cout<<"region["<<i<<"]: "<<region[i]<<std::endl;
 
 		}
@@ -162,11 +162,11 @@ namespace itk
 		// thickness
 		if(imgMetaDictionary.HasKey("NRRD_thicknesses[2]"))
 		{
-			double thickness;
+			double thickness=-12345;
 			itk::ExposeMetaData<double>(imgMetaDictionary, "NRRD_thickness[2]", thickness);
 			itk::EncapsulateMetaData<double>( outputMetaDictionary, "NRRD_thickness[2]", thickness);
-  			itk::EncapsulateMetaData<double>( outputMetaDictionary, "NRRD_thickness[0]", -1);
-  			itk::EncapsulateMetaData<double>( outputMetaDictionary, "NRRD_thickness[1]", -1);
+			itk::EncapsulateMetaData<double>( outputMetaDictionary, "NRRD_thickness[0]", -1);
+			itk::EncapsulateMetaData<double>( outputMetaDictionary, "NRRD_thickness[1]", -1);
 // 			itk::EncapsulateMetaData<std::string>( outputMetaDictionary, "NRRD_thickness[2]", "NaN");
 		}
 
@@ -196,7 +196,7 @@ namespace itk
 
 		// gradient vectors
 		int temp=0;
-		for(int i=0;i< this->m_GradientDirectionContainer -> Size();i++ )
+		for(unsigned int i=0;i< this->m_GradientDirectionContainer -> Size();i++ )
 		{
 			std::ostringstream ossKey;
 			ossKey << "DWMRI_gradient_" << std::setw(4) << std::setfill('0') << temp ;
@@ -271,12 +271,12 @@ namespace itk
 		std::vector<struDiffusionDir> DiffusionDirections;
 		DiffusionDirections.clear();
 
-		for( int i=0; i< this->m_GradientDirectionContainer->size();i++) 
+		for(unsigned int i=0; i< this->m_GradientDirectionContainer->size();i++) 
 		{
 			if(DiffusionDirections.size()>0)
 			{
 				bool newDir = true;
-				for(int j=0;j<DiffusionDirections.size();j++)
+				for(unsigned int j=0;j<DiffusionDirections.size();j++)
 				{
 					if( this->m_GradientDirectionContainer->ElementAt(i)[0] == DiffusionDirections[j].gradientDir[0] && 
 						this->m_GradientDirectionContainer->ElementAt(i)[1] == DiffusionDirections[j].gradientDir[1] && 
@@ -322,8 +322,8 @@ namespace itk
 		std::vector<double> dirNorm;
 		dirNorm.clear();
 
-		double modeTemp = 0.0;
-		for( int i=0; i<DiffusionDirections.size(); i++)
+		//double modeTemp = 0.0;
+		for(unsigned int i=0; i<DiffusionDirections.size(); i++)
 		{
 			if( DiffusionDirections[i].gradientDir[0] == 0.0 &&
 				DiffusionDirections[i].gradientDir[1] == 0.0 &&
@@ -344,7 +344,7 @@ namespace itk
 				if( dirNorm.size() > 0)
 				{
 					bool newDirMode = true;
-					for(int j=0;j< dirNorm.size();j++)
+					for(unsigned int j=0;j< dirNorm.size();j++)
 					{
 						if( fabs(normSqr-dirNorm[j])<0.001)   // 1 DIFFERENCE for b value
 						{
@@ -368,7 +368,7 @@ namespace itk
 		this->bValueNumber = dirNorm.size();
 
 		repetitionNumber = repetNum[0];
-		for( int i=1; i<repetNum.size(); i++)
+		for(unsigned int i=1; i<repetNum.size(); i++)
 		{ 
 			if( repetNum[i] != repetNum[0])
 			{
@@ -429,7 +429,7 @@ namespace itk
 			return ;
 		}
 
-		for(int i=0;i< this->m_GradientDirectionContainer -> Size();i++ )
+		for(unsigned int i=0;i< this->m_GradientDirectionContainer -> Size();i++ )
 		{
 			bValues.push_back(	static_cast< int >((	this->m_GradientDirectionContainer->ElementAt(i)[0]*this->m_GradientDirectionContainer->ElementAt(i)[0] +
 				this->m_GradientDirectionContainer->ElementAt(i)[1]*this->m_GradientDirectionContainer->ElementAt(i)[1] +
@@ -437,7 +437,7 @@ namespace itk
 		}
 
 		// 		std::cout << "b values:" << std::endl;
-		// 		for(int i=0;i< this->m_GradientDirectionContainer -> Size();i++ )
+		// 		for(unsigned int i=0;i< this->m_GradientDirectionContainer -> Size();i++ )
 		// 		{
 		// 			std::cout << bValues[i] << std::endl;
 		// 		}
@@ -475,7 +475,7 @@ namespace itk
 		typename TImageType::IndexType	index;
 		typename TImageType::PixelType voxelvalue ;		
 		voxelvalue.SetSize( inputPtr->GetVectorLength() ) ;
-		for( int i = 0 ; i < inputPtr->GetVectorLength(); i++ )
+		for( unsigned int i = 0 ; i < inputPtr->GetVectorLength(); i++ )
 		{
 			voxelvalue.SetElement( i , 0 ) ;
 		}
