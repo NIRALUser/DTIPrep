@@ -3,8 +3,8 @@
 Program:   NeuroLib
 Module:    $file: itkDWIBaselineAverger.cpp $
 Language:  C++
-Date:      $Date: 2009-09-24 15:12:36 $
-Version:   $Revision: 1.6 $
+Date:      $Date: 2009-10-19 15:32:02 $
+Version:   $Revision: 1.7 $
 Author:    Zhexing Liu (liuzhexing@gmail.com)
 
 Copyright (c) NIRAL, UNC. All rights reserved.
@@ -182,7 +182,7 @@ namespace itk
 			itk::EncapsulateMetaData<std::string>( outputMetaDictionary, "DWMRI_b-value", metaString);
 		}
 
-		if( getBaselineNumber() > 0 ) 
+		if( getBaselineNumber() > 1 ) 
 		{
 			// baseline dir vector
 			std::ostringstream ossKey;
