@@ -310,8 +310,12 @@ void Protocal::printDiffusionProtocal()
 
 	std::cout<<"\tmeasurementFrame: ";
 	for(int i=0;i<3;i++)
+    {
 		for(int j=0;j<3;j++)
+      {
 			std::cout<< GetDiffusionProtocal().measurementFrame[i][j]<<" ";
+      }
+    }
 	std::cout<<std::endl;
 
 	std::cout<<"\tDWMRI_b-value: "<< GetDiffusionProtocal().bValue<<std::endl;

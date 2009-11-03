@@ -498,13 +498,8 @@ void IntensityMotionCheckPanel::UpdatePanelDWI()
 	//  measurement frame 
 	if(imgMetaDictionary.HasKey("NRRD_measurement frame"))
 	{
-		// measurement frame
-		vnl_matrix<double> mf(3,3);
 		// imaging frame
 		vnl_matrix<double> imgf(3,3);
-		std::vector<std::vector<double> > nrrdmf;
-		itk::ExposeMetaData<std::vector<std::vector<double> > >(imgMetaDictionary,"NRRD_measurement frame",nrrdmf);
-
 		imgf = DwiImage->GetDirection().GetVnlMatrix();
 
 		//Image frame
@@ -521,6 +516,11 @@ void IntensityMotionCheckPanel::UpdatePanelDWI()
 		lineEdit_SpaceDir32->setText( QString::number(imgf(2,1), 'f'));
 		lineEdit_SpaceDir33->setText( QString::number(imgf(2,2), 'f'));
 
+		std::vector<std::vector<double> > nrrdmf;
+		itk::ExposeMetaData<std::vector<std::vector<double> > >(imgMetaDictionary,"NRRD_measurement frame",nrrdmf);
+
+		// measurement frame
+		vnl_matrix<double> mf(3,3);
 		for(unsigned int i = 0; i < 3; ++i)
 		{
 			for(unsigned int j = 0; j < 3; ++j)
@@ -654,13 +654,8 @@ void IntensityMotionCheckPanel::DefaultProtocol()
 	//  measurement frame 
 	if(imgMetaDictionary.HasKey("NRRD_measurement frame"))
 	{
-		// measurement frame
-		vnl_matrix<double> mf(3,3);
 		// imaging frame
 		vnl_matrix<double> imgf(3,3);
-		std::vector<std::vector<double> > nrrdmf;
-		itk::ExposeMetaData<std::vector<std::vector<double> > >(imgMetaDictionary,"NRRD_measurement frame",nrrdmf);
-
 		imgf = DwiImage->GetDirection().GetVnlMatrix();
 
 		//Image frame
@@ -674,6 +669,11 @@ void IntensityMotionCheckPanel::DefaultProtocol()
 		this->GetProtocal().GetImageProtocal().spacedirection[2][1] = imgf(2,1);
 		this->GetProtocal().GetImageProtocal().spacedirection[2][2] = imgf(2,2);		
 
+		std::vector<std::vector<double> > nrrdmf;
+		itk::ExposeMetaData<std::vector<std::vector<double> > >(imgMetaDictionary,"NRRD_measurement frame",nrrdmf);
+
+		// measurement frame
+		vnl_matrix<double> mf(3,3);
 		for(unsigned int i = 0; i < 3; ++i)
 		{
 			for(unsigned int j = 0; j < 3; ++j)
@@ -1956,19 +1956,19 @@ void IntensityMotionCheckPanel::GenerateCheckOutputImage( std::string filename)
 	//  measurement frame 
 	if(imgMetaDictionary.HasKey("NRRD_measurement frame"))
 	{
-		// measurement frame
-		vnl_matrix<double> mf(3,3);
 		// imaging frame
 		vnl_matrix<double> imgf(3,3);
-		std::vector<std::vector<double> > nrrdmf;
-		itk::ExposeMetaData<std::vector<std::vector<double> > >(imgMetaDictionary,"NRRD_measurement frame",nrrdmf);
-
 		imgf = DwiImage->GetDirection().GetVnlMatrix();
 
 		//Image frame
 		//std::cout << "Image frame: " << std::endl;
 		//std::cout << imgf << std::endl;
 
+		std::vector<std::vector<double> > nrrdmf;
+		itk::ExposeMetaData<std::vector<std::vector<double> > >(imgMetaDictionary,"NRRD_measurement frame",nrrdmf);
+
+		// measurement frame
+		vnl_matrix<double> mf(3,3);
 		for(unsigned int i = 0; i < 3; ++i)
 		{
 			for(unsigned int j = 0; j < 3; ++j)

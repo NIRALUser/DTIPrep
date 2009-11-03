@@ -3,8 +3,8 @@
 Program:   NeuroLib
 Module:    $file: itkDWIBaselineAverger.cpp $
 Language:  C++
-Date:      $Date: 2009-10-19 15:32:02 $
-Version:   $Revision: 1.7 $
+Date:      $Date: 2009-11-03 23:21:28 $
+Version:   $Revision: 1.8 $
 Author:    Zhexing Liu (liuzhexing@gmail.com)
 
 Copyright (c) NIRAL, UNC. All rights reserved.
@@ -126,14 +126,16 @@ namespace itk
 		//  measurement frame 
 		if(imgMetaDictionary.HasKey("NRRD_measurement frame"))
 		{
+#if 0
 			// measurement frame
 			vnl_matrix<double> mf(3,3);
 			// imaging frame
 			vnl_matrix<double> imgf(3,3);
+			imgf = inputPtr->GetDirection().GetVnlMatrix();
+#endif
 
 			std::vector<std::vector<double> > nrrdmf;
 			itk::ExposeMetaData<std::vector<std::vector<double> > >(imgMetaDictionary,"NRRD_measurement frame",nrrdmf);
-			imgf = inputPtr->GetDirection().GetVnlMatrix();
 
 			// Meausurement frame
 			itk::EncapsulateMetaData<std::vector<std::vector<double> > >( outputMetaDictionary, "NRRD_measurement frame", nrrdmf);

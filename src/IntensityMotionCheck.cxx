@@ -424,19 +424,20 @@ void CIntensityMotionCheck::GenerateCheckOutputImage( std::string filename)
 		//  measurement frame 
 		if(imgMetaDictionary.HasKey("NRRD_measurement frame"))
 		{
-			// measurement frame
-			vnl_matrix<double> mf(3,3);
 			// imaging frame
 			vnl_matrix<double> imgf(3,3);
+			imgf = DwiImage->GetDirection().GetVnlMatrix();
+
 			std::vector<std::vector<double> > nrrdmf;
 			itk::ExposeMetaData<std::vector<std::vector<double> > >(imgMetaDictionary,"NRRD_measurement frame",nrrdmf);
 
-			imgf = DwiImage->GetDirection().GetVnlMatrix();
 
 			//Image frame
 			//std::cout << "Image frame: " << std::endl;
 			//std::cout << imgf << std::endl;
 
+			// measurement frame
+			vnl_matrix<double> mf(3,3);
 			for(unsigned int i = 0; i < 3; ++i)
 			{
 				for(unsigned int j = 0; j < 3; ++j)
@@ -1020,15 +1021,15 @@ bool CIntensityMotionCheck::DiffusionCheck( DwiImageType::Pointer dwi)
 		//  measurement frame 
 		if( DwiImageTemp->GetMetaDataDictionary().HasKey("NRRD_measurement frame"))
 		{
-			// measurement frame
-			vnl_matrix<double> mf(3,3);
 			// imaging frame
 			vnl_matrix<double> imgf(3,3);
+			imgf = DwiImageTemp->GetDirection().GetVnlMatrix();
+
 			std::vector<std::vector<double> > nrrdmf;
 			itk::ExposeMetaData<std::vector<std::vector<double> > >( dwi->GetMetaDataDictionary(),"NRRD_measurement frame",nrrdmf);
 
-			imgf = DwiImageTemp->GetDirection().GetVnlMatrix();
-
+			// measurement frame
+			vnl_matrix<double> mf(3,3);
 			//Image frame
 			for(unsigned int i = 0; i < 3; ++i)
 			{
@@ -1053,7 +1054,9 @@ bool CIntensityMotionCheck::DiffusionCheck( DwiImageType::Pointer dwi)
 			{
 				qcResult->GetDiffusionInformationCheckResult().measurementFrame = true;
 				if(bReport)
+          {
 					outfile<<"Diffusion measurementFrame Check: \tOK"<<std::endl;
+          }
 				std::cout<<"Diffusion measurementFrame Check: \tOK"<<std::endl;
 			}
 			else
@@ -1061,7 +1064,9 @@ bool CIntensityMotionCheck::DiffusionCheck( DwiImageType::Pointer dwi)
 				returnValte = false;
 				qcResult->GetDiffusionInformationCheckResult().measurementFrame = false;
 				if(bReport)
+          {
 					outfile<<"Diffusion measurementFrame Check: \tFAILED"<<std::endl;
+          }
 				std::cout<<"Diffusion measurementFrame Check: \tFAILED"<<std::endl;
 
 				if( protocal->GetDiffusionProtocal().bUseDiffusionProtocal )
@@ -3270,15 +3275,15 @@ bool CIntensityMotionCheck::DiffusionCheck( )
 		//  measurement frame 
 		if( DwiImageTemp->GetMetaDataDictionary().HasKey("NRRD_measurement frame"))
 		{
-			// measurement frame
-			vnl_matrix<double> mf(3,3);
 			// imaging frame
 			vnl_matrix<double> imgf(3,3);
+			imgf = DwiImageTemp->GetDirection().GetVnlMatrix();
+
 			std::vector<std::vector<double> > nrrdmf;
 			itk::ExposeMetaData<std::vector<std::vector<double> > >( dwi->GetMetaDataDictionary(),"NRRD_measurement frame",nrrdmf);
 
-			imgf = DwiImageTemp->GetDirection().GetVnlMatrix();
-
+			// measurement frame
+			vnl_matrix<double> mf(3,3);
 			//Image frame
 			for(unsigned int i = 0; i < 3; ++i)
 			{

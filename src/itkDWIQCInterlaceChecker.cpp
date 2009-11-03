@@ -3,8 +3,8 @@
 Program:   NeuroLib
 Module:    $file: itkDWIQCInterlaceChecker.cpp $
 Language:  C++
-Date:      $Date: 2009-09-24 15:12:36 $
-Version:   $Revision: 1.6 $
+Date:      $Date: 2009-11-03 23:21:28 $
+Version:   $Revision: 1.7 $
 Author:    Zhexing Liu (liuzhexing@gmail.com)
 
 Copyright (c) NIRAL, UNC. All rights reserved.
@@ -151,18 +151,18 @@ namespace itk
 		//  measurement frame 
 		if(imgMetaDictionary.HasKey("NRRD_measurement frame"))
 		{
+#if 0
 			// measurement frame
 			vnl_matrix<double> mf(3,3);
 			// imaging frame
 			vnl_matrix<double> imgf(3,3);
-
-			std::vector<std::vector<double> > nrrdmf;
-			itk::ExposeMetaData<std::vector<std::vector<double> > >(imgMetaDictionary,"NRRD_measurement frame",nrrdmf);
 			imgf = inputPtr->GetDirection().GetVnlMatrix();
+#endif
 
 			// Meausurement frame
+			std::vector<std::vector<double> > nrrdmf;
+			itk::ExposeMetaData<std::vector<std::vector<double> > >(imgMetaDictionary,"NRRD_measurement frame",nrrdmf);
 			itk::EncapsulateMetaData<std::vector<std::vector<double> > >( outputMetaDictionary, "NRRD_measurement frame", nrrdmf);
-
 		}
 
 		// modality
@@ -1274,18 +1274,18 @@ namespace itk
 			//  measurement frame 
 			if(imgMetaDictionary.HasKey("NRRD_measurement frame"))
 			{
+#if 0
 				// measurement frame
 				vnl_matrix<double> mf(3,3);
 				// imaging frame
 				vnl_matrix<double> imgf(3,3);
-
-				std::vector<std::vector<double> > nrrdmf;
-				itk::ExposeMetaData<std::vector<std::vector<double> > >(imgMetaDictionary,"NRRD_measurement frame",nrrdmf);
 				imgf = inputPtr->GetDirection().GetVnlMatrix();
+#endif
 
 				// Meausurement frame
+				std::vector<std::vector<double> > nrrdmf;
+				itk::ExposeMetaData<std::vector<std::vector<double> > >(imgMetaDictionary,"NRRD_measurement frame",nrrdmf);
 				itk::EncapsulateMetaData<std::vector<std::vector<double> > >( outputMetaDictionary, "NRRD_measurement frame", nrrdmf);
-
 			}
 
 			// modality

@@ -83,7 +83,7 @@ if [ 1 == 1 ];then  ## Temporary bypass of building ITK
     mkdir -p ${ITK_SOURCE}
     pushd ${COMPILE_DIR}
     cvs -d :pserver:anoncvs:@www.vtk.org:/cvsroot/Insight login
-    cvs -d :pserver:anoncvs@www.vtk.org:/cvsroot/Insight checkout -D 20090827 Insight
+    cvs -d :pserver:anoncvs@www.vtk.org:/cvsroot/Insight checkout -D 20091022 Insight
     popd
   fi
   mkdir -p ${ITK_BUILD}
