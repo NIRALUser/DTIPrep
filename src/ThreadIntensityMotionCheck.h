@@ -3,7 +3,7 @@
 
 #include <QThread>
 
-class Protocal;
+class Protocol;
 class QCResult;
 class CIntensityMotionCheck;
 
@@ -16,7 +16,7 @@ public:
     ~CThreadIntensityMotionCheck();
 
     void SetFileName(std::string filename){ DWINrrdFilename = filename;};
-	void SetProtocal( Protocal *p) { protocal = p;};
+	void SetProtocol( Protocol *p) { protocol = p;};
 	void SetQCResult( QCResult *r) { qcResult = r;};
 
 signals:
@@ -31,7 +31,7 @@ protected:
 
 private:
    std::string DWINrrdFilename;
-   Protocal *protocal;
+   Protocol *protocol;
    QCResult *qcResult;
 
 public:

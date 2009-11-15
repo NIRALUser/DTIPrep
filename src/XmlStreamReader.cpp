@@ -5,7 +5,7 @@
 XmlStreamReader::XmlStreamReader(QTreeWidget *tree)
 {
 	treeWidget = tree;
-	protocal=NULL;
+	protocol=NULL;
 }
 
 XmlStreamReader::~XmlStreamReader(void)
@@ -39,7 +39,7 @@ void XmlStreamReader::InitializeProtocolStringValues()
 	s_mapProtocolStringValues["DIFFUSION_measurementFrame"]					= DIFFUSION_measurementFrame;
 	s_mapProtocolStringValues["DIFFUSION_DWMRI_bValue"]						= DIFFUSION_DWMRI_bValue;
 	s_mapProtocolStringValues["DIFFUSION_DWMRI_gradient"]					= DIFFUSION_DWMRI_gradient;
-	s_mapProtocolStringValues["DIFFUSION_bUseDiffusionProtocal"]			= DIFFUSION_bUseDiffusionProtocal;
+	s_mapProtocolStringValues["DIFFUSION_bUseDiffusionProtocol"]			= DIFFUSION_bUseDiffusionProtocol;
 	s_mapProtocolStringValues["DIFFUSION_diffusionReplacedDWIFileNameSuffix"]= DIFFUSION_diffusionReplacedDWIFileNameSuffix;
 	s_mapProtocolStringValues["DIFFUSION_reportFileNameSuffix"]				= DIFFUSION_reportFileNameSuffix;
 	s_mapProtocolStringValues["DIFFUSION_reportFileMode"]					= DIFFUSION_reportFileMode;
@@ -129,7 +129,7 @@ void XmlStreamReader::InitializeProtocolStringValues()
 
 bool XmlStreamReader::readFile(const QString &fileName, int mode)
 {
-	if(protocal)	protocal->clear();
+	if(protocol)	protocol->clear();
 
     QFile file(fileName);
     if (!file.open(QFile::ReadOnly | QFile::Text)) {
@@ -143,10 +143,10 @@ bool XmlStreamReader::readFile(const QString &fileName, int mode)
 	reader.readNext();
 	while (!reader.atEnd()) {
 		if (reader.isStartElement()) {
-			if (reader.name() == "ProtocalSettings") {
-				readProtocalSettingsElement( mode );
+			if (reader.name() == "ProtocolSettings") {
+				readProtocolSettingsElement( mode );
 			} else {
-				reader.raiseError(QObject::tr("Not a ProtocalSettings file"));
+				reader.raiseError(QObject::tr("Not a ProtocolSettings file"));
 			}
 		} else {
 			reader.readNext();
@@ -168,7 +168,7 @@ bool XmlStreamReader::readFile(const QString &fileName, int mode)
     return true;
 }
 
-void XmlStreamReader::readProtocalSettingsElement(int mode)
+void XmlStreamReader::readProtocolSettingsElement(int mode)
 {
     reader.readNext();
     while (!reader.atEnd()) {
@@ -181,7 +181,7 @@ void XmlStreamReader::readProtocalSettingsElement(int mode)
             if (reader.name() == "entry") {
 				if( mode== XmlStreamReader::TreeWise)
 					readEntryElement(treeWidget->invisibleRootItem());
-				else if(mode== XmlStreamReader::ProtocalWise){
+				else if(mode== XmlStreamReader::ProtocolWise){
 					readEntryElement();					
 				}
 				else{
@@ -196,14 +196,14 @@ void XmlStreamReader::readProtocalSettingsElement(int mode)
         }
     }
 
-	if(mode== XmlStreamReader::ProtocalWise) 
+	if(mode== XmlStreamReader::ProtocolWise) 
 	{
 		InitializeProtocolStringValues();
-		parseXMLParametersToProtocal();
+		parseXMLParametersToProtocol();
 	}
 }
 
-void XmlStreamReader::parseXMLParametersToProtocal()
+void XmlStreamReader::parseXMLParametersToProtocol()
 {	
 	int temp;
 	QStringList values;
@@ -219,7 +219,7 @@ void XmlStreamReader::parseXMLParametersToProtocal()
 			{
 				vect.push_back( value.toDouble());
 			}
-			protocal->GetDiffusionProtocal().gradients.push_back(vect);
+			protocol->GetDiffusionProtocol().gradients.push_back(vect);
 		}
 		else
 		{
@@ -227,52 +227,52 @@ void XmlStreamReader::parseXMLParametersToProtocal()
 			{
 			//QC overall
 			case QC_QCOutputDirectory:
-				protocal->GetQCOutputDirectory() =  paremeters[i].value.toStdString();
+				protocol->GetQCOutputDirectory() =  paremeters[i].value.toStdString();
 				break;
 			case QC_QCedDWIFileNameSuffix:
-				protocal->GetQCedDWIFileNameSuffix() =  paremeters[i].value.toStdString();
+				protocol->GetQCedDWIFileNameSuffix() =  paremeters[i].value.toStdString();
 				break;
 			case QC_reportFileNameSuffix:
-				protocal->GetReportFileNameSuffix() =  paremeters[i].value.toStdString();
+				protocol->GetReportFileNameSuffix() =  paremeters[i].value.toStdString();
 				break;
 			case QC_badGradientPercentageTolerance:
-				protocal->SetBadGradientPercentageTolerance(paremeters[i].value.toDouble()) ;
+				protocol->SetBadGradientPercentageTolerance(paremeters[i].value.toDouble()) ;
 				break;
 
 			// image
 			case IMAGE_bCheck:
 				if(paremeters[i].value.toLower().toStdString()=="yes")
-					protocal->GetImageProtocal().bCheck = true;
+					protocol->GetImageProtocol().bCheck = true;
 				else
-					protocal->GetImageProtocal().bCheck = false;
+					protocol->GetImageProtocol().bCheck = false;
 				break;
 			case IMAGE_type:
 				if(paremeters[i].value.toStdString()=="short")
-					protocal->GetImageProtocal().type = Protocal::TYPE_SHORT;
+					protocol->GetImageProtocol().type = Protocol::TYPE_SHORT;
 				else if(paremeters[i].value.toStdString()=="unsigned short")
-					protocal->GetImageProtocal().type = Protocal::TYPE_USHORT;
+					protocol->GetImageProtocol().type = Protocol::TYPE_USHORT;
 				else
-					protocal->GetImageProtocal().type = Protocal::TYPE_UNKNOWN;
+					protocol->GetImageProtocol().type = Protocol::TYPE_UNKNOWN;
 				break;
 			case IMAGE_space:
 				if(paremeters[i].value.toStdString()=="left-anterior-inferior")
-					protocal->GetImageProtocal().space = Protocal::SPACE_LAI;
+					protocol->GetImageProtocol().space = Protocol::SPACE_LAI;
 				else if(paremeters[i].value.toStdString()=="left-anterior-superior")
-					protocal->GetImageProtocal().space = Protocal::SPACE_LAS;
+					protocol->GetImageProtocol().space = Protocol::SPACE_LAS;
 				else if(paremeters[i].value.toStdString()=="left-posterior-inferior")
-					protocal->GetImageProtocal().space = Protocal::SPACE_LPI;
+					protocol->GetImageProtocol().space = Protocol::SPACE_LPI;
 				else if(paremeters[i].value.toStdString()=="left-posterior-superior")
-					protocal->GetImageProtocal().space = Protocal::SPACE_LPS;
+					protocol->GetImageProtocol().space = Protocol::SPACE_LPS;
 				else if(paremeters[i].value.toStdString()=="right-anterior-inferior")
-					protocal->GetImageProtocal().space = Protocal::SPACE_RAI;
+					protocol->GetImageProtocol().space = Protocol::SPACE_RAI;
 				else if(paremeters[i].value.toStdString()=="right-anterior-superior")
-					protocal->GetImageProtocal().space = Protocal::SPACE_RAS;
+					protocol->GetImageProtocol().space = Protocol::SPACE_RAS;
 				else if(paremeters[i].value.toStdString()=="right-posterior-inferior")
-					protocal->GetImageProtocal().space = Protocal::SPACE_RPI;
+					protocol->GetImageProtocol().space = Protocol::SPACE_RPI;
 				else if(paremeters[i].value.toStdString()=="right-posterior-superior")
-					protocal->GetImageProtocal().space = Protocal::SPACE_RPS;
+					protocol->GetImageProtocol().space = Protocol::SPACE_RPS;
 				else
-					protocal->GetImageProtocal().space = Protocal::SPACE_UNKNOWN;
+					protocol->GetImageProtocol().space = Protocol::SPACE_UNKNOWN;
 				break;
 			case IMAGE_directions:
 				values = paremeters[i].value.split(", ");
@@ -282,20 +282,20 @@ void XmlStreamReader::parseXMLParametersToProtocal()
 					subvalues = value.split(" ");
 					foreach (QString subvalue, subvalues)
 					{
-						protocal->GetImageProtocal().spacedirection[temp/3][temp%3]= subvalue.toDouble();
+						protocol->GetImageProtocol().spacedirection[temp/3][temp%3]= subvalue.toDouble();
 						temp++;
 					}
 				}				
 				break;
 			case IMAGE_dimension:
-				protocal->GetImageProtocal().dimension = paremeters[i].value.toInt();
+				protocol->GetImageProtocol().dimension = paremeters[i].value.toInt();
 				break;
 			case IMAGE_size:
 				values = paremeters[i].value.split(", ");
 				temp=0;
 				foreach (QString value, values)
 				{
-					protocal->GetImageProtocal().size[temp]= value.toInt();
+					protocol->GetImageProtocol().size[temp]= value.toInt();
 					temp++;
 				}				
 				break;
@@ -304,7 +304,7 @@ void XmlStreamReader::parseXMLParametersToProtocal()
 				temp=0;
 				foreach (QString value, values)
 				{
-					protocal->GetImageProtocal().spacing[temp]= value.toDouble();
+					protocol->GetImageProtocol().spacing[temp]= value.toDouble();
 					temp++;
 				}				
 				break;
@@ -313,32 +313,32 @@ void XmlStreamReader::parseXMLParametersToProtocal()
 				temp=0;
 				foreach (QString value, values)
 				{
-					protocal->GetImageProtocal().origin[temp]= value.toDouble();
+					protocol->GetImageProtocol().origin[temp]= value.toDouble();
 					temp++;
 				}				
 				break;
 			case IMAGE_bCrop:
 				if(paremeters[i].value.toLower().toStdString()=="yes")
-					protocal->GetImageProtocal().bCrop = true;
+					protocol->GetImageProtocol().bCrop = true;
 				else
-					protocal->GetImageProtocal().bCrop = false;
+					protocol->GetImageProtocol().bCrop = false;
 				break;
 			case IMAGE_croppedDWIFileNameSuffix:
-				protocal->GetImageProtocal().croppedDWIFileNameSuffix =  paremeters[i].value.toStdString();
+				protocol->GetImageProtocol().croppedDWIFileNameSuffix =  paremeters[i].value.toStdString();
 				break;
 			case IMAGE_reportFileNameSuffix:
-				protocal->GetImageProtocal().reportFileNameSuffix =  paremeters[i].value.toStdString();
+				protocol->GetImageProtocol().reportFileNameSuffix =  paremeters[i].value.toStdString();
 				break;
 			case IMAGE_reportFileMode:
-				protocal->GetImageProtocal().reportFileMode =  paremeters[i].value.toInt();
+				protocol->GetImageProtocol().reportFileMode =  paremeters[i].value.toInt();
 				break;
 
 			// Diffusion
 			case DIFFUSION_bCheck:
 				if(paremeters[i].value.toLower().toStdString()=="yes")
-					protocal->GetDiffusionProtocal().bCheck = true;
+					protocol->GetDiffusionProtocol().bCheck = true;
 				else
-					protocal->GetDiffusionProtocal().bCheck = false;
+					protocol->GetDiffusionProtocol().bCheck = false;
 				break;
 			case DIFFUSION_measurementFrame:
 				values = paremeters[i].value.split(", ");
@@ -348,287 +348,287 @@ void XmlStreamReader::parseXMLParametersToProtocal()
 					subvalues = value.split(" ");
 					foreach (QString subvalue, subvalues)
 					{
-						protocal->GetDiffusionProtocal().measurementFrame[temp/3][temp%3]= subvalue.toDouble();
+						protocol->GetDiffusionProtocol().measurementFrame[temp/3][temp%3]= subvalue.toDouble();
 						temp++;
 					}
 				}				
 				break;
 			case DIFFUSION_DWMRI_bValue:
-				protocal->GetDiffusionProtocal().bValue =  paremeters[i].value.toDouble();
+				protocol->GetDiffusionProtocol().bValue =  paremeters[i].value.toDouble();
 				break;
 			//case ev_DWMRI_gradient:
 			//	break;
-			case DIFFUSION_bUseDiffusionProtocal:
+			case DIFFUSION_bUseDiffusionProtocol:
 				if(paremeters[i].value.toLower().toStdString()=="yes")
-					protocal->GetDiffusionProtocal().bUseDiffusionProtocal = true;
+					protocol->GetDiffusionProtocol().bUseDiffusionProtocol = true;
 				else
-					protocal->GetDiffusionProtocal().bUseDiffusionProtocal = false;
+					protocol->GetDiffusionProtocol().bUseDiffusionProtocol = false;
 				break;
 			case DIFFUSION_diffusionReplacedDWIFileNameSuffix:
-				protocal->GetDiffusionProtocal().diffusionReplacedDWIFileNameSuffix =  paremeters[i].value.toStdString();
+				protocol->GetDiffusionProtocol().diffusionReplacedDWIFileNameSuffix =  paremeters[i].value.toStdString();
 				break;
 			case DIFFUSION_reportFileNameSuffix:
-				protocal->GetDiffusionProtocal().reportFileNameSuffix =  paremeters[i].value.toStdString();
+				protocol->GetDiffusionProtocol().reportFileNameSuffix =  paremeters[i].value.toStdString();
 				break;
 			case DIFFUSION_reportFileMode:
-				protocal->GetDiffusionProtocal().reportFileMode =  paremeters[i].value.toInt();
+				protocol->GetDiffusionProtocol().reportFileMode =  paremeters[i].value.toInt();
 				break;
 
 			// slice Check
 			case SLICE_bCheck:
 				if(paremeters[i].value.toLower().toStdString()=="yes")
-					protocal->GetSliceCheckProtocal().bCheck = true;
+					protocol->GetSliceCheckProtocol().bCheck = true;
 				else
-					protocal->GetSliceCheckProtocal().bCheck = false;
+					protocol->GetSliceCheckProtocol().bCheck = false;
 				break;
 // 			case SLICE_badGradientPercentageTolerance:
-// 				protocal->GetSliceCheckProtocal().badGradientPercentageTolerance =  paremeters[i].value.toDouble();
+// 				protocol->GetSliceCheckProtocol().badGradientPercentageTolerance =  paremeters[i].value.toDouble();
 // 				break;
 			case SLICE_checkTimes:
-				protocal->GetSliceCheckProtocal().checkTimes =  paremeters[i].value.toInt();
+				protocol->GetSliceCheckProtocol().checkTimes =  paremeters[i].value.toInt();
 				break;
 			case SLICE_headSkipSlicePercentage:
-				protocal->GetSliceCheckProtocal().headSkipSlicePercentage = paremeters[i].value.toDouble(); 
+				protocol->GetSliceCheckProtocol().headSkipSlicePercentage = paremeters[i].value.toDouble(); 
 				break;
 			case SLICE_tailSkipSlicePercentage:
-				protocal->GetSliceCheckProtocal().tailSkipSlicePercentage = paremeters[i].value.toDouble(); 
+				protocol->GetSliceCheckProtocol().tailSkipSlicePercentage = paremeters[i].value.toDouble(); 
 				break;
 			case SLICE_correlationDeviationThresholdbaseline:
-				protocal->GetSliceCheckProtocal().correlationDeviationThresholdbaseline = paremeters[i].value.toDouble(); 
+				protocol->GetSliceCheckProtocol().correlationDeviationThresholdbaseline = paremeters[i].value.toDouble(); 
 				break;
 			case SLICE_correlationDeviationThresholdgradient:
-				protocal->GetSliceCheckProtocal().correlationDeviationThresholdgradient = paremeters[i].value.toDouble(); 
+				protocol->GetSliceCheckProtocol().correlationDeviationThresholdgradient = paremeters[i].value.toDouble(); 
 				break;			
 			case SLICE_outputDWIFileNameSuffix:
-				protocal->GetSliceCheckProtocal().outputDWIFileNameSuffix =  paremeters[i].value.toStdString();
+				protocol->GetSliceCheckProtocol().outputDWIFileNameSuffix =  paremeters[i].value.toStdString();
 				break;
 			case SLICE_reportFileNameSuffix:
-				protocal->GetSliceCheckProtocal().reportFileNameSuffix =  paremeters[i].value.toStdString();
+				protocol->GetSliceCheckProtocol().reportFileNameSuffix =  paremeters[i].value.toStdString();
 				break;
 			case SLICE_reportFileMode:
-				protocal->GetSliceCheckProtocal().reportFileMode =  paremeters[i].value.toInt();
+				protocol->GetSliceCheckProtocol().reportFileMode =  paremeters[i].value.toInt();
 				break;
 
 			// interlace check
 			case INTERLACE_bCheck:
 				if(paremeters[i].value.toLower().toStdString()=="yes")
-					protocal->GetInterlaceCheckProtocal().bCheck = true;
+					protocol->GetInterlaceCheckProtocol().bCheck = true;
 				else
-					protocal->GetInterlaceCheckProtocal().bCheck = false;
+					protocol->GetInterlaceCheckProtocol().bCheck = false;
 				break;
 // 			case INTERLACE_badGradientPercentageTolerance:
-// 				protocal->GetInterlaceCheckProtocal().badGradientPercentageTolerance =  paremeters[i].value.toDouble();
+// 				protocol->GetInterlaceCheckProtocol().badGradientPercentageTolerance =  paremeters[i].value.toDouble();
 // 				break;
 			case INTERLACE_correlationThresholdBaseline:
-				protocal->GetInterlaceCheckProtocal().correlationThresholdBaseline = paremeters[i].value.toDouble(); 
+				protocol->GetInterlaceCheckProtocol().correlationThresholdBaseline = paremeters[i].value.toDouble(); 
 				break;
 			case INTERLACE_correlationThresholdGradient:
-				protocal->GetInterlaceCheckProtocal().correlationThresholdGradient = paremeters[i].value.toDouble(); 
+				protocol->GetInterlaceCheckProtocol().correlationThresholdGradient = paremeters[i].value.toDouble(); 
 				break;
 			case INTERLACE_correlationDeviationBaseline:
-				protocal->GetInterlaceCheckProtocal().correlationDeviationBaseline = paremeters[i].value.toDouble(); 
+				protocol->GetInterlaceCheckProtocol().correlationDeviationBaseline = paremeters[i].value.toDouble(); 
 				break;
 			case INTERLACE_correlationDeviationGradient:
-				protocal->GetInterlaceCheckProtocal().correlationDeviationGradient = paremeters[i].value.toDouble(); 
+				protocol->GetInterlaceCheckProtocol().correlationDeviationGradient = paremeters[i].value.toDouble(); 
 				break;
 			case INTERLACE_translationThreshold:
-				protocal->GetInterlaceCheckProtocal().translationThreshold = paremeters[i].value.toDouble(); 
+				protocol->GetInterlaceCheckProtocol().translationThreshold = paremeters[i].value.toDouble(); 
 				break;
 			case INTERLACE_rotationThreshold:
-				protocal->GetInterlaceCheckProtocal().rotationThreshold = paremeters[i].value.toDouble(); 
+				protocol->GetInterlaceCheckProtocol().rotationThreshold = paremeters[i].value.toDouble(); 
 				break;
 			case INTERLACE_outputDWIFileNameSuffix:
-				protocal->GetInterlaceCheckProtocal().outputDWIFileNameSuffix =  paremeters[i].value.toStdString();
+				protocol->GetInterlaceCheckProtocol().outputDWIFileNameSuffix =  paremeters[i].value.toStdString();
 				break;
 			case INTERLACE_reportFileNameSuffix:
-				protocal->GetInterlaceCheckProtocal().reportFileNameSuffix =  paremeters[i].value.toStdString();
+				protocol->GetInterlaceCheckProtocol().reportFileNameSuffix =  paremeters[i].value.toStdString();
 				break;
 			case INTERLACE_reportFileMode:
-				protocal->GetInterlaceCheckProtocal().reportFileMode =  paremeters[i].value.toInt();
+				protocol->GetInterlaceCheckProtocol().reportFileMode =  paremeters[i].value.toInt();
 				break;
 
 			// gradient check
 			case GRADIENT_bCheck:
 				if(paremeters[i].value.toLower().toStdString()=="yes")
-					protocal->GetGradientCheckProtocal().bCheck = true;
+					protocol->GetGradientCheckProtocol().bCheck = true;
 				else
-					protocal->GetGradientCheckProtocal().bCheck = false;
+					protocol->GetGradientCheckProtocol().bCheck = false;
 				break;
 // 			case GRADIENT_badGradientPercentageTolerance:
-// 				protocal->GetGradientCheckProtocal().badGradientPercentageTolerance =  paremeters[i].value.toDouble();
+// 				protocol->GetGradientCheckProtocol().badGradientPercentageTolerance =  paremeters[i].value.toDouble();
 // 				break;
 			case GRADIENT_translationThrehshold:
-				protocal->GetGradientCheckProtocal().translationThreshold = paremeters[i].value.toDouble(); 
+				protocol->GetGradientCheckProtocol().translationThreshold = paremeters[i].value.toDouble(); 
 				break;
 			case GRADIENT_rotationThreshold:
-				protocal->GetGradientCheckProtocal().rotationThreshold = paremeters[i].value.toDouble(); 
+				protocol->GetGradientCheckProtocol().rotationThreshold = paremeters[i].value.toDouble(); 
 				break;
 			case GRADIENT_outputDWIFileNameSuffix:
-				protocal->GetGradientCheckProtocal().outputDWIFileNameSuffix =  paremeters[i].value.toStdString();
+				protocol->GetGradientCheckProtocol().outputDWIFileNameSuffix =  paremeters[i].value.toStdString();
 				break;
 			case GRADIENT_reportFileNameSuffix:
-				protocal->GetGradientCheckProtocal().reportFileNameSuffix =  paremeters[i].value.toStdString();
+				protocol->GetGradientCheckProtocol().reportFileNameSuffix =  paremeters[i].value.toStdString();
 				break;
 			case GRADIENT_reportFileMode:
-				protocal->GetGradientCheckProtocal().reportFileMode =  paremeters[i].value.toInt();
+				protocol->GetGradientCheckProtocol().reportFileMode =  paremeters[i].value.toInt();
 				break;
 
 			// baseline average
 			case BASELINE_bAverage:
 				if(paremeters[i].value.toLower().toStdString()=="yes")
-					protocal->GetBaselineAverageProtocal().bAverage = true;
+					protocol->GetBaselineAverageProtocol().bAverage = true;
 				else
-					protocal->GetBaselineAverageProtocal().bAverage = false;
+					protocol->GetBaselineAverageProtocol().bAverage = false;
 				break;
 			case BASELINE_averageMethod:
-				protocal->GetBaselineAverageProtocal().averageMethod=  paremeters[i].value.toInt();
+				protocol->GetBaselineAverageProtocol().averageMethod=  paremeters[i].value.toInt();
 				break;
 			case BASELINE_stopThreshold:
-				protocal->GetBaselineAverageProtocal().stopThreshold = paremeters[i].value.toDouble(); 
+				protocol->GetBaselineAverageProtocol().stopThreshold = paremeters[i].value.toDouble(); 
 				break;
 			case BASELINE_outputDWIFileNameSuffix:
-				protocal->GetBaselineAverageProtocal().outputDWIFileNameSuffix =  paremeters[i].value.toStdString();
+				protocol->GetBaselineAverageProtocol().outputDWIFileNameSuffix =  paremeters[i].value.toStdString();
 				break;
 			case BASELINE_reportFileNameSuffix:
-				protocal->GetBaselineAverageProtocal().reportFileNameSuffix =  paremeters[i].value.toStdString();
+				protocol->GetBaselineAverageProtocol().reportFileNameSuffix =  paremeters[i].value.toStdString();
 				break;
 			case BASELINE_reportFileMode:
-				protocal->GetBaselineAverageProtocal().reportFileMode =  paremeters[i].value.toInt();
+				protocol->GetBaselineAverageProtocol().reportFileMode =  paremeters[i].value.toInt();
 				break;
 
 			// eddy current
 			case EDDYMOTION_bCorrect:
 				if(paremeters[i].value.toLower().toStdString()=="yes")
-					protocal->GetEddyMotionCorrectionProtocal().bCorrect = true;
+					protocol->GetEddyMotionCorrectionProtocol().bCorrect = true;
 				else
-					protocal->GetEddyMotionCorrectionProtocal().bCorrect = false;
+					protocol->GetEddyMotionCorrectionProtocol().bCorrect = false;
 				break;
 // 			case EDDYMOTION_command:
-// 				protocal->GetEddyMotionCorrectionProtocal().EddyMotionCommand =  paremeters[i].value.toStdString();
+// 				protocol->GetEddyMotionCorrectionProtocol().EddyMotionCommand =  paremeters[i].value.toStdString();
 // 				break;
 // 			case EDDYMOTION_inputFileName:
-// 				protocal->GetEddyMotionCorrectionProtocal().InputFileName = paremeters[i].value.toStdString(); 
+// 				protocol->GetEddyMotionCorrectionProtocol().InputFileName = paremeters[i].value.toStdString(); 
 // 				break;
 // 			case EDDYMOTION_outputFileName:
-// 				protocal->GetEddyMotionCorrectionProtocal().OutputFileName = paremeters[i].value.toStdString(); 
+// 				protocol->GetEddyMotionCorrectionProtocol().OutputFileName = paremeters[i].value.toStdString(); 
 // 				break;
 
 			case EDDYMOTION_numberOfBins:
-				protocal->GetEddyMotionCorrectionProtocal().numberOfBins =  paremeters[i].value.toInt();
+				protocol->GetEddyMotionCorrectionProtocol().numberOfBins =  paremeters[i].value.toInt();
 				break;
 			case EDDYMOTION_numberOfSamples:
-				protocal->GetEddyMotionCorrectionProtocal().numberOfSamples =  paremeters[i].value.toInt();
+				protocol->GetEddyMotionCorrectionProtocol().numberOfSamples =  paremeters[i].value.toInt();
 				break;
 			case EDDYMOTION_translationScale:
-				protocal->GetEddyMotionCorrectionProtocal().translationScale =  paremeters[i].value.toFloat();
+				protocol->GetEddyMotionCorrectionProtocol().translationScale =  paremeters[i].value.toFloat();
 				break;
 			case EDDYMOTION_stepLength:
-				protocal->GetEddyMotionCorrectionProtocal().stepLength =  paremeters[i].value.toFloat(); 
+				protocol->GetEddyMotionCorrectionProtocol().stepLength =  paremeters[i].value.toFloat(); 
 				break;
 			case EDDYMOTION_relaxFactor:
-				protocal->GetEddyMotionCorrectionProtocal().relaxFactor =  paremeters[i].value.toFloat(); 
+				protocol->GetEddyMotionCorrectionProtocol().relaxFactor =  paremeters[i].value.toFloat(); 
 				break;
 			case EDDYMOTION_maxNumberOfIterations:
-				protocal->GetEddyMotionCorrectionProtocal().maxNumberOfIterations =  paremeters[i].value.toInt();
+				protocol->GetEddyMotionCorrectionProtocol().maxNumberOfIterations =  paremeters[i].value.toInt();
 				break;
 
 			case EDDYMOTION_outputDWIFileNameSuffix:
-				protocal->GetEddyMotionCorrectionProtocal().outputDWIFileNameSuffix =  paremeters[i].value.toStdString();
+				protocol->GetEddyMotionCorrectionProtocol().outputDWIFileNameSuffix =  paremeters[i].value.toStdString();
 				break;
 			case EDDYMOTION_reportFileNameSuffix:
-				protocal->GetEddyMotionCorrectionProtocal().reportFileNameSuffix =  paremeters[i].value.toStdString();
+				protocol->GetEddyMotionCorrectionProtocol().reportFileNameSuffix =  paremeters[i].value.toStdString();
 				break;
 			case EDDYMOTION_reportFileMode:
-				protocal->GetEddyMotionCorrectionProtocal().reportFileMode =  paremeters[i].value.toInt();
+				protocol->GetEddyMotionCorrectionProtocol().reportFileMode =  paremeters[i].value.toInt();
 				break;
 
 			//  DTI
 			case DTI_bCompute:
 				if(paremeters[i].value.toLower().toStdString()=="yes")
-					protocal->GetDTIProtocal().bCompute = true;
+					protocol->GetDTIProtocol().bCompute = true;
 				else
-					protocal->GetDTIProtocal().bCompute = false;
+					protocol->GetDTIProtocol().bCompute = false;
 				break;
 			case DTI_dtiestimCommand:
-				protocal->GetDTIProtocal().dtiestimCommand =  paremeters[i].value.toStdString();
+				protocol->GetDTIProtocol().dtiestimCommand =  paremeters[i].value.toStdString();
 				break;
 			case DTI_dtiprocessCommand:
-				protocal->GetDTIProtocal().dtiprocessCommand =  paremeters[i].value.toStdString();
+				protocol->GetDTIProtocol().dtiprocessCommand =  paremeters[i].value.toStdString();
 				break;
 			case DTI_method:
 				if(paremeters[i].value.toStdString()=="wls")
-					protocal->GetDTIProtocal().method = Protocal::METHOD_WLS;
+					protocol->GetDTIProtocol().method = Protocol::METHOD_WLS;
 				else if(paremeters[i].value.toStdString()=="lls")
-					protocal->GetDTIProtocal().method = Protocal::METHOD_LLS;
+					protocol->GetDTIProtocol().method = Protocol::METHOD_LLS;
 				else if(paremeters[i].value.toStdString()=="ml")
-					protocal->GetDTIProtocal().method = Protocal::METHOD_ML;
+					protocol->GetDTIProtocol().method = Protocol::METHOD_ML;
 				else
-					protocal->GetDTIProtocal().method = Protocal::METHOD_UNKNOWN;
+					protocol->GetDTIProtocol().method = Protocol::METHOD_UNKNOWN;
 				break;
 			case DTI_baselineThreshold:
-				protocal->GetDTIProtocal().baselineThreshold=  paremeters[i].value.toInt();
+				protocol->GetDTIProtocol().baselineThreshold=  paremeters[i].value.toInt();
 				break;
 			case DTI_maskFileName:
-				protocal->GetDTIProtocal().mask =  paremeters[i].value.toStdString();
+				protocol->GetDTIProtocol().mask =  paremeters[i].value.toStdString();
 				break;
 			case DTI_tensor:
-				protocal->GetDTIProtocal().tensorSuffix = paremeters[i].value.toStdString();
+				protocol->GetDTIProtocol().tensorSuffix = paremeters[i].value.toStdString();
 				break;
 			case DTI_fa:
 				values = paremeters[i].value.split(", ");
-				protocal->GetDTIProtocal().faSuffix = values[1].toStdString();
+				protocol->GetDTIProtocol().faSuffix = values[1].toStdString();
 				if(values[0].toLower().toStdString()=="yes")
-					protocal->GetDTIProtocal().bfa = true;
+					protocol->GetDTIProtocol().bfa = true;
 				else
-					protocal->GetDTIProtocal().bfa = false;
+					protocol->GetDTIProtocol().bfa = false;
 				break;
 			case DTI_md:
 				values = paremeters[i].value.split(", ");
-					protocal->GetDTIProtocal().mdSuffix = values[1].toStdString();
+					protocol->GetDTIProtocol().mdSuffix = values[1].toStdString();
 				if(values[0].toLower().toStdString()=="yes")
-					protocal->GetDTIProtocal().bmd = true;
+					protocol->GetDTIProtocol().bmd = true;
 				else
-					protocal->GetDTIProtocal().bmd = false;
+					protocol->GetDTIProtocol().bmd = false;
 				break;
 			case DTI_colorfa:
 				values = paremeters[i].value.split(", ");
-				protocal->GetDTIProtocal().coloredfaSuffix = values[1].toStdString();
+				protocol->GetDTIProtocol().coloredfaSuffix = values[1].toStdString();
 				if(values[0].toLower().toStdString()=="yes")
-					protocal->GetDTIProtocal().bcoloredfa= true;
+					protocol->GetDTIProtocol().bcoloredfa= true;
 				else
-					protocal->GetDTIProtocal().bcoloredfa= false;
+					protocol->GetDTIProtocol().bcoloredfa= false;
 				break;
 			case DTI_idwi:
 				values = paremeters[i].value.split(", ");
-				protocal->GetDTIProtocal().idwiSuffix  = values[1].toStdString();
+				protocol->GetDTIProtocol().idwiSuffix  = values[1].toStdString();
 				if(values[0].toLower().toStdString()=="yes")
-					protocal->GetDTIProtocal().bidwi = true;
+					protocol->GetDTIProtocol().bidwi = true;
 				else
-					protocal->GetDTIProtocal().bidwi = false;
+					protocol->GetDTIProtocol().bidwi = false;
 				break;
 
 			case DTI_frobeniusnorm:
 				values = paremeters[i].value.split(", ");
-				protocal->GetDTIProtocal().frobeniusnormSuffix = values[1].toStdString();
+				protocol->GetDTIProtocol().frobeniusnormSuffix = values[1].toStdString();
 				if(values[0].toLower().toStdString()=="yes")
-					protocal->GetDTIProtocal().bfrobeniusnorm = true;
+					protocol->GetDTIProtocol().bfrobeniusnorm = true;
 				else
-					protocal->GetDTIProtocal().bfrobeniusnorm = false;
+					protocol->GetDTIProtocol().bfrobeniusnorm = false;
 				break;
 
 			case DTI_baseline:
 				values = paremeters[i].value.split(", ");
-				protocal->GetDTIProtocal().baselineSuffix  = values[1].toStdString();
+				protocol->GetDTIProtocol().baselineSuffix  = values[1].toStdString();
 				if(values[0].toLower().toStdString()=="yes")
-					protocal->GetDTIProtocal().bbaseline = true;
+					protocol->GetDTIProtocol().bbaseline = true;
 				else
-					protocal->GetDTIProtocal().bbaseline = false;
+					protocol->GetDTIProtocol().bbaseline = false;
 				break;
 			case DTI_reportFileNameSuffix:
-				protocal->GetDTIProtocal().reportFileNameSuffix =  paremeters[i].value.toStdString();
+				protocol->GetDTIProtocol().reportFileNameSuffix =  paremeters[i].value.toStdString();
 				break;
 			case DTI_reportFileMode:
-				protocal->GetDTIProtocal().reportFileMode =  paremeters[i].value.toInt();
+				protocol->GetDTIProtocol().reportFileMode =  paremeters[i].value.toInt();
 				break;
 
 			case QC_Unknow:

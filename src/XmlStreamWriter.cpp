@@ -39,7 +39,7 @@ bool XmlStreamWriter::writeXml(const QString &fileName)
     QXmlStreamWriter xmlWriter(&file);	
     xmlWriter.setAutoFormatting(true);
     xmlWriter.writeStartDocument();
-    xmlWriter.writeStartElement("ProtocalSettings");
+    xmlWriter.writeStartElement("ProtocolSettings");
     for (int i = 0; i < treeWidget->topLevelItemCount(); ++i)
         writeIndexEntry(&xmlWriter, treeWidget->topLevelItem(i));
     xmlWriter.writeEndDocument();

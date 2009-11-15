@@ -12,7 +12,7 @@
 #include "itkImageFileWriter.h"
 #include "itkDiffusionTensor3DReconstructionImageFilter.h"
 
-#include "Protocal.h"
+#include "Protocol.h"
 #include "QCResult.h"
 
 class CThreadIntensityMotionCheck;
@@ -36,7 +36,7 @@ signals:
 
 
 private slots:
-		//void on_comboBox_Protocal_currentIndexChanged(QString protocalName);
+		//void on_comboBox_Protocol_currentIndexChanged(QString protocolName);
 		void on_treeWidget_itemDoubleClicked(QTreeWidgetItem * item, int column) ;
 		void on_treeWidget_itemChanged(QTreeWidgetItem * item, int column) ;
 		void on_treeWidget_currentItemChanged( QTreeWidgetItem *current,  QTreeWidgetItem *previous);
@@ -53,7 +53,7 @@ private slots:
 		void on_pushButton_DefaultProtocol_clicked( );
 		void on_pushButton_SaveProtocolAs_clicked( );
 
-		void on_toolButton_ProtocalFileOpen_clicked( );
+		void on_toolButton_ProtocolFileOpen_clicked( );
 		void on_pushButton_RunPipeline_clicked( );
 		void on_pushButton_SaveDWIAs_clicked( );
 
@@ -103,7 +103,7 @@ public:
 	bool LoadDwiImage();
 
 	QCResult &GetQCResult(){ return qcResult;};
-	Protocal &GetProtocal(){ return protocal;};
+	Protocol &GetProtocol(){ return protocol;};
 
 	void UpdatePanelDWI( );
 	void UpdateProtocolToTreeWidget( );
@@ -123,7 +123,7 @@ public:
 private:
 
 	bool bProtocol;
-	Protocal protocal;
+	Protocol protocol;
 	QCResult qcResult;
 
 	std::string DwiFileName;

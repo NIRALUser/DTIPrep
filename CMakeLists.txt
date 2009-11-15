@@ -50,7 +50,7 @@ SET( DTIPrep_SRCS
   src/ThreadDicomSeriesRead.cxx  
   src/XmlStreamReader.cpp  
   src/XmlStreamWriter.cpp  
-  src/Protocal.cpp  
+  src/Protocol.cpp  
   src/QCResult.cpp
 # new itk Classes
   src/itkDWICropper.cpp   

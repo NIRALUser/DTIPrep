@@ -10,7 +10,7 @@ CThreadIntensityMotionCheck::CThreadIntensityMotionCheck(QObject *parent)
      : QThread(parent)
 {
 	DWINrrdFilename="";
-	protocal = NULL;;
+	protocol = NULL;;
 	qcResult = NULL;
 
 }
@@ -28,9 +28,9 @@ void CThreadIntensityMotionCheck::run()
 		return;
 	}
 
-	if( !protocal )
+	if( !protocol )
 	{
-		std::cout<<"protocal not set!"<<std::endl;
+		std::cout<<"protocol not set!"<<std::endl;
 		return;
 	}
 
@@ -44,10 +44,10 @@ void CThreadIntensityMotionCheck::run()
 	std::cout<<"Checking Thread begins here "<<std::endl;
 	qcResult->Clear();
 	CIntensityMotionCheck IntensityMotionCheck(DWINrrdFilename);
-	IntensityMotionCheck.SetProtocal( protocal);
+	IntensityMotionCheck.SetProtocol( protocol);
 	IntensityMotionCheck.SetQCResult( qcResult);
 	IntensityMotionCheck.GetImagesInformation();
-	unsigned char  result = IntensityMotionCheck.CheckByProtocal();
+	unsigned char  result = IntensityMotionCheck.CheckByProtocol();
 	
 	unsigned char out= result;		
 	std::cout << "--------------------------------" << std::endl;
@@ -126,9 +126,9 @@ void CThreadIntensityMotionCheck::run()
 		return;
 	}
 
-	if( !protocal )
+	if( !protocol )
 	{
-		std::cout<<"protocal not set!"<<std::endl;
+		std::cout<<"protocol not set!"<<std::endl;
 		return;
 	}
 
@@ -144,16 +144,16 @@ void CThreadIntensityMotionCheck::run()
 	std::cout<<"Checking Thread begins here "<<std::endl;
 	qcResult->Clear();
 	CIntensityMotionCheck IntensityMotionCheck(DWINrrdFilename);
-	IntensityMotionCheck.SetProtocal( protocal);
+	IntensityMotionCheck.SetProtocol( protocol);
 	IntensityMotionCheck.SetQCResult( qcResult);
 	IntensityMotionCheck.GetImagesInformation();
-	//unsigned char  result = IntensityMotionCheck.CheckByProtocal();
+	//unsigned char  result = IntensityMotionCheck.CheckByProtocol();
 	
 	///
 
-	if( !protocal )
+	if( !protocol )
 	{
-		std::cout<<"Protocal NOT set."<<std::endl;
+		std::cout<<"Protocol NOT set."<<std::endl;
 		return;
 	}
 	if( IntensityMotionCheck.GetDwiImage()->GetVectorLength() != IntensityMotionCheck.GetGradientDirectionContainer()->size() )
@@ -173,8 +173,8 @@ void CThreadIntensityMotionCheck::run()
 
 	ReportFileName=DwiFileName.substr(0,DwiFileName.find_last_of('.') );
 
-	if( protocal->GetReportFileNameSuffix().length() > 0)
-		ReportFileName.append( protocal->GetReportFileNameSuffix() );	
+	if( protocol->GetReportFileNameSuffix().length() > 0)
+		ReportFileName.append( protocol->GetReportFileNameSuffix() );	
 	else
 		ReportFileName.append( "_QC_CheckReports.txt");
 
@@ -208,7 +208,7 @@ void CThreadIntensityMotionCheck::run()
 	// D: InterlaceCheck() 
 	// E:GradientCheck()
 
-	//protocal->printProtocals();
+	//protocol->printProtocols();
 
 	typedef unsigned short DwiPixelType;
 	typedef itk::VectorImage<DwiPixelType, 3>	DwiImageType;    

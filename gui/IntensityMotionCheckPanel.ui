@@ -1069,7 +1069,7 @@
             </item>
            </layout>
           </widget>
-          <widget class="QWidget" name="tab_Protocal">
+          <widget class="QWidget" name="tab_Protocol">
            <attribute name="title">
             <string>Protocol</string>
            </attribute>
@@ -1079,10 +1079,10 @@
               <item>
                <layout class="QHBoxLayout" name="horizontalLayout_6">
                 <item>
-                 <widget class="QLineEdit" name="lineEdit_Protocal"/>
+                 <widget class="QLineEdit" name="lineEdit_Protocol"/>
                 </item>
                 <item>
-                 <widget class="QToolButton" name="toolButton_ProtocalFileOpen">
+                 <widget class="QToolButton" name="toolButton_ProtocolFileOpen">
                   <property name="minimumSize">
                    <size>
                     <width>0</width>

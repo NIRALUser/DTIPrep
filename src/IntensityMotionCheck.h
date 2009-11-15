@@ -5,7 +5,7 @@
 #include "itkImageFileWriter.h"
 #include "itkDiffusionTensor3DReconstructionImageFilter.h"
 
-#include "Protocal.h"
+#include "Protocol.h"
 #include "QCResult.h"
 
 #include <iostream>
@@ -76,7 +76,7 @@ public:
 	bool GetGridentDirections();
 	bool GetGridentDirections( DwiImageType::Pointer dwi,double &bValue, GradientDirectionContainerType::Pointer	GradDireContainer);
 
-	unsigned char  CheckByProtocal(); //old
+	unsigned char  CheckByProtocol(); //old
 
 	bool ImageCheck( DwiImageType::Pointer dwi );
 	bool DiffusionCheck( DwiImageType::Pointer dwi );
@@ -107,7 +107,7 @@ public:
 
 	void GenerateCheckOutputImage( std::string filename);
 
-	void SetProtocal(Protocal *p) { protocal = p;};
+	void SetProtocol(Protocol *p) { protocol = p;};
 	void SetQCResult(QCResult *r) { qcResult = r;};
 
 	QCResult *GetQCResult() { return qcResult;};
@@ -132,7 +132,7 @@ public:
 														// C: Too many bad gradient directions found!
 														// 0: valid
 
-	unsigned char  RunPipelineByProtocal();
+	unsigned char  RunPipelineByProtocol();
 
 //signals:
  //   void Progress( int );
@@ -192,7 +192,7 @@ private:
 	double interlaceGradientDeviations;
 
 
-	Protocal *protocal;
+	Protocol *protocol;
 	QCResult *qcResult;
 
 	bool readb0 ;

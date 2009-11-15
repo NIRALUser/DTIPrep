@@ -2,7 +2,7 @@
 
 #include <QIcon>
 #include <QXmlStreamReader>
-#include "Protocal.h"
+#include "Protocol.h"
 
 class QTreeWidget;
 class QString;
@@ -40,7 +40,7 @@ enum ProtocolStringValue
 	DIFFUSION_DWMRI_bValue,
 	DIFFUSION_DWMRI_gradient,
 	DIFFUSION_measurementFrame,
-	DIFFUSION_bUseDiffusionProtocal,
+	DIFFUSION_bUseDiffusionProtocol,
 	DIFFUSION_diffusionReplacedDWIFileNameSuffix,
 	DIFFUSION_reportFileNameSuffix,
 	DIFFUSION_reportFileMode,
@@ -130,7 +130,7 @@ public:
     XmlStreamReader(QTreeWidget *tree);
 	~XmlStreamReader(void);
 
-	enum{TreeWise = 0, ProtocalWise};
+	enum{TreeWise = 0, ProtocolWise};
 
 	enum{IMAGE = 0, DIFFUSION, QC, CORRECTION, DTICOMPUTING,};
 
@@ -139,7 +139,7 @@ public:
 
 	void InitializeProtocolStringValues();
 	
-	void setProtocal( Protocal	*p ){ protocal=p; };
+	void setProtocol( Protocol	*p ){ protocol=p; };
 	bool readFile(const QString &fileName, int mode);
 
 	struct ITEM
@@ -151,15 +151,15 @@ public:
 	std::vector<ITEM> paremeters;
 
 private:
-    void readProtocalSettingsElement(int mode);
+    void readProtocolSettingsElement(int mode);
     void readEntryElement(QTreeWidgetItem *parent);
     void readValueElement(QTreeWidgetItem *parent);
     void readEntryElement();
     void readValueElement();
     void skipUnknownElement();
-	void parseXMLParametersToProtocal();
+	void parseXMLParametersToProtocol();
 
     QTreeWidget *treeWidget;
-	Protocal	*protocal;
+	Protocol	*protocol;
     QXmlStreamReader reader;
 };

@@ -997,26 +997,26 @@ void GMainWindow::UpdateProtocolDiffusionVectorActors()
 	pvtkRenderer_3DView->RemoveActor(actorDirProtocol);
 	actorDirProtocol->GetParts()->RemoveAllItems();
 	
-	for (unsigned int i=0; i< DTIPrepPanel->GetProtocal().GetDiffusionProtocal().gradients.size(); i++)
+	for (unsigned int i=0; i< DTIPrepPanel->GetProtocol().GetDiffusionProtocol().gradients.size(); i++)
 	{
-		if( DTIPrepPanel->GetProtocal().GetDiffusionProtocal().gradients[i][0] == 0.0 &&  
-			DTIPrepPanel->GetProtocal().GetDiffusionProtocal().gradients[i][1] == 0.0 && 
-			DTIPrepPanel->GetProtocal().GetDiffusionProtocal().gradients[i][2] == 0.0    )
+		if( DTIPrepPanel->GetProtocol().GetDiffusionProtocol().gradients[i][0] == 0.0 &&  
+			DTIPrepPanel->GetProtocol().GetDiffusionProtocol().gradients[i][1] == 0.0 && 
+			DTIPrepPanel->GetProtocol().GetDiffusionProtocol().gradients[i][2] == 0.0    )
 			continue;
 
 		vtkLineSource *LineSource		=	vtkLineSource::New();
 		//LineSource->SetPoint1(0.0, 0.0, 0.0);
 		
 		LineSource->SetPoint1( 
-			DTIPrepPanel->GetProtocal().GetDiffusionProtocal().gradients[i][0],
-			DTIPrepPanel->GetProtocal().GetDiffusionProtocal().gradients[i][1],
-			DTIPrepPanel->GetProtocal().GetDiffusionProtocal().gradients[i][2]
+			DTIPrepPanel->GetProtocol().GetDiffusionProtocol().gradients[i][0],
+			DTIPrepPanel->GetProtocol().GetDiffusionProtocol().gradients[i][1],
+			DTIPrepPanel->GetProtocol().GetDiffusionProtocol().gradients[i][2]
 		);
 
 		LineSource->SetPoint2( 
-			-DTIPrepPanel->GetProtocal().GetDiffusionProtocal().gradients[i][0],
-			-DTIPrepPanel->GetProtocal().GetDiffusionProtocal().gradients[i][1],
-			-DTIPrepPanel->GetProtocal().GetDiffusionProtocal().gradients[i][2]
+			-DTIPrepPanel->GetProtocol().GetDiffusionProtocol().gradients[i][0],
+			-DTIPrepPanel->GetProtocol().GetDiffusionProtocol().gradients[i][1],
+			-DTIPrepPanel->GetProtocol().GetDiffusionProtocol().gradients[i][2]
 		);
 
 		vtkTubeFilter *TubeFilter = vtkTubeFilter::New();

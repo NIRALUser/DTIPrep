@@ -18,7 +18,7 @@
 #include "metaCommand.h"
 #include "IntensityMotionCheck.h"
 
-#include "Protocal.h"
+#include "Protocol.h"
 #include "XmlStreamReader.h"
 
 // #include <QStyleFactory>
@@ -89,18 +89,18 @@ int main ( int argc, char ** argv )
 		if(command.GetOptionWasSet("xmlSetting") && xmlFileName.length()>0 )
 		{			
 			CIntensityMotionCheck IntensityMotionCheck( DWIFileName );
-			Protocal protocal;			
+			Protocol protocol;			
 			QCResult qcResult;
 			QString str( xmlFileName.c_str() );
 			XmlStreamReader XmlReader(NULL);
-			XmlReader.setProtocal( &protocal);
-			XmlReader.readFile(str, XmlStreamReader::ProtocalWise);
-			protocal.GetQCOutputDirectory() = resultFolder;
-			protocal.printProtocals();
-			IntensityMotionCheck.SetProtocal( &protocal);
+			XmlReader.setProtocol( &protocol);
+			XmlReader.readFile(str, XmlStreamReader::ProtocolWise);
+			protocol.GetQCOutputDirectory() = resultFolder;
+			protocol.printProtocols();
+			IntensityMotionCheck.SetProtocol( &protocol);
 			IntensityMotionCheck.SetQCResult( &qcResult);
 			IntensityMotionCheck.GetImagesInformation();
-			unsigned char  result = IntensityMotionCheck.CheckByProtocal();
+			unsigned char  result = IntensityMotionCheck.CheckByProtocol();
 			unsigned char out;	
 			out = result;
 			std::cout << "--------------------------------" << std::endl;
