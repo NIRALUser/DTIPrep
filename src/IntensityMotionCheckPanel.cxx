@@ -499,7 +499,7 @@ void IntensityMotionCheckPanel::UpdatePanelDWI()
 	if(imgMetaDictionary.HasKey("NRRD_measurement frame"))
 	{
 		// imaging frame
-		vnl_matrix<double> imgf(3,3);
+		vnl_matrix_fixed<double,3,3> imgf;
 		imgf = DwiImage->GetDirection().GetVnlMatrix();
 
 		//Image frame
@@ -520,7 +520,7 @@ void IntensityMotionCheckPanel::UpdatePanelDWI()
 		itk::ExposeMetaData<std::vector<std::vector<double> > >(imgMetaDictionary,"NRRD_measurement frame",nrrdmf);
 
 		// measurement frame
-		vnl_matrix<double> mf(3,3);
+		vnl_matrix_fixed<double,3,3> mf;
 		for(unsigned int i = 0; i < 3; ++i)
 		{
 			for(unsigned int j = 0; j < 3; ++j)
@@ -643,10 +643,10 @@ void IntensityMotionCheckPanel::DefaultProtocol()
 
 	for(unsigned int i=0; i< GradientDirectionContainer->size();i++)
 	{
-		std::vector<double> vect;
-		vect.push_back(GradientDirectionContainer->ElementAt(i)[0]);
-		vect.push_back(GradientDirectionContainer->ElementAt(i)[1]);
-		vect.push_back(GradientDirectionContainer->ElementAt(i)[2]);
+		vnl_vector_fixed<double,3> vect;
+		vect[0]=(GradientDirectionContainer->ElementAt(i)[0]);
+		vect[1]=(GradientDirectionContainer->ElementAt(i)[1]);
+		vect[2]=(GradientDirectionContainer->ElementAt(i)[2]);
 
 		this->GetProtocol().GetDiffusionProtocol().gradients.push_back(vect);
 	}
@@ -655,7 +655,7 @@ void IntensityMotionCheckPanel::DefaultProtocol()
 	if(imgMetaDictionary.HasKey("NRRD_measurement frame"))
 	{
 		// imaging frame
-		vnl_matrix<double> imgf(3,3);
+		vnl_matrix_fixed<double,3,3> imgf;
 		imgf = DwiImage->GetDirection().GetVnlMatrix();
 
 		//Image frame
@@ -673,7 +673,7 @@ void IntensityMotionCheckPanel::DefaultProtocol()
 		itk::ExposeMetaData<std::vector<std::vector<double> > >(imgMetaDictionary,"NRRD_measurement frame",nrrdmf);
 
 		// measurement frame
-		vnl_matrix<double> mf(3,3);
+		vnl_matrix_fixed<double,3,3> mf;
 		for(unsigned int i = 0; i < 3; ++i)
 		{
 			for(unsigned int j = 0; j < 3; ++j)
@@ -1957,7 +1957,7 @@ void IntensityMotionCheckPanel::GenerateCheckOutputImage( std::string filename)
 	if(imgMetaDictionary.HasKey("NRRD_measurement frame"))
 	{
 		// imaging frame
-		vnl_matrix<double> imgf(3,3);
+		vnl_matrix_fixed<double,3,3> imgf;
 		imgf = DwiImage->GetDirection().GetVnlMatrix();
 
 		//Image frame
@@ -1968,7 +1968,7 @@ void IntensityMotionCheckPanel::GenerateCheckOutputImage( std::string filename)
 		itk::ExposeMetaData<std::vector<std::vector<double> > >(imgMetaDictionary,"NRRD_measurement frame",nrrdmf);
 
 		// measurement frame
-		vnl_matrix<double> mf(3,3);
+		vnl_matrix_fixed<double,3,3> mf;
 		for(unsigned int i = 0; i < 3; ++i)
 		{
 			for(unsigned int j = 0; j < 3; ++j)
@@ -2008,10 +2008,8 @@ void IntensityMotionCheckPanel::GenerateCheckOutputImage( std::string filename)
 	GetGridentDirections();
 
 	for ( itKey=imgMetaKeys.begin(); itKey != imgMetaKeys.end(); itKey ++){
-		int pos;
-
 		itk::ExposeMetaData(imgMetaDictionary, *itKey, metaString);
-		pos = itKey->find("DWMRI_b-value");
+		const int pos = itKey->find("DWMRI_b-value");
 		if (pos == -1){
 			continue;
 		}
@@ -2021,16 +2019,16 @@ void IntensityMotionCheckPanel::GenerateCheckOutputImage( std::string filename)
 	}
 
 
-	int temp=0;
+	int newGradientNumber=0;
 	for(unsigned int i=0;i< GradientDirectionContainer->size();i++ )
 	{
 		if(qcResult.GetIntensityMotionCheckResult()[i].processing == QCResult::GRADIENT_INCLUDE)
 		{
-			header	<< "DWMRI_gradient_" << std::setw(4) << std::setfill('0') << temp << ":=" 
+			header	<< "DWMRI_gradient_" << std::setw(4) << std::setfill('0') << newGradientNumber << ":=" 
 				<< GradientDirectionContainer->ElementAt(i)[0] << "   " 
 				<< GradientDirectionContainer->ElementAt(i)[1] << "   " 
 				<< GradientDirectionContainer->ElementAt(i)[2] << std::endl;
-			++temp;
+			++newGradientNumber;
 		}
 	}
 

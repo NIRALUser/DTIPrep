@@ -213,11 +213,13 @@ void XmlStreamReader::parseXMLParametersToProtocol()
 		//std::cout<<paremeters[i].parameter.toStdString()<<"    "<<paremeters[i].value.toStdString()<<std::endl;
 		if(paremeters[i].parameter.left(24)==QObject::tr("DIFFUSION_DWMRI_gradient"))
 		{
-			std::vector<double> vect;
+			vnl_vector_fixed<double,3> vect;
 			values = paremeters[i].value.split(" ");
+      int i=0;
 			foreach (QString value, values)
 			{
-				vect.push_back( value.toDouble());
+				vect[i]=( value.toDouble());
+        i++;
 			}
 			protocol->GetDiffusionProtocol().gradients.push_back(vect);
 		}

@@ -322,7 +322,7 @@ void Protocol::printDiffusionProtocol()
 
 	for( unsigned int i=0;i< GetDiffusionProtocol().gradients.size();i++ )
 	{
-		std::vector<double> vect;
+		vnl_vector_fixed<double,3> vect;
 		vect  = GetDiffusionProtocol().gradients[i];
 		//std::cout<<"\tDWMRI_gradient_"<<i<<": "<<vect[0]<<" "<<vect[1]<<" "<<vect[2]<<std::endl;
 

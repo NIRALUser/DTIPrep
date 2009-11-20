@@ -3,8 +3,8 @@
 Program:   NeuroLib
 Module:    $file: itkDWIQCInterlaceChecker.cpp $
 Language:  C++
-Date:      $Date: 2009-11-03 23:21:28 $
-Version:   $Revision: 1.7 $
+Date:      $Date: 2009-11-20 16:39:22 $
+Version:   $Revision: 1.8 $
 Author:    Zhexing Liu (liuzhexing@gmail.com)
 
 Copyright (c) NIRAL, UNC. All rights reserved.
@@ -153,9 +153,9 @@ namespace itk
 		{
 #if 0
 			// measurement frame
-			vnl_matrix<double> mf(3,3);
+			vnl_matrix_fixed<double,3,3> mf;
 			// imaging frame
-			vnl_matrix<double> imgf(3,3);
+			vnl_matrix_fixed<double,3,3> imgf;
 			imgf = inputPtr->GetDirection().GetVnlMatrix();
 #endif
 
@@ -564,7 +564,7 @@ namespace itk
 				correlationVector[i][0] = this->ResultsContainer[i].Correlation;
 			}
 // 
-     		vnl_matrix<double> coefficients(3 , 1);
+     		vnl_matrix_fixed<double,3,1> coefficients;
 // 			coefficients = vnl_matrix_inverse<double>(bMatrix.transpose()*bMatrix)*bMatrix.transpose()*correlationVector;
 //  		std::cout<<"coefficients1: \n"<<coefficients<<std::endl;
 
@@ -1276,9 +1276,9 @@ namespace itk
 			{
 #if 0
 				// measurement frame
-				vnl_matrix<double> mf(3,3);
+				vnl_matrix_fixed<double,3,3> mf;
 				// imaging frame
-				vnl_matrix<double> imgf(3,3);
+				vnl_matrix_fixed<double,3,3> imgf;
 				imgf = inputPtr->GetDirection().GetVnlMatrix();
 #endif
 

@@ -8,6 +8,7 @@
 #include "itkExtractImageFilter.h"
 #include "RigidRegistration.h"
 #include "itkImageRegionIterator.h"
+#include "vnl/vnl_inverse.h"
 
 #include <iomanip>
 #include <iostream>
@@ -421,11 +422,15 @@ void CIntensityMotionCheck::GenerateCheckOutputImage( std::string filename)
 		std::ofstream header;
 		header.open(aryOut, std::ios_base::app);
 
+    //HACK:  TODO:  Need to verify that imageMeasurementFrame is not shadowed in sections below, and that
+    //              the same information is only extracted one time.
+		// measurement frame
+	  vnl_matrix_fixed<double,3,3> imageMeasurementFrame;
 		//  measurement frame 
 		if(imgMetaDictionary.HasKey("NRRD_measurement frame"))
 		{
 			// imaging frame
-			vnl_matrix<double> imgf(3,3);
+			vnl_matrix_fixed<double,3,3> imgf;
 			imgf = DwiImage->GetDirection().GetVnlMatrix();
 
 			std::vector<std::vector<double> > nrrdmf;
@@ -436,28 +441,26 @@ void CIntensityMotionCheck::GenerateCheckOutputImage( std::string filename)
 			//std::cout << "Image frame: " << std::endl;
 			//std::cout << imgf << std::endl;
 
-			// measurement frame
-			vnl_matrix<double> mf(3,3);
 			for(unsigned int i = 0; i < 3; ++i)
 			{
 				for(unsigned int j = 0; j < 3; ++j)
 				{
-					mf(i,j) = nrrdmf[j][i];
+					imageMeasurementFrame(i,j) = nrrdmf[j][i];
 					nrrdmf[j][i] = imgf(i,j);
 				}
 			}
 
 			// Meausurement frame
 			header	<< "measurement frame: (" 
-				<< mf(0,0) << "," 
-				<< mf(1,0) << "," 
-				<< mf(2,0) << ") ("
-				<< mf(0,1) << "," 
-				<< mf(1,1) << "," 
-				<< mf(2,1) << ") ("
-				<< mf(0,2) << "," 
-				<< mf(1,2) << "," 
-				<< mf(2,2) << ")"
+				<< imageMeasurementFrame(0,0) << "," 
+				<< imageMeasurementFrame(1,0) << "," 
+				<< imageMeasurementFrame(2,0) << ") ("
+				<< imageMeasurementFrame(0,1) << "," 
+				<< imageMeasurementFrame(1,1) << "," 
+				<< imageMeasurementFrame(2,1) << ") ("
+				<< imageMeasurementFrame(0,2) << "," 
+				<< imageMeasurementFrame(1,2) << "," 
+				<< imageMeasurementFrame(2,2) << ")"
 				<< std::endl;
 		}
 
@@ -663,7 +666,7 @@ bool CIntensityMotionCheck::ImageCheck( DwiImageType::Pointer dwi )
 			returnValue = false;
 		}
 		// space direction
-		vnl_matrix<double> imgf(3,3);
+		vnl_matrix_fixed<double,3,3> imgf;
 		imgf = dwi->GetDirection().GetVnlMatrix();
 
 		if( vcl_abs( protocol->GetImageProtocol().spacedirection[0][0] - imgf(0,0)	) < 0.000001 && 
@@ -933,6 +936,74 @@ bool CIntensityMotionCheck::DiffusionCheck( DwiImageType::Pointer dwi)
 			returnValte = false;
 		}
 
+    //HJJ -- measurement frame is not being properly used here.
+	  // measurement frame
+		vnl_matrix_fixed<double,3,3> imageMeasurementFrame;
+		//  measurement frame 
+		if( DwiImageTemp->GetMetaDataDictionary().HasKey("NRRD_measurement frame"))
+		{
+			// imaging frame
+			vnl_matrix_fixed<double,3,3> imgf;
+			imgf = DwiImageTemp->GetDirection().GetVnlMatrix();
+
+			std::vector<std::vector<double> > nrrdmf;
+			itk::ExposeMetaData<std::vector<std::vector<double> > >( dwi->GetMetaDataDictionary(),"NRRD_measurement frame",nrrdmf);
+
+			//Image frame
+			for(unsigned int i = 0; i < 3; ++i)
+			{
+				for(unsigned int j = 0; j < 3; ++j)
+				{
+					imageMeasurementFrame(i,j) = nrrdmf[j][i];
+					nrrdmf[j][i] = imgf(i,j);
+				}
+			}
+
+			// Meausurement frame
+			if( 
+				protocol->GetDiffusionProtocol().measurementFrame[0][0] == imageMeasurementFrame(0,0) &&
+				protocol->GetDiffusionProtocol().measurementFrame[0][1] == imageMeasurementFrame(0,1) &&
+				protocol->GetDiffusionProtocol().measurementFrame[0][2] == imageMeasurementFrame(0,2) &&
+				protocol->GetDiffusionProtocol().measurementFrame[1][0] == imageMeasurementFrame(1,0) &&
+				protocol->GetDiffusionProtocol().measurementFrame[1][1] == imageMeasurementFrame(1,1) &&
+				protocol->GetDiffusionProtocol().measurementFrame[1][2] == imageMeasurementFrame(1,2) &&
+				protocol->GetDiffusionProtocol().measurementFrame[2][0] == imageMeasurementFrame(2,0) &&
+				protocol->GetDiffusionProtocol().measurementFrame[2][1] == imageMeasurementFrame(2,1) &&
+				protocol->GetDiffusionProtocol().measurementFrame[2][2] == imageMeasurementFrame(2,2)		)
+			{
+				qcResult->GetDiffusionInformationCheckResult().measurementFrame = true;
+				if(bReport)
+          {
+					outfile<<"Diffusion measurementFrame Check: \tOK"<<std::endl;
+          }
+				std::cout<<"Diffusion measurementFrame Check: \tOK"<<std::endl;
+			}
+			else
+			{
+				returnValte = false;
+				qcResult->GetDiffusionInformationCheckResult().measurementFrame = false;
+				if(bReport)
+          {
+					outfile<<"Diffusion measurementFrame Check: \tFAILED"<<std::endl;
+          }
+				std::cout<<"Diffusion measurementFrame Check: \tFAILED"<<std::endl;
+
+				if( protocol->GetDiffusionProtocol().bUseDiffusionProtocol )
+				{
+					nrrdmf[0][0] = protocol->GetDiffusionProtocol().measurementFrame[0][0];
+					nrrdmf[0][1] = protocol->GetDiffusionProtocol().measurementFrame[0][1];
+					nrrdmf[0][2] = protocol->GetDiffusionProtocol().measurementFrame[0][2] ;
+					nrrdmf[1][0] = protocol->GetDiffusionProtocol().measurementFrame[1][0] ;
+					nrrdmf[1][1] = protocol->GetDiffusionProtocol().measurementFrame[1][1] ;
+					nrrdmf[1][2] = protocol->GetDiffusionProtocol().measurementFrame[1][2] ;
+					nrrdmf[2][0] = protocol->GetDiffusionProtocol().measurementFrame[2][0] ;
+					nrrdmf[2][1] = protocol->GetDiffusionProtocol().measurementFrame[2][1] ;
+					nrrdmf[2][2] = protocol->GetDiffusionProtocol().measurementFrame[2][2] ;	
+					itk::EncapsulateMetaData<std::vector<std::vector<double> > >( dwi->GetMetaDataDictionary(),"NRRD_measurement frame",nrrdmf);
+				}
+			}
+		}
+
 		bool result = true;
 		if( GradContainer->size() != protocol->GetDiffusionProtocol().gradients.size())
 		{
@@ -954,25 +1025,38 @@ bool CIntensityMotionCheck::DiffusionCheck( DwiImageType::Pointer dwi)
 			for(unsigned int i=0; i< GradContainer->size();i++)
 			{
       //Allow for small differences in colinearity to be considered the same direction.
-      const float gradientTolerancePercentOfSmallestAngle=0.05;
-      const float gradientToleranceForSameness=(180.0/static_cast<float>(protocol->GetDiffusionProtocol().gradients.size()))*gradientTolerancePercentOfSmallestAngle;
-      vnl_vector_fixed<double,3> gradientFromProtocol;
-      gradientFromProtocol[0]=protocol->GetDiffusionProtocol().gradients[i][0];
-      gradientFromProtocol[1]=protocol->GetDiffusionProtocol().gradients[i][1];
-      gradientFromProtocol[2]=protocol->GetDiffusionProtocol().gradients[i][2];
-      gradientFromProtocol.normalize(); //Sometimes this is not normalized due to numerical precision problems.
-      vnl_vector_fixed<double,3> gradientFromImage=GradContainer->ElementAt(i);
-      gradientFromImage.normalize();
+      //const float gradientTolerancePercentOfSmallestAngle=0.2;
+      const float gradientToleranceForSameness=1; // Allow 1 degree difference for sameness//(180.0/static_cast<float>(protocol->GetDiffusionProtocol().gradients.size()))*gradientTolerancePercentOfSmallestAngle;
+
+      const vnl_matrix_fixed<double,3,3> mfInverseFromProtocol=vnl_inverse(protocol->GetDiffusionProtocol().measurementFrame);
+
+      vnl_vector_fixed<double,3> tempGradientFromProtocol;
+      tempGradientFromProtocol[0]=protocol->GetDiffusionProtocol().gradients[i][0];
+      tempGradientFromProtocol[1]=protocol->GetDiffusionProtocol().gradients[i][1];
+      tempGradientFromProtocol[2]=protocol->GetDiffusionProtocol().gradients[i][2];
+      tempGradientFromProtocol.normalize(); //Sometimes this is not normalized due to numerical precision problems.
+      const vnl_vector_fixed<double,3> gradientFromProtocol=mfInverseFromProtocol*tempGradientFromProtocol;
+
+      const vnl_matrix_fixed<double,3,3> mfInverseFromImage=vnl_inverse(imageMeasurementFrame);
+      vnl_vector_fixed<double,3> tempGradientFromImage=GradContainer->ElementAt(i);
+      tempGradientFromImage.normalize();
+      const vnl_vector_fixed<double,3> gradientFromImage=mfInverseFromImage*tempGradientFromImage;
       double gradientDot=dot_product(gradientFromProtocol,gradientFromImage);
+
+
       gradientDot=(gradientDot> 1)? 1:gradientDot;//Avoid numerical precision problems
       gradientDot=(gradientDot<-1)?-1:gradientDot;//Avoid numerical precision problems
-      std::cout << "HACK:  gradientDot " << gradientDot << std::endl;
       const double gradientAngle=vcl_abs( vcl_acos( gradientDot)*180.0*vnl_math::one_over_pi);
-      const double  gradientMinAngle=vcl_min(gradientAngle,vcl_fabs(180-gradientAngle));//Now see if the gradients are colinear in opposite directions;
-      //if( gradientMinAngle > gradientToleranceForSameness )
+      const double  gradientMinAngle=vcl_min(gradientAngle,vcl_abs(180.0-gradientAngle));//Now see if the gradients are colinear in opposite directions;
+#define USE_GRADIENT_COLINEARITY_AS_TEST 1
+#if USE_GRADIENT_COLINEARITY_AS_TEST
+      const double gradMagnitude=gradientFromImage.magnitude();
+      if( (gradientMinAngle < gradientToleranceForSameness ) || ( gradMagnitude < 1e-4 ) )
+#else
       if( vcl_abs(protocol->GetDiffusionProtocol().gradients[i][0] - GradContainer->ElementAt(i)[0]) < 0.00001 &&
         vcl_abs(protocol->GetDiffusionProtocol().gradients[i][1] - GradContainer->ElementAt(i)[1]) < 0.00001 &&
         vcl_abs(protocol->GetDiffusionProtocol().gradients[i][2] - GradContainer->ElementAt(i)[2]) < 0.00001 )			
+#endif
 				{
 					result = result && true;
 				}
@@ -987,7 +1071,18 @@ bool CIntensityMotionCheck::DiffusionCheck( DwiImageType::Pointer dwi)
 							<< std::setw(9)<<std::setiosflags(std::ios::fixed)<< std::setprecision(6)<<std::setiosflags(std::ios::right)<< protocol->GetDiffusionProtocol().gradients[i][0]<< " "
 							<< std::setw(9)<<std::setiosflags(std::ios::fixed)<< std::setprecision(6)<<std::setiosflags(std::ios::right)<< protocol->GetDiffusionProtocol().gradients[i][1]<< " "
 							<< std::setw(9)<<std::setiosflags(std::ios::fixed)<< std::setprecision(6)<<std::setiosflags(std::ios::right)<< protocol->GetDiffusionProtocol().gradients[i][2]<< " ]"
-              << "  Colinearity angle: " <<  gradientMinAngle << " > "  << gradientToleranceForSameness <<std::endl;
+              << "  Colinearity angle (degrees): " <<  gradientMinAngle << " < "  << gradientToleranceForSameness << " : "
+                                                      << gradMagnitude << " : " << ( gradientMinAngle < gradientToleranceForSameness ) << std::endl;
+
+            std::cout <<"DWMRI_gradient_" << std::setw(4) << std::setfill('0') << i<< "\tmismatch with DWI = [ " 
+							<< std::setw(9)<<std::setiosflags(std::ios::fixed)<< std::setprecision(6)<<std::setiosflags(std::ios::right)<< GradContainer->ElementAt(i)[0]<< " "
+							<< std::setw(9)<<std::setiosflags(std::ios::fixed)<< std::setprecision(6)<<std::setiosflags(std::ios::right)<< GradContainer->ElementAt(i)[1]<< " "
+							<< std::setw(9)<<std::setiosflags(std::ios::fixed)<< std::setprecision(6)<<std::setiosflags(std::ios::right)<< GradContainer->ElementAt(i)[2]<< " ] \tprotocol = [ "
+							<< std::setw(9)<<std::setiosflags(std::ios::fixed)<< std::setprecision(6)<<std::setiosflags(std::ios::right)<< protocol->GetDiffusionProtocol().gradients[i][0]<< " "
+							<< std::setw(9)<<std::setiosflags(std::ios::fixed)<< std::setprecision(6)<<std::setiosflags(std::ios::right)<< protocol->GetDiffusionProtocol().gradients[i][1]<< " "
+							<< std::setw(9)<<std::setiosflags(std::ios::fixed)<< std::setprecision(6)<<std::setiosflags(std::ios::right)<< protocol->GetDiffusionProtocol().gradients[i][2]<< " ]"
+              << "  Colinearity angle (degrees): " <<  gradientMinAngle << " < "  << gradientToleranceForSameness << " : "
+                                                      << gradMagnitude << " : " << ( gradientMinAngle < gradientToleranceForSameness ) << std::endl;
 					}
 
 					if( protocol->GetDiffusionProtocol().bUseDiffusionProtocol )
@@ -1036,72 +1131,6 @@ bool CIntensityMotionCheck::DiffusionCheck( DwiImageType::Pointer dwi)
 
 		returnValte = returnValte && result;
 
-		//  measurement frame 
-		if( DwiImageTemp->GetMetaDataDictionary().HasKey("NRRD_measurement frame"))
-		{
-			// imaging frame
-			vnl_matrix<double> imgf(3,3);
-			imgf = DwiImageTemp->GetDirection().GetVnlMatrix();
-
-			std::vector<std::vector<double> > nrrdmf;
-			itk::ExposeMetaData<std::vector<std::vector<double> > >( dwi->GetMetaDataDictionary(),"NRRD_measurement frame",nrrdmf);
-
-			// measurement frame
-			vnl_matrix<double> mf(3,3);
-			//Image frame
-			for(unsigned int i = 0; i < 3; ++i)
-			{
-				for(unsigned int j = 0; j < 3; ++j)
-				{
-					mf(i,j) = nrrdmf[j][i];
-					nrrdmf[j][i] = imgf(i,j);
-				}
-			}
-
-			// Meausurement frame
-			if( 
-				protocol->GetDiffusionProtocol().measurementFrame[0][0] == mf(0,0) &&
-				protocol->GetDiffusionProtocol().measurementFrame[0][1] == mf(0,1) &&
-				protocol->GetDiffusionProtocol().measurementFrame[0][2] == mf(0,2) &&
-				protocol->GetDiffusionProtocol().measurementFrame[1][0] == mf(1,0) &&
-				protocol->GetDiffusionProtocol().measurementFrame[1][1] == mf(1,1) &&
-				protocol->GetDiffusionProtocol().measurementFrame[1][2] == mf(1,2) &&
-				protocol->GetDiffusionProtocol().measurementFrame[2][0] == mf(2,0) &&
-				protocol->GetDiffusionProtocol().measurementFrame[2][1] == mf(2,1) &&
-				protocol->GetDiffusionProtocol().measurementFrame[2][2] == mf(2,2)		)
-			{
-				qcResult->GetDiffusionInformationCheckResult().measurementFrame = true;
-				if(bReport)
-          {
-					outfile<<"Diffusion measurementFrame Check: \tOK"<<std::endl;
-          }
-				std::cout<<"Diffusion measurementFrame Check: \tOK"<<std::endl;
-			}
-			else
-			{
-				returnValte = false;
-				qcResult->GetDiffusionInformationCheckResult().measurementFrame = false;
-				if(bReport)
-          {
-					outfile<<"Diffusion measurementFrame Check: \tFAILED"<<std::endl;
-          }
-				std::cout<<"Diffusion measurementFrame Check: \tFAILED"<<std::endl;
-
-				if( protocol->GetDiffusionProtocol().bUseDiffusionProtocol )
-				{
-					nrrdmf[0][0] = protocol->GetDiffusionProtocol().measurementFrame[0][0];
-					nrrdmf[0][1] = protocol->GetDiffusionProtocol().measurementFrame[0][1];
-					nrrdmf[0][2] = protocol->GetDiffusionProtocol().measurementFrame[0][2] ;
-					nrrdmf[1][0] = protocol->GetDiffusionProtocol().measurementFrame[1][0] ;
-					nrrdmf[1][1] = protocol->GetDiffusionProtocol().measurementFrame[1][1] ;
-					nrrdmf[1][2] = protocol->GetDiffusionProtocol().measurementFrame[1][2] ;
-					nrrdmf[2][0] = protocol->GetDiffusionProtocol().measurementFrame[2][0] ;
-					nrrdmf[2][1] = protocol->GetDiffusionProtocol().measurementFrame[2][1] ;
-					nrrdmf[2][2] = protocol->GetDiffusionProtocol().measurementFrame[2][2] ;	
-					itk::EncapsulateMetaData<std::vector<std::vector<double> > >( dwi->GetMetaDataDictionary(),"NRRD_measurement frame",nrrdmf);
-				}
-			}
-		}
 
 		if( !returnValte )
 		{
@@ -3017,7 +3046,7 @@ bool CIntensityMotionCheck::ImageCheck( )
 			returnValue = false;
 		}
 		// space direction
-		vnl_matrix<double> imgf(3,3);
+		vnl_matrix_fixed<double,3,3> imgf;
 		imgf = dwi->GetDirection().GetVnlMatrix();
 
 		if( protocol->GetImageProtocol().spacedirection[0][0] ==	imgf(0,0)	&& 
@@ -3290,39 +3319,40 @@ bool CIntensityMotionCheck::DiffusionCheck( )
 
 		returnValte = returnValte && result;
 
+    //HJJ -- Measurement frame does not seem to be properly used here
+	  // measurement frame
+		const vnl_matrix_fixed<double,3,3> imageMeasurementFrame = GetMeasurementFrame(DwiImageTemp);
 		//  measurement frame 
 		if( DwiImageTemp->GetMetaDataDictionary().HasKey("NRRD_measurement frame"))
 		{
 			// imaging frame
-			vnl_matrix<double> imgf(3,3);
+			vnl_matrix_fixed<double,3,3> imgf;
 			imgf = DwiImageTemp->GetDirection().GetVnlMatrix();
 
 			std::vector<std::vector<double> > nrrdmf;
 			itk::ExposeMetaData<std::vector<std::vector<double> > >( dwi->GetMetaDataDictionary(),"NRRD_measurement frame",nrrdmf);
 
-			// measurement frame
-			vnl_matrix<double> mf(3,3);
 			//Image frame
 			for(unsigned int i = 0; i < 3; ++i)
 			{
 				for(unsigned int j = 0; j < 3; ++j)
 				{
-					mf(i,j) = nrrdmf[j][i];
+					imageMeasurementFrame(i,j) = nrrdmf[j][i];
 					nrrdmf[j][i] = imgf(i,j);
 				}
 			}
 
 			// Meausurement frame
 			if( 
-				protocol->GetDiffusionProtocol().measurementFrame[0][0] == mf(0,0) &&
-				protocol->GetDiffusionProtocol().measurementFrame[0][1] == mf(0,1) &&
-				protocol->GetDiffusionProtocol().measurementFrame[0][2] == mf(0,2) &&
-				protocol->GetDiffusionProtocol().measurementFrame[1][0] == mf(1,0) &&
-				protocol->GetDiffusionProtocol().measurementFrame[1][1] == mf(1,1) &&
-				protocol->GetDiffusionProtocol().measurementFrame[1][2] == mf(1,2) &&
-				protocol->GetDiffusionProtocol().measurementFrame[2][0] == mf(2,0) &&
-				protocol->GetDiffusionProtocol().measurementFrame[2][1] == mf(2,1) &&
-				protocol->GetDiffusionProtocol().measurementFrame[2][2] == mf(2,2)		)
+				protocol->GetDiffusionProtocol().measurementFrame[0][0] == imageMeasurementFrame(0,0) &&
+				protocol->GetDiffusionProtocol().measurementFrame[0][1] == imageMeasurementFrame(0,1) &&
+				protocol->GetDiffusionProtocol().measurementFrame[0][2] == imageMeasurementFrame(0,2) &&
+				protocol->GetDiffusionProtocol().measurementFrame[1][0] == imageMeasurementFrame(1,0) &&
+				protocol->GetDiffusionProtocol().measurementFrame[1][1] == imageMeasurementFrame(1,1) &&
+				protocol->GetDiffusionProtocol().measurementFrame[1][2] == imageMeasurementFrame(1,2) &&
+				protocol->GetDiffusionProtocol().measurementFrame[2][0] == imageMeasurementFrame(2,0) &&
+				protocol->GetDiffusionProtocol().measurementFrame[2][1] == imageMeasurementFrame(2,1) &&
+				protocol->GetDiffusionProtocol().measurementFrame[2][2] == imageMeasurementFrame(2,2)		)
 			{
 				qcResult->GetDiffusionInformationCheckResult().measurementFrame = true;
 				if(bReport)

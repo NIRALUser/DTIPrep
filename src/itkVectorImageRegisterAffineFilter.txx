@@ -3,8 +3,8 @@
  Program:   GTRACT (Guided Tensor Restore Anatomical Connectivity Tractography)
  Module:    $RCSfile: itkVectorImageRegisterAffineFilter.txx,v $
  Language:  C++
- Date:      $Date: 2009-09-08 15:39:11 $
- Version:   $Revision: 1.2 $
+ Date:      $Date: 2009-11-20 16:39:22 $
+ Version:   $Revision: 1.3 $
 
    Copyright (c) University of Iowa Department of Radiology. All rights reserved.
    See GTRACT-Copyright.txt or http://mri.radiology.uiowa.edu/copyright/GTRACT-Copyright.txt 
@@ -289,7 +289,7 @@ itk::Matrix<double, 3, 3> VectorImageRegisterAffineFilter<TInputImage, TOutputIm
     -1E-6);
   vnl_diag_matrix<vnl_svd<double>::singval_t> Winverse( decomposition.Winverse() );
 
-  vnl_matrix<double> W(3, 3);
+  vnl_matrix_fixed<double,3,3> W;
   W.fill( double(0) );
 
   for ( unsigned int i = 0; i < 3; ++i )

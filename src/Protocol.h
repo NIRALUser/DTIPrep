@@ -27,8 +27,9 @@ struct DiffusionProtocol
 {
 	bool bCheck;
 	double bValue;
-	std::vector< std::vector<double> > gradients;
-	double measurementFrame[3][3];
+	//std::vector< std::vector<double> > gradients;
+	std::vector< vnl_vector_fixed<double,3> > gradients;
+	vnl_matrix_fixed<double,3,3> measurementFrame;
 
 	bool bUseDiffusionProtocol;
 

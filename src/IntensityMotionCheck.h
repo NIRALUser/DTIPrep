@@ -107,7 +107,7 @@ public:
 
 	void GenerateCheckOutputImage( std::string filename);
 
-	void SetProtocol(Protocol *p) { protocol = p;};
+	void SetProtocol(Protocol *p) { this->protocol = p;};
 	void SetQCResult(QCResult *r) { qcResult = r;};
 
 	QCResult *GetQCResult() { return qcResult;};
