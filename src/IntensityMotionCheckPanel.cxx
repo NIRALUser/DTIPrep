@@ -27,7 +27,7 @@
 #include <string>
 #include <math.h>
 
-IntensityMotionCheckPanel::IntensityMotionCheckPanel(QMainWindow *parent):QDockWidget(parent)
+IntensityMotionCheckPanel::IntensityMotionCheckPanel(QMainWindow *parentNew):QDockWidget(parentNew)
 {
 	setupUi(this);
 	verticalLayout->setContentsMargins(0,0,0,0);
@@ -215,9 +215,9 @@ void IntensityMotionCheckPanel::on_pushButton_RunPipeline_clicked( )
 }
 
 
-void IntensityMotionCheckPanel::UpdateProgressBar(int pos )
+void IntensityMotionCheckPanel::UpdateProgressBar(int posNew )
 {
-	 progressBar->setValue(pos);
+	 progressBar->setValue(posNew);
 }
 void IntensityMotionCheckPanel::SetFileName(QString nrrd )
 {
@@ -858,8 +858,8 @@ bool IntensityMotionCheckPanel::GetSliceProtocolParameters(
 		componentExtractor->Update();
 
 		GradientImageType::RegionType inputRegion =componentExtractor->GetOutput()->GetLargestPossibleRegion();
-		GradientImageType::SizeType size = inputRegion.GetSize();
-		size[2] = 0;
+		GradientImageType::SizeType localSize = inputRegion.GetSize();
+		localSize[2] = 0;
 
 		GradientImageType::IndexType start1 = inputRegion.GetIndex();
 		GradientImageType::IndexType start2 = inputRegion.GetIndex();
@@ -876,12 +876,12 @@ bool IntensityMotionCheckPanel::GetSliceProtocolParameters(
 			start2[2] = i;
 
 			GradientImageType::RegionType desiredRegion1;
-			desiredRegion1.SetSize( size );
+			desiredRegion1.SetSize( localSize );
 			desiredRegion1.SetIndex( start1 );
 			filter1->SetExtractionRegion( desiredRegion1 );
 
 			GradientImageType::RegionType desiredRegion2;
-			desiredRegion2.SetSize( size );
+			desiredRegion2.SetSize( localSize );
 			desiredRegion2.SetIndex( start2 );
 			filter2->SetExtractionRegion( desiredRegion2 );
 
@@ -1040,11 +1040,11 @@ bool IntensityMotionCheckPanel::GetInterlaceProtocolParameters(
 	componentExtractor->Update();
 
 	GradientImageType::RegionType region;
-	GradientImageType::SizeType size;
-	size[0]= componentExtractor->GetOutput()->GetLargestPossibleRegion().GetSize()[0];
-	size[1]= componentExtractor->GetOutput()->GetLargestPossibleRegion().GetSize()[1];
-	size[2]= componentExtractor->GetOutput()->GetLargestPossibleRegion().GetSize()[2]/2;
-	region.SetSize( size );
+	GradientImageType::SizeType sizeLocal;
+	sizeLocal[0]= componentExtractor->GetOutput()->GetLargestPossibleRegion().GetSize()[0];
+	sizeLocal[1]= componentExtractor->GetOutput()->GetLargestPossibleRegion().GetSize()[1];
+	sizeLocal[2]= componentExtractor->GetOutput()->GetLargestPossibleRegion().GetSize()[2]/2;
+	region.SetSize( sizeLocal );
 
 	GradientImageType::SpacingType spacing;
 	spacing = componentExtractor->GetOutput()->GetSpacing();
@@ -1077,14 +1077,14 @@ bool IntensityMotionCheckPanel::GetInterlaceProtocolParameters(
 		unsigned long count=0;
 		while (!iterateGradient.IsAtEnd())
 		{
-			if(count<size[0]*size[1]*size[2]*2)
+			if(count<sizeLocal[0]*sizeLocal[1]*sizeLocal[2]*2)
 			{
-				if( (count/(size[0]*size[1]))%2 == 0)	
+				if( (count/(sizeLocal[0]*sizeLocal[1]))%2 == 0)	
 				{
 					iterateEven.Set(iterateGradient.Get());
 					++iterateEven;
 				}
-				if( (count/(size[0]*size[1]))%2 == 1)
+				if( (count/(sizeLocal[0]*sizeLocal[1]))%2 == 1)
 				{
 					iterateOdd.Set(iterateGradient.Get());
 					++iterateOdd;
@@ -1705,12 +1705,12 @@ void IntensityMotionCheckPanel::ResultUpdate()
 		else
 			origin->setText(1, tr("Failed"));
 
-		QTreeWidgetItem *size = new QTreeWidgetItem(itemImageInformation);
-		size->setText(0, tr("size"));
+		QTreeWidgetItem *sizeLocal = new QTreeWidgetItem(itemImageInformation);
+		sizeLocal->setText(0, tr("size"));
 		if(qcResult.GetImageInformationCheckResult().size)
-			size->setText(1, tr("Pass"));
+			sizeLocal->setText(1, tr("Pass"));
 		else
-			size->setText(1, tr("Failed"));
+			sizeLocal->setText(1, tr("Failed"));
 
 		QTreeWidgetItem *space = new QTreeWidgetItem(itemImageInformation);
 		space->setText(0, tr("space"));
@@ -1992,31 +1992,31 @@ void IntensityMotionCheckPanel::GenerateCheckOutputImage( std::string filename)
 			<< std::endl;
 	}
 
-	for ( itKey=imgMetaKeys.begin(); itKey != imgMetaKeys.end(); itKey ++){
-		int pos;
+	for ( itKey=imgMetaKeys.begin(); itKey != imgMetaKeys.end(); itKey ++)
+    {
 
-		itk::ExposeMetaData(imgMetaDictionary, *itKey, metaString);
-		pos = itKey->find("modality");
-		if (pos == -1){
-			continue;
-		}
-
-		//std::cout  << metaString << std::endl;    
-		header << "modality:=" << metaString << std::endl;
-	}
+    itk::ExposeMetaData(imgMetaDictionary, *itKey, metaString);
+    const int posFind = itKey->find("modality");
+    if (posFind == -1){
+      continue;
+    }
+    //std::cout  << metaString << std::endl;    
+    header << "modality:=" << metaString << std::endl;
+    }
 
 	GetGridentDirections();
 
-	for ( itKey=imgMetaKeys.begin(); itKey != imgMetaKeys.end(); itKey ++){
-		itk::ExposeMetaData(imgMetaDictionary, *itKey, metaString);
-		const int pos = itKey->find("DWMRI_b-value");
-		if (pos == -1){
-			continue;
-		}
+	for ( itKey=imgMetaKeys.begin(); itKey != imgMetaKeys.end(); itKey ++)
+    {
+    itk::ExposeMetaData(imgMetaDictionary, *itKey, metaString);
+    const int posFind = itKey->find("DWMRI_b-value");
+    if (posFind == -1){
+      continue;
+    }
 
-		//std::cout  << metaString << std::endl;    
-		header << "DWMRI_b-value:=" << metaString << std::endl;
-	}
+    //std::cout  << metaString << std::endl;    
+    header << "DWMRI_b-value:=" << metaString << std::endl;
+    }
 
 
 	int newGradientNumber=0;

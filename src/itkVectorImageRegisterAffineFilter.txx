@@ -3,8 +3,8 @@
  Program:   GTRACT (Guided Tensor Restore Anatomical Connectivity Tractography)
  Module:    $RCSfile: itkVectorImageRegisterAffineFilter.txx,v $
  Language:  C++
- Date:      $Date: 2009-11-20 16:39:22 $
- Version:   $Revision: 1.3 $
+ Date:      $Date: 2009-11-23 14:14:23 $
+ Version:   $Revision: 1.4 $
 
    Copyright (c) University of Iowa Department of Radiology. All rights reserved.
    See GTRACT-Copyright.txt or http://mri.radiology.uiowa.edu/copyright/GTRACT-Copyright.txt 
@@ -229,10 +229,12 @@ void VectorImageRegisterAffineFilter<TInputImage, TOutputImage>
     
     
     /* Insert the Registered Vector Index Image into the Output Vector Image */
-    typedef ImageRegionConstIterator<FixedImageType>  ConstIteratorType; 
+    typedef ImageRegionConstIterator<CastImageType>  ConstIteratorType; 
     typedef ImageRegionIterator<OutputImageType>      IteratorType;
     
-    ConstIteratorType it( castImageFilter->GetOutput(), castImageFilter->GetOutput()->GetRequestedRegion() );
+    ConstIteratorType it(
+      castImageFilter->GetOutput(),
+      castImageFilter->GetOutput()->GetRequestedRegion() );
     IteratorType ot( m_Output, m_Output->GetRequestedRegion() );
     OutputImagePixelType vectorImagePixel;
     

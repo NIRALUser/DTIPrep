@@ -86,40 +86,40 @@ public:
 	this->baseLines.push_back( baseline );
     }
     
-    inline void SetFixedImage( ImageType::Pointer fixedImage ){
-	this->fixedImage = fixedImage;
+    inline void SetFixedImage( ImageType::Pointer fixedImageNew ){
+	this->fixedImage = fixedImageNew;
     }
 
-    inline void SetMovingImage( ImageType::Pointer movingImage ){
-	this->movingImages.push_back( movingImage );
+    inline void SetMovingImage( ImageType::Pointer movingImageNew ){
+	this->movingImages.push_back( movingImageNew );
     }
     
-    inline void SetTranslationScale( PrecisionType translationScale ){
-	this->translationScale = translationScale;
+    inline void SetTranslationScale( PrecisionType translationScaleNew ){
+	this->translationScale = translationScaleNew;
     }
 
-    inline void SetStepLength( PrecisionType stepLength ){
-	this->stepLength = stepLength;
+    inline void SetStepLength( PrecisionType stepLengthNew ){
+	this->stepLength = stepLengthNew;
     }
 
-    inline void SetFactor( PrecisionType factor ){
-	this->factor = factor;
+    inline void SetFactor( PrecisionType factorNew ){
+	this->factor = factorNew;
     }
     
-    inline void SetNumberOfBins( unsigned int numberOfBins ){
-	this->numberOfBins = numberOfBins;
+    inline void SetNumberOfBins( const unsigned int numberOfBinsNew ){
+	this->numberOfBins = numberOfBinsNew;
     }
 
-    inline void SetSamples( unsigned int samples ){
-	this->samples = samples;
+    inline void SetSamples( const unsigned int samplesNew ){
+	this->samples = samplesNew;
     }
 
-    inline void SetMaxNumberOfIterations( unsigned int maxNumberOfIterations ){
-	this->maxNumberOfIterations = maxNumberOfIterations;
+    inline void SetMaxNumberOfIterations( const unsigned int maxNumberOfIterationsNew ){
+	this->maxNumberOfIterations = maxNumberOfIterationsNew;
     }
     
-    inline void SetPrefix( const TextType & outputImageFileName  ){
-	this->outputImageFileName = outputImageFileName;
+    inline void SetPrefix( const TextType & outputImageFileNameNew  ){
+	this->outputImageFileName = outputImageFileNameNew;
     }
 
 private:

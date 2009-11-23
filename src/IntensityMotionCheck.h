@@ -41,32 +41,21 @@ public:
 	typedef unsigned short DwiPixelType;
 	typedef itk::Image<DwiPixelType, 2>			SliceImageType;
 	typedef itk::Image<DwiPixelType, 3>			GradientImageType;
-	typedef itk::VectorImage<DwiPixelType, 3>	DwiImageType;    
+	typedef itk::VectorImage<DwiPixelType, 3>	DwiImageType;
 	typedef itk::ImageFileReader<DwiImageType>	DwiReaderType;
 	typedef itk::ImageFileWriter<DwiImageType>	DwiWriterType;
 
 	typedef itk::DiffusionTensor3DReconstructionImageFilter< DwiPixelType, DwiPixelType, double >		TensorReconstructionImageFilterType;
 	typedef	TensorReconstructionImageFilterType::GradientDirectionContainerType							GradientDirectionContainerType;
 
-	typedef itk::DWICropper<DwiImageType>							CropperType;
-	typedef itk::DWIQCSliceChecker<DwiImageType>					SliceCheckerType;
+	typedef itk::DWICropper<DwiImageType>						       	CropperType;
+	typedef itk::DWIQCSliceChecker<DwiImageType>				  	SliceCheckerType;
 	typedef itk::DWIQCInterlaceChecker<DwiImageType>				InterlaceCheckerType;
 	typedef itk::DWIBaselineAverager<DwiImageType>					BaselineAveragerType;
 	typedef itk::DWIQCGradientChecker<DwiImageType>					GradientCheckerType;
 
 	typedef itk::DWIEddyCurrentHeadMotionCorrector<DwiImageType>	EddyMotionCorrectorType; //eddy-motion Utah
 	typedef itk::VectorImageRegisterAffineFilter<DwiImageType, DwiImageType >	EddyMotionCorrectorTypeIowa;  //eddy-motion Iowa
-
-	DwiWriterType::Pointer		DwiWriter;
-	itk::NrrdImageIO::Pointer	NrrdImageIO;
-
-	CropperType::Pointer				Cropper	;
-	SliceCheckerType::Pointer			SliceChecker;
-	InterlaceCheckerType::Pointer		InterlaceChecker;
-	BaselineAveragerType::Pointer		BaselineAverager;
-	GradientCheckerType::Pointer		GradientChecker;
-	EddyMotionCorrectorType::Pointer	EddyMotionCorrector; //eddy-motion Utah
-	EddyMotionCorrectorTypeIowa::Pointer	EddyMotionCorrectorIowa; //eddy-motion Iowa
 
 	void SetFileName(std::string filename) {DwiFileName = filename; };
 	
@@ -139,6 +128,19 @@ public:
 
 
 public:
+#if 0
+  DwiWriterType::Pointer          DwiWriter;
+  itk::NrrdImageIO::Pointer       NrrdImageIO;
+
+  CropperType::Pointer                  Cropper  ;
+  SliceCheckerType::Pointer             SliceChecker;
+  InterlaceCheckerType::Pointer         InterlaceChecker;
+  BaselineAveragerType::Pointer         BaselineAverager;
+  GradientCheckerType::Pointer          GradientChecker;
+  EddyMotionCorrectorType::Pointer      EddyMotionCorrector; //eddy-motion Utah
+  EddyMotionCorrectorTypeIowa::Pointer  EddyMotionCorrectorIowa; //eddy-motion Iowa
+#endif
+
 	inline DwiImageType::Pointer GetDwiImage(){ return DwiImage;};
 	inline DwiImageType::Pointer GetDwiImageTemp(){ return DwiImageTemp;};
 	inline GradientDirectionContainerType::Pointer GetGradientDirectionContainer(){ return GradientDirectionContainer;};
@@ -146,6 +148,8 @@ public:
 	inline std::string GetDwiFileName(){ return DwiFileName;};
 	bool LoadDwiImage();
 private:
+  vnl_matrix_fixed<double,3,3> GetMeasurementFrame(DwiImageType::Pointer DwiImageExtractMF);
+
 	bool bDwiLoaded;
 
 	int baselineNumber;
@@ -155,7 +159,7 @@ private:
 	int gradientNumber;
 
 	int baselineLeftNumber;
-	int bValueLeftNumber;
+int bValueLeftNumber;
 	int gradientDirLeftNumber;
 	int gradientLeftNumber;
 	std::vector<int> repetitionLeftNumber;
@@ -164,7 +168,7 @@ private:
 	bool bGetGridentDirections;
 
 	std::string DwiFileName;
-	std::string ReportFileName;
+	std::string GlobalReportFileName;
 
 	DwiImageType::Pointer DwiImageTemp;    
 

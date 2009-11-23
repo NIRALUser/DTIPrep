@@ -41,8 +41,8 @@ case ${ABI} in
     CXXFLAGS="-Wall  -g ${FLAGS_FROM_QT_BUILD}"
     ;;
   "FAST")
-    CFLAGS="-DNDEBUG -O3 -msse -mmmx -msse2 -msse3 ${FLAGS_FROM_QT_BUILD}"
-    CXXFLAGS="-DNDEBUG -O3 -msse -mmmx -msse2 -msse3 ${FLAGS_FROM_QT_BUILD}"
+    CFLAGS="-DNDEBUG -O3 -msse -mmmx -msse2 -msse3  -Wall -W -Wshadow -Wcast-qual -Wwrite-strings -Wstrict-prototypes ${FLAGS_FROM_QT_BUILD}"
+    CXXFLAGS="-DNDEBUG -O3 -msse -mmmx -msse2 -msse3  -Wall -W -Wshadow -Wcast-qual -Wwrite-strings ${FLAGS_FROM_QT_BUILD}"
     ;;
   *)
     echo "INVALID ABI GIVEN"
@@ -83,7 +83,7 @@ if [ 1 == 1 ];then  ## Temporary bypass of building ITK
     mkdir -p ${ITK_SOURCE}
     pushd ${COMPILE_DIR}
     cvs -d :pserver:anoncvs:@www.vtk.org:/cvsroot/Insight login
-    cvs -d :pserver:anoncvs@www.vtk.org:/cvsroot/Insight checkout -D 20091022 Insight
+    cvs -d :pserver:anoncvs@www.vtk.org:/cvsroot/Insight checkout -D 2009-10-15 Insight
     popd
   fi
   mkdir -p ${ITK_BUILD}
@@ -109,7 +109,7 @@ if [ 1 == 1 ];then  ## Temporary bypass of building ITK
   popd
 fi  ## Temporary bypass of building ITK
 
-export QTDIR=/opt/qt-4.5.2
+export QTDIR=/opt/qt-4.6-rc1
 export PATH=${QTDIR}/bin:${PATH}
   #################################################################################
   #Get and build VTK-CVS
@@ -119,7 +119,7 @@ export PATH=${QTDIR}/bin:${PATH}
     mkdir -p ${COMPILE_DIR}
     pushd ${COMPILE_DIR}
     cvs -d :pserver:anonymous:vtk@public.kitware.com:/cvsroot/VTK login
-    cvs -d :pserver:anonymous@public.kitware.com:/cvsroot/VTK checkout -D 2009-07-05 VTK
+    cvs -d :pserver:anonymous@public.kitware.com:/cvsroot/VTK checkout -D 2009-10-15 VTK
     popd
   fi
   mkdir -p ${VTK_BUILD}

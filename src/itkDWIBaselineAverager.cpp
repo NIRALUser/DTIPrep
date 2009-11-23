@@ -3,8 +3,8 @@
 Program:   NeuroLib
 Module:    $file: itkDWIBaselineAverger.cpp $
 Language:  C++
-Date:      $Date: 2009-11-20 16:39:22 $
-Version:   $Revision: 1.9 $
+Date:      $Date: 2009-11-23 14:14:23 $
+Version:   $Revision: 1.10 $
 Author:    Zhexing Liu (liuzhexing@gmail.com)
 
 Copyright (c) NIRAL, UNC. All rights reserved.
@@ -186,40 +186,45 @@ namespace itk
 
 		if( getBaselineNumber() > 1 ) 
 		{
-			// baseline dir vector
-			std::ostringstream ossKey;
-			ossKey << "DWMRI_gradient_0000";
-			std::ostringstream ossMetaString;
-			ossMetaString << std::setw(9)<<std::setiosflags(std::ios::fixed)<< std::setprecision(6)<<std::setiosflags(std::ios::right)
-				<< 0.0 << "    " 
-				<< std::setw(9)<<std::setiosflags(std::ios::fixed)<< std::setprecision(6)<<std::setiosflags(std::ios::right)
-				<< 0.0 << "    " 
-				<< std::setw(9)<<std::setiosflags(std::ios::fixed)<< std::setprecision(6)<<std::setiosflags(std::ios::right)
-				<< 0.0 ;
+      {
+      // baseline dir vector
+      std::ostringstream ossKey;
+      ossKey << "DWMRI_gradient_0000";
+      std::ostringstream ossMetaString;
+      ossMetaString << std::setw(9)<<std::setiosflags(std::ios::fixed)<< std::setprecision(6)<<std::setiosflags(std::ios::right)
+        << 0.0 << "    " 
+        << std::setw(9)<<std::setiosflags(std::ios::fixed)<< std::setprecision(6)<<std::setiosflags(std::ios::right)
+        << 0.0 << "    " 
+        << std::setw(9)<<std::setiosflags(std::ios::fixed)<< std::setprecision(6)<<std::setiosflags(std::ios::right)
+        << 0.0 ;
 
-			itk::EncapsulateMetaData<std::string>( outputMetaDictionary, ossKey.str(), ossMetaString.str());
+      itk::EncapsulateMetaData<std::string>( outputMetaDictionary, ossKey.str(), ossMetaString.str());
+      }
 
 			// gradient dir vectors
 			int temp=1;
 			for(unsigned int i=0;i< this->m_GradientDirectionContainer -> Size();i++ )
 			{
-				if( 0.0 ==	this->m_GradientDirectionContainer->ElementAt(i)[0] &&
-					0.0 ==	this->m_GradientDirectionContainer->ElementAt(i)[1] &&
-					0.0 ==	this->m_GradientDirectionContainer->ElementAt(i)[2]    )
+      //Skip B0 gradients
+				if( 1e-7 >=	this->m_GradientDirectionContainer->ElementAt(i)[0] &&
+					  1e-7 >=	this->m_GradientDirectionContainer->ElementAt(i)[1] &&
+					  1e-7 >=	this->m_GradientDirectionContainer->ElementAt(i)[2]    )
+          {
 					continue;
+          }
 
-				std::ostringstream ossKey;
-				ossKey << "DWMRI_gradient_" << std::setw(4) << std::setfill('0') << temp ;
+				std::ostringstream ossLocalGradientKey;
+				ossLocalGradientKey << "DWMRI_gradient_" << std::setw(4) << std::setfill('0') << temp ;
 
-				std::ostringstream ossMetaString;
-				ossMetaString << std::setw(9)<<std::setiosflags(std::ios::fixed)<< std::setprecision(6)<<std::setiosflags(std::ios::right)
+				std::ostringstream ossLocalGradientMetaString;
+				ossLocalGradientMetaString << std::setw(9)<<std::setiosflags(std::ios::fixed)<< std::setprecision(6)<<std::setiosflags(std::ios::right)
 					<< this->m_GradientDirectionContainer->ElementAt(i)[0] << "    " 
 					<< std::setw(9)<<std::setiosflags(std::ios::fixed)<< std::setprecision(6)<<std::setiosflags(std::ios::right)
 					<< this->m_GradientDirectionContainer->ElementAt(i)[1] << "    " 
 					<< std::setw(9)<<std::setiosflags(std::ios::fixed)<< std::setprecision(6)<<std::setiosflags(std::ios::right)
 					<< this->m_GradientDirectionContainer->ElementAt(i)[2] ;
 
-				itk::EncapsulateMetaData<std::string>( outputMetaDictionary, ossKey.str(), ossMetaString.str());
+				itk::EncapsulateMetaData<std::string>( outputMetaDictionary, ossLocalGradientKey.str(), ossLocalGradientMetaString.str());
 				++temp;
 			}
 		}
@@ -376,20 +381,20 @@ namespace itk
 					componentExtractor->SetIndex( i );
 					componentExtractor->Update();
 
-					struRigidRegResult result;
 
 					// register and replace the DW gradient volumes with the idwi
 // 					std::cout<<"Registering DW gradient #: "<<i<<" to current idwi ... ";
-					rigidRegistration( this->idwi,componentExtractor->GetOutput()  , 25, 0.1, 1, result, 1 /* DW gradient */);
+					struRigidRegResult resultLocal;
+					rigidRegistration( this->idwi,componentExtractor->GetOutput()  , 25, 0.1, 1, resultLocal, 1 /* DW gradient */);
 					std::cout<<" done "<<std::endl;
 
-					Results.at(gradientNum) = result;
+					Results.at(gradientNum) = resultLocal;
 					gradientNum++;
 
 // 					std::cout<<"DW gradient #: "<<i<<std::endl;
-// 					std::cout<<"Angles: "<<result.AngleX<<" "<<result.AngleY<<" "<<result.AngleZ<<std::endl;
-// 					std::cout<<"Trans : "<<result.TranslationX<<" "<<result.TranslationY<<" "<<result.TranslationZ<<std::endl;
-// 					std::cout<<"MI    : "<<result.MutualInformation<<std::endl;		
+// 					std::cout<<"Angles: "<<resultLocal.AngleX<<" "<<resultLocal.AngleY<<" "<<resultLocal.AngleZ<<std::endl;
+// 					std::cout<<"Trans : "<<resultLocal.TranslationX<<" "<<resultLocal.TranslationY<<" "<<resultLocal.TranslationZ<<std::endl;
+// 					std::cout<<"MI    : "<<resultLocal.MutualInformation<<std::endl;		
 				}
 			}
 
@@ -474,11 +479,11 @@ namespace itk
 				componentExtractor->SetIndex( i );
 				componentExtractor->Update();
 
-				struRigidRegResult result;
+				struRigidRegResult resultLocal;
 
 				// register and replace the DW gradient volumes with the idwi
 // 				std::cout<<"Registering baseline #: "<<i<<" to idwi ... ";
-				rigidRegistration( this->idwi, componentExtractor->GetOutput(), 25, 0.1, 1, result, 0 /* baseline */);
+				rigidRegistration( this->idwi, componentExtractor->GetOutput(), 25, 0.1, 1, resultLocal, 0 /* baseline */);
 // 				std::cout<<" done "<<std::endl;
 			}
 		}
@@ -591,28 +596,28 @@ namespace itk
 
 			for( unsigned int i = 0; i<baselineContainer.size(); i++ )
 			{
-				struRigidRegResult result;
+				struRigidRegResult resultLocal;
 				
 				// register and replace the baseline volumes with the transformed ones
 // 				std::cout<<"Registering baseline #: "<<i<<" to current averaged baseline ... ";
-				rigidRegistration( this->averagedBaseline, baselineContainer[i], 25, 0.1, 1, result, 0 /* baseline */);
+				rigidRegistration( this->averagedBaseline, baselineContainer[i], 25, 0.1, 1, resultLocal, 0 /* baseline */);
 // 				std::cout<<" done "<<std::endl;
 				
 				oldMISum += Results.at(i).MutualInformation;
-				newMISum += result.MutualInformation;
+				newMISum += resultLocal.MutualInformation;
 
 				oldTransSum  += (fabs(Results.at(i).TranslationX) + fabs(Results.at(i).TranslationY) + fabs(Results.at(i).TranslationZ))/3.0;
-				newTransSum  += (fabs(result.TranslationX) + fabs(result.TranslationY) + fabs(result.TranslationZ))/3.0;
+				newTransSum  += (fabs(resultLocal.TranslationX) + fabs(resultLocal.TranslationY) + fabs(resultLocal.TranslationZ))/3.0;
 
 				oldRotateSum += (fabs(Results.at(i).AngleX) + fabs(Results.at(i).AngleY) + fabs(Results.at(i).AngleZ))/3.0;
-				newRotateSum += (fabs(result.AngleX) + fabs(result.AngleY) + fabs(result.AngleZ))/3.0;
+				newRotateSum += (fabs(resultLocal.AngleX) + fabs(resultLocal.AngleY) + fabs(resultLocal.AngleZ))/3.0;
 
-				Results.at(i) = result;
+				Results.at(i) = resultLocal;
 
 // 				std::cout<<"baseline #: "<<i<<std::endl;
-// 				std::cout<<"Angles: "<<result.AngleX<<" "<<result.AngleY<<" "<<result.AngleZ<<std::endl;
-// 				std::cout<<"Trans : "<<result.TranslationX<<" "<<result.TranslationY<<" "<<result.TranslationZ<<std::endl;
-//  			std::cout<<"MI    : "<<result.MutualInformation<<std::endl;		
+// 				std::cout<<"Angles: "<<resultLocal.AngleX<<" "<<resultLocal.AngleY<<" "<<resultLocal.AngleZ<<std::endl;
+// 				std::cout<<"Trans : "<<resultLocal.TranslationX<<" "<<resultLocal.TranslationY<<" "<<resultLocal.TranslationZ<<std::endl;
+//  			std::cout<<"MI    : "<<resultLocal.MutualInformation<<std::endl;		
 			}
 
 

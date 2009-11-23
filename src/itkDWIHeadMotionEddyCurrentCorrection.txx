@@ -69,8 +69,9 @@ inline VectorImage<float, 3>::Pointer  DWIHeadMotionEddyCurrentCorrection::Regis
 
 
 inline bool DWIHeadMotionEddyCurrentCorrection::RegistrationSingleDWI(
-    ImageType::Pointer fixedImage, ImageType::Pointer movingImage,
-    const GradientType& gradDir, unsigned int no ){
+    ImageType::Pointer fixedImageLocal, ImageType::Pointer movingImageLocal,
+    const GradientType& gradDir, unsigned int no )
+{
 
 
   MetricType::Pointer         metric        = MetricType::New();
@@ -98,7 +99,7 @@ inline bool DWIHeadMotionEddyCurrentCorrection::RegistrationSingleDWI(
 
   RescaleFilterType::Pointer    fixedRescaleFilter   
                                                   = RescaleFilterType::New();
-  fixedRescaleFilter->SetInput(  fixedImage  );
+  fixedRescaleFilter->SetInput(  fixedImageLocal  );
   fixedRescaleFilter->SetOutputMinimum(  0 );
   fixedRescaleFilter->SetOutputMaximum( numberOfBins - 1 );  
   fixedRescaleFilter->Update();
@@ -106,7 +107,7 @@ inline bool DWIHeadMotionEddyCurrentCorrection::RegistrationSingleDWI(
 
   RescaleFilterType::Pointer    movingRescaleFilter  
                                                   = RescaleFilterType::New();
-  movingRescaleFilter->SetInput(  movingImage );
+  movingRescaleFilter->SetInput(  movingImageLocal );
   movingRescaleFilter->SetOutputMinimum(  0 );
   movingRescaleFilter->SetOutputMaximum( numberOfBins - 1 );  
   movingRescaleFilter->Update();
@@ -301,7 +302,7 @@ inline bool DWIHeadMotionEddyCurrentCorrection::RegistrationSingleDWI(
                                 ImageType >   CastFilterType;
 
   CastFilterType::Pointer caster = CastFilterType::New();
-  caster->SetInput( movingImage );
+  caster->SetInput( movingImageLocal );
 
   typedef itk::ResampleImageFilter< 
                             ImageType, 
@@ -318,9 +319,9 @@ inline bool DWIHeadMotionEddyCurrentCorrection::RegistrationSingleDWI(
   resampler->SetTransform( finalTransform );
   resampler->SetInput( caster->GetOutput() );
 
-  resampler->SetSize(    fixedImage->GetLargestPossibleRegion().GetSize() );
-  resampler->SetOutputOrigin(  fixedImage->GetOrigin() );
-  resampler->SetOutputSpacing( fixedImage->GetSpacing() );
+  resampler->SetSize(    fixedImageLocal->GetLargestPossibleRegion().GetSize() );
+  resampler->SetOutputOrigin(  fixedImageLocal->GetOrigin() );
+  resampler->SetOutputSpacing( fixedImageLocal->GetSpacing() );
   resampler->SetDefaultPixelValue( 0 );
   resampler->SetInterpolator( linearInterpolator );
 

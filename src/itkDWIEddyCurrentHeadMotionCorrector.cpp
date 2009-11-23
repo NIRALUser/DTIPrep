@@ -3,8 +3,8 @@
 Program:   NeuroLib
 Module:    $file: itkDWIEddyCurrentHeadMotionCorrector.cpp $
 Language:  C++
-Date:      $Date: 2009-11-20 16:39:22 $
-Version:   $Revision: 1.6 $
+Date:      $Date: 2009-11-23 14:14:23 $
+Version:   $Revision: 1.7 $
 Author:    Zhexing Liu (liuzhexing@gmail.com)
 
 Copyright (c) NIRAL, UNC. All rights reserved.
@@ -185,17 +185,17 @@ namespace itk
 		}
 
 		// gradient vectors
-		std::ostringstream ossKey;
-		std::ostringstream ossMetaString;
+	//	std::ostringstream ossKey;
+	//	std::ostringstream ossMetaString;
 
 		itk::EncapsulateMetaData<std::string>( outputMetaDictionary, "DWMRI_gradient_0000", " 0.000000     0.000000     0.000000");
 
 		for(unsigned int i=0;i< this->re.GetGradients().size(); i++ )
 		{
-			std::ostringstream ossKey;
+			std::ostringstream ossKeyLocal;
 			std::ostringstream ossMetaString;
 
-			ossKey << "DWMRI_gradient_" << std::setw(4) << std::setfill('0') << i+1 ;
+			ossKeyLocal << "DWMRI_gradient_" << std::setw(4) << std::setfill('0') << i+1 ;
 			ossMetaString << std::setw(9)<<std::setiosflags(std::ios::fixed)<< std::setprecision(6)<<std::setiosflags(std::ios::right)
 				<< this->re.GetGradients().at(i)[0]  << "    " 
 				<< std::setw(9)<<std::setiosflags(std::ios::fixed)<< std::setprecision(6)<<std::setiosflags(std::ios::right)
@@ -203,8 +203,8 @@ namespace itk
 				<< std::setw(9)<<std::setiosflags(std::ios::fixed)<< std::setprecision(6)<<std::setiosflags(std::ios::right)
 				<< this->re.GetGradients().at(i)[2]  ;
 
-			//std::cout<<ossKey.str()<<ossMetaString.str()<<std::endl;
-			itk::EncapsulateMetaData<std::string>( outputMetaDictionary, ossKey.str(), ossMetaString.str());
+			//std::cout<<ossKeyLocal.str()<<ossMetaString.str()<<std::endl;
+			itk::EncapsulateMetaData<std::string>( outputMetaDictionary, ossKeyLocal.str(), ossMetaString.str());
 		}
 		outputPtr->SetMetaDataDictionary( outputMetaDictionary );
 	}
@@ -237,7 +237,6 @@ namespace itk
 		std::vector<std::string>::iterator itKey = imgMetaKeys.begin();
 		std::string metaString;
 
-		int k = 0;
 		vnl_vector_fixed<double, 3> vect3d;
 		std::vector< vnl_vector_fixed<double, 3> > DiffusionVectors;
 
@@ -250,35 +249,36 @@ namespace itk
 		std::vector<unsigned int> baselineIndicator( 0 );
 		std::vector<unsigned int> diffusionIndicator( 0 );
 
-		for ( ; itKey != imgMetaKeys.end(); itKey ++){
-			int pos;
-			double x,y,z;
+      {
+      int k = 0;
+      for ( ; itKey != imgMetaKeys.end(); itKey ++)
+        {
+        ExposeMetaData(imgMetaDictionary, *itKey, metaString);
+        const int pos = itKey->find("DWMRI_gradient");
+        if (pos == -1){
+          continue;
+        }
+        std::cout  << metaString << std::endl;     
 
-			ExposeMetaData(imgMetaDictionary, *itKey, metaString);
-			pos = itKey->find("DWMRI_gradient");
-			if (pos == -1){
-				continue;
-			}
+        double x,y,z;
+        std::sscanf(metaString.c_str(), "%lf %lf %lf\n", &x, &y, &z);
+        vect3d[0] = x; vect3d[1] = y; vect3d[2] = z;
+        if (x == 0 && y == 0 && z == 0)  // indicating baseline image
+          {
+          nBaseline ++;
+          baselineIndicator.push_back( k );
+          k++;
+          continue;
+          }
 
-			std::cout  << metaString << std::endl;     
+        DiffusionVectors.push_back(vect3d);
+        m_FeedinGradientDirectionContainer->push_back(vect3d);
+        m_OutputGradientDirectionContainer->push_back(vect3d);
 
-			std::sscanf(metaString.c_str(), "%lf %lf %lf\n", &x, &y, &z);
-			vect3d[0] = x; vect3d[1] = y; vect3d[2] = z;
-			if (x == 0 && y == 0 && z == 0)  // indicating baseline image
-			{
-				nBaseline ++;
-				baselineIndicator.push_back( k );
-				k++;
-				continue;
-			}
-
-			DiffusionVectors.push_back(vect3d);
-			m_FeedinGradientDirectionContainer->push_back(vect3d);
-			m_OutputGradientDirectionContainer->push_back(vect3d);
-
-			diffusionIndicator.push_back(k);
-			k++;
-		}
+        diffusionIndicator.push_back(k);
+        k++;
+        }
+      }
 		unsigned int nMeasurement = DiffusionVectors.size();
 		std::cout << "gradient size:" << nMeasurement 
 			<< "  baseline size: " << nBaseline << std::endl;
@@ -286,16 +286,18 @@ namespace itk
 		//averaging baseline images
 		VectorImageType::IndexType nrrdIdx;
 
-		ScalarImageType::Pointer b0 = ScalarImageType::New();
-		b0->CopyInformation( inputPtr );
-		b0->SetRegions(b0->GetLargestPossibleRegion());
-		b0->Allocate();
-		itk::ImageRegionIteratorWithIndex<ScalarImageType> itB0(b0, b0->GetLargestPossibleRegion());
+		ScalarImageType::Pointer b0Image = ScalarImageType::New();
+		b0Image->CopyInformation( inputPtr );
+		b0Image->SetRegions(b0Image->GetLargestPossibleRegion());
+		b0Image->Allocate();
+		itk::ImageRegionIteratorWithIndex<ScalarImageType> itB0(b0Image, b0Image->GetLargestPossibleRegion());
 
 		for (itB0.GoToBegin(); !itB0.IsAtEnd(); ++itB0)
 		{
-			for (unsigned int k = 0; k < dim; k++)
-				nrrdIdx[k] = itB0.GetIndex()[k];
+			for (unsigned int index = 0; index < dim; index++)
+        {
+				nrrdIdx[index] = itB0.GetIndex()[index];
+        }
 
 			double b = 0;
 			if(nBaseline == 0) // if baseline# == 0, using the first gradient as reference for registration
@@ -304,19 +306,20 @@ namespace itk
 			}
 			else
 			{
-				for (int k = 0; k < nBaseline; k++)
-					b += static_cast<double> ( inputPtr->GetPixel(nrrdIdx)[baselineIndicator[k]] );
-
+				for (int kLocal = 0; kLocal < nBaseline; kLocal++)
+          {
+					b += static_cast<double> ( inputPtr->GetPixel(nrrdIdx)[baselineIndicator[kLocal]] );
+          }
 				b /= static_cast<double>(nBaseline);
 			}
 			itB0.Set( static_cast<float> (b) );
 		}
 
 		this->re.SetGradients( DiffusionVectors );
-		this->re.SetFixedImage( b0 );
+		this->re.SetFixedImage( b0Image );
 
 		//set baseline images
-		for (int k = 0; k < nBaseline; k++){
+		for (int kLocal = 0; kLocal < nBaseline; kLocal++){
 			ScalarImageType::Pointer baseline = ScalarImageType::New();
 			baseline->CopyInformation( inputPtr );
 			baseline->SetRegions(baseline->GetLargestPossibleRegion());
@@ -330,7 +333,7 @@ namespace itk
 					nrrdIdx[j] = itBaseLine.GetIndex()[j];
 
 				double b 
-					= static_cast<double> (inputPtr->GetPixel(nrrdIdx)[baselineIndicator[k]]);
+					= static_cast<double> (inputPtr->GetPixel(nrrdIdx)[baselineIndicator[kLocal]]);
 				itBaseLine.Set( static_cast<float> (b) );
 			}
 
@@ -338,24 +341,25 @@ namespace itk
 		}
 
 		//separate moving images
-		for (unsigned int k = 0; k < nMeasurement; k++){
-			ScalarImageType::Pointer dwi = ScalarImageType::New();
-			dwi->CopyInformation( inputPtr );
-			dwi->SetRegions( dwi->GetLargestPossibleRegion());
-			dwi->Allocate();
-			itk::ImageRegionIteratorWithIndex<ScalarImageType> itDWI(dwi, 
-				dwi->GetLargestPossibleRegion());
+		for (unsigned int kLocal = 0; kLocal < nMeasurement; kLocal++)
+      {
+      ScalarImageType::Pointer dwi = ScalarImageType::New();
+      dwi->CopyInformation( inputPtr );
+      dwi->SetRegions( dwi->GetLargestPossibleRegion());
+      dwi->Allocate();
+      itk::ImageRegionIteratorWithIndex<ScalarImageType> itDWI(dwi, 
+        dwi->GetLargestPossibleRegion());
 
-			for (itDWI.GoToBegin(); !itDWI.IsAtEnd(); ++itDWI) {
-				for (unsigned int j = 0; j < dim; j++)
-					nrrdIdx[j] = itDWI.GetIndex()[j];
+      for (itDWI.GoToBegin(); !itDWI.IsAtEnd(); ++itDWI) {
+        for (unsigned int j = 0; j < dim; j++)
+          nrrdIdx[j] = itDWI.GetIndex()[j];
 
-				double b = static_cast<double> ( inputPtr->GetPixel(nrrdIdx)[diffusionIndicator[k]] );
-				itDWI.Set( static_cast<float> (b) );
-			}
+        double b = static_cast<double> ( inputPtr->GetPixel(nrrdIdx)[diffusionIndicator[kLocal]] );
+        itDWI.Set( static_cast<float> (b) );
+      }
 
-			this->re.SetMovingImage( dwi );
-		}
+      this->re.SetMovingImage( dwi );
+      }
 
 		this->re.SetNumberOfBins( this->GetNumberOfBins() );
 		this->re.SetSamples( this->GetSamples() );
@@ -491,30 +495,30 @@ namespace itk
 				}
 				if(newDir)
 				{
-					std::vector< double > dir;
-					dir.push_back( this->re.GetGradients().at(i)[0] );
-					dir.push_back( this->re.GetGradients().at(i)[1] );
-					dir.push_back( this->re.GetGradients().at(i)[2] );
+					std::vector< double > dirLocal;
+					dirLocal.push_back( this->re.GetGradients().at(i)[0] );
+					dirLocal.push_back( this->re.GetGradients().at(i)[1] );
+					dirLocal.push_back( this->re.GetGradients().at(i)[2] );
 
-					struDiffusionDir diffusionDir;
-					diffusionDir.gradientDir = dir;
-					diffusionDir.repetitionNumber=1;
+					struDiffusionDir diffusionDirLocal;
+					diffusionDirLocal.gradientDir = dirLocal;
+					diffusionDirLocal.repetitionNumber=1;
 
-					DiffusionDirHistOutput.push_back(diffusionDir);
+					DiffusionDirHistOutput.push_back(diffusionDirLocal);
 				}
 			}
 			else
 			{
-				std::vector< double > dir;
-				dir.push_back( this->re.GetGradients().at(i)[0] );
-				dir.push_back( this->re.GetGradients().at(i)[1] );
-				dir.push_back( this->re.GetGradients().at(i)[2] );
+				std::vector< double > dirLocal;
+				dirLocal.push_back( this->re.GetGradients().at(i)[0] );
+				dirLocal.push_back( this->re.GetGradients().at(i)[1] );
+				dirLocal.push_back( this->re.GetGradients().at(i)[2] );
 
-				struDiffusionDir diffusionDir;
-				diffusionDir.gradientDir = dir;
-				diffusionDir.repetitionNumber=1;
+				struDiffusionDir diffusionDirLocal;
+				diffusionDirLocal.gradientDir = dirLocal;
+				diffusionDirLocal.repetitionNumber=1;
 
-				DiffusionDirHistOutput.push_back(diffusionDir);
+				DiffusionDirHistOutput.push_back(diffusionDirLocal);
 			}
 		}
 

@@ -16,16 +16,50 @@
 #include <string>
 #include <math.h>
 
+vnl_matrix_fixed<double,3,3>
+CIntensityMotionCheck::GetMeasurementFrame(DwiImageType::Pointer DwiImageExtractMF)
+{
+  vnl_matrix_fixed<double,3,3> imageMeasurementFrame;
+  for(unsigned int i=0;i<3;i++) //Default is an indentity matrix;
+    {
+    imageMeasurementFrame[i][i]=1;
+    }
+
+  //  measurement frame
+  if( DwiImageExtractMF->GetMetaDataDictionary().HasKey("NRRD_measurement frame"))
+    {
+    // imaging frame
+    vnl_matrix_fixed<double,3,3> imgf;
+    imgf = DwiImageExtractMF->GetDirection().GetVnlMatrix();
+
+    std::vector<std::vector<double> > nrrdmf;
+    itk::ExposeMetaData<std::vector<std::vector<double> > >( DwiImageExtractMF->GetMetaDataDictionary(),"NRRD_measurement frame",nrrdmf);
+
+    //Image frame
+    for(unsigned int i = 0; i < 3; ++i)
+      {
+      for(unsigned int j = 0; j < 3; ++j)
+        {
+        imageMeasurementFrame(i,j) = nrrdmf[j][i];
+        nrrdmf[j][i] = imgf(i,j);
+        }
+      }
+    }
+  return imageMeasurementFrame;
+}
+
 CIntensityMotionCheck::CIntensityMotionCheck(std::string filename,std::string reportFile)
 {
 	DwiFileName = filename;
 
 	if(reportFile.length()==0)
 	{
-		ReportFileName.clear();
+		this->GlobalReportFileName.clear();
 	}
 	else
-		ReportFileName = reportFile;
+    {
+		this->GlobalReportFileName = reportFile;
+    }
 
 	baselineNumber		= 0;
 	bValueNumber		= 1;
@@ -66,14 +100,14 @@ bool CIntensityMotionCheck::LoadDwiImage()
 	//std::cout<< str<<std::endl;
 	//::SetCurrentDirectory(str.c_str());
 	
-	itk::NrrdImageIO::Pointer  NrrdImageIO = itk::NrrdImageIO::New();
+	itk::NrrdImageIO::Pointer  myNrrdImageIO = itk::NrrdImageIO::New();
 
 	if(DwiFileName.length()!=0)
 	{
 		try
 		{
 			DwiReader = DwiReaderType::New();
-			DwiReader->SetImageIO(NrrdImageIO);
+			DwiReader->SetImageIO(myNrrdImageIO);
 			DwiReader->SetFileName(DwiFileName);
 			std::cout<< "Loading in CIntensityMotionCheck: "<<DwiFileName<<" ... ";
 			DwiReader->Update();
@@ -341,15 +375,15 @@ void CIntensityMotionCheck::GenerateCheckOutputImage( std::string filename)
 
 		if( gradientLeft == qcResult->GetIntensityMotionCheckResult().size())
 		{
-			itk::NrrdImageIO::Pointer  NrrdImageIO = itk::NrrdImageIO::New();
+			itk::NrrdImageIO::Pointer  myNrrdImageIO = itk::NrrdImageIO::New();
 			try
 			{
-				DwiWriterType::Pointer DwiWriter = DwiWriterType::New();
-				DwiWriter->SetImageIO(NrrdImageIO);
-				DwiWriter->SetFileName( filename );
-				DwiWriter->SetInput(DwiReader->GetOutput());
-				DwiWriter->UseCompressionOn();
-				DwiWriter->Update();
+				DwiWriterType::Pointer localDwiWriter = DwiWriterType::New();
+				localDwiWriter->SetImageIO(myNrrdImageIO);
+				localDwiWriter->SetFileName( filename );
+				localDwiWriter->SetInput(DwiReader->GetOutput());
+				localDwiWriter->UseCompressionOn();
+				localDwiWriter->Update();
 			}
 			catch(itk::ExceptionObject & e)
 			{
@@ -393,11 +427,11 @@ void CIntensityMotionCheck::GenerateCheckOutputImage( std::string filename)
 			++nit;
 		}
 
-		itk::NrrdImageIO::Pointer  NrrdImageIO = itk::NrrdImageIO::New();
 		try
 		{
-			DwiWriterType::Pointer DwiWriter = DwiWriterType::New();
-			DwiWriter->SetImageIO(NrrdImageIO);
+      DwiWriterType::Pointer DwiWriter = DwiWriterType::New();
+      itk::NrrdImageIO::Pointer  myNrrdImageIO = itk::NrrdImageIO::New();
+			DwiWriter->SetImageIO(myNrrdImageIO);
 			DwiWriter->SetFileName( filename );
 			DwiWriter->SetInput(newDwiImage);
 			DwiWriter->UseCompressionOn();
@@ -422,34 +456,7 @@ void CIntensityMotionCheck::GenerateCheckOutputImage( std::string filename)
 		std::ofstream header;
 		header.open(aryOut, std::ios_base::app);
 
-    //HACK:  TODO:  Need to verify that imageMeasurementFrame is not shadowed in sections below, and that
-    //              the same information is only extracted one time.
-		// measurement frame
-	  vnl_matrix_fixed<double,3,3> imageMeasurementFrame;
-		//  measurement frame 
-		if(imgMetaDictionary.HasKey("NRRD_measurement frame"))
-		{
-			// imaging frame
-			vnl_matrix_fixed<double,3,3> imgf;
-			imgf = DwiImage->GetDirection().GetVnlMatrix();
-
-			std::vector<std::vector<double> > nrrdmf;
-			itk::ExposeMetaData<std::vector<std::vector<double> > >(imgMetaDictionary,"NRRD_measurement frame",nrrdmf);
-
-
-			//Image frame
-			//std::cout << "Image frame: " << std::endl;
-			//std::cout << imgf << std::endl;
-
-			for(unsigned int i = 0; i < 3; ++i)
-			{
-				for(unsigned int j = 0; j < 3; ++j)
-				{
-					imageMeasurementFrame(i,j) = nrrdmf[j][i];
-					nrrdmf[j][i] = imgf(i,j);
-				}
-			}
-
+       const vnl_matrix_fixed<double,3,3> imageMeasurementFrame=GetMeasurementFrame(DwiImage);
 			// Meausurement frame
 			header	<< "measurement frame: (" 
 				<< imageMeasurementFrame(0,0) << "," 
@@ -462,16 +469,15 @@ void CIntensityMotionCheck::GenerateCheckOutputImage( std::string filename)
 				<< imageMeasurementFrame(1,2) << "," 
 				<< imageMeasurementFrame(2,2) << ")"
 				<< std::endl;
-		}
 
-		for ( itKey=imgMetaKeys.begin(); itKey != imgMetaKeys.end(); itKey ++){
-			int pos;
-
+		for ( itKey=imgMetaKeys.begin(); itKey != imgMetaKeys.end(); itKey++)
+    {
 			itk::ExposeMetaData(imgMetaDictionary, *itKey, metaString);
-			pos = itKey->find("modality");
-			if (pos == -1){
-				continue;
-			}
+			const int posLocal = itKey->find("modality");
+			if (posLocal == -1)
+        {
+        continue;
+        }
 
 			std::cout  << metaString << std::endl;    
 			header << "modality:=" << metaString << std::endl;
@@ -480,14 +486,14 @@ void CIntensityMotionCheck::GenerateCheckOutputImage( std::string filename)
 		if(!bGetGridentDirections)
 			GetGridentDirections();
 
-		for ( itKey=imgMetaKeys.begin(); itKey != imgMetaKeys.end(); itKey ++){
-			int pos;
-
+		for ( itKey=imgMetaKeys.begin(); itKey != imgMetaKeys.end(); itKey ++)
+     {
 			itk::ExposeMetaData(imgMetaDictionary, *itKey, metaString);
-			pos = itKey->find("DWMRI_b-value");
-			if (pos == -1){
-				continue;
-			}
+			const int posLocal = itKey->find("DWMRI_b-value");
+			if (posLocal == -1)
+        {
+        continue;
+        }
 
 			std::cout  << metaString << std::endl;    
 			header << "DWMRI_b-value:=" << metaString << std::endl;
@@ -520,7 +526,7 @@ bool CIntensityMotionCheck::ImageCheck( DwiImageType::Pointer dwi )
 	//First check
 	bool returnValue = true;
 	bool bReport = false;
-	std::string ReportFileName;
+	std::string ImageCheckReportFileName;
 
 	if( protocol->GetImageProtocol().reportFileNameSuffix.length()>0 )
 	{
@@ -529,34 +535,34 @@ bool CIntensityMotionCheck::ImageCheck( DwiImageType::Pointer dwi )
 
 			if( protocol->GetQCOutputDirectory().at( protocol->GetQCOutputDirectory().length()-1 ) == '\\' || 
 				protocol->GetQCOutputDirectory().at( protocol->GetQCOutputDirectory().length()-1 ) == '/' 		)
-				ReportFileName = protocol->GetQCOutputDirectory().substr( 0,protocol->GetQCOutputDirectory().find_last_of("/\\") );
+				ImageCheckReportFileName = protocol->GetQCOutputDirectory().substr( 0,protocol->GetQCOutputDirectory().find_last_of("/\\") );
 			else
-				ReportFileName = protocol->GetQCOutputDirectory();
+				ImageCheckReportFileName = protocol->GetQCOutputDirectory();
 
-			ReportFileName.append( "/" );
+			ImageCheckReportFileName.append( "/" );
 
 			std::string str = DwiFileName.substr( 0,DwiFileName.find_last_of('.') );
 			str = str.substr( str.find_last_of("/\\")+1);
 
-			ReportFileName.append( str );
-			ReportFileName.append( protocol->GetImageProtocol().reportFileNameSuffix );	
+			ImageCheckReportFileName.append( str );
+			ImageCheckReportFileName.append( protocol->GetImageProtocol().reportFileNameSuffix );	
 		}
 		else
 		{
-			ReportFileName = DwiFileName.substr(0,DwiFileName.find_last_of('.') );
-			ReportFileName.append( protocol->GetImageProtocol().reportFileNameSuffix );			
+			ImageCheckReportFileName = DwiFileName.substr(0,DwiFileName.find_last_of('.') );
+			ImageCheckReportFileName.append( protocol->GetImageProtocol().reportFileNameSuffix );			
 		}
 	}
 
 // 	std::cout << "DwiFileName: " << DwiFileName<<std::endl;
-// 	std::cout << "ReportFileName: " << ReportFileName<<std::endl;
+// 	std::cout << "ImageCheckReportFileName: " << ImageCheckReportFileName<<std::endl;
 
 	std::ofstream outfile;
 
 	if( protocol->GetImageProtocol().reportFileMode == 1 )
-		outfile.open( ReportFileName.c_str(), std::ios_base::app);
+		outfile.open( ImageCheckReportFileName.c_str(), std::ios_base::app);
 	else
-		outfile.open( ReportFileName.c_str());
+		outfile.open( ImageCheckReportFileName.c_str());
 
 	if( outfile ) 
 		bReport = true;
@@ -762,13 +768,13 @@ bool CIntensityMotionCheck::ImageCheck( DwiImageType::Pointer dwi )
 		sizePara[1]	= protocol->GetImageProtocol().size[1];
 		sizePara[2]	= protocol->GetImageProtocol().size[2];
 
-		Cropper	= CropperType::New();
+    CropperType::Pointer Cropper= CropperType::New();
 		Cropper->SetInput( DwiImageTemp ); 
 		Cropper->SetSize(sizePara);
 
 		if(bReport)
 		{
-			Cropper->SetReportFileName( ReportFileName ); //protocol->GetImageProtocol().reportFileNameSuffix);
+			Cropper->SetReportFileName( ImageCheckReportFileName ); //protocol->GetImageProtocol().reportFileNameSuffix);
 			Cropper->SetReportFileMode( protocol->GetImageProtocol().reportFileMode);
 		}
 		Cropper->Update();
@@ -810,6 +816,8 @@ bool CIntensityMotionCheck::ImageCheck( DwiImageType::Pointer dwi )
 
 				std::cout<< "Saving cropped DWI: "<< CroppedFileName <<" ... ";
 
+        DwiWriterType::Pointer DwiWriter = DwiWriterType::New();
+        itk::NrrdImageIO::Pointer  myNrrdImageIO = itk::NrrdImageIO::New();
 				DwiWriter->SetFileName( CroppedFileName );//protocol->GetImageProtocol().croppedDWIFileNameSuffix );
 				DwiWriter->SetInput( DwiImageTemp );
 				DwiWriter->UseCompressionOn();
@@ -938,27 +946,8 @@ bool CIntensityMotionCheck::DiffusionCheck( DwiImageType::Pointer dwi)
 
     //HJJ -- measurement frame is not being properly used here.
 	  // measurement frame
-		vnl_matrix_fixed<double,3,3> imageMeasurementFrame;
-		//  measurement frame 
-		if( DwiImageTemp->GetMetaDataDictionary().HasKey("NRRD_measurement frame"))
-		{
-			// imaging frame
-			vnl_matrix_fixed<double,3,3> imgf;
-			imgf = DwiImageTemp->GetDirection().GetVnlMatrix();
-
-			std::vector<std::vector<double> > nrrdmf;
-			itk::ExposeMetaData<std::vector<std::vector<double> > >( dwi->GetMetaDataDictionary(),"NRRD_measurement frame",nrrdmf);
-
-			//Image frame
-			for(unsigned int i = 0; i < 3; ++i)
-			{
-				for(unsigned int j = 0; j < 3; ++j)
-				{
-					imageMeasurementFrame(i,j) = nrrdmf[j][i];
-					nrrdmf[j][i] = imgf(i,j);
-				}
-			}
-
+    const vnl_matrix_fixed<double,3,3> imageMeasurementFrame=GetMeasurementFrame(DwiImageTemp);
+      {
 			// Meausurement frame
 			if( 
 				protocol->GetDiffusionProtocol().measurementFrame[0][0] == imageMeasurementFrame(0,0) &&
@@ -990,6 +979,10 @@ bool CIntensityMotionCheck::DiffusionCheck( DwiImageType::Pointer dwi)
 
 				if( protocol->GetDiffusionProtocol().bUseDiffusionProtocol )
 				{
+          std::vector<std::vector<double> > nrrdmf(3);
+          nrrdmf[0].resize(3);
+          nrrdmf[1].resize(3);
+          nrrdmf[2].resize(3);
 					nrrdmf[0][0] = protocol->GetDiffusionProtocol().measurementFrame[0][0];
 					nrrdmf[0][1] = protocol->GetDiffusionProtocol().measurementFrame[0][1];
 					nrrdmf[0][2] = protocol->GetDiffusionProtocol().measurementFrame[0][2] ;
@@ -1177,6 +1170,7 @@ bool CIntensityMotionCheck::DiffusionCheck( DwiImageType::Pointer dwi)
 		try
 		{
 			std::cout<< "Saving diffusion information updated DWI: "<< DWIFileName << "...";
+      DwiWriterType::Pointer DwiWriter= DwiWriterType::New();
 			DwiWriter->SetFileName( DWIFileName );
 			DwiWriter->SetInput( DwiImageTemp);			
 			DwiWriter->UseCompressionOn();
@@ -1229,7 +1223,7 @@ bool CIntensityMotionCheck::SliceWiseCheck( DwiImageType::Pointer dwi )
 // 			ReportFileName.append( protocol->GetSliceCheckProtocol().reportFileNameSuffix );			
 		}
 
-		SliceChecker = SliceCheckerType::New();
+    SliceCheckerType::Pointer SliceChecker = SliceCheckerType::New();
 		SliceChecker->SetInput( dwi );
 		SliceChecker->SetCheckTimes( protocol->GetSliceCheckProtocol().checkTimes );
 		SliceChecker->SetHeadSkipRatio( protocol->GetSliceCheckProtocol().headSkipSlicePercentage );
@@ -1309,7 +1303,9 @@ bool CIntensityMotionCheck::SliceWiseCheck( DwiImageType::Pointer dwi )
 			try
 			{
 				std::cout<< "Saving output of slice check: "<< SliceWiseOutput <<" ... ";
-				DwiWriter->SetImageIO(NrrdImageIO);
+        DwiWriterType::Pointer DwiWriter=DwiWriterType::New();
+		    itk::NrrdImageIO::Pointer  myNrrdImageIO = itk::NrrdImageIO::New();
+				DwiWriter->SetImageIO(myNrrdImageIO);
 				DwiWriter->SetFileName( SliceWiseOutput );
 				DwiWriter->SetInput( DwiImageTemp );
 				DwiWriter->UseCompressionOn();
@@ -1364,7 +1360,7 @@ bool CIntensityMotionCheck::InterlaceWiseCheck( DwiImageType::Pointer dwi )
 // 			ReportFileName.append( protocol->GetInterlaceCheckProtocol().reportFileNameSuffix );			
 		}
 
-		InterlaceChecker = InterlaceCheckerType::New();
+    InterlaceCheckerType::Pointer InterlaceChecker = InterlaceCheckerType::New();
 		InterlaceChecker->SetInput( dwi );
 		InterlaceChecker->SetCorrelationThresholdBaseline( protocol->GetInterlaceCheckProtocol().correlationThresholdBaseline );
 		InterlaceChecker->SetCorrelationThresholdGradient( protocol->GetInterlaceCheckProtocol().correlationThresholdGradient );
@@ -1445,7 +1441,9 @@ bool CIntensityMotionCheck::InterlaceWiseCheck( DwiImageType::Pointer dwi )
 			try
 			{
 				std::cout<< "Saving output of interlace check: "<< outputDWIFileName <<" ... ";
-				DwiWriter->SetImageIO(NrrdImageIO);
+        DwiWriterType::Pointer DwiWriter=DwiWriterType::New();
+        itk::NrrdImageIO::Pointer  myNrrdImageIO = itk::NrrdImageIO::New();
+				DwiWriter->SetImageIO(myNrrdImageIO);
 				DwiWriter->SetFileName( outputDWIFileName );
 				DwiWriter->SetInput( DwiImageTemp );
 				DwiWriter->UseCompressionOn();
@@ -1500,8 +1498,7 @@ bool CIntensityMotionCheck::BaselineAverage( DwiImageType::Pointer dwi )
 			}
 		}
 
-		BaselineAverager	= BaselineAveragerType::New();
-
+    BaselineAveragerType::Pointer  BaselineAverager= BaselineAveragerType::New();
 		BaselineAverager->SetInput( dwi );
 		BaselineAverager->SetReportFileName( ReportFileName );
 		BaselineAverager->SetReportFileMode(protocol->GetBaselineAverageProtocol().reportFileMode);
@@ -1565,7 +1562,9 @@ bool CIntensityMotionCheck::BaselineAverage( DwiImageType::Pointer dwi )
 			try
 			{
 				std::cout<< "Saving output of baseline average: "<< outputDWIFileName <<" ... ";
-				DwiWriter->SetImageIO(NrrdImageIO);
+        DwiWriterType::Pointer DwiWriter=DwiWriterType::New();
+        itk::NrrdImageIO::Pointer  myNrrdImageIO = itk::NrrdImageIO::New();
+				DwiWriter->SetImageIO(myNrrdImageIO);
 				DwiWriter->SetFileName( outputDWIFileName );
 				DwiWriter->SetInput( DwiImageTemp );
 				DwiWriter->UseCompressionOn();
@@ -1634,8 +1633,7 @@ bool CIntensityMotionCheck::EddyMotionCorrectIowa( DwiImageType::Pointer dwi )
 		GradientDirectionContainerType::Pointer inputGradDirContainer = GradientDirectionContainerType::New();
 		inputGradDirContainer->clear();
 
-		int baselineNumber = 0;
-
+		int baselineNumberLocal = 0;
 		itKey = imgMetaKeys.begin();
 		for ( ; itKey != imgMetaKeys.end(); itKey ++)
 		{
@@ -1646,21 +1644,21 @@ bool CIntensityMotionCheck::EddyMotionCorrectIowa( DwiImageType::Pointer dwi )
 				iss >> vect3d[0] >> vect3d[1] >> vect3d[2];
 				inputGradDirContainer->push_back(vect3d);
 				if( vect3d[0]==0.0 && vect3d[1]==0.0 && vect3d[2]==0.0 )
-					baselineNumber ++;
+          {
+					baselineNumberLocal ++;
+          }
 			}
 		}
 
-//		std::cout<<"baselineNumber: "<< baselineNumber <<std::endl;
+//		std::cout<<"baselineNumberLocal: "<< baselineNumberLocal <<std::endl;
 
-		// filtering for fixed image
-		typedef itk::Image<signed short,3>  GradientImageType;
-
-		EddyMotionCorrectorIowa = EddyMotionCorrectorTypeIowa::New();
+    //eddy-motion Iowa
+    EddyMotionCorrectorTypeIowa::Pointer  EddyMotionCorrectorIowa = EddyMotionCorrectorTypeIowa::New();
 		EddyMotionCorrectorIowa->SetInput( dwi );
 
 		// find the gradient with the smallest b-value
 		int smallestGradient = -1;
-		if( baselineNumber == 0 )
+		if( baselineNumberLocal == 0 )
 		{
 			double smallestBValue = 9999999999999999.0;
 			for( unsigned int i = 0; i< inputGradDirContainer->size(); i++ )
@@ -1684,7 +1682,6 @@ bool CIntensityMotionCheck::EddyMotionCorrectIowa( DwiImageType::Pointer dwi )
 			componentExtractor->SetInput( dwi);
 			componentExtractor->SetIndex( smallestGradient );
 			componentExtractor->Update();
-
 			EddyMotionCorrectorIowa->SetFixedImage(componentExtractor->GetOutput());
 		}
 		else
@@ -1716,7 +1713,7 @@ bool CIntensityMotionCheck::EddyMotionCorrectIowa( DwiImageType::Pointer dwi )
 						inputGradDirContainer->ElementAt(i)[1] == 0.0 && 
 						inputGradDirContainer->ElementAt(i)[2] == 0.0     )
 					{
-						pixelValue += inputPtr->GetPixel(pixelIndex)[i]/(static_cast<double>(baselineNumber));					
+						pixelValue += inputPtr->GetPixel(pixelIndex)[i]/(static_cast<double>(baselineNumberLocal));
 					}
 				}
 				aIt.Set( static_cast<unsigned short>(pixelValue) );
@@ -1842,7 +1839,9 @@ bool CIntensityMotionCheck::EddyMotionCorrectIowa( DwiImageType::Pointer dwi )
 			try
 			{
 				std::cout<< "Saving output of eddy current motion correction: "<< outputDWIFileName <<" ... ";
-				DwiWriter->SetImageIO(NrrdImageIO);
+        DwiWriterType::Pointer DwiWriter=DwiWriterType::New();
+        itk::NrrdImageIO::Pointer  myNrrdImageIO = itk::NrrdImageIO::New();
+				DwiWriter->SetImageIO(myNrrdImageIO);
 				DwiWriter->SetFileName( outputDWIFileName );
 				DwiWriter->SetInput( DwiImageTemp);
 				DwiWriter->UseCompressionOn();
@@ -1897,7 +1896,8 @@ bool CIntensityMotionCheck::EddyMotionCorrect( DwiImageType::Pointer dwi )
 			}
 		}
 
-		EddyMotionCorrector = EddyMotionCorrectorType::New();
+    //eddy-motion Utah
+	  EddyMotionCorrectorType::Pointer	EddyMotionCorrector = EddyMotionCorrectorType::New();
 		EddyMotionCorrector->SetInput( dwi);
 		EddyMotionCorrector->SetReportFileName( ReportFileName );
 		EddyMotionCorrector->SetReportFileMode( protocol->GetEddyMotionCorrectionProtocol().reportFileMode );
@@ -1986,7 +1986,9 @@ bool CIntensityMotionCheck::EddyMotionCorrect( DwiImageType::Pointer dwi )
 			try
 			{
 				std::cout<< "Saving output of eddy current motion correction: "<< outputDWIFileName <<" ... ";
-				DwiWriter->SetImageIO(NrrdImageIO);
+        DwiWriterType::Pointer DwiWriter=DwiWriterType::New();
+        itk::NrrdImageIO::Pointer  myNrrdImageIO = itk::NrrdImageIO::New();
+				DwiWriter->SetImageIO(myNrrdImageIO);
 				DwiWriter->SetFileName( outputDWIFileName );
 				DwiWriter->SetInput( DwiImageTemp);
 				DwiWriter->UseCompressionOn();
@@ -2041,7 +2043,7 @@ bool CIntensityMotionCheck::GradientWiseCheck( DwiImageType::Pointer dwi )
 			}
 		}
 
-		GradientChecker = GradientCheckerType::New();
+	  GradientCheckerType::Pointer GradientChecker = GradientCheckerType::New();
 		GradientChecker->SetInput( dwi);
 		GradientChecker->SetTranslationThreshold( protocol->GetGradientCheckProtocol().translationThreshold );
 		GradientChecker->SetRotationThreshold( protocol->GetGradientCheckProtocol().rotationThreshold );
@@ -2116,7 +2118,9 @@ bool CIntensityMotionCheck::GradientWiseCheck( DwiImageType::Pointer dwi )
 			try
 			{
 				std::cout<< "Saving output of gradient check: "<< outputDWIFileName <<" ... ";
-				DwiWriter->SetImageIO(NrrdImageIO);
+        DwiWriterType::Pointer DwiWriter=DwiWriterType::New();
+        itk::NrrdImageIO::Pointer  myNrrdImageIO = itk::NrrdImageIO::New();
+				DwiWriter->SetImageIO(myNrrdImageIO);
 				DwiWriter->SetFileName( outputDWIFileName );
 				DwiWriter->SetInput( DwiImageTemp);
 				DwiWriter->UseCompressionOn();
@@ -2170,7 +2174,9 @@ bool CIntensityMotionCheck::SaveQCedDWI( DwiImageType::Pointer dwi )
 
  		try
  		{
- 			DwiWriter->SetImageIO(NrrdImageIO);
+      DwiWriterType::Pointer DwiWriter=DwiWriterType::New();
+      itk::NrrdImageIO::Pointer  myNrrdImageIO = itk::NrrdImageIO::New();
+ 			DwiWriter->SetImageIO(myNrrdImageIO);
  			DwiWriter->SetFileName( outputDWIFileName );
  			DwiWriter->SetInput( dwi );
  			DwiWriter->UseCompressionOn();
@@ -2271,9 +2277,9 @@ unsigned char  CIntensityMotionCheck::RunPipelineByProtocol()
 
 	//protocol->printProtocols();
 
-	DwiWriter	= DwiWriterType::New();
-	NrrdImageIO	= itk::NrrdImageIO::New();
-	DwiWriter->SetImageIO(NrrdImageIO);
+  DwiWriterType::Pointer DwiWriter=DwiWriterType::New();
+  itk::NrrdImageIO::Pointer  myNrrdImageIO = itk::NrrdImageIO::New();
+	DwiWriter->SetImageIO(myNrrdImageIO);
 
 	DwiImageTemp = DwiImage;
 
@@ -2567,7 +2573,7 @@ void CIntensityMotionCheck::collectLeftDiffusionStatistics( DwiImageType::Pointe
 	if( reportfilename.length()>0)
 	{
 		std::ofstream outfile; 
-		outfile.open( ReportFileName.c_str(), std::ios::app);
+		outfile.open( this->GlobalReportFileName.c_str(), std::ios::app);
 		outfile<<"--------------------------------"<<std::endl;
 		outfile<<"Diffusion Gradient information:"<<std::endl;
 
@@ -2759,16 +2765,20 @@ bool CIntensityMotionCheck::dtiestim()
 
 			if( protocol->GetQCOutputDirectory().at( protocol->GetQCOutputDirectory().length()-1 ) == '\\' || 
 				protocol->GetQCOutputDirectory().at( protocol->GetQCOutputDirectory().length()-1 ) == '/' 		)
+        {
 				outputDWIFileName = protocol->GetQCOutputDirectory().substr( 0,protocol->GetQCOutputDirectory().find_last_of("/\\") );
+        }
 			else
+        {
 				outputDWIFileName = protocol->GetQCOutputDirectory();
+        }
 
 			outputDWIFileName.append( "/" );
 
-			std::string str = DwiFileName.substr( 0,DwiFileName.find_last_of('.') );
-			str = str.substr( str.find_last_of("/\\")+1);
+			std::string strLocal = DwiFileName.substr( 0,DwiFileName.find_last_of('.') );
+			strLocal = strLocal.substr( strLocal.find_last_of("/\\")+1);
 
-			outputDWIFileName.append( str );
+			outputDWIFileName.append( strLocal );
 			outputDWIFileName.append( protocol->GetQCedDWIFileNameSuffix() );	
 		}
 		else
@@ -3122,7 +3132,7 @@ bool CIntensityMotionCheck::ImageCheck( )
 		sizePara[1]	= protocol->GetImageProtocol().size[1];
 		sizePara[2]	= protocol->GetImageProtocol().size[2];
 
-		Cropper	= CropperType::New();
+    CropperType::Pointer Cropper = CropperType::New();
 		Cropper->SetInput( dwi ); 
 		Cropper->SetSize(sizePara);
 
@@ -3143,6 +3153,8 @@ bool CIntensityMotionCheck::ImageCheck( )
 				CroppedFileName=DwiFileName.substr(0,DwiFileName.find_last_of('.') );
 				CroppedFileName.append( protocol->GetImageProtocol().croppedDWIFileNameSuffix );
 
+        DwiWriterType::Pointer DwiWriter=DwiWriterType::New();
+        itk::NrrdImageIO::Pointer  myNrrdImageIO = itk::NrrdImageIO::New();
 				DwiWriter->SetFileName( CroppedFileName );
 				DwiWriter->SetInput( DwiImageTemp );
 				DwiWriter->UseCompressionOn();
@@ -3322,66 +3334,52 @@ bool CIntensityMotionCheck::DiffusionCheck( )
     //HJJ -- Measurement frame does not seem to be properly used here
 	  // measurement frame
 		const vnl_matrix_fixed<double,3,3> imageMeasurementFrame = GetMeasurementFrame(DwiImageTemp);
-		//  measurement frame 
-		if( DwiImageTemp->GetMetaDataDictionary().HasKey("NRRD_measurement frame"))
-		{
-			// imaging frame
-			vnl_matrix_fixed<double,3,3> imgf;
-			imgf = DwiImageTemp->GetDirection().GetVnlMatrix();
+      {
 
-			std::vector<std::vector<double> > nrrdmf;
-			itk::ExposeMetaData<std::vector<std::vector<double> > >( dwi->GetMetaDataDictionary(),"NRRD_measurement frame",nrrdmf);
+      // Meausurement frame
+      if( 
+        protocol->GetDiffusionProtocol().measurementFrame[0][0] == imageMeasurementFrame(0,0) &&
+        protocol->GetDiffusionProtocol().measurementFrame[0][1] == imageMeasurementFrame(0,1) &&
+        protocol->GetDiffusionProtocol().measurementFrame[0][2] == imageMeasurementFrame(0,2) &&
+        protocol->GetDiffusionProtocol().measurementFrame[1][0] == imageMeasurementFrame(1,0) &&
+        protocol->GetDiffusionProtocol().measurementFrame[1][1] == imageMeasurementFrame(1,1) &&
+        protocol->GetDiffusionProtocol().measurementFrame[1][2] == imageMeasurementFrame(1,2) &&
+        protocol->GetDiffusionProtocol().measurementFrame[2][0] == imageMeasurementFrame(2,0) &&
+        protocol->GetDiffusionProtocol().measurementFrame[2][1] == imageMeasurementFrame(2,1) &&
+        protocol->GetDiffusionProtocol().measurementFrame[2][2] == imageMeasurementFrame(2,2)		)
+        {
+        qcResult->GetDiffusionInformationCheckResult().measurementFrame = true;
+        if(bReport)
+          outfile<<"Diffusion measurementFrame Check: \tOK"<<std::endl;
+        std::cout<<"Diffusion measurementFrame Check: \tOK"<<std::endl;
+        }
+      else
+        {
+        returnValte = false;
+        qcResult->GetDiffusionInformationCheckResult().measurementFrame = false;
+        if(bReport)
+          outfile<<"Diffusion measurementFrame Check: \tFAILED"<<std::endl;
+        std::cout<<"Diffusion measurementFrame Check: \tFAILED"<<std::endl;
 
-			//Image frame
-			for(unsigned int i = 0; i < 3; ++i)
-			{
-				for(unsigned int j = 0; j < 3; ++j)
-				{
-					imageMeasurementFrame(i,j) = nrrdmf[j][i];
-					nrrdmf[j][i] = imgf(i,j);
-				}
-			}
-
-			// Meausurement frame
-			if( 
-				protocol->GetDiffusionProtocol().measurementFrame[0][0] == imageMeasurementFrame(0,0) &&
-				protocol->GetDiffusionProtocol().measurementFrame[0][1] == imageMeasurementFrame(0,1) &&
-				protocol->GetDiffusionProtocol().measurementFrame[0][2] == imageMeasurementFrame(0,2) &&
-				protocol->GetDiffusionProtocol().measurementFrame[1][0] == imageMeasurementFrame(1,0) &&
-				protocol->GetDiffusionProtocol().measurementFrame[1][1] == imageMeasurementFrame(1,1) &&
-				protocol->GetDiffusionProtocol().measurementFrame[1][2] == imageMeasurementFrame(1,2) &&
-				protocol->GetDiffusionProtocol().measurementFrame[2][0] == imageMeasurementFrame(2,0) &&
-				protocol->GetDiffusionProtocol().measurementFrame[2][1] == imageMeasurementFrame(2,1) &&
-				protocol->GetDiffusionProtocol().measurementFrame[2][2] == imageMeasurementFrame(2,2)		)
-			{
-				qcResult->GetDiffusionInformationCheckResult().measurementFrame = true;
-				if(bReport)
-					outfile<<"Diffusion measurementFrame Check: \tOK"<<std::endl;
-				std::cout<<"Diffusion measurementFrame Check: \tOK"<<std::endl;
-			}
-			else
-			{
-				returnValte = false;
-				qcResult->GetDiffusionInformationCheckResult().measurementFrame = false;
-				if(bReport)
-					outfile<<"Diffusion measurementFrame Check: \tFAILED"<<std::endl;
-				std::cout<<"Diffusion measurementFrame Check: \tFAILED"<<std::endl;
-
-				if( protocol->GetDiffusionProtocol().bUseDiffusionProtocol )
-				{
-					nrrdmf[0][0] = protocol->GetDiffusionProtocol().measurementFrame[0][0];
-					nrrdmf[0][1] = protocol->GetDiffusionProtocol().measurementFrame[0][1];
-					nrrdmf[0][2] = protocol->GetDiffusionProtocol().measurementFrame[0][2] ;
-					nrrdmf[1][0] = protocol->GetDiffusionProtocol().measurementFrame[1][0] ;
-					nrrdmf[1][1] = protocol->GetDiffusionProtocol().measurementFrame[1][1] ;
-					nrrdmf[1][2] = protocol->GetDiffusionProtocol().measurementFrame[1][2] ;
-					nrrdmf[2][0] = protocol->GetDiffusionProtocol().measurementFrame[2][0] ;
-					nrrdmf[2][1] = protocol->GetDiffusionProtocol().measurementFrame[2][1] ;
-					nrrdmf[2][2] = protocol->GetDiffusionProtocol().measurementFrame[2][2] ;	
-					itk::EncapsulateMetaData<std::vector<std::vector<double> > >( dwi->GetMetaDataDictionary(),"NRRD_measurement frame",nrrdmf);
-				}
-			}
-		}
+        if( protocol->GetDiffusionProtocol().bUseDiffusionProtocol )
+          {
+          std::vector<std::vector<double> > nrrdmf(3);
+          nrrdmf[0].resize(3);
+          nrrdmf[1].resize(3);
+          nrrdmf[2].resize(3);
+          nrrdmf[0][0] = protocol->GetDiffusionProtocol().measurementFrame[0][0];
+          nrrdmf[0][1] = protocol->GetDiffusionProtocol().measurementFrame[0][1];
+          nrrdmf[0][2] = protocol->GetDiffusionProtocol().measurementFrame[0][2] ;
+          nrrdmf[1][0] = protocol->GetDiffusionProtocol().measurementFrame[1][0] ;
+          nrrdmf[1][1] = protocol->GetDiffusionProtocol().measurementFrame[1][1] ;
+          nrrdmf[1][2] = protocol->GetDiffusionProtocol().measurementFrame[1][2] ;
+          nrrdmf[2][0] = protocol->GetDiffusionProtocol().measurementFrame[2][0] ;
+          nrrdmf[2][1] = protocol->GetDiffusionProtocol().measurementFrame[2][1] ;
+          nrrdmf[2][2] = protocol->GetDiffusionProtocol().measurementFrame[2][2] ;	
+          itk::EncapsulateMetaData<std::vector<std::vector<double> > >( dwi->GetMetaDataDictionary(),"NRRD_measurement frame",nrrdmf);
+          }
+        }
+      }
 
 		if( !returnValte )
 		{
@@ -3403,6 +3401,8 @@ bool CIntensityMotionCheck::DiffusionCheck( )
 		try
 		{
 			std::cout<< "Saving diffusion information updated DWI: "<< DWIFileName << "...";
+      DwiWriterType::Pointer DwiWriter=DwiWriterType::New();
+      itk::NrrdImageIO::Pointer  myNrrdImageIO = itk::NrrdImageIO::New();
 			DwiWriter->SetFileName( DWIFileName );
 			DwiWriter->SetInput( DwiImageTemp);			
 			DwiWriter->UseCompressionOn();
@@ -3434,7 +3434,7 @@ bool CIntensityMotionCheck::SliceWiseCheck( )
 			ReportFileName.append( protocol->GetSliceCheckProtocol().reportFileNameSuffix );			
 		}
 
-		SliceChecker = SliceCheckerType::New();
+    SliceCheckerType::Pointer SliceChecker = SliceCheckerType::New();
 		SliceChecker->SetInput( dwi );
 		SliceChecker->SetCheckTimes( protocol->GetSliceCheckProtocol().checkTimes );
 		SliceChecker->SetHeadSkipRatio( protocol->GetSliceCheckProtocol().headSkipSlicePercentage );
@@ -3486,7 +3486,9 @@ bool CIntensityMotionCheck::SliceWiseCheck( )
 			try
 			{
 				std::cout<< "Saving output of slice check: "<< SliceWiseOutput <<" ... ";
-				DwiWriter->SetImageIO(NrrdImageIO);
+        DwiWriterType::Pointer DwiWriter=DwiWriterType::New();
+        itk::NrrdImageIO::Pointer  myNrrdImageIO = itk::NrrdImageIO::New();
+				DwiWriter->SetImageIO(myNrrdImageIO);
 				DwiWriter->SetFileName( SliceWiseOutput );
 				DwiWriter->SetInput( DwiImageTemp );
 				DwiWriter->UseCompressionOn();
@@ -3520,7 +3522,7 @@ bool CIntensityMotionCheck::InterlaceWiseCheck( )
 			ReportFileName.append( protocol->GetInterlaceCheckProtocol().reportFileNameSuffix );			
 		}
 
-		InterlaceChecker = InterlaceCheckerType::New();
+    InterlaceCheckerType::Pointer InterlaceChecker = InterlaceCheckerType::New();
 		InterlaceChecker->SetInput( dwi );
 		InterlaceChecker->SetCorrelationThresholdBaseline( protocol->GetInterlaceCheckProtocol().correlationThresholdBaseline );
 		InterlaceChecker->SetCorrelationThresholdGradient( protocol->GetInterlaceCheckProtocol().correlationThresholdGradient );
@@ -3573,7 +3575,9 @@ bool CIntensityMotionCheck::InterlaceWiseCheck( )
 			try
 			{
 				std::cout<< "Saving output of interlace check: "<< outputDWIFileName <<" ... ";
-				DwiWriter->SetImageIO(NrrdImageIO);
+        DwiWriterType::Pointer DwiWriter=DwiWriterType::New();
+        itk::NrrdImageIO::Pointer  myNrrdImageIO = itk::NrrdImageIO::New();
+				DwiWriter->SetImageIO(myNrrdImageIO);
 				DwiWriter->SetFileName( outputDWIFileName );
 				DwiWriter->SetInput( DwiImageTemp );
 				DwiWriter->UseCompressionOn();
@@ -3608,8 +3612,7 @@ bool CIntensityMotionCheck::BaselineAverage( )
 			ReportFileName.append( protocol->GetBaselineAverageProtocol().reportFileNameSuffix );			
 		}
 
-		BaselineAverager	= BaselineAveragerType::New();
-
+    BaselineAveragerType::Pointer BaselineAverager= BaselineAveragerType::New();
 		BaselineAverager->SetInput( dwi );
 		BaselineAverager->SetReportFileName( ReportFileName );
 		BaselineAverager->SetReportFileMode(protocol->GetBaselineAverageProtocol().reportFileMode);
@@ -3650,7 +3653,9 @@ bool CIntensityMotionCheck::BaselineAverage( )
 			try
 			{
 				std::cout<< "Saving output of baseline average: "<< outputDWIFileName <<" ... ";
-				DwiWriter->SetImageIO(NrrdImageIO);
+        DwiWriterType::Pointer DwiWriter=DwiWriterType::New();
+        itk::NrrdImageIO::Pointer  myNrrdImageIO = itk::NrrdImageIO::New();
+				DwiWriter->SetImageIO(myNrrdImageIO);
 				DwiWriter->SetFileName( outputDWIFileName );
 				DwiWriter->SetInput( DwiImageTemp );
 				DwiWriter->UseCompressionOn();
@@ -3686,7 +3691,8 @@ bool CIntensityMotionCheck::EddyMotionCorrect( )
 			ReportFileName.append( protocol->GetEddyMotionCorrectionProtocol().reportFileNameSuffix );			
 		}
 
-		EddyMotionCorrector = EddyMotionCorrectorType::New();
+    //eddy-motion Utah
+    EddyMotionCorrectorType::Pointer EddyMotionCorrector = EddyMotionCorrectorType::New();
 		EddyMotionCorrector->SetInput( dwi);
 		EddyMotionCorrector->SetReportFileName( ReportFileName );
 		EddyMotionCorrector->SetReportFileMode( protocol->GetEddyMotionCorrectionProtocol().reportFileMode );
@@ -3752,7 +3758,9 @@ bool CIntensityMotionCheck::EddyMotionCorrect( )
 			try
 			{
 				std::cout<< "Saving output of eddy current motion correction: "<< outputDWIFileName <<" ... ";
-				DwiWriter->SetImageIO(NrrdImageIO);
+        DwiWriterType::Pointer DwiWriter=DwiWriterType::New();
+        itk::NrrdImageIO::Pointer  myNrrdImageIO = itk::NrrdImageIO::New();
+				DwiWriter->SetImageIO(myNrrdImageIO);
 				DwiWriter->SetFileName( outputDWIFileName );
 				DwiWriter->SetInput( DwiImageTemp);
 				DwiWriter->UseCompressionOn();
@@ -3786,7 +3794,7 @@ bool CIntensityMotionCheck::GradientWiseCheck( )
 			ReportFileName.append( protocol->GetGradientCheckProtocol().reportFileNameSuffix );			
 		}
 
-		GradientChecker = GradientCheckerType::New();
+    GradientCheckerType::Pointer GradientChecker = GradientCheckerType::New();
 		GradientChecker->SetInput( dwi);
 		GradientChecker->SetTranslationThreshold( protocol->GetGradientCheckProtocol().translationThreshold );
 		GradientChecker->SetRotationThreshold( protocol->GetGradientCheckProtocol().rotationThreshold );
@@ -3835,7 +3843,9 @@ bool CIntensityMotionCheck::GradientWiseCheck( )
 			try
 			{
 				std::cout<< "Saving output of gradient check: "<< outputDWIFileName <<" ... ";
-				DwiWriter->SetImageIO(NrrdImageIO);
+        DwiWriterType::Pointer DwiWriter=DwiWriterType::New();
+        itk::NrrdImageIO::Pointer  myNrrdImageIO = itk::NrrdImageIO::New();
+				DwiWriter->SetImageIO(myNrrdImageIO);
 				DwiWriter->SetFileName( outputDWIFileName );
 				DwiWriter->SetInput( DwiImageTemp);
 				DwiWriter->UseCompressionOn();
@@ -3869,7 +3879,9 @@ bool CIntensityMotionCheck::SaveQCedDWI()
  		outputDWIFileName.append( protocol->GetQCedDWIFileNameSuffix());	
  		try
  		{
- 			DwiWriter->SetImageIO(NrrdImageIO);
+      DwiWriterType::Pointer DwiWriter=DwiWriterType::New();
+      itk::NrrdImageIO::Pointer  myNrrdImageIO = itk::NrrdImageIO::New();
+ 			DwiWriter->SetImageIO(myNrrdImageIO);
  			DwiWriter->SetFileName( outputDWIFileName );
  			DwiWriter->SetInput( dwi );
  			DwiWriter->UseCompressionOn();
@@ -4016,7 +4028,7 @@ void CIntensityMotionCheck::collectLeftDiffusionStatistics( int /* dumb */)
 	this->bValueLeftNumber = dirMode.size();
 
 	std::ofstream outfile; 
-	outfile.open(ReportFileName.c_str(), std::ios::app);
+	outfile.open(this->GlobalReportFileName.c_str(), std::ios::app);
 	outfile<<"--------------------------------"<<std::endl;
 	outfile<<"Diffusion Gradient information:"<<std::endl;
 
