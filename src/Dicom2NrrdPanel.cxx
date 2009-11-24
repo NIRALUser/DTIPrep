@@ -4,7 +4,7 @@
 
 #include "itkGDCMSeriesFileNames.h"
 
-Dicom2NrrdPanel::Dicom2NrrdPanel(QMainWindow *parent) : QDockWidget(parent)
+Dicom2NrrdPanel::Dicom2NrrdPanel(QMainWindow *parentLocal) : QDockWidget(parentLocal)
   {
   setupUi(this);
   verticalLayout->setContentsMargins(0, 0, 0, 0);
@@ -17,9 +17,9 @@ Dicom2NrrdPanel::Dicom2NrrdPanel(QMainWindow *parent) : QDockWidget(parent)
 Dicom2NrrdPanel::~Dicom2NrrdPanel()
      {}
 
-void Dicom2NrrdPanel::UpdateProgressBar(int pos )
+void Dicom2NrrdPanel::UpdateProgressBar(int posLocal )
 {
-  progressBar->setValue(pos);
+  progressBar->setValue(posLocal);
 }
 
 void Dicom2NrrdPanel::on_dicomDirectoryBrowseButton_clicked( )

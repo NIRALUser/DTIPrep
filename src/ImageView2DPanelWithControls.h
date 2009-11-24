@@ -184,8 +184,9 @@ private:
   int WindowID;
 
   vtkImageData *vtkImage;
-  int          ImageDimension[3];
-  double       ImageSpacing[3];
+  //TODO:  m_ImageDimension and m_ImageSpacing should be itk::ImageBase::ImageSpacing types for spacing and dimension
+  int          m_ImageDimension[3];
+  double       m_ImageSpacing[3];
   int          NumberOfGradients;
 
   // vtkQtConnection

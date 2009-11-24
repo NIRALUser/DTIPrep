@@ -24,7 +24,7 @@
 #include <QtGui/QToolButton>
 
 ImageView2DPanelWithControls::ImageView2DPanelWithControls(QString title,
-  QMainWindow *parent) : QDockWidget(title, parent)
+  QMainWindow *parentLocal) : QDockWidget(title, parentLocal)
   {
   setupUi(this);
   this->verticalLayout->setContentsMargins(0, 1, 0, 0);
@@ -35,13 +35,13 @@ ImageView2DPanelWithControls::ImageView2DPanelWithControls(QString title,
 
   Orientation = 0;
 
-  ImageDimension[0] = 0;
-  ImageDimension[1] = 0;
-  ImageDimension[2] = 0;
+  this->m_ImageDimension[0] = 0;
+  this->m_ImageDimension[1] = 0;
+  this->m_ImageDimension[2] = 0;
 
-  ImageSpacing[0] = 0.0;
-  ImageSpacing[1] = 0.0;
-  ImageSpacing[2] = 0.0;
+  this->m_ImageSpacing[0] = 0.0;
+  this->m_ImageSpacing[1] = 0.0;
+  this->m_ImageSpacing[2] = 0.0;
 
   NumberOfGradients = 0;
 
@@ -62,7 +62,7 @@ ImageView2DPanelWithControls::ImageView2DPanelWithControls(QString title,
   Sets an arbitrary widget as the dock widget's title bar. If widget is 0, the title bar widget is removed, but not deleted.
   If a title bar widget is set, QDockWidget will not use native window decorations when it is floated.
   Here are some tips for implementing custom title bars:
-  Mouse events that are not explicitly handled by the title bar widget must be ignored by calling QMouseEvent::ignore(). These events then propagate to the QDockWidget parent, which handles them in the usual manner, moving when the title bar is dragged, docking and undocking when it is double-clicked, etc.
+  Mouse events that are not explicitly handled by the title bar widget must be ignored by calling QMouseEvent::ignore(). These events then propagate to the QDockWidget parentLocal, which handles them in the usual manner, moving when the title bar is dragged, docking and undocking when it is double-clicked, etc.
   When DockWidgetVerticalTitleBar is set on QDockWidget, the title bar widget is repositioned accordingly. In resizeEvent(), the title bar should check what orientation it should assume:
           QDockWidget *dockWidget = qobject_cast<QDockWidget*>(parentWidget());
           if (dockWidget->features() & QDockWidget::DockWidgetVerticalTitleBar) {
@@ -71,7 +71,7 @@ ImageView2DPanelWithControls::ImageView2DPanelWithControls(QString title,
               // I need to be horizontal
           }
   The title bar widget must have a valid QWidget::sizeHint() and QWidget::minimumSizeHint(). These functions should take into account the current orientation of the title bar.
-  Using qobject_cast as shown above, the title bar widget has full access to its parent QDockWidget. Hence it can perform such operations as docking and hiding in response to user actions.
+  Using qobject_cast as shown above, the title bar widget has full access to its parentLocal QDockWidget. Hence it can perform such operations as docking and hiding in response to user actions.
   This function was introduced in Qt 4.3.
   See also titleBarWidget() and DockWidgetVerticalTitleBar.
 
@@ -146,15 +146,15 @@ void ImageView2DPanelWithControls::Setup( vtkImageData *image,
   Orientation = orient;
   NumberOfGradients = numGradients;
 
-  // int ImageDimension[3];
-  // double ImageSpacing[3];
-  vtkImage->GetDimensions(ImageDimension);
-  vtkImage->GetSpacing(ImageSpacing);
+  // int this->m_ImageDimension[3];  // I believe that the setup and update functions should modify the class member variable not a private version.
+  // double this->m_ImageSpacing[3];
+  vtkImage->GetDimensions(this->m_ImageDimension);
+  vtkImage->GetSpacing(this->m_ImageSpacing);
 
-  // std::cout<<ImageDimension[0]<<"    "<< ImageDimension[1]<<"
-  //     "<<ImageDimension[2]<<std::endl;
-  // std::cout<<ImageSpacing[0]<<"    "<< ImageSpacing[1]<<"
-  //     "<<ImageSpacing[2]<<std::endl;
+  // std::cout<<this->m_ImageDimension[0]<<"    "<< this->m_ImageDimension[1]<<"
+  //     "<<this->m_ImageDimension[2]<<std::endl;
+  // std::cout<<this->m_ImageSpacing[0]<<"    "<< this->m_ImageSpacing[1]<<"
+  //     "<<this->m_ImageSpacing[2]<<std::endl;
   this->ImageViewer2->SetRenderWindow( qvtkWidget->GetRenderWindow() );
   this->ImageViewer2->SetupInteractor(
     qvtkWidget->GetRenderWindow()->GetInteractor() );
@@ -177,7 +177,7 @@ void ImageView2DPanelWithControls::Setup( vtkImageData *image,
     case ORIENTATION_AXIAL:
       if ( index < 0 )
         {
-        index = ImageDimension[2] / 2;
+        index = this->m_ImageDimension[2] / 2;
         }
       this->ImageViewer2->GetRenderer()->GetActiveCamera()->SetPosition(0,
       0,
@@ -191,7 +191,7 @@ void ImageView2DPanelWithControls::Setup( vtkImageData *image,
                                                                                  //
                                                                                  // ?
       this->ImageViewer2->GetRenderer()->GetActiveCamera()->SetViewUp(0, -1, 0);
-      this->horizontalSlider_SliceIndex->setRange(0, ImageDimension[2] - 1);
+      this->horizontalSlider_SliceIndex->setRange(0, this->m_ImageDimension[2] - 1);
       this->ImageViewer2->SetSliceOrientationToXY();
 
       break;
@@ -199,7 +199,7 @@ void ImageView2DPanelWithControls::Setup( vtkImageData *image,
       this->ImageViewer2->SetSliceOrientationToYZ();
       if ( index < 0 )
         {
-        index = ImageDimension[0] / 2;
+        index = this->m_ImageDimension[0] / 2;
         }
       this->ImageViewer2->GetRenderer()->GetActiveCamera()->SetPosition(-1,
       0,
@@ -213,14 +213,14 @@ void ImageView2DPanelWithControls::Setup( vtkImageData *image,
                                                                                  //
                                                                                  // ?
       this->ImageViewer2->GetRenderer()->GetActiveCamera()->SetViewUp(0, 0, 1);
-      this->horizontalSlider_SliceIndex->setRange(0, ImageDimension[0] - 1);
+      this->horizontalSlider_SliceIndex->setRange(0, this->m_ImageDimension[0] - 1);
 
       break;
     case ORIENTATION_CORONAL:
       this->ImageViewer2->SetSliceOrientationToXZ();
       if ( index < 0 )
         {
-        index = ImageDimension[1] / 2;
+        index = this->m_ImageDimension[1] / 2;
         }
       this->ImageViewer2->GetRenderer()->GetActiveCamera()->SetPosition(0,
       -1,
@@ -234,7 +234,7 @@ void ImageView2DPanelWithControls::Setup( vtkImageData *image,
                                                                                  //
                                                                                  // ?
       this->ImageViewer2->GetRenderer()->GetActiveCamera()->SetViewUp(0, 0, 1);
-      this->horizontalSlider_SliceIndex->setRange(0, ImageDimension[1] - 1);
+      this->horizontalSlider_SliceIndex->setRange(0, this->m_ImageDimension[1] - 1);
 
       break;
     default:
@@ -258,51 +258,51 @@ void ImageView2DPanelWithControls::Setup( vtkImageData *image,
     this->ImageViewer2->SetColorLevel( 0.5 * ( range[1] + range[0] ) );
     }
   float scale;
-  if ( ImageDimension[0] != 0 && ImageDimension[1] != 0 && ImageDimension[2] !=
+  if ( this->m_ImageDimension[0] != 0 && this->m_ImageDimension[1] != 0 && this->m_ImageDimension[2] !=
        0 )
     {
     float scaleTemp[3];
-    if ( ImageDimension[0] * ImageSpacing[0] >= ImageDimension[1]
-         * ImageSpacing[1] )
+    if ( this->m_ImageDimension[0] * this->m_ImageSpacing[0] >= this->m_ImageDimension[1]
+         * this->m_ImageSpacing[1] )
       {
-      scaleTemp[0] = ImageDimension[0] * ImageSpacing[0] / 2.0;
+      scaleTemp[0] = this->m_ImageDimension[0] * this->m_ImageSpacing[0] / 2.0;
       }
     else
       {
-      scaleTemp[0] = ImageDimension[1] * ImageSpacing[1] / 2.0;
+      scaleTemp[0] = this->m_ImageDimension[1] * this->m_ImageSpacing[1] / 2.0;
       }
 
-    if ( ImageDimension[0] * ImageSpacing[0] >= ImageDimension[2]
-         * ImageSpacing[2] )
+    if ( this->m_ImageDimension[0] * this->m_ImageSpacing[0] >= this->m_ImageDimension[2]
+         * this->m_ImageSpacing[2] )
       {
-      scaleTemp[1] = ImageDimension[0] * ImageSpacing[0] / 2.0;
+      scaleTemp[1] = this->m_ImageDimension[0] * this->m_ImageSpacing[0] / 2.0;
       }
     else
       {
-      scaleTemp[1] = ImageDimension[2] * ImageSpacing[2] / 2.0;
+      scaleTemp[1] = this->m_ImageDimension[2] * this->m_ImageSpacing[2] / 2.0;
       }
 
-    if ( ImageDimension[1] * ImageSpacing[1] >= ImageDimension[2]
-         * ImageSpacing[2] )
+    if ( this->m_ImageDimension[1] * this->m_ImageSpacing[1] >= this->m_ImageDimension[2]
+         * this->m_ImageSpacing[2] )
       {
-      scaleTemp[2] = ImageDimension[1] * ImageSpacing[1] / 2.0;
+      scaleTemp[2] = this->m_ImageDimension[1] * this->m_ImageSpacing[1] / 2.0;
       }
     else
       {
-      scaleTemp[2] = ImageDimension[2] * ImageSpacing[2] / 2.0;
+      scaleTemp[2] = this->m_ImageDimension[2] * this->m_ImageSpacing[2] / 2.0;
       }
 
     if ( scaleTemp[0] >= scaleTemp[1] && scaleTemp[0] >= scaleTemp[2] )
       {
-      scale = scaleTemp[0]; // ((float)(this->ImageDimension[0]-1))/2.0;
+      scale = scaleTemp[0]; // ((float)(this->m_ImageDimension[0]-1))/2.0;
       }
     else if ( scaleTemp[1] >= scaleTemp[0] && scaleTemp[1] >= scaleTemp[2] )
       {
-      scale = scaleTemp[1]; // ((float)(this->ImageDimension[1]-1))/2.0;
+      scale = scaleTemp[1]; // ((float)(this->m_ImageDimension[1]-1))/2.0;
       }
     else // (dims[2]>=dims[0] && dims[2]>=dims[1])
       {
-      scale = scaleTemp[2]; // ((float)(this->ImageDimension[2]-1))/2.0;
+      scale = scaleTemp[2]; // ((float)(this->m_ImageDimension[2]-1))/2.0;
       }
     }
   else
@@ -333,39 +333,39 @@ void ImageView2DPanelWithControls::Setup( vtkImageData *image,
 
 void ImageView2DPanelWithControls::Update()
 {
-  int    ImageDimension[3];
-  double ImageSpacing[3];
+  // int this->m_ImageDimension[3];  // I believe that the setup and update functions should modify the class member variable not a private version.
+  // double this->m_ImageSpacing[3];
 
-  vtkImage->GetDimensions(ImageDimension);
-  vtkImage->GetSpacing(ImageSpacing);
+  vtkImage->GetDimensions(this->m_ImageDimension);
+  vtkImage->GetSpacing(this->m_ImageSpacing);
 
-  std::cout << ImageDimension[0] << " ddd   " << ImageDimension[1]
-            << "  dd   " << ImageDimension[2] << std::endl;
-  std::cout << ImageSpacing[0] << "   dd " << ImageSpacing[1] << "  dd   "
-            << ImageSpacing[2] << std::endl;
+  std::cout << this->m_ImageDimension[0] << " ddd   " << this->m_ImageDimension[1]
+            << "  dd   " << this->m_ImageDimension[2] << std::endl;
+  std::cout << this->m_ImageSpacing[0] << "   dd " << this->m_ImageSpacing[1] << "  dd   "
+            << this->m_ImageSpacing[2] << std::endl;
   int index = 0;
   switch ( Orientation )
     {
     case ORIENTATION_AXIAL:
       if ( index < 1 )
         {
-        index = ImageDimension[2] / 2;
+        index = this->m_ImageDimension[2] / 2;
         }
-      this->horizontalSlider_SliceIndex->setRange(0, ImageDimension[2] - 1);
+      this->horizontalSlider_SliceIndex->setRange(0, this->m_ImageDimension[2] - 1);
       break;
     case ORIENTATION_SAGITTAL:
-      this->horizontalSlider_SliceIndex->setRange(0, ImageDimension[0] - 1);
+      this->horizontalSlider_SliceIndex->setRange(0, this->m_ImageDimension[0] - 1);
       if ( index < 1 )
         {
-        index = ImageDimension[0] / 2;
+        index = this->m_ImageDimension[0] / 2;
         }
       break;
     case ORIENTATION_CORONAL:
       if ( index < 1 )
         {
-        index = ImageDimension[1] / 2;
+        index = this->m_ImageDimension[1] / 2;
         }
-      this->horizontalSlider_SliceIndex->setRange(0, ImageDimension[1] - 1);
+      this->horizontalSlider_SliceIndex->setRange(0, this->m_ImageDimension[1] - 1);
       break;
     default:
       index = 0;
@@ -388,7 +388,7 @@ void ImageView2DPanelWithControls::on_horizontalSlider_SliceIndex_valueChanged(
 
   // this->lineEdit_SliceIndex->setText(str.sprintf("%d/%d", index,
   // horizontalSlider_SliceIndex->maximum()));
-  if ( ImageDimension[2] == 0 )
+  if ( this->m_ImageDimension[2] == 0 )
     {
     return;
     }
@@ -400,7 +400,7 @@ void ImageView2DPanelWithControls::on_horizontalSlider_SliceIndex_valueChanged(
 
 void ImageView2DPanelWithControls::on_toolButton_Play_clicked()
 {
-  if ( ImageDimension[2] == 0 )
+  if ( this->m_ImageDimension[2] == 0 )
     {
     return;
     }
@@ -411,7 +411,7 @@ void ImageView2DPanelWithControls::on_toolButton_Play_clicked()
   switch ( Orientation )
     {
     case ORIENTATION_AXIAL:
-      for ( int i = 0; i < ImageDimension[2]; i++ )
+      for ( int i = 0; i < this->m_ImageDimension[2]; i++ )
         {
         clock_t start;
         start = clock();
@@ -429,7 +429,7 @@ void ImageView2DPanelWithControls::on_toolButton_Play_clicked()
         }
       break;
     case ORIENTATION_SAGITTAL:
-      for ( int i = 0; i < ImageDimension[0]; i++ )
+      for ( int i = 0; i < this->m_ImageDimension[0]; i++ )
         {
         clock_t start;
         start = clock();
@@ -446,7 +446,7 @@ void ImageView2DPanelWithControls::on_toolButton_Play_clicked()
         }
       break;
     case ORIENTATION_CORONAL:
-      for ( int i = 0; i < ImageDimension[1]; i++ )
+      for ( int i = 0; i < this->m_ImageDimension[1]; i++ )
         {
         clock_t start;
         start = clock();
@@ -530,8 +530,8 @@ void ImageView2DPanelWithControls::on_comboBox_Orientation_currentIndexChanged(
                                                                                  //
                                                                                  // ?
       this->ImageViewer2->GetRenderer()->GetActiveCamera()->SetViewUp(0, -1, 0);
-      this->horizontalSlider_SliceIndex->setRange(0, ImageDimension[2] - 1);
-      index = ImageDimension[2] / 2;
+      this->horizontalSlider_SliceIndex->setRange(0, this->m_ImageDimension[2] - 1);
+      index = this->m_ImageDimension[2] / 2;
       break;
     case ORIENTATION_SAGITTAL:
       this->ImageViewer2->SetSliceOrientationToYZ();
@@ -547,8 +547,8 @@ void ImageView2DPanelWithControls::on_comboBox_Orientation_currentIndexChanged(
                                                                                  //
                                                                                  // ?
       this->ImageViewer2->GetRenderer()->GetActiveCamera()->SetViewUp(0, 0, 1);
-      horizontalSlider_SliceIndex->setRange(0, ImageDimension[0] - 1);
-      index = ImageDimension[0] / 2;
+      horizontalSlider_SliceIndex->setRange(0, this->m_ImageDimension[0] - 1);
+      index = this->m_ImageDimension[0] / 2;
       break;
     case ORIENTATION_CORONAL:
       this->ImageViewer2->SetSliceOrientationToXZ();
@@ -564,8 +564,8 @@ void ImageView2DPanelWithControls::on_comboBox_Orientation_currentIndexChanged(
                                                                                  //
                                                                                  // ?
       this->ImageViewer2->GetRenderer()->GetActiveCamera()->SetViewUp(0, 0, 1);
-      horizontalSlider_SliceIndex->setRange(0, ImageDimension[1] - 1);
-      index = ImageDimension[1] / 2;
+      horizontalSlider_SliceIndex->setRange(0, this->m_ImageDimension[1] - 1);
+      index = this->m_ImageDimension[1] / 2;
       break;
     default:
       index = 0;
@@ -573,51 +573,51 @@ void ImageView2DPanelWithControls::on_comboBox_Orientation_currentIndexChanged(
     }
 
   float scale;
-  if ( ImageDimension[0] != 0 && ImageDimension[1] != 0 && ImageDimension[2] !=
+  if ( this->m_ImageDimension[0] != 0 && this->m_ImageDimension[1] != 0 && this->m_ImageDimension[2] !=
        0 )
     {
     float scaleTemp[3];
-    if ( ImageDimension[0] * ImageSpacing[0] >= ImageDimension[1]
-         * ImageSpacing[1] )
+    if ( this->m_ImageDimension[0] * this->m_ImageSpacing[0] >= this->m_ImageDimension[1]
+         * this->m_ImageSpacing[1] )
       {
-      scaleTemp[0] = ImageDimension[0] * ImageSpacing[0] / 2.0;
+      scaleTemp[0] = this->m_ImageDimension[0] * this->m_ImageSpacing[0] / 2.0;
       }
     else
       {
-      scaleTemp[0] = ImageDimension[1] * ImageSpacing[1] / 2.0;
+      scaleTemp[0] = this->m_ImageDimension[1] * this->m_ImageSpacing[1] / 2.0;
       }
 
-    if ( ImageDimension[0] * ImageSpacing[0] >= ImageDimension[2]
-         * ImageSpacing[2] )
+    if ( this->m_ImageDimension[0] * this->m_ImageSpacing[0] >= this->m_ImageDimension[2]
+         * this->m_ImageSpacing[2] )
       {
-      scaleTemp[1] = ImageDimension[0] * ImageSpacing[0] / 2.0;
+      scaleTemp[1] = this->m_ImageDimension[0] * this->m_ImageSpacing[0] / 2.0;
       }
     else
       {
-      scaleTemp[1] = ImageDimension[2] * ImageSpacing[2] / 2.0;
+      scaleTemp[1] = this->m_ImageDimension[2] * this->m_ImageSpacing[2] / 2.0;
       }
 
-    if ( ImageDimension[1] * ImageSpacing[1] >= ImageDimension[2]
-         * ImageSpacing[2] )
+    if ( this->m_ImageDimension[1] * this->m_ImageSpacing[1] >= this->m_ImageDimension[2]
+         * this->m_ImageSpacing[2] )
       {
-      scaleTemp[2] = ImageDimension[1] * ImageSpacing[1] / 2.0;
+      scaleTemp[2] = this->m_ImageDimension[1] * this->m_ImageSpacing[1] / 2.0;
       }
     else
       {
-      scaleTemp[2] = ImageDimension[2] * ImageSpacing[2] / 2.0;
+      scaleTemp[2] = this->m_ImageDimension[2] * this->m_ImageSpacing[2] / 2.0;
       }
 
     if ( scaleTemp[0] >= scaleTemp[1] && scaleTemp[0] >= scaleTemp[2] )
       {
-      scale = scaleTemp[0]; // ((float)(this->ImageDimension[0]-1))/2.0;
+      scale = scaleTemp[0]; // ((float)(this->m_ImageDimension[0]-1))/2.0;
       }
     else if ( scaleTemp[1] >= scaleTemp[0] && scaleTemp[1] >= scaleTemp[2] )
       {
-      scale = scaleTemp[1]; // ((float)(this->ImageDimension[1]-1))/2.0;
+      scale = scaleTemp[1]; // ((float)(this->m_ImageDimension[1]-1))/2.0;
       }
     else // (dims[2]>=dims[0] && dims[2]>=dims[1])
       {
-      scale = scaleTemp[2]; // ((float)(this->ImageDimension[2]-1))/2.0;
+      scale = scaleTemp[2]; // ((float)(this->m_ImageDimension[2]-1))/2.0;
       }
     }
   else
@@ -725,18 +725,18 @@ void ImageView2DPanelWithControls::WindowLevelChanged(vtkObject *obj,
   double wl[2];
   planeWidget->GetWindowLevel(wl);
 
-  int window = (int)wl[0];
+  int windowLocal = (int)wl[0];
   int level = (int)wl[1];
 
   // std::cout<<"orient"<<*whichwindow<<"  "<<*whichwindow<<"
   //  "<<*whichwindow<<std::endl;
-  // std::cout<<"window"<<window<<"Level: "<<level<<std::endl;
+  // std::cout<<"windowLocal"<<windowLocal<<"Level: "<<level<<std::endl;
 
-  this->ImageViewer2->SetColorWindow(window);
+  this->ImageViewer2->SetColorWindow(windowLocal);
   this->ImageViewer2->SetColorLevel(level);
   this->ImageViewer2->Render();
 
-  emit WindowLevel(window, level);
+  emit WindowLevel(windowLocal, level);
 }
 
 // syn

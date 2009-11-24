@@ -95,7 +95,7 @@ private:
   OptimizerType::Pointer        optimizer;
   InterpolatorType::Pointer     interpolator;
   RegistrationType::Pointer     registration;
-  OptimizerType::ParametersType finalParameters;
+//  OptimizerType::ParametersType finalParameters;
   TransformType::Pointer        transform;
 
   ImageType::Pointer fixedImage;

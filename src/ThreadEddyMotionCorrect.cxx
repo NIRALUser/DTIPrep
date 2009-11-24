@@ -4,8 +4,8 @@
 #include <string>
 #include <math.h>
 
-CThreadEddyMotionCorrect::CThreadEddyMotionCorrect(QObject *parent) :
-  QThread(parent)
+CThreadEddyMotionCorrect::CThreadEddyMotionCorrect(QObject *parentLocal) :
+  QThread(parentLocal)
     {}
 
 CThreadEddyMotionCorrect::~CThreadEddyMotionCorrect()

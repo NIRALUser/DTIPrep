@@ -3,8 +3,8 @@
 #include <string>
 #include <iostream>
 
-CThreadDicomToNrrd::CThreadDicomToNrrd(QObject *parent) :
-  QThread(parent)
+CThreadDicomToNrrd::CThreadDicomToNrrd(QObject *parentLocal) :
+  QThread(parentLocal)
     {}
 
 CThreadDicomToNrrd::~CThreadDicomToNrrd()

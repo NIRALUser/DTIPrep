@@ -124,11 +124,11 @@ GMainWindow::GMainWindow()
   //
   // qvtkWidget->GetRenderWindow()->GetInteractor()->SetInteractorStyle(flightstyle);
 
-  QMenu *popup = new QMenu(qvtkWidget);
-  popup->addAction("Background White");
-  popup->addAction("Background Black");
-  popup->addAction("Stereo Rendering");
-  connect( popup, SIGNAL( triggered(QAction *) ), this,
+  QMenu *popupLocal = new QMenu(qvtkWidget);
+  popupLocal->addAction("Background White");
+  popupLocal->addAction("Background Black");
+  popupLocal->addAction("Stereo Rendering");
+  connect( popupLocal, SIGNAL( triggered(QAction *) ), this,
     SLOT( BackGroundColor(QAction *) ) );
 
   createActions();
@@ -566,9 +566,9 @@ GMainWindow::~GMainWindow()
     }
   }
 
-void GMainWindow::ChangeStyleTo(QString style)
+void GMainWindow::ChangeStyleTo(QString styleLocal)
 {
-  qApp->setStyle( QStyleFactory::create(style) );
+  qApp->setStyle( QStyleFactory::create(styleLocal) );
 }
 
 void GMainWindow::on_actionWindows_triggered()
@@ -601,14 +601,14 @@ void GMainWindow::on_actionCleanlooks_triggered()
   ChangeStyleTo( tr("Cleanlooks") );
 }
 
-void GMainWindow::UpdateProgressbar(int pos)
+void GMainWindow::UpdateProgressbar(int posLocal)
 {
   if ( !progressWidget->isVisible() )
     {
     progressWidget->show();
     }
-  GatProgressWidget()->setValue(pos);
-  if ( pos >= 100 )
+  GatProgressWidget()->setValue(posLocal);
+  if ( posLocal >= 100 )
     {
     progressWidget->hide();
     }
@@ -985,14 +985,14 @@ void GMainWindow::UpdateDWIDiffusionVectorActors()
       TubeFilter->SetCapping(1);
       TubeFilter->Update(); // /
 
-      vtkPolyDataMapper *mapper = vtkPolyDataMapper::New();
-      mapper->SetInput( TubeFilter->GetOutput() );
+      vtkPolyDataMapper *mapperLocal = vtkPolyDataMapper::New();
+      mapperLocal->SetInput( TubeFilter->GetOutput() );
 
-      vtkActor *actor = vtkActor::New();
-      actor->SetMapper(mapper);
-      actor->GetProperty()->SetColor(0.0, 0.0, 1.0);
-      //       actor->GetProperty()->SetOpacity(0.5);
-      actorDirFile->AddPart(actor);
+      vtkActor *actorLocal = vtkActor::New();
+      actorLocal->SetMapper(mapperLocal);
+      actorLocal->GetProperty()->SetColor(0.0, 0.0, 1.0);
+      //       actorLocal->GetProperty()->SetOpacity(0.5);
+      actorDirFile->AddPart(actorLocal);
       }
     }
   pvtkRenderer_3DView->AddActor(actorDirFile);
@@ -1095,14 +1095,14 @@ void GMainWindow::UpdateOutputDWIDiffusionVectorActors()
       TubeFilter->SetCapping(1);
       TubeFilter->Update(); // /
 
-      vtkPolyDataMapper *mapper = vtkPolyDataMapper::New();
-      mapper->SetInput( TubeFilter->GetOutput() );
+      vtkPolyDataMapper *mapperLocal = vtkPolyDataMapper::New();
+      mapperLocal->SetInput( TubeFilter->GetOutput() );
 
-      vtkActor *actor = vtkActor::New();
-      actor->SetMapper(mapper);
+      vtkActor *actorLocal = vtkActor::New();
+      actorLocal->SetMapper(mapperLocal);
 
-      actor->GetProperty()->SetColor(0.30, 0.90, 0.30);
-      actorDirInclude->AddPart(actor);
+      actorLocal->GetProperty()->SetColor(0.30, 0.90, 0.30);
+      actorDirInclude->AddPart(actorLocal);
       }
     }
   pvtkRenderer_3DView->AddActor( actorDirInclude );
@@ -1156,14 +1156,14 @@ void GMainWindow::UpdateProtocolDiffusionVectorActors()
     TubeFilter->SetCapping(1);
     TubeFilter->Update(); // /
 
-    vtkPolyDataMapper *mapper = vtkPolyDataMapper::New();
-    mapper->SetInput( TubeFilter->GetOutput() );
+    vtkPolyDataMapper *mapperLocal = vtkPolyDataMapper::New();
+    mapperLocal->SetInput( TubeFilter->GetOutput() );
 
-    vtkActor *actor = vtkActor::New();
-    actor->SetMapper(mapper);
+    vtkActor *actorLocal = vtkActor::New();
+    actorLocal->SetMapper(mapperLocal);
 
-    actor->GetProperty()->SetColor(0.70, 0.88, 0.93);
-    actorDirProtocol->AddPart(actor);
+    actorLocal->GetProperty()->SetColor(0.70, 0.88, 0.93);
+    actorDirProtocol->AddPart(actorLocal);
     }
   pvtkRenderer_3DView->AddActor(actorDirProtocol);
   actorDirProtocol->SetVisibility( actionFrom_Protocol->isChecked() );
@@ -1878,9 +1878,9 @@ void GMainWindow::popup(vtkObject *obj,
 
   double wl[2];
   planeWidget->GetWindowLevel(wl);
-  int window = (int)wl[0];
-  int level = (int)wl[1];
-  std::cout << "window" << window << "Level: " << level << std::endl;
+  const int windowLocal = (int)wl[0];
+  const int level = (int)wl[1];
+  std::cout << "window" << windowLocal << "Level: " << level << std::endl;
   // emit WindowLevel(window,level);
 
   /*
@@ -1901,21 +1901,21 @@ void GMainWindow::popup(vtkObject *obj,
     popupMenu->popup(global_pt);*/
 }
 
-void GMainWindow::SetAllWindowLevel(double window, double level)
+void GMainWindow::SetAllWindowLevel(double windowLocal, double level)
 {
   if ( bWindowLevelSyn )
     {
-    planeWidgetZ->SetWindowLevel(  window,  level );
-    planeWidgetX->SetWindowLevel(  window,  level );
-    planeWidgetY->SetWindowLevel(  window,  level );
+    planeWidgetZ->SetWindowLevel(  windowLocal,  level );
+    planeWidgetX->SetWindowLevel(  windowLocal,  level );
+    planeWidgetY->SetWindowLevel(  windowLocal,  level );
 
-    imageView2DPanelWithControls1->GetImageViewer2()->SetColorWindow(window);
+    imageView2DPanelWithControls1->GetImageViewer2()->SetColorWindow(windowLocal);
     imageView2DPanelWithControls1->GetImageViewer2()->SetColorLevel(level);
 
-    imageView2DPanelWithControls2->GetImageViewer2()->SetColorWindow(window);
+    imageView2DPanelWithControls2->GetImageViewer2()->SetColorWindow(windowLocal);
     imageView2DPanelWithControls2->GetImageViewer2()->SetColorLevel(level);
 
-    imageView2DPanelWithControls3->GetImageViewer2()->SetColorWindow(window);
+    imageView2DPanelWithControls3->GetImageViewer2()->SetColorWindow(windowLocal);
     imageView2DPanelWithControls3->GetImageViewer2()->SetColorLevel(level);
 
     imageView2DPanelWithControls1->GetImageViewer2()->Render();

@@ -5,8 +5,8 @@
 #include <math.h>
 #include <QtGui>
 
-CThreadIntensityMotionCheck::CThreadIntensityMotionCheck(QObject *parent) :
-  QThread(parent)
+CThreadIntensityMotionCheck::CThreadIntensityMotionCheck(QObject *parentLocal) :
+  QThread(parentLocal)
   {
   DWINrrdFilename = "";
   protocol = NULL;

@@ -3,8 +3,8 @@
 #include <string>
 #include <math.h>
 
-CThreadDicomSeriesRead::CThreadDicomSeriesRead(QObject *parent) :
-  QThread(parent)
+CThreadDicomSeriesRead::CThreadDicomSeriesRead(QObject *parentLocal) :
+  QThread(parentLocal)
     {}
 
 CThreadDicomSeriesRead::~CThreadDicomSeriesRead()

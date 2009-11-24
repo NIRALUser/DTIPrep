@@ -305,11 +305,13 @@ void XmlStreamReader::parseXMLParametersToProtocol()
       {
       vnl_vector_fixed<double, 3> vect;
       values = paremeters[i].value.split(" ");
-      int i = 0;
-      foreach (QString value, values)
         {
-        vect[i] = ( value.toDouble() );
-        i++;
+        int ii = 0;
+        foreach (QString value, values)
+          {
+          vect[ii] = ( value.toDouble() );
+          ii++;
+          }
         }
       protocol->GetDiffusionProtocol(). gradients.push_back(vect);
       }
