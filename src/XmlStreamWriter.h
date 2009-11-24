@@ -5,20 +5,15 @@
 class QTreeWidget;
 class QTreeWidgetItem;
 class XmlStreamWriter
-{
+  {
 public:
-	XmlStreamWriter(QTreeWidget *tree);
-	~XmlStreamWriter(void);
-    
-	 bool writeXml(const QString &fileName);
+  XmlStreamWriter(QTreeWidget *tree);
+  ~XmlStreamWriter(void);
 
- private:
-     void writeIndexEntry(QXmlStreamWriter *xmlWriter, QTreeWidgetItem *item);
+  bool writeXml(const QString & fileName);
 
-     QTreeWidget *treeWidget;
-};
+private:
+  void writeIndexEntry(QXmlStreamWriter *xmlWriter, QTreeWidgetItem *item);
 
-
-
-
- 
+  QTreeWidget *treeWidget;
+  };

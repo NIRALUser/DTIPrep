@@ -3,15 +3,15 @@
 Program:   NeuroLib
 Module:    $file: itkDWIEddyCurrentHeadMotionCorrector.h $
 Language:  C++
-Date:      $Date: 2009-08-27 01:39:28 $
-Version:   $Revision: 1.2 $
+Date:      $Date: 2009-11-24 12:27:55 $
+Version:   $Revision: 1.3 $
 Author:    Zhexing Liu (liuzhexing@gmail.com)
 
 Copyright (c) NIRAL, UNC. All rights reserved.
 See http://www.niral.unc.edu for details.
 
-This software is distributed WITHOUT ANY WARRANTY; without even 
-the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR 
+This software is distributed WITHOUT ANY WARRANTY; without even
+the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
 PURPOSE.  See the above copyright notices for more information.
 
 =========================================================================*/
@@ -29,203 +29,258 @@ PURPOSE.  See the above copyright notices for more information.
 
 namespace itk
 {
-	/** \class DWIEddyCurrentHeadMotionCorrector
-	* \brief DWI QC by DWIEddyCurrentHeadMotionCorrector.
-	*
-	* DWIEddyCurrentHeadMotionCorrector DWI QC by correcting artifacts from eddycurrent and head motions.
-	*
-	* \ingroup Multithreaded
-	* \ingroup Streamed
-	*/
+/** \class DWIEddyCurrentHeadMotionCorrector
+* \brief DWI QC by DWIEddyCurrentHeadMotionCorrector.
+*
+* DWIEddyCurrentHeadMotionCorrector DWI QC by correcting artifacts from eddycurrent and head motions.
+*
+* \ingroup Multithreaded
+* \ingroup Streamed
+*/
 
-	template<class TImageType>
-	class ITK_EXPORT DWIEddyCurrentHeadMotionCorrector : 
-		public ImageToImageFilter< TImageType, TImageType>
-	{
+template <class TImageType>
+class ITK_EXPORT DWIEddyCurrentHeadMotionCorrector :
+  public ImageToImageFilter<TImageType, TImageType>
+  {
+public:
 
-	public:
+  typedef enum {
+    Report_New = 0,
+    Report_Append,
+    } ReportFileMode;
 
-		typedef enum
-		{
-			Report_New = 0,
-			Report_Append,
-		} ReportFileMode;
+  struct struDiffusionDir {
+    std::vector<double> gradientDir;
+    int repetitionNumber;
+    };
 
-		struct struDiffusionDir
-		{
-			std::vector< double > gradientDir;
-			int repetitionNumber;
-		};
+  /** Standard class typedefs. */
+  typedef DWIEddyCurrentHeadMotionCorrector          Self;
+  typedef ImageToImageFilter<TImageType, TImageType> Superclass;
+  typedef SmartPointer<Self>                         Pointer;
+  typedef SmartPointer<const Self>                   ConstPointer;
 
-		/** Standard class typedefs. */
-		typedef DWIEddyCurrentHeadMotionCorrector			Self;
-		typedef ImageToImageFilter< TImageType, TImageType> Superclass;
-		typedef SmartPointer<Self>							Pointer;
-		typedef SmartPointer<const Self>					ConstPointer;
+  itkNewMacro(Self);
 
-		itkNewMacro(Self);
+  /** Run-time type information (and related methods). */
+  itkTypeMacro( DWIEddyCurrentHeadMotionCorrector, ImageToImageFilter);
 
-		/** Run-time type information (and related methods). */
-		itkTypeMacro( DWIEddyCurrentHeadMotionCorrector, ImageToImageFilter);
+  /** Typedef to images */
+  typedef TImageType                                 OutputImageType;
+  typedef TImageType                                 InputImageType;
+  typedef typename OutputImageType::Pointer          OutputImagePointer;
+  typedef typename InputImageType::ConstPointer      InputImageConstPointer;
+  typedef typename Superclass::OutputImageRegionType OutputImageRegionType;
 
-		/** Typedef to images */
-		typedef TImageType									OutputImageType;
-		typedef TImageType									InputImageType;
-		typedef typename OutputImageType::Pointer           OutputImagePointer;
-		typedef typename InputImageType::ConstPointer       InputImageConstPointer;
-		typedef typename Superclass::OutputImageRegionType  OutputImageRegionType;
+  static const unsigned int dim = 3;
+  typedef unsigned short                      DwiPixelType;
+  typedef itk::Image<DwiPixelType, dim>       GradientImageType;
+  typedef vnl_vector_fixed<double, dim>       GradientDirectionType;
+  typedef itk::VectorImage<DwiPixelType, dim> DwiImageType;
 
-		static const unsigned int dim = 3;
-		typedef unsigned short							DwiPixelType;
-		typedef itk::Image<DwiPixelType, dim>			GradientImageType;
-		typedef vnl_vector_fixed< double, dim >			GradientDirectionType;
-		typedef itk::VectorImage<DwiPixelType, dim>		DwiImageType;  
+  /** Container to hold gradient directions of the 'n' DW measurements */
+  typedef VectorContainer<unsigned int,
+    GradientDirectionType> GradientDirectionContainerType;
 
-		/** Container to hold gradient directions of the 'n' DW measurements */
-		typedef VectorContainer< unsigned int, GradientDirectionType >   GradientDirectionContainerType;
-		
-		/** ImageDimension enumeration. */
-		itkStaticConstMacro( ImageDimension, unsigned int, TImageType::ImageDimension );
+  /** ImageDimension enumeration. */
+  itkStaticConstMacro( ImageDimension, unsigned int, TImageType::ImageDimension );
 
-		/** Get & Set the numberOfBins. */
-		itkGetConstMacro( NumberOfBins, int );
-		itkSetMacro( NumberOfBins, int );
+  /** Get & Set the numberOfBins. */
+  itkGetConstMacro( NumberOfBins, int );
+  itkSetMacro( NumberOfBins, int );
 
-		/** Get & Set the samples */
-		itkGetConstMacro( Samples, int );
-		itkSetMacro( Samples, int );
+  /** Get & Set the samples */
+  itkGetConstMacro( Samples, int );
+  itkSetMacro( Samples, int );
 
-		/** Get & Set the translationScale */
-		itkGetConstMacro( TranslationScale, float );
-		itkSetMacro( TranslationScale, float );
+  /** Get & Set the translationScale */
+  itkGetConstMacro( TranslationScale, float );
+  itkSetMacro( TranslationScale, float );
 
-		/** Get & Set the stepLength */
-		itkGetConstMacro( StepLength, float );
-		itkSetMacro( StepLength, float );
+  /** Get & Set the stepLength */
+  itkGetConstMacro( StepLength, float );
+  itkSetMacro( StepLength, float );
 
-		/** Get & Set the factor */
-		itkGetConstMacro( Factor, float );
-		itkSetMacro( Factor, float );
+  /** Get & Set the factor */
+  itkGetConstMacro( Factor, float );
+  itkSetMacro( Factor, float );
 
-		/** Get & Set the maxNumberOfIterations */
-		itkGetConstMacro( MaxNumberOfIterations, int );
-		itkSetMacro( MaxNumberOfIterations, int );
+  /** Get & Set the maxNumberOfIterations */
+  itkGetConstMacro( MaxNumberOfIterations, int );
+  itkSetMacro( MaxNumberOfIterations, int );
 
-		/** Get & Set the check status */
-		itkBooleanMacro( CorrectDone);
-		itkGetConstMacro( CorrectDone, bool);
-		itkSetMacro( CorrectDone, bool);
+  /** Get & Set the check status */
+  itkBooleanMacro( CorrectDone);
+  itkGetConstMacro( CorrectDone, bool);
+  itkSetMacro( CorrectDone, bool);
 
-		/** Get & Set the report file mode */
-		itkGetConstMacro( ReportFileMode, int );
-		itkSetMacro( ReportFileMode, int  );
+  /** Get & Set the report file mode */
+  itkGetConstMacro( ReportFileMode, int );
+  itkSetMacro( ReportFileMode, int  );
 
-		/** Get & Set the ReportFilename */
-		itkGetConstMacro( ReportFileName, std::string );
-		itkSetMacro( ReportFileName, std::string  );
+  /** Get & Set the ReportFilename */
+  itkGetConstMacro( ReportFileName, std::string );
+  itkSetMacro( ReportFileName, std::string  );
 
+  /** DWIEddyCurrentHeadMotionCorrector produces an image which corrects the eddy-motion and head motion artifacts and updates the diffusion wieghting. As such, DWIEddyCurrentHeadMotionCorrector needs to provide
+    * an implementation for GenerateOutputInformation() in order to set the correct mete
+    * information.The original documentation of this method is below.
+    * \sa ProcessObject::GenerateOutputInformaton() */
+  virtual void GenerateOutputInformation();
 
-		/** DWIEddyCurrentHeadMotionCorrector produces an image which corrects the eddy-motion and head motion artifacts and updates the diffusion wieghting. As such, DWIEddyCurrentHeadMotionCorrector needs to provide
-			* an implementation for GenerateOutputInformation() in order to set the correct mete 
-			* information.The original documentation of this method is below.
-			* \sa ProcessObject::GenerateOutputInformaton() */
-		virtual void GenerateOutputInformation();
-		
-	protected:
-		DWIEddyCurrentHeadMotionCorrector();
-		~DWIEddyCurrentHeadMotionCorrector();
+protected:
+  DWIEddyCurrentHeadMotionCorrector();
+  ~DWIEddyCurrentHeadMotionCorrector();
 
-		void PrintSelf(std::ostream& os, Indent indent) const;
-		void ThreadedGenerateData(const OutputImageRegionType& outputRegionForThread,int threadId );  
+  void PrintSelf(std::ostream & os, Indent indent) const;
 
-	private:
-		DWIEddyCurrentHeadMotionCorrector(const Self&);		//purposely not implemented
-		void operator=(const Self&);						//purposely not implemented
+  void ThreadedGenerateData(const OutputImageRegionType & outputRegionForThread,
+    int threadId );
 
-		///////////////////////////////////////////////////////////
-		DWIHeadMotionEddyCurrentCorrection re;  // correction class
+private:
+  DWIEddyCurrentHeadMotionCorrector(const Self &);     // purposely not
+                                                       // implemented
+  void operator=(const Self &);                        // purposely not
 
-		/** parameters */
-		int		m_NumberOfBins;
-		int		m_Samples	;
-		float	m_TranslationScale;
-		float	m_StepLength;
-		float	m_Factor;
-		int		m_MaxNumberOfIterations;
+  // implemented
 
-		/** indicate whether correct is done */
-		bool m_CorrectDone;
+  // /////////////////////////////////////////////////////////
+  DWIHeadMotionEddyCurrentCorrection re;    // correction class
 
-		/** report filename */
-		std::string m_ReportFileName ;
+  /** parameters */
+  int   m_NumberOfBins;
+  int   m_Samples;
+  float m_TranslationScale;
+  float m_StepLength;
+  float m_Factor;
+  int   m_MaxNumberOfIterations;
 
-		/** report file mode */
-		int m_ReportFileMode ;
+  /** indicate whether correct is done */
+  bool m_CorrectDone;
 
-		/** input info */
-		int baselineNumber;
-		int bValueNumber;
-		int gradientDirNumber;
-		int repetitionNumber;
-		int gradientNumber;
-		
-		/** output info */
-		int baselineLeftNumber;
-		int bValueLeftNumber;
-		int gradientDirLeftNumber;
-		int gradientLeftNumber;
-		std::vector<int> repetitionLeftNumber;
+  /** report filename */
+  std::string m_ReportFileName;
 
-		/** b value */
-		double b0 ;
-		
-		/** container to hold gradient directions */
-		typename GradientDirectionContainerType::Pointer  m_GradientDirectionContainer;
-		typename GradientDirectionContainerType::Pointer  m_FeedinGradientDirectionContainer;
-		typename GradientDirectionContainerType::Pointer  m_OutputGradientDirectionContainer;
+  /** report file mode */
+  int m_ReportFileMode;
 
-		/** container to hold input gradient directions histogram */
-		std::vector<struDiffusionDir> DiffusionDirHistInput;
+  /** input info */
+  int baselineNumber;
+  int bValueNumber;
+  int gradientDirNumber;
+  int repetitionNumber;
+  int gradientNumber;
 
-		/** container to hold input b values */
-		std::vector<double> bValues;
+  /** output info */
+  int              baselineLeftNumber;
+  int              bValueLeftNumber;
+  int              gradientDirLeftNumber;
+  int              gradientLeftNumber;
+  std::vector<int> repetitionLeftNumber;
 
-		/** container to hold output gradient directions histogram */
-		std::vector<struDiffusionDir> DiffusionDirHistOutput;
+  /** b value */
+  double b0;
 
+  /** container to hold gradient directions */
+  typename GradientDirectionContainerType::Pointer m_GradientDirectionContainer;
+  typename GradientDirectionContainerType::Pointer
+  m_FeedinGradientDirectionContainer;
+  typename GradientDirectionContainerType::Pointer
+  m_OutputGradientDirectionContainer;
 
-		void parseGridentDirections();
-		void collectDiffusionStatistics();
-		void correct();
-		void collectLeftDiffusionStatistics();
-		void writeReport();
+  /** container to hold input gradient directions histogram */
+  std::vector<struDiffusionDir> DiffusionDirHistInput;
 
-	public:
-		inline typename GradientDirectionContainerType::Pointer  GetGradientDirectionContainer()
-			{ return m_GradientDirectionContainer; };
-		inline typename GradientDirectionContainerType::Pointer  GetFeedinGradientDirectionContainer()
-			{ return m_FeedinGradientDirectionContainer;};
-		inline typename GradientDirectionContainerType::Pointer  GetOutputGradientDirectionContainer()
-			{ return m_OutputGradientDirectionContainer;};
+  /** container to hold input b values */
+  std::vector<double> bValues;
 
-		inline int getBaselineNumber()		{   return baselineNumber;};
-		inline int getBValueNumber()		{   return bValueNumber;};
-		inline int getGradientDirNumber()	{   return gradientDirNumber;};
-		inline int getRepetitionNumber()	{   return repetitionNumber;};
-		inline int getGradientNumber()		{   return gradientNumber;};
+  /** container to hold output gradient directions histogram */
+  std::vector<struDiffusionDir> DiffusionDirHistOutput;
 
-		inline int getBaselineLeftNumber()		{   return baselineLeftNumber;};
-		inline int getBValueLeftNumber()		{   return bValueLeftNumber;};
-		inline int getGradientDirLeftNumber()	{   return gradientDirLeftNumber;};
-		inline int getGradientLeftNumber()		{   return gradientLeftNumber;};
-		inline std::vector<int> getRepetitionLeftNumber()	{   return repetitionLeftNumber;};
+  void parseGridentDirections();
 
-		typedef itk::Image< float, 3 >  ScalarImageType;
-		typedef itk::VectorImage<float, 3> VectorImageType;
+  void collectDiffusionStatistics();
 
-	private:
-		VectorImageType::Pointer corr;
-	};
+  void correct();
+
+  void collectLeftDiffusionStatistics();
+
+  void writeReport();
+
+public:
+  inline typename GradientDirectionContainerType::Pointer
+  GetGradientDirectionContainer()
+  {
+    return m_GradientDirectionContainer;
+  }
+
+  inline typename GradientDirectionContainerType::Pointer
+  GetFeedinGradientDirectionContainer()
+  {
+    return m_FeedinGradientDirectionContainer;
+  }
+
+  inline typename GradientDirectionContainerType::Pointer
+  GetOutputGradientDirectionContainer()
+  {
+    return m_OutputGradientDirectionContainer;
+  }
+
+  inline int getBaselineNumber()
+  {
+    return baselineNumber;
+  }
+
+  inline int getBValueNumber()
+  {
+    return bValueNumber;
+  }
+
+  inline int getGradientDirNumber()
+  {
+    return gradientDirNumber;
+  }
+
+  inline int getRepetitionNumber()
+  {
+    return repetitionNumber;
+  }
+
+  inline int getGradientNumber()
+  {
+    return gradientNumber;
+  }
+
+  inline int getBaselineLeftNumber()
+  {
+    return baselineLeftNumber;
+  }
+
+  inline int getBValueLeftNumber()
+  {
+    return bValueLeftNumber;
+  }
+
+  inline int getGradientDirLeftNumber()
+  {
+    return gradientDirLeftNumber;
+  }
+
+  inline int getGradientLeftNumber()
+  {
+    return gradientLeftNumber;
+  }
+
+  inline std::vector<int> getRepetitionLeftNumber()
+  {
+    return repetitionLeftNumber;
+  }
+
+  typedef itk::Image<float, 3>       ScalarImageType;
+  typedef itk::VectorImage<float, 3> VectorImageType;
+private:
+  VectorImageType::Pointer corr;
+  };
 } // end namespace itk
 
 #ifndef ITK_MANUAL_INSTANTIATION

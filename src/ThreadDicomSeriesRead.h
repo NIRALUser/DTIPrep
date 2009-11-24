@@ -4,24 +4,20 @@
 #include <QThread>
 
 class CThreadDicomSeriesRead : public QThread
-{
-    Q_OBJECT
-
+  {
+  Q_OBJECT
 public:
-    CThreadDicomSeriesRead(QObject *parent = 0);
-    ~CThreadDicomSeriesRead();
-
-
+  CThreadDicomSeriesRead(QObject *parent = 0);
+  ~CThreadDicomSeriesRead();
 signals:
-    void kkk( int );
-	void status(const QString &);
+  void kkk( int );
+
+  void status(const QString &);
 
 protected:
-    void run();
+  void run();
 
 private:
- 
- 
-};
+  };
 
 #endif

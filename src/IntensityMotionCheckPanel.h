@@ -1,4 +1,3 @@
-
 #ifndef INTENSITYMOTIONCHECKPANEL_H
 #define INTENSITYMOTIONCHECKPANEL_H
 
@@ -17,129 +16,172 @@
 
 class CThreadIntensityMotionCheck;
 
-class IntensityMotionCheckPanel : public QDockWidget, private Ui_IntensityMotionCheckPanel
-{
-	Q_OBJECT
-
+class IntensityMotionCheckPanel : public QDockWidget,
+  private Ui_IntensityMotionCheckPanel
+  {
+  Q_OBJECT
 public:
-	IntensityMotionCheckPanel(QMainWindow *parent=0);
-	~IntensityMotionCheckPanel(void);
+  IntensityMotionCheckPanel(QMainWindow *parent = 0);
+  ~IntensityMotionCheckPanel(void);
 
-	void SetFileName(QString nrrd );
+  void SetFileName(QString nrrd );
 
 signals:
-	void status(const QString &);
-	//void loadProtocol();
-	void ProtocolChanged();
-	void currentGradient(int winID, int gradient );
-	void UpdateOutputDWIDiffusionVectorActors();
+  void status(const QString &);
 
+  // void loadProtocol();
+  void ProtocolChanged();
+
+  void currentGradient(int winID, int gradient );
+
+  void UpdateOutputDWIDiffusionVectorActors();
 
 private slots:
-		//void on_comboBox_Protocol_currentIndexChanged(QString protocolName);
-		void on_treeWidget_itemDoubleClicked(QTreeWidgetItem * item, int column) ;
-		void on_treeWidget_itemChanged(QTreeWidgetItem * item, int column) ;
-		void on_treeWidget_currentItemChanged( QTreeWidgetItem *current,  QTreeWidgetItem *previous);
+  // void on_comboBox_Protocol_currentIndexChanged(QString protocolName);
+  void on_treeWidget_itemDoubleClicked(QTreeWidgetItem *item, int column);
 
-		void on_treeWidget_DiffusionInformation_itemClicked( QTreeWidgetItem *item,  int column);
-		void on_treeWidget_DiffusionInformation_currentItemChanged( QTreeWidgetItem *current,  QTreeWidgetItem *previous);
+  void on_treeWidget_itemChanged(QTreeWidgetItem *item, int column);
 
-		void on_treeWidget_Results_itemDoubleClicked(QTreeWidgetItem * item, int column) ;
-		void on_treeWidget_Results_currentItemChanged( QTreeWidgetItem *current,  QTreeWidgetItem *previous);
-		void on_treeWidget_Results_itemChanged(QTreeWidgetItem * item, int column) ;
-		void on_treeWidget_Results_itemClicked( QTreeWidgetItem *item,  int column);
+  void on_treeWidget_currentItemChanged( QTreeWidgetItem *current,
+    QTreeWidgetItem *previous);
 
-		void on_pushButton_Save_clicked( );
-		void on_pushButton_DefaultProtocol_clicked( );
-		void on_pushButton_SaveProtocolAs_clicked( );
+  void on_treeWidget_DiffusionInformation_itemClicked( QTreeWidgetItem *item,
+    int column);
 
-		void on_toolButton_ProtocolFileOpen_clicked( );
-		void on_pushButton_RunPipeline_clicked( );
-		void on_pushButton_SaveDWIAs_clicked( );
+  void on_treeWidget_DiffusionInformation_currentItemChanged(
+    QTreeWidgetItem *current,
+    QTreeWidgetItem *previous);
 
-		void on_pushButton_DefaultQCResult_clicked( );
+  void on_treeWidget_Results_itemDoubleClicked(QTreeWidgetItem *item,
+    int column);
 
-		void ResultUpdate();
-		void UpdateProgressBar(const int pos);
+  void on_treeWidget_Results_currentItemChanged( QTreeWidgetItem *current,
+    QTreeWidgetItem *previous);
+
+  void on_treeWidget_Results_itemChanged(QTreeWidgetItem *item, int column);
+
+  void on_treeWidget_Results_itemClicked( QTreeWidgetItem *item,  int column);
+
+  void on_pushButton_Save_clicked( );
+
+  void on_pushButton_DefaultProtocol_clicked( );
+
+  void on_pushButton_SaveProtocolAs_clicked( );
+
+  void on_toolButton_ProtocolFileOpen_clicked( );
+
+  void on_pushButton_RunPipeline_clicked( );
+
+  void on_pushButton_SaveDWIAs_clicked( );
+
+  void on_pushButton_DefaultQCResult_clicked( );
+
+  void ResultUpdate();
+
+  void UpdateProgressBar(const int pos);
 
 private:
-	CThreadIntensityMotionCheck  *ThreadIntensityMotionCheck;
-
+  CThreadIntensityMotionCheck *ThreadIntensityMotionCheck;
 public:
 
-	bool GetSliceProtocolParameters( 
-		double beginSkip, 
-		double endSkip, 
-		double &baselineCorrelationThreshold ,  
-		double &gradientCorrelationThreshold ,
-		double &baselineCorrelationDeviationThreshold ,  
-		double &gradientCorrelationDeviationThreshold
-		);
+  bool GetSliceProtocolParameters(
+    double beginSkip,
+    double endSkip,
+    double & baselineCorrelationThreshold,
+    double & gradientCorrelationThreshold,
+    double & baselineCorrelationDeviationThreshold,
+    double & gradientCorrelationDeviationThreshold
+    );
 
-	bool GetInterlaceProtocolParameters(
-		double &correlationThresholdBaseline, 
-		double &correlationThresholdGradient,
-		double &correlationBaselineDevTimes, 
-		double &correlationGradientDevTimes
-		);
+  bool GetInterlaceProtocolParameters(
+    double & correlationThresholdBaseline,
+    double & correlationThresholdGradient,
+    double & correlationBaselineDevTimes,
+    double & correlationGradientDevTimes
+    );
 
-	CThreadIntensityMotionCheck  *GetThreadIntensityMotionCheck(){ return  ThreadIntensityMotionCheck; };
+  CThreadIntensityMotionCheck  * GetThreadIntensityMotionCheck()
+  {
+    return ThreadIntensityMotionCheck;
+  }
 
-	typedef unsigned short DwiPixelType;
-	typedef itk::Image<DwiPixelType, 2>			SliceImageType;
-	typedef itk::Image<DwiPixelType, 3>			GradientImageType;
-	typedef itk::VectorImage<DwiPixelType, 3>	DwiImageType;    
-	typedef itk::ImageFileReader<DwiImageType>	DwiReaderType;
-	typedef itk::ImageFileWriter<DwiImageType>	DwiWriterType;
+  typedef unsigned short
+  DwiPixelType;
+  typedef itk::Image<DwiPixelType,
+    2>                    SliceImageType;
+  typedef itk::Image<DwiPixelType,
+    3>                    GradientImageType;
+  typedef itk::VectorImage<DwiPixelType,
+    3>                    DwiImageType;
+  typedef itk::ImageFileReader<DwiImageType>
+  DwiReaderType;
+  typedef itk::ImageFileWriter<DwiImageType>
+  DwiWriterType;
 
+  typedef itk::DiffusionTensor3DReconstructionImageFilter<DwiPixelType,
+    DwiPixelType, double> TensorReconstructionImageFilterType;
+  typedef  TensorReconstructionImageFilterType::GradientDirectionContainerType
+  GradientDirectionContainerType;
 
-	typedef itk::DiffusionTensor3DReconstructionImageFilter< DwiPixelType, DwiPixelType, double >		TensorReconstructionImageFilterType;
-	typedef	TensorReconstructionImageFilterType::GradientDirectionContainerType							GradientDirectionContainerType;
+  // void SetFileName(std::string filename) {DwiFileName = filename; };
+  bool GetGridentDirections( bool bDisplay);
 
-	//void SetFileName(std::string filename) {DwiFileName = filename; };
-	bool GetGridentDirections( bool bDisplay);
-	bool GetGridentDirections();
+  bool GetGridentDirections();
 
-	bool LoadDwiImage();
+  bool LoadDwiImage();
 
-	QCResult &GetQCResult(){ return qcResult;};
-	Protocol &GetProtocol(){ return protocol;};
+  QCResult & GetQCResult()
+  {
+    return qcResult;
+  }
 
-	void UpdatePanelDWI( );
-	void UpdateProtocolToTreeWidget( );
+  Protocol & GetProtocol()
+  {
+    return protocol;
+  }
 
-	void SetDWIImage(DwiImageType::Pointer DWIImage) { DwiImage = DWIImage; bDwiLoaded=true; };
+  void UpdatePanelDWI( );
 
-	void GenerateCheckOutputImage( std::string filename);
+  void UpdateProtocolToTreeWidget( );
 
-	void DefaultProcess( );
-	void OpenQCReport( );
-	void OpenXML();
+  void SetDWIImage(DwiImageType::Pointer DWIImage)
+  {
+    DwiImage = DWIImage; bDwiLoaded = true;
+  }
 
-	void DefaultProtocol();
+  void GenerateCheckOutputImage( std::string filename);
 
-	void SetProtocolTreeEditable( bool editable ) {bProtocolTreeEditable = editable;};
+  void DefaultProcess( );
+
+  void OpenQCReport( );
+
+  void OpenXML();
+
+  void DefaultProtocol();
+
+  void SetProtocolTreeEditable( bool editable )
+  {
+    bProtocolTreeEditable = editable;
+  }
 
 private:
 
-	bool bProtocol;
-	Protocol protocol;
-	QCResult qcResult;
+  bool     bProtocol;
+  Protocol protocol;
+  QCResult qcResult;
 
-	std::string DwiFileName;
-	DwiReaderType::Pointer DwiReader;
-	DwiImageType::Pointer DwiImage;
+  std::string            DwiFileName;
+  DwiReaderType::Pointer DwiReader;
+  DwiImageType::Pointer  DwiImage;
 
-	bool bDwiLoaded;
-	bool bGetGridentDirections;
-	bool readb0 ;
-	double b0 ;
-	GradientDirectionContainerType::Pointer	   GradientDirectionContainer;
+  bool                                    bDwiLoaded;
+  bool                                    bGetGridentDirections;
+  bool                                    readb0;
+  double                                  b0;
+  GradientDirectionContainerType::Pointer GradientDirectionContainer;
 
-	bool bResultTreeEditable;
-	bool bProtocolTreeEditable;
-  
-};
+  bool bResultTreeEditable;
+  bool bProtocolTreeEditable;
+  };
 
 #endif // INTENSITYMOTIONCHECKPANEL_H
-

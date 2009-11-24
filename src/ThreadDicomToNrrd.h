@@ -4,28 +4,26 @@
 #include <QThread>
 
 class CThreadDicomToNrrd : public QThread
-{
-    Q_OBJECT
-
+  {
+  Q_OBJECT
 public:
-    CThreadDicomToNrrd(QObject *parent = 0);
-    ~CThreadDicomToNrrd();
+  CThreadDicomToNrrd(QObject *parent = 0);
+  ~CThreadDicomToNrrd();
 
-	QString DicomToNrrdCmd;
-	QString DicomDir;
-	QString NrrdFileName;
-
+  QString DicomToNrrdCmd;
+  QString DicomDir;
+  QString NrrdFileName;
 signals:
-    void kkk( int );
-	void allDone(const QString &);
-	void QQQ();
+  void kkk( int );
 
+  void allDone(const QString &);
+
+  void QQQ();
 
 protected:
-    void run();
+  void run();
 
 private:
- 
-};
+  };
 
 #endif

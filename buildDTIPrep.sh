@@ -110,6 +110,7 @@ if [ 1 == 1 ];then  ## Temporary bypass of building ITK
 fi  ## Temporary bypass of building ITK
 
 export QTDIR=/opt/qt-4.6-rc1
+export QTDIR=/opt/qt-4.5.2/
 export PATH=${QTDIR}/bin:${PATH}
   #################################################################################
   #Get and build VTK-CVS

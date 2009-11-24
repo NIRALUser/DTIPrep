@@ -37,197 +37,206 @@
 
 namespace itk
 {
-
-class DWIHeadMotionEddyCurrentCorrection{
-
+class DWIHeadMotionEddyCurrentCorrection {
 public:
-    const static unsigned int Dimension = 3;
+  const static unsigned int Dimension = 3;
 
-    typedef double PrecisionType;
-    typedef std::string TextType;
-    typedef float PixelType;
+  typedef double                      PrecisionType;
+  typedef std::string                 TextType;
+  typedef float                       PixelType;
 
-    typedef Image< PixelType, Dimension >  ImageType;
-    typedef ImageType::IndexType  IndexType;    
-    //typedef NrrdHeader::VectorType GradientType;
-    //typedef NrrdHeader::VectorContainerType GradientContainerType;
+  typedef Image<PixelType, Dimension> ImageType;
+  typedef ImageType::IndexType        IndexType;
+  // typedef NrrdHeader::VectorType GradientType;
+  // typedef NrrdHeader::VectorContainerType GradientContainerType;
 
-    typedef vnl_vector_fixed<PrecisionType, Dimension> GradientType;
-    typedef std::vector<GradientType> GradientContainerType;
+  typedef vnl_vector_fixed<PrecisionType, Dimension> GradientType;
+  typedef std::vector<GradientType>                  GradientContainerType;
 
-    typedef std::vector<ImageType::Pointer> ImageContainerType;
-    
-    typedef itk::VectorImage<float, Dimension> VectorImageType;
-    typedef OrientedImage< PixelType, Dimension >  OrientImageType;
-    typedef std::vector<OrientImageType::Pointer> OrientImageContainerType;
+  typedef std::vector<ImageType::Pointer>            ImageContainerType;
 
-    DWIHeadMotionEddyCurrentCorrection();
+  typedef itk::VectorImage<float, Dimension>         VectorImageType;
+  typedef OrientedImage<PixelType, Dimension>        OrientImageType;
+  typedef std::vector<OrientImageType::Pointer>      OrientImageContainerType;
 
-    VectorImageType::Pointer  Registration();
-/*
-    inline NrrdHeader GetNrrdHeader( ){
-	return this->header;
-    }
+  DWIHeadMotionEddyCurrentCorrection();
 
-    inline void SetNrrdHeader( NrrdHeader header ){
-	this->header = header;
-    }
-*/
+  VectorImageType::Pointer  Registration();
 
-    inline GradientContainerType GetGradients( ){
-	return this->updateDirs;
-    }
+  /*
+      inline NrrdHeader GetNrrdHeader( ){
+    return this->header;
+      }
 
-    inline void SetGradients ( GradientContainerType grads ){
-	this->originDirs = grads;
-    }
+      inline void SetNrrdHeader( NrrdHeader header ){
+    this->header = header;
+      }
+  */
 
-	inline void SetBaseLines( ImageType::Pointer baseline ){
-	this->baseLines.push_back( baseline );
-    }
-    
-    inline void SetFixedImage( ImageType::Pointer fixedImageNew ){
-	this->fixedImage = fixedImageNew;
-    }
+  inline GradientContainerType GetGradients( )
+  {
+    return this->updateDirs;
+  }
 
-    inline void SetMovingImage( ImageType::Pointer movingImageNew ){
-	this->movingImages.push_back( movingImageNew );
-    }
-    
-    inline void SetTranslationScale( PrecisionType translationScaleNew ){
-	this->translationScale = translationScaleNew;
-    }
+  inline void SetGradients ( GradientContainerType grads )
+  {
+    this->originDirs = grads;
+  }
 
-    inline void SetStepLength( PrecisionType stepLengthNew ){
-	this->stepLength = stepLengthNew;
-    }
+  inline void SetBaseLines( ImageType::Pointer baseline )
+  {
+    this->baseLines.push_back( baseline );
+  }
 
-    inline void SetFactor( PrecisionType factorNew ){
-	this->factor = factorNew;
-    }
-    
-    inline void SetNumberOfBins( const unsigned int numberOfBinsNew ){
-	this->numberOfBins = numberOfBinsNew;
-    }
+  inline void SetFixedImage( ImageType::Pointer fixedImageNew )
+  {
+    this->fixedImage = fixedImageNew;
+  }
 
-    inline void SetSamples( const unsigned int samplesNew ){
-	this->samples = samplesNew;
-    }
+  inline void SetMovingImage( ImageType::Pointer movingImageNew )
+  {
+    this->movingImages.push_back( movingImageNew );
+  }
 
-    inline void SetMaxNumberOfIterations( const unsigned int maxNumberOfIterationsNew ){
-	this->maxNumberOfIterations = maxNumberOfIterationsNew;
-    }
-    
-    inline void SetPrefix( const TextType & outputImageFileNameNew  ){
-	this->outputImageFileName = outputImageFileNameNew;
-    }
+  inline void SetTranslationScale( PrecisionType translationScaleNew )
+  {
+    this->translationScale = translationScaleNew;
+  }
+
+  inline void SetStepLength( PrecisionType stepLengthNew )
+  {
+    this->stepLength = stepLengthNew;
+  }
+
+  inline void SetFactor( PrecisionType factorNew )
+  {
+    this->factor = factorNew;
+  }
+
+  inline void SetNumberOfBins( const unsigned int numberOfBinsNew )
+  {
+    this->numberOfBins = numberOfBinsNew;
+  }
+
+  inline void SetSamples( const unsigned int samplesNew )
+  {
+    this->samples = samplesNew;
+  }
+
+  inline void SetMaxNumberOfIterations(
+    const unsigned int maxNumberOfIterationsNew )
+  {
+    this->maxNumberOfIterations = maxNumberOfIterationsNew;
+  }
+
+  inline void SetPrefix( const TextType & outputImageFileNameNew  )
+  {
+    this->outputImageFileName = outputImageFileNameNew;
+  }
 
 private:
-    PrecisionType translationScale;
-    PrecisionType stepLength;
-    PrecisionType factor;
+  PrecisionType translationScale;
+  PrecisionType stepLength;
+  PrecisionType factor;
 
-    unsigned int numberOfBins;
-    unsigned int samples;
-    unsigned int maxNumberOfIterations;
+  unsigned int numberOfBins;
+  unsigned int samples;
+  unsigned int maxNumberOfIterations;
 
-    TextType fixedImageFileName;
-    TextType movingImageFileName;
-    TextType outputImageFileName;
-    TextType outputImagePrefix;
+  TextType fixedImageFileName;
+  TextType movingImageFileName;
+  TextType outputImageFileName;
+  TextType outputImagePrefix;
 
-    ImageType::Pointer fixedImage;
-    ImageContainerType movingImages;
-    ImageContainerType baseLines;
+  ImageType::Pointer fixedImage;
+  ImageContainerType movingImages;
+  ImageContainerType baseLines;
 
-    ImageContainerType dwiContainer;
-    //OrientImageContainerType dwiContainer;
+  ImageContainerType dwiContainer;
+  // OrientImageContainerType dwiContainer;
 
-    //NrrdHeader header;
-    GradientContainerType originDirs;
-    GradientContainerType updateDirs;
+  // NrrdHeader header;
+  GradientContainerType originDirs;
+  GradientContainerType updateDirs;
 
-    VectorImageType::Pointer dwis;
+  VectorImageType::Pointer dwis;
 
-    bool  RegistrationSingleDWI( ImageType::Pointer fixedImage,
-				 ImageType::Pointer movingImage,
-				 const GradientType& gradDir, unsigned int no); 
-    
-    typedef itk::AffineTransform< 
-                                  PrecisionType,
-                                  Dimension  >     AffineTransformType;
- 
-    typedef itk::LinearHeadEddy3DCorrection< 
-                                  PrecisionType,
-                                  Dimension  >     TransformType;
+  bool  RegistrationSingleDWI( ImageType::Pointer fixedImage,
+    ImageType::Pointer movingImage,
+    const GradientType & gradDir, unsigned int no);
 
+  typedef itk::AffineTransform<
+    PrecisionType,
+    Dimension>     AffineTransformType;
+
+  typedef itk::LinearHeadEddy3DCorrection<
+    PrecisionType,
+    Dimension>     TransformType;
+
+  typedef itk::GradientSteepestDescentOptimizer OptimizerType;
+
+  typedef itk::MattesMutualInformationImageToImageMetric<
+    ImageType,
+    ImageType>    MetricType;
+
+  typedef itk:: LinearInterpolateImageFunction<
+    ImageType,
+    PrecisionType>    LinearInterpolatorType;
+
+  typedef itk::ImageRegistrationMethod<
+    ImageType,
+    ImageType>    RegistrationType;
+
+  typedef itk::RescaleIntensityImageFilter<
+    ImageType, ImageType>  RescaleFilterType;
+
+  typedef itk::CenteredTransformInitializer<
+    AffineTransformType,
+    ImageType,
+    ImageType>  TransformInitializerType;
+
+  typedef OptimizerType::ScalesType OptimizerScalesType;
+
+  class CommandIterationUpdate : public itk::Command  {
+public:
+    typedef  CommandIterationUpdate Self;
+    typedef  itk::Command           Superclass;
+    typedef itk::SmartPointer<Self> Pointer;
+    itkNewMacro( Self );
+protected:
+    CommandIterationUpdate() {}
+public:
     typedef itk::GradientSteepestDescentOptimizer OptimizerType;
-  
-    typedef itk::MattesMutualInformationImageToImageMetric< 
-                                          ImageType, 
-                                          ImageType >    MetricType;
-   
-    typedef itk:: LinearInterpolateImageFunction< 
-                                    ImageType,
-                                    PrecisionType >    LinearInterpolatorType;
+    typedef   const OptimizerType                 *OptimizerPointer;
 
-    typedef itk::ImageRegistrationMethod< 
-                                    ImageType, 
-                                    ImageType >    RegistrationType;
+    void Execute(itk::Object *caller, const itk::EventObject & event)
+    {
+      Execute( (const itk::Object *)caller, event );
+    }
 
-    typedef itk::RescaleIntensityImageFilter<
-               ImageType, ImageType >  RescaleFilterType;
+    void Execute(const itk::Object *object, const itk::EventObject & event)
+    {
+      OptimizerPointer optimizer
+        = dynamic_cast<OptimizerPointer>( object );
 
-    
-    typedef itk::CenteredTransformInitializer< 
-                                    AffineTransformType, 
-                                    ImageType, 
-                                    ImageType >  TransformInitializerType;
+      if ( !itk::IterationEvent().CheckEvent( &event ) )
+        {
+        return;
+        }
+      std::cout << std::endl << "No: " << optimizer->GetCurrentIteration()
+                << "   ";
+      std::cout << "Best Value: " << optimizer->GetBestValue() << std::endl;
+      std::cout << "Best Para:" << optimizer->GetBestPosition() << std::endl;
 
-    typedef OptimizerType::ScalesType       OptimizerScalesType;
-
-
-    class CommandIterationUpdate : public itk::Command  {
-    public:
-	typedef  CommandIterationUpdate   Self;
-	typedef  itk::Command             Superclass;
-	typedef itk::SmartPointer<Self>  Pointer;
-	itkNewMacro( Self );
-    protected:
-	CommandIterationUpdate() {};
-    public:
-	typedef itk::GradientSteepestDescentOptimizer OptimizerType;
-	typedef   const OptimizerType   *    OptimizerPointer;
-
-	void Execute(itk::Object *caller, const itk::EventObject & event)
-	    {
-		Execute( (const itk::Object *)caller, event);
-	    }
-
-	void Execute(const itk::Object * object, const itk::EventObject & event)
-	    {
-		OptimizerPointer optimizer = 
-                      dynamic_cast< OptimizerPointer >( object );
-		if( ! itk::IterationEvent().CheckEvent( &event ) )
-		{
-		    return;
-		}
-		std::cout << std::endl << "No: " << optimizer->GetCurrentIteration() << "   ";
-		std::cout << "Best Value: " << optimizer->GetBestValue() << std::endl;
-		std::cout << "Best Para:" << optimizer->GetBestPosition() << std::endl;
-
-		std::cout << "current value: " << optimizer->GetValue() << "  ";
-		std::cout << "Step = " << optimizer->GetCurrentStepLength() << std::endl;
-		std::cout << "next para: " << optimizer->GetCurrentPosition() << std::endl;
-	    }
+      std::cout << "current value: " << optimizer->GetValue() << "  ";
+      std::cout << "Step = " << optimizer->GetCurrentStepLength() << std::endl;
+      std::cout << "next para: " << optimizer->GetCurrentPosition()
+                << std::endl;
+    }
     };
-
-
-};
+  };
 
 #include "itkDWIHeadMotionEddyCurrentCorrection.txx"
-
 } // end of namespace
 
 #endif /*__itk_DWIHeadMotionEddyCurrent_correction_h */
-

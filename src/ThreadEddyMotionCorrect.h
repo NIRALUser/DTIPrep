@@ -1,27 +1,23 @@
 #ifndef ThreadEddyMotionCorrect_H
 #define ThreadEddyMotionCorrect_H
 
-
 #include <QThread>
 
 class CThreadEddyMotionCorrect : public QThread
-{
-    Q_OBJECT
-
+  {
+  Q_OBJECT
 public:
-    CThreadEddyMotionCorrect(QObject *parent = 0);
-    ~CThreadEddyMotionCorrect();
-
-
-
+  CThreadEddyMotionCorrect(QObject *parent = 0);
+  ~CThreadEddyMotionCorrect();
 signals:
-    void kkk( int );
-	void allDone(const QString &);
+  void kkk( int );
+
+  void allDone(const QString &);
 
 protected:
-    void run();
+  void run();
 
 private:
-};
+  };
 
 #endif

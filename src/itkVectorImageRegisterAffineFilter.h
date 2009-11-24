@@ -3,8 +3,8 @@
  Program:   GTRACT (Guided Tensor Restore Anatomical Connectivity Tractography)
  Module:    $RCSfile: itkVectorImageRegisterAffineFilter.h,v $
  Language:  C++
- Date:      $Date: 2009-11-23 14:14:23 $
- Version:   $Revision: 1.2 $
+ Date:      $Date: 2009-11-24 12:27:56 $
+ Version:   $Revision: 1.3 $
 
    Copyright (c) University of Iowa Department of Radiology. All rights reserved.
    See GTRACT-Copyright.txt or http://mri.radiology.uiowa.edu/copyright/GTRACT-Copyright.txt
@@ -43,8 +43,8 @@
 #include <map>
 #include <string>
 
-namespace itk {
-
+namespace itk
+{
 /** \class VectorImageRegisterAffineFilter
  * \brief Register each index of a vector image to an image
  *        specified by the user. The fixed image is not a vector
@@ -64,81 +64,91 @@ namespace itk {
  *
  */
 
-template<class TInputImage, class TOutputImage>
+template <class TInputImage, class TOutputImage>
 class ITK_EXPORT VectorImageRegisterAffineFilter :
-    public ImageToImageFilter<TInputImage, TOutputImage>
-{
+  public ImageToImageFilter<TInputImage, TOutputImage>
+  {
 public:
   /** Standard class typedefs. */
   typedef VectorImageRegisterAffineFilter Self;
   typedef ImageToImageFilter<TInputImage, TOutputImage>
-      Superclass;
-  typedef SmartPointer<Self>                   Pointer;
-  typedef SmartPointer<const Self>             ConstPointer;
+  Superclass;
+  typedef SmartPointer<Self>       Pointer;
+  typedef SmartPointer<const Self> ConstPointer;
 
   /** Some convenient typedefs. */
-  typedef TInputImage InputImageType;
-  typedef typename InputImageType::Pointer            InputImagePointer;
-  typedef typename InputImageType::ConstPointer       InputImageConstPointer;
-  typedef typename InputImageType::RegionType         InputImageRegionType;
-  typedef typename InputImageType::SizeType           InputImageSizeType;
-  typedef typename InputImageType::SpacingType        InputImageSpacingType;
-  typedef typename InputImageType::PointType          InputImagePointType;
-  typedef typename InputImageType::PixelType          InputImagePixelType;
-  typedef typename InputImageType::DirectionType      InputImageDirectionType;
-  typedef typename InputImageType::IndexType          InputImageIndexType;
-  //typedef typename InputImageType::InternalPixelType  InputImageValueType;
-  typedef typename InputImagePixelType::ComponentType InputImageVectorComponentType;
+  typedef TInputImage                            InputImageType;
+  typedef typename InputImageType::Pointer       InputImagePointer;
+  typedef typename InputImageType::ConstPointer  InputImageConstPointer;
+  typedef typename InputImageType::RegionType    InputImageRegionType;
+  typedef typename InputImageType::SizeType      InputImageSizeType;
+  typedef typename InputImageType::SpacingType   InputImageSpacingType;
+  typedef typename InputImageType::PointType     InputImagePointType;
+  typedef typename InputImageType::PixelType     InputImagePixelType;
+  typedef typename InputImageType::DirectionType InputImageDirectionType;
+  typedef typename InputImageType::IndexType     InputImageIndexType;
+  // typedef typename InputImageType::InternalPixelType  InputImageValueType;
+  typedef typename InputImagePixelType::ComponentType
+  InputImageVectorComponentType;
 
 #if 0
   /* The pixel type of FixedImageType should be based on the
    * InputImageValueType. However, the Mac compiler 4.0.1
    * does not like this. Currently this is hardcoded
    */
-  typedef itk::Image<signed short,3>  FixedImageType;
+  typedef itk::Image<signed short, 3> FixedImageType;
 #else
-//  typedef typename itk::Image<unsigned short,3>  FixedImageType;
-  typedef typename itk::Image<InputImageVectorComponentType,3>  FixedImageType;
+  //  typedef typename itk::Image<unsigned short,3>  FixedImageType;
+  typedef typename itk::Image<InputImageVectorComponentType, 3> FixedImageType;
 #endif
-  typedef typename FixedImageType::Pointer FixedImagePointer;
-  typedef typename FixedImageType::PixelType FixedImagePixelType;
-
+  typedef typename FixedImageType::Pointer
+  FixedImagePointer;
+  typedef typename FixedImageType::PixelType
+  FixedImagePixelType;
 
   typedef TOutputImage OutputImageType;
-  typedef typename OutputImageType::Pointer          OutputImagePointer;
-  typedef typename OutputImageType::ConstPointer    OutputImageConstPointer;
-  typedef typename OutputImageType::RegionType      OutputImageRegionType;
-  typedef typename OutputImageType::PixelType        OutputImagePixelType;
-  typedef typename OutputImageType::IndexType        OutputImageIndexType;
-  typedef typename OutputImageType::InternalPixelType        OutputImageValueType;
+  typedef typename OutputImageType::Pointer
+  OutputImagePointer;
+  typedef typename OutputImageType::ConstPointer
+  OutputImageConstPointer;
+  typedef typename OutputImageType::RegionType
+  OutputImageRegionType;
+  typedef typename OutputImageType::PixelType
+  OutputImagePixelType;
+  typedef typename OutputImageType::IndexType
+  OutputImageIndexType;
+  typedef typename OutputImageType::InternalPixelType
+  OutputImageValueType;
 
-  typedef itk::Image<OutputImageValueType,3>        CastImageType;
-
+  typedef itk::Image<OutputImageValueType, 3> CastImageType;
 
   /* Internally Used Typedefs */
-  typedef itk::VectorIndexSelectionCastImageFilter<InputImageType, FixedImageType> VectorIndexFilterType;
+  typedef itk::VectorIndexSelectionCastImageFilter<InputImageType,
+    FixedImageType> VectorIndexFilterType;
 
-  typedef itk::AffineTransform< double >     TransformType;
-  typedef itk::RegularStepGradientDescentOptimizer      OptimizerType;
+  typedef itk::AffineTransform<double>
+  TransformType;
+  typedef itk::RegularStepGradientDescentOptimizer
+  OptimizerType;
   typedef itk::MattesMutualInformationImageToImageMetric<
-                                    FixedImageType,
-                                    FixedImageType >        MetricType;
+    FixedImageType,
+    FixedImageType>        MetricType;
 
   typedef itk:: LinearInterpolateImageFunction<
-                                    FixedImageType,
-                                    double          >         InterpolatorType;
+    FixedImageType,
+    double>         InterpolatorType;
 
   typedef itk::ImageRegistrationMethod<
-                                    FixedImageType,
-                                    FixedImageType >        RegistrationType;
+    FixedImageType,
+    FixedImageType>        RegistrationType;
 
-  typedef itk::CenteredTransformInitializer< TransformType,
-                                               FixedImageType,
-                                               FixedImageType
-                                                   >  TransformInitializerType;
+  typedef itk::CenteredTransformInitializer<TransformType,
+    FixedImageType,
+    FixedImageType
+    >  TransformInitializerType;
   typedef itk::ResampleImageFilter<
-                                  FixedImageType,
-                                  FixedImageType >    ResampleFilterType;
+    FixedImageType,
+    FixedImageType>    ResampleFilterType;
 
 #if 0
   /* The output image type should be CastImageType for the
@@ -147,43 +157,44 @@ public:
    * the FixedImageType to make it a scalar
    */
   typedef itk::CastImageFilter<
-                                  FixedImageType,
-                                  FixedImageType >    CastFilterType;
+    FixedImageType,
+    FixedImageType>    CastFilterType;
 #else
-  typedef itk::CastImageFilter< FixedImageType,
-                                  CastImageType >    CastFilterType;
+  typedef itk::CastImageFilter<FixedImageType,
+    CastImageType>    CastFilterType;
 #endif
 
-  typedef typename VectorIndexFilterType::Pointer  VectorIndexFilterPointer;
-  typedef typename TransformType::Pointer  TransformTypePointer;
-  typedef typename MetricType::Pointer        MetricTypePointer;
-  typedef typename OptimizerType::Pointer      OptimizerTypePointer;
-  typedef typename OptimizerType::ParametersType OptimizerParameterType;
-  typedef typename OptimizerType::ScalesType  OptimizerScalesType;
-  typedef typename InterpolatorType::Pointer   InterpolatorTypePointer;
-  typedef typename RegistrationType::Pointer   RegistrationTypePointer;
-  typedef typename TransformInitializerType::Pointer TransformInitializerTypePointer;
+  typedef typename VectorIndexFilterType::Pointer VectorIndexFilterPointer;
+  typedef typename TransformType::Pointer         TransformTypePointer;
+  typedef typename MetricType::Pointer            MetricTypePointer;
+  typedef typename OptimizerType::Pointer         OptimizerTypePointer;
+  typedef typename OptimizerType::ParametersType  OptimizerParameterType;
+  typedef typename OptimizerType::ScalesType      OptimizerScalesType;
+  typedef typename InterpolatorType::Pointer      InterpolatorTypePointer;
+  typedef typename RegistrationType::Pointer      RegistrationTypePointer;
+  typedef typename TransformInitializerType::Pointer
+  TransformInitializerTypePointer;
   typedef typename ResampleFilterType::Pointer ResampleFilterTypePointer;
-  typedef typename CastFilterType::Pointer CastFilterTypePointer;
+  typedef typename CastFilterType::Pointer     CastFilterTypePointer;
 
-  typedef itk::Matrix<double, 3, 3>             Matrix3D;
-  typedef typename TransformType::MatrixType    MatrixType;
-
+  typedef itk::Matrix<double, 3, 3>            Matrix3D;
+  typedef typename TransformType::MatrixType   MatrixType;
 
   /** ImageDimension constants */
   itkStaticConstMacro(InputImageDimension, unsigned int,
-                      TInputImage::ImageDimension);
+    TInputImage::ImageDimension);
   itkStaticConstMacro(OutputImageDimension, unsigned int,
-                      TOutputImage::ImageDimension);
+    TOutputImage::ImageDimension);
 
   /** The dimensions of the input image must equal those of the
       output image. */
-  itkConceptMacro(SameDimension,
-    (Concept::SameDimension<itkGetStaticConstMacro(InputImageDimension),itkGetStaticConstMacro(OutputImageDimension)>));
+  itkConceptMacro( SameDimension,
+    ( Concept::SameDimension<itkGetStaticConstMacro(InputImageDimension),
+        itkGetStaticConstMacro(OutputImageDimension)> ) );
 
   /** The dimension of the input image must be 3 */
-  itkConceptMacro(DimensionShouldBe3,
-    (Concept::SameDimension<itkGetStaticConstMacro(InputImageDimension),3>));
+  itkConceptMacro( DimensionShouldBe3,
+    ( Concept::SameDimension<itkGetStaticConstMacro(InputImageDimension), 3> ) );
 
   /** Standard New method. */
   itkNewMacro(Self);
@@ -193,7 +204,7 @@ public:
 
   /* SetInput and GetOutput Macros */
   itkSetObjectMacro (FixedImage, FixedImageType);
-  //itkSetObjectMacro (MovingImage, InputImageType);
+  // itkSetObjectMacro (MovingImage, InputImageType);
   itkGetObjectMacro (Output, OutputImageType);
 
   itkSetMacro (NumberOfSpatialSamples, int);
@@ -203,38 +214,31 @@ public:
   itkSetMacro (MinimumStepLength, float);
   itkSetMacro (RelaxationFactor, float);
   itkSetMacro (OutputParameterFile, std::string);
-
-
 protected:
   VectorImageRegisterAffineFilter();
   ~VectorImageRegisterAffineFilter() {};
-
 
   void GenerateData();
 
   Matrix3D orthogonalize( Matrix3D rotator);
 
-
 private:
-  VectorImageRegisterAffineFilter(const Self&); //purposely not implemented
-  void operator=(const Self&); //purposely not implemented
+  VectorImageRegisterAffineFilter(const Self &); // purposely not implemented
+  void operator=(const Self &);                  // purposely not implemented
 
   // Input and Output Image
   FixedImagePointer  m_FixedImage;
   OutputImagePointer m_Output;
 
-
   // Internally used Parameters
-  float m_TranslationScale;
-  float m_MaximumStepLength;
-  float m_MinimumStepLength;
-  float m_RelaxationFactor;
-  int   m_NumberOfSpatialSamples;
-  int   m_NumberOfIterations;
+  float       m_TranslationScale;
+  float       m_MaximumStepLength;
+  float       m_MinimumStepLength;
+  float       m_RelaxationFactor;
+  int         m_NumberOfSpatialSamples;
+  int         m_NumberOfIterations;
   std::string m_OutputParameterFile;
-
-} ; // end of class
-
+  }; // end of class
 } // end namespace itk
 
 #ifndef ITK_MANUAL_INSTANTIATION
@@ -242,5 +246,3 @@ private:
 #endif
 
 #endif
-
-

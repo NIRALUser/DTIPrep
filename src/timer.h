@@ -4,22 +4,22 @@
 #include <ctime>
 
 class Timer {
-    clock_t counter;
+  clock_t counter;
 public:
-    Timer(): counter(0) {};
+  Timer() : counter(0) {}
 
-    bool elasped(clock_t ms)
-    {
-        clock_t tick = std::clock();
+  bool elasped(clock_t ms)
+  {
+    clock_t tick = std::clock();
 
-        if(tick - counter >= ms)
-        {
-             counter = tick;
-             return true;
-        }
+    if ( tick - counter >= ms )
+      {
+      counter = tick;
+      return true;
+      }
 
-        return false;
-    }
-};
+    return false;
+  }
+  };
 
-#endif 
+#endif

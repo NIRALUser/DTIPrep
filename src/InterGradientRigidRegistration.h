@@ -1,7 +1,6 @@
-
 class CInterGradientRigidRegistration
-{
+  {
 public:
-	CInterGradientRigidRegistration(void);
-	~CInterGradientRigidRegistration(void);
-};
+  CInterGradientRigidRegistration(void);
+  ~CInterGradientRigidRegistration(void);
+  };
