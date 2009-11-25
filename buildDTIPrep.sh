@@ -36,6 +36,10 @@ case ${ABI} in
     CFLAGS="-Wall -Wstrict-prototypes -fprofile-arcs -ftest-coverage -pg  -UNDEBUG ${FLAGS_FROM_QT_BUILD}"
     CXXFLAGS="-Wall  -fprofile-arcs -ftest-coverage -pg -UNDEBUG ${FLAGS_FROM_QT_BUILD}"
     ;;
+  "OPTDEBUG")
+    CFLAGS="-Wstrict-prototypes -g -O1 ${FLAGS_FROM_QT_BUILD}"
+    CXXFLAGS=" -g -O1 ${FLAGS_FROM_QT_BUILD}"
+    ;;
   "DEBUG")
     CFLAGS="-Wall -Wstrict-prototypes -g ${FLAGS_FROM_QT_BUILD}"
     CXXFLAGS="-Wall  -g ${FLAGS_FROM_QT_BUILD}"

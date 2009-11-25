@@ -113,7 +113,8 @@ int main ( int argc, char **argv )
     // check with  xml
     if ( command.GetOptionWasSet("xmlSetting") && xmlFileName.length() > 0 )
       {
-      CIntensityMotionCheck IntensityMotionCheck( DWIFileName );
+      CIntensityMotionCheck IntensityMotionCheck;
+      IntensityMotionCheck.SetDwiFileName(DWIFileName);
       Protocol              protocol;
       QCResult              qcResult;
       QString               str( xmlFileName.c_str() );
@@ -125,9 +126,8 @@ int main ( int argc, char **argv )
       IntensityMotionCheck.SetProtocol( &protocol);
       IntensityMotionCheck.SetQCResult( &qcResult);
       IntensityMotionCheck.GetImagesInformation();
-      unsigned char result = IntensityMotionCheck.CheckByProtocol();
-      unsigned char out;
-      out = result;
+      const unsigned char result = IntensityMotionCheck.RunPipelineByProtocol();
+      unsigned char out = result;
       std::cout << "--------------------------------" << std::endl;
 
       if ( resultNotes.length() > 0 )
