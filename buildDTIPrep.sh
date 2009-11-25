@@ -41,8 +41,8 @@ case ${ABI} in
     CXXFLAGS=" -g -O1 ${FLAGS_FROM_QT_BUILD}"
     ;;
   "DEBUG")
-    CFLAGS="-Wall -Wstrict-prototypes -g ${FLAGS_FROM_QT_BUILD}"
-    CXXFLAGS="-Wall  -g ${FLAGS_FROM_QT_BUILD}"
+    CFLAGS=" -g ${FLAGS_FROM_QT_BUILD}"
+    CXXFLAGS=" -g ${FLAGS_FROM_QT_BUILD}"
     ;;
   "FAST")
     CFLAGS="-DNDEBUG -O3 -msse -mmmx -msse2 -msse3  -Wall -W -Wshadow -Wcast-qual -Wwrite-strings -Wstrict-prototypes ${FLAGS_FROM_QT_BUILD}"

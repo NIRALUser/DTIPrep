@@ -310,14 +310,14 @@ bool IntensityMotionCheckPanel::LoadDwiImage()
   // std::cout<< str<<std::endl;
   // ::SetCurrentDirectory(str.c_str());
 
-  itk::NrrdImageIO::Pointer NrrdImageIO = itk::NrrdImageIO::New();
+  itk::NrrdImageIO::Pointer myNrrdImageIO = itk::NrrdImageIO::New();
 
   if ( DwiFileName.length() != 0 )
     {
     try
       {
       DwiReader = DwiReaderType::New();
-      DwiReader->SetImageIO(NrrdImageIO);
+      DwiReader->SetImageIO(myNrrdImageIO);
       DwiReader->SetFileName(DwiFileName);
       std::cout << "Loading in IntensityMotionCheckPanel:" << DwiFileName
                 << " ... ";
@@ -2555,11 +2555,11 @@ void IntensityMotionCheckPanel::GenerateCheckOutputImage( std::string filename)
 
   if ( gradientLeft == qcResult.GetIntensityMotionCheckResult().size() )
     {
-    itk::NrrdImageIO::Pointer NrrdImageIO = itk::NrrdImageIO::New();
+    itk::NrrdImageIO::Pointer myNrrdImageIO = itk::NrrdImageIO::New();
     try
       {
       DwiWriterType::Pointer DwiWriter = DwiWriterType::New();
-      DwiWriter->SetImageIO(NrrdImageIO);
+      DwiWriter->SetImageIO(myNrrdImageIO);
       DwiWriter->SetFileName( filename );
       DwiWriter->SetInput( DwiReader->GetOutput() );
       DwiWriter->UseCompressionOn();
@@ -2611,11 +2611,11 @@ void IntensityMotionCheckPanel::GenerateCheckOutputImage( std::string filename)
     ++nit;
     }
 
-  itk::NrrdImageIO::Pointer NrrdImageIO = itk::NrrdImageIO::New();
+  itk::NrrdImageIO::Pointer myNrrdImageIO = itk::NrrdImageIO::New();
   try
     {
     DwiWriterType::Pointer DwiWriter = DwiWriterType::New();
-    DwiWriter->SetImageIO(NrrdImageIO);
+    DwiWriter->SetImageIO(myNrrdImageIO);
     DwiWriter->SetFileName( filename );
     DwiWriter->SetInput(newDwiImage);
     DwiWriter->UseCompressionOn();

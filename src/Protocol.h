@@ -183,6 +183,7 @@ public:
 
   void initDTIProtocol();
 
+  //HACK: print functions should be const
   void printProtocols();
 
   void printImageProtocol();
@@ -205,26 +206,33 @@ public:
 
   void collectDiffusionStatistics();
 
-  int getBaselineNumber()
+  //HACK:  get functions should be const, and should start with capital G
+  int getBaselineNumber() const
   {
     return baselineNumber;
   }
 
-  int getBValueNumber()
+  int getBValueNumber() const
   {
     return bValueNumber;
   }
 
-  int getgradientDirNumber()
+  int getgradientDirNumber() const
   {
     return gradientDirNumber;
   }
 
-  int getRepetitionNumber()
+  int getRepetitionNumber() const
   {
     return repetitionNumber;
   }
 
+  //Get functions should be const, returning a reference to the internal
+  // class variable breaks encapsulation.
+  // PREFER:
+  // "const struct ImageProtocol & GetImageProtocol() const"
+  // OR
+  // "struct ImageProtocol GetImageProtocol() const"
   struct ImageProtocol & GetImageProtocol()
   {
     return imageProtocol;
@@ -270,32 +278,34 @@ public:
     return QCOutputDirectory;
   }
 
-  std::string & GetQCedDWIFileNameSuffix()
+  std::string GetQCedDWIFileNameSuffix() const
   {
     return QCedDWIFileNameSuffix;
   }
 
-  std::string & GetReportFileNameSuffix()
+  std::string GetReportFileNameSuffix() const
   {
     return reportFileNameSuffix;
   }
 
-  double GetBadGradientPercentageTolerance()
+  double GetBadGradientPercentageTolerance() const
   {
-    return badGradientPercentageTolerance;
+    return m_BadGradientPercentageTolerance;
   }
 
-  void SetBadGradientPercentageTolerance(double tor)
+  void SetBadGradientPercentageTolerance(const double tor)
   {
-    badGradientPercentageTolerance = tor;
+    m_BadGradientPercentageTolerance = tor;
   }
 
 private:
 
+  //HACK:  All private member variables should start with "m_" to indicate
+  //       that they are private, and to avoid namespace polution/collision with the class itself
   std::string QCOutputDirectory;
   std::string QCedDWIFileNameSuffix;
   std::string reportFileNameSuffix;
-  double      badGradientPercentageTolerance;
+  double      m_BadGradientPercentageTolerance;
 
   int baselineNumber;
   int bValueNumber;

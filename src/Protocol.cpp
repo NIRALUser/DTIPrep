@@ -20,7 +20,7 @@ void Protocol::initProtocols()
   this->QCOutputDirectory = "";
   this->QCedDWIFileNameSuffix = "_QCed.nhdr";
   this->reportFileNameSuffix = "_QCReport.txt";
-  this->badGradientPercentageTolerance = 0.2;
+  this->m_BadGradientPercentageTolerance = 0.2;
 
   initImageProtocol();
   initDiffusionProtocol();
@@ -415,7 +415,7 @@ void Protocol::printSliceCheckProtocol()
             << std::endl;
 
   //   std::cout<<"\tbadGradientPercentageTolerance: "<<
-  // GetSliceCheckProtocol().badGradientPercentageTolerance<<std::endl;
+  // GetSliceCheckProtocol().m_BadGradientPercentageTolerance<<std::endl;
 
   std::cout << "\theadSkipSlicePercentage: "
             << GetSliceCheckProtocol().headSkipSlicePercentage << std::endl;
@@ -463,7 +463,7 @@ void Protocol::printInterlaceCheckProtocol()
     }
 
   //   std::cout<<"\tbadGradientPercentageTolerance: "<<
-  // GetInterlaceCheckProtocol().badGradientPercentageTolerance<<std::endl;
+  // GetInterlaceCheckProtocol().m_BadGradientPercentageTolerance<<std::endl;
 
   std::cout << "\tcorrelationThresholdBaseline: "
             << GetInterlaceCheckProtocol().correlationThresholdBaseline
@@ -517,7 +517,7 @@ void Protocol::printGradientCheckProtocol()
     }
 
   //   std::cout<<"\tbadGradientPercentageTolerance: "<<
-  // GetGradientCheckProtocol().badGradientPercentageTolerance<<std::endl;
+  // GetGradientCheckProtocol().m_BadGradientPercentageTolerance<<std::endl;
 
   std::cout << "\tgradientTranslationThreshold: "
             << GetGradientCheckProtocol().translationThreshold << std::endl;

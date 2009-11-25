@@ -177,12 +177,12 @@ public:
 
   inline DwiImageType::Pointer GetDwiImage() const
   {
-    return DwiImage;
+    return m_DwiOriginalImage;
   }
 
-  inline DwiImageType::Pointer GetDwiImageTemp() const
+  inline DwiImageType::Pointer Getm_DwiForcedConformanceImage() const
   {
-    return DwiImageTemp;
+    return m_DwiForcedConformanceImage;
   }
 
   inline GradientDirectionContainerType::Pointer GetGradientDirectionContainer() const
@@ -212,6 +212,8 @@ private:
   vnl_matrix_fixed<double, 3, 3> GetMeasurementFrame(
     DwiImageType::Pointer DwiImageExtractMF);
 
+  //Code that crops the dwi images
+  void ForceCroppingOfImage(const bool bReport, const std::string ImageCheckReportFileName);
   //All these variables need to have m_ in front of them.
   bool bDwiLoaded;
 
@@ -232,9 +234,8 @@ private:
   std::string m_DwiFileName;
   std::string GlobalReportFileName;
 
-  DwiImageType::Pointer DwiImageTemp;
-
-  DwiImageType::Pointer  DwiImage;
+  DwiImageType::Pointer m_DwiForcedConformanceImage;
+  DwiImageType::Pointer  m_DwiOriginalImage;
   DwiReaderType::Pointer DwiReader;
 
   unsigned int numGradients;

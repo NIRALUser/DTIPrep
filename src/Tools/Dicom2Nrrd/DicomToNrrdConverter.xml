@@ -1,20 +1,26 @@
 <?xml version="1.0" encoding="utf-8"?>
 <executable>
   <category>
-  BRAINS.GTRACT
+  Converters
   </category>
   <title>
-  Dicom to Nrrd
+  DWI Dicom to Nrrd 
   </title>
   <description>
-  Converts diffusion weighted MR images in dicom series into Nrrd format.
+  Converts diffusion weighted MR images in dicom series into Nrrd
+  format for analysis in Slicer. This program has been tested on only
+  a limited subset of DTI dicom formats available from Siemens, GE,
+  and Phillips scanners. Work in progress to support dicom multi-frame
+  data. The program parses dicom header to extract necessary
+  information about measurement frame, diffusion weighting directions,
+  b-values, etc, and write out a nrrd image. 
   </description>
-  <version>0.1.0.$Revision: 1.5 $(alpha)</version>
-  <documentation-url></documentation-url>
+  <version>0.2.0.$Revision: 1.6 $(alpha)</version>
+  <documentation-url>http://www.slicer.org/slicerWiki/index.php/Modules:DicomToNRRD-3.4</documentation-url>
   <license>http://www.slicer.org/copyright/copyright.txt</license>
   <contributor>Xiaodong Tao</contributor>
 <acknowledgements>
-This work is part of the National Alliance for Medical Image Computing (NAMIC), funded by the National Institutes of Health through the NIH Roadmap for Medical Research, Grant U54 EB005149.
+This work is part of the National Alliance for Medical Image Computing (NAMIC), funded by the National Institutes of Health through the NIH Roadmap for Medical Research, Grant U54 EB005149.  Additional support for DTI data produced on Philips scanners was contributed by Vincent Magnotta and Hans Johnson at the University of Iowa.
 </acknowledgements>
 
   <parameters>
@@ -39,22 +45,26 @@ This work is part of the National Alliance for Medical Image Computing (NAMIC), 
 
   </parameters>
 
-  <parameters>
+  <parameters advanced="true">
     <label>Output Options</label>
     <description> Options to control the output. </description>
     <boolean>
       <name>useLPS</name>
       <longflag>--useLPS</longflag>
-      <description> Specifies that the output should be in LPS space like the original DICOM data.  The default is
-      to use Slicer3 consistent RAS space. </description>
+      <description> For GE data only.  Specifies that the output should be in LPS space like the original DICOM data.  The default is to use Slicer3 consistent RAS space. </description>
       <default>false</default>
     </boolean>
 
     <boolean>
       <name>writeProtocolGradientsFile</name>
       <longflag>--writeProtocolGradientsFile</longflag>
-      <description> Write the protocol gradients to a file suffixed by ".txt" as they were specified in the procol by multiplying each diffusion gradient direction 
-      by the measurement frame. </description>
+      <description> Write the protocol gradients to a file suffixed by ".txt" as they were specified in the procol by multiplying each diffusion gradient direction by the measurement frame.  This file is for debugging purposes only, the format is not fixed, and will likely change as debugging of new dicom formats is necessary. </description>
+      <default>false</default>
+    </boolean>
+    <boolean>
+      <name>useIdentityMeaseurementFrame</name>
+      <longflag>--useIdentityMeaseurementFrame</longflag>
+      <description>Adjust all the gradients so that the measurement frame is an identity matrix.</description>
       <default>false</default>
     </boolean>
   </parameters>
