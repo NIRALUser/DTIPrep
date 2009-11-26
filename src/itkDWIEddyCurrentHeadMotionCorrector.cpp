@@ -3,8 +3,8 @@
 Program:   NeuroLib
 Module:    $file: itkDWIEddyCurrentHeadMotionCorrector.cpp $
 Language:  C++
-Date:      $Date: 2009-11-24 12:27:55 $
-Version:   $Revision: 1.8 $
+Date:      $Date: 2009-11-26 21:52:35 $
+Version:   $Revision: 1.9 $
 Author:    Zhexing Liu (liuzhexing@gmail.com)
 
 Copyright (c) NIRAL, UNC. All rights reserved.
@@ -100,7 +100,7 @@ DWIEddyCurrentHeadMotionCorrector<TImageType>
     }
 
   // perform correction
-  parseGridentDirections();
+  parseGradientDirections();
   collectDiffusionStatistics();
   correct();
   if ( ( this->corr->GetVectorLength() - 1 ) != this->re.GetGradients().size() )
@@ -705,7 +705,7 @@ DWIEddyCurrentHeadMotionCorrector<TImageType>
         }
       if ( newDir )
         {
-        std::vector<double> dir;
+        std::vector<double> dir; //HACK: This should be a vnl_vector_fixed<double,3>
         dir.push_back(this->m_GradientDirectionContainer->ElementAt(i)[0]);
         dir.push_back(this->m_GradientDirectionContainer->ElementAt(i)[1]);
         dir.push_back(this->m_GradientDirectionContainer->ElementAt(i)[2]);
@@ -719,7 +719,7 @@ DWIEddyCurrentHeadMotionCorrector<TImageType>
       }
     else
       {
-      std::vector<double> dir;
+      std::vector<double> dir; //HACK: This should be a vnl_vector_fixed<double,3>
       dir.push_back(this->m_GradientDirectionContainer->ElementAt(i)[0]);
       dir.push_back(this->m_GradientDirectionContainer->ElementAt(i)[1]);
       dir.push_back(this->m_GradientDirectionContainer->ElementAt(i)[2]);
@@ -755,7 +755,8 @@ DWIEddyCurrentHeadMotionCorrector<TImageType>
       {
       repetNum.push_back(DiffusionDirections[i].repetitionNumber);
 
-      double normSqr =  DiffusionDirections[i].gradientDir[0]
+      //HACK:  If gradientDir where a vnl_fixed_vector<double,3> you could compute the norm of the vector
+      const double normSqr =  DiffusionDirections[i].gradientDir[0]
                        * DiffusionDirections[i].gradientDir[0]
                        + DiffusionDirections[i].gradientDir[1]
                        * DiffusionDirections[i].gradientDir[1]
@@ -819,7 +820,7 @@ DWIEddyCurrentHeadMotionCorrector<TImageType>
 template <class TImageType>
 void
 DWIEddyCurrentHeadMotionCorrector<TImageType>
-  ::parseGridentDirections()
+  ::parseGradientDirections()
 {
   InputImageConstPointer inputPtr = this->GetInput();
 

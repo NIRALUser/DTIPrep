@@ -3,8 +3,8 @@
 Program:   NeuroLib
 Module:    $file: itkDWIBaselineAverger.cpp $
 Language:  C++
-Date:      $Date: 2009-11-24 12:27:55 $
-Version:   $Revision: 1.11 $
+Date:      $Date: 2009-11-26 21:52:35 $
+Version:   $Revision: 1.12 $
 Author:    Zhexing Liu (liuzhexing@gmail.com)
 
 Copyright (c) NIRAL, UNC. All rights reserved.
@@ -103,7 +103,7 @@ DWIBaselineAverager<TImageType>
     }
 
   // perform averaging
-  parseGridentDirections();
+  parseGradientDirections();
   collectDiffusionStatistics();
   average();
   AverageDoneOn();
@@ -1142,7 +1142,7 @@ DWIBaselineAverager<TImageType>
 template <class TImageType>
 void
 DWIBaselineAverager<TImageType>
-  ::parseGridentDirections()
+  ::parseGradientDirections()
 {
   InputImageConstPointer inputPtr = this->GetInput();
 

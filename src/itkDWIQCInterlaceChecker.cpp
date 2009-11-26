@@ -3,8 +3,8 @@
 Program:   NeuroLib
 Module:    $file: itkDWIQCInterlaceChecker.cpp $
 Language:  C++
-Date:      $Date: 2009-11-24 12:27:56 $
-Version:   $Revision: 1.9 $
+Date:      $Date: 2009-11-26 21:52:35 $
+Version:   $Revision: 1.10 $
 Author:    Zhexing Liu (liuzhexing@gmail.com)
 
 Copyright (c) NIRAL, UNC. All rights reserved.
@@ -126,7 +126,7 @@ DWIQCInterlaceChecker<TImageType>
 
   // perform InterlaceWiseCheck
   // std::cout << "Interlace wise checking begins here. " <<std::endl;
-  parseGridentDirections();
+  parseGradientDirections();
   collectDiffusionStatistics();
   initializeQCResullts();
   calculateCorrelationsAndMotions();
@@ -1364,7 +1364,7 @@ DWIQCInterlaceChecker<TImageType>
 template <class TImageType>
 void
 DWIQCInterlaceChecker<TImageType>
-  ::parseGridentDirections()
+  ::parseGradientDirections()
 {
   InputImageConstPointer inputPtr = this->GetInput();
 

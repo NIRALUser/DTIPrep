@@ -16,6 +16,9 @@
 #include <string>
 #include <math.h>
 
+//The version of DTI prep should be incremented with each algorithm changes
+static const std::string DTIPREP_VERSION("1.1");
+
 vnl_matrix_fixed<double, 3, 3>
 CIntensityMotionCheck::GetMeasurementFrame(
   DwiImageType::Pointer DwiImageExtractMF)
@@ -62,8 +65,8 @@ CIntensityMotionCheck::CIntensityMotionCheck(void)
 
   m_DwiOriginalImage = NULL;
   bDwiLoaded = false;
-  bGetGridentDirections = false;
-  // bGetGridentImages=false;
+  bGetGradientDirections = false;
+  // bGetGradientImages=false;
   }
 
 CIntensityMotionCheck::~CIntensityMotionCheck(void)
@@ -78,17 +81,25 @@ bool CIntensityMotionCheck::LoadDwiImage()
   // std::cout<< str<<std::endl;
   // ::SetCurrentDirectory(str.c_str());
 
-  itk::NrrdImageIO::Pointer myNrrdImageIO = itk::NrrdImageIO::New();
 
-  if ( m_DwiFileName.length() != 0 )
+  if ( m_DwiFileName.length() == 0 )
     {
+    std::cout << "Dwi file name not set" << std::endl;
+    m_DwiOriginalImage = NULL;
+    bDwiLoaded = false;
+    return false;
+    }
+  else
+    {
+    DwiReaderType::Pointer DwiReader;
+    DwiReader = DwiReaderType::New();
     try
       {
-      DwiReader = DwiReaderType::New();
+      itk::NrrdImageIO::Pointer myNrrdImageIO = itk::NrrdImageIO::New();
       DwiReader->SetImageIO(myNrrdImageIO);
       DwiReader->SetFileName(m_DwiFileName);
       std::cout << "Loading in CIntensityMotionCheck: " << m_DwiFileName
-                << " ... ";
+        << " ... ";
       DwiReader->Update();
       }
     catch ( itk::ExceptionObject & e )
@@ -98,71 +109,63 @@ bool CIntensityMotionCheck::LoadDwiImage()
       bDwiLoaded = false;
       return false;
       }
+
+    std::cout << "Done " << std::endl;
+
+    m_DwiOriginalImage = DwiReader->GetOutput();
+    m_DwiForcedConformanceImage = m_DwiOriginalImage;
+
+    bDwiLoaded = true;
+
+    GetGradientDirections();
+
+    if ( bGetGradientDirections )
+      {
+      collectDiffusionStatistics();
+      }
+    //   else
+    //   {
+    //     std::cout<< "Diffusion information read error"<<std::endl;
+    //     return false;
+    //   }
+    //   std::cout<<"Image size"<<
+    // m_DwiOriginalImage->GetLargestPossibleRegion().GetSize().GetSizeDimension()<<": ";
+    //   std::cout<<m_DwiOriginalImage->GetLargestPossibleRegion().GetSize()[0]<<" ";
+    //   std::cout<<m_DwiOriginalImage->GetLargestPossibleRegion().GetSize()[1]<<" ";
+    //   std::cout<<m_DwiOriginalImage->GetLargestPossibleRegion().GetSize()[2]<<std::endl;
+
+    this->numGradients = m_DwiOriginalImage->GetVectorLength();
+    //   std::cout<<"Pixel Vector Length:
+    // "<<m_DwiOriginalImage->GetVectorLength()<<std::endl;
+
+    // Create result
+    GradientIntensityMotionCheckResult result;
+    result.processing = QCResult::GRADIENT_INCLUDE;
+
+    qcResult->Clear();
+    for ( unsigned int j = 0; j < m_DwiOriginalImage->GetVectorLength(); j++ )
+      {
+      result.OriginalDir[0] = this->GradientDirectionContainer->ElementAt(j)[0];
+      result.OriginalDir[1] = this->GradientDirectionContainer->ElementAt(j)[1];
+      result.OriginalDir[2] = this->GradientDirectionContainer->ElementAt(j)[2];
+
+      result.ReplacedDir[0] = this->GradientDirectionContainer->ElementAt(j)[0];
+      result.ReplacedDir[1] = this->GradientDirectionContainer->ElementAt(j)[1];
+      result.ReplacedDir[2] = this->GradientDirectionContainer->ElementAt(j)[2];
+
+      result.CorrectedDir[0] = this->GradientDirectionContainer->ElementAt(j)[0];
+      result.CorrectedDir[1] = this->GradientDirectionContainer->ElementAt(j)[1];
+      result.CorrectedDir[2] = this->GradientDirectionContainer->ElementAt(j)[2];
+
+      qcResult->GetIntensityMotionCheckResult().push_back(result);
+      }
+    // std::cout<<"initilize the result.OriginalDir[0] and result.CorrectedDir[0]
+    // "<<std::endl;
     }
-  else
-    {
-    std::cout << "Dwi file name not set" << std::endl;
-    m_DwiOriginalImage = NULL;
-    bDwiLoaded = false;
-    return false;
-    }
-
-  std::cout << "Done " << std::endl;
-
-  m_DwiOriginalImage = DwiReader->GetOutput();
-  m_DwiForcedConformanceImage = m_DwiOriginalImage;
-
-  bDwiLoaded = true;
-
-  GetGridentDirections();
-
-  if ( bGetGridentDirections )
-    {
-    collectDiffusionStatistics();
-    }
-  //   else
-  //   {
-  //     std::cout<< "Diffusion information read error"<<std::endl;
-  //     return false;
-  //   }
-  //   std::cout<<"Image size"<<
-  // m_DwiOriginalImage->GetLargestPossibleRegion().GetSize().GetSizeDimension()<<": ";
-  //   std::cout<<m_DwiOriginalImage->GetLargestPossibleRegion().GetSize()[0]<<" ";
-  //   std::cout<<m_DwiOriginalImage->GetLargestPossibleRegion().GetSize()[1]<<" ";
-  //   std::cout<<m_DwiOriginalImage->GetLargestPossibleRegion().GetSize()[2]<<std::endl;
-
-  this->numGradients = m_DwiOriginalImage->GetVectorLength();
-  //   std::cout<<"Pixel Vector Length:
-  // "<<m_DwiOriginalImage->GetVectorLength()<<std::endl;
-
-  // Create result
-  GradientIntensityMotionCheckResult result;
-  result.processing = QCResult::GRADIENT_INCLUDE;
-
-  qcResult->Clear();
-  for ( unsigned int j = 0; j < m_DwiOriginalImage->GetVectorLength(); j++ )
-    {
-    result.OriginalDir[0] = this->GradientDirectionContainer->ElementAt(j)[0];
-    result.OriginalDir[1] = this->GradientDirectionContainer->ElementAt(j)[1];
-    result.OriginalDir[2] = this->GradientDirectionContainer->ElementAt(j)[2];
-
-    result.ReplacedDir[0] = this->GradientDirectionContainer->ElementAt(j)[0];
-    result.ReplacedDir[1] = this->GradientDirectionContainer->ElementAt(j)[1];
-    result.ReplacedDir[2] = this->GradientDirectionContainer->ElementAt(j)[2];
-
-    result.CorrectedDir[0] = this->GradientDirectionContainer->ElementAt(j)[0];
-    result.CorrectedDir[1] = this->GradientDirectionContainer->ElementAt(j)[1];
-    result.CorrectedDir[2] = this->GradientDirectionContainer->ElementAt(j)[2];
-
-    qcResult->GetIntensityMotionCheckResult().push_back(result);
-    }
-  // std::cout<<"initilize the result.OriginalDir[0] and result.CorrectedDir[0]
-  // "<<std::endl;
-
   return true;
 }
 
-bool CIntensityMotionCheck::GetGridentDirections()
+bool CIntensityMotionCheck::GetGradientDirections()
 {
   if ( !bDwiLoaded )
     {
@@ -171,7 +174,7 @@ bool CIntensityMotionCheck::GetGridentDirections()
   if ( !bDwiLoaded )
     {
     std::cout << "DWI load error, no Gradient Direction Loaded" << std::endl;
-    bGetGridentDirections = false;
+    bGetGradientDirections = false;
     return false;
     }
 
@@ -216,15 +219,15 @@ bool CIntensityMotionCheck::GetGridentDirections()
   if ( GradientDirectionContainer->size() <= 6 )
     {
     std::cout << "Gradient Images Less than 7" << std::endl;
-    // bGetGridentDirections=false;
+    // bGetGradientDirections=false;
     return false;
     }
 
-  bGetGridentDirections = true;
+  bGetGradientDirections = true;
   return true;
 }
 
-bool CIntensityMotionCheck::GetGridentDirections( DwiImageType::Pointer dwi,
+bool CIntensityMotionCheck::GetGradientDirections( DwiImageType::Pointer dwi,
   double & bValue,
   GradientDirectionContainerType::Pointer GradDireContainer )
 {
@@ -283,7 +286,7 @@ void CIntensityMotionCheck::GetImagesInformation()
   if ( !bDwiLoaded )
     {
     std::cout << "DWI load error, no Gradient Direction Loaded" << std::endl;
-    bGetGridentDirections = false;
+    bGetGradientDirections = false;
     return;
     }
 
@@ -350,196 +353,6 @@ void CIntensityMotionCheck::GetImagesInformation()
       ;
       }
     }
-}
-
-void CIntensityMotionCheck::GenerateCheckOutputImage( std::string filename)
-{
-  if ( !bDwiLoaded  )
-    {
-    LoadDwiImage();
-    }
-  if ( !bDwiLoaded  )
-    {
-    std::cout << "DWI load error, no Gradient Direction Loaded" << std::endl;
-    bGetGridentDirections = false;
-    return;
-    }
-
-  unsigned int gradientLeft = 0;
-  for ( unsigned int i = 0;
-        i < qcResult->GetIntensityMotionCheckResult().size();
-        i++ )
-    {
-    if ( qcResult->GetIntensityMotionCheckResult()[i].processing ==
-         QCResult::GRADIENT_INCLUDE )
-      {
-      gradientLeft++;
-      }
-    }
-
-  std::cout << "gradientLeft: " << gradientLeft << std::endl;
-
-  if ( gradientLeft == 0 )
-    {
-    // outfile<<"No gradient data left."<<std::endl;
-    std::cout << "No gradient data left." << std::endl;
-    return;
-    }
-
-  if ( gradientLeft == qcResult->GetIntensityMotionCheckResult().size() )
-    {
-    itk::NrrdImageIO::Pointer myNrrdImageIO = itk::NrrdImageIO::New();
-    try
-      {
-      DwiWriterType::Pointer localDwiWriter = DwiWriterType::New();
-      localDwiWriter->SetImageIO(myNrrdImageIO);
-      localDwiWriter->SetFileName( filename );
-      localDwiWriter->SetInput( DwiReader->GetOutput() );
-      localDwiWriter->UseCompressionOn();
-      localDwiWriter->Update();
-      }
-    catch ( itk::ExceptionObject & e )
-      {
-      std::cout << e.GetDescription() << std::endl;
-      return;
-      }
-    return;
-    }
-
-  DwiImageType::Pointer newDwiImage = DwiImageType::New();
-  newDwiImage->CopyInformation(m_DwiOriginalImage);
-  newDwiImage->SetRegions( m_DwiOriginalImage->GetLargestPossibleRegion() );
-  newDwiImage->SetVectorLength( gradientLeft);
-  //  newDwiImage->SetMetaDataDictionary(imgMetaDictionary);
-  newDwiImage->Allocate();
-
-  typedef itk::ImageRegionConstIteratorWithIndex<DwiImageType>
-  ConstIteratorType;
-  ConstIteratorType oit( m_DwiOriginalImage, m_DwiOriginalImage->GetLargestPossibleRegion() );
-  typedef itk::ImageRegionIteratorWithIndex<DwiImageType> IteratorType;
-  IteratorType nit( newDwiImage, newDwiImage->GetLargestPossibleRegion() );
-
-  oit.GoToBegin();
-  nit.GoToBegin();
-
-  DwiImageType::PixelType value;
-  value.SetSize( gradientLeft );
-
-  while ( !oit.IsAtEnd() )
-    {
-    unsigned int element = 0;
-    for ( unsigned int i = 0;
-          i < qcResult->GetIntensityMotionCheckResult().size();
-          i++ )
-      {
-      if ( qcResult->GetIntensityMotionCheckResult()[i].processing ==
-           QCResult::GRADIENT_INCLUDE )
-        {
-        value.SetElement( element, oit.Get()[i] );
-        element++;
-        }
-      }
-    nit.Set(value);
-    ++oit;
-    ++nit;
-    }
-
-  try
-    {
-    DwiWriterType::Pointer    DwiWriter = DwiWriterType::New();
-    itk::NrrdImageIO::Pointer myNrrdImageIO = itk::NrrdImageIO::New();
-    DwiWriter->SetImageIO(myNrrdImageIO);
-    DwiWriter->SetFileName( filename );
-    DwiWriter->SetInput(newDwiImage);
-    DwiWriter->UseCompressionOn();
-    DwiWriter->Update();
-    }
-  catch ( itk::ExceptionObject & e )
-    {
-    std::cout << e.GetDescription() << std::endl;
-    return;
-    }
-
-  // newDwiImage->Delete();
-
-  itk::MetaDataDictionary imgMetaDictionary
-    = m_DwiOriginalImage->GetMetaDataDictionary();                                              //
-  std::vector<std::string> imgMetaKeys
-    = imgMetaDictionary.GetKeys();
-  std::vector<std::string>::const_iterator itKey = imgMetaKeys.begin();
-  std::string                              metaString;
-
-  char *aryOut = new char[filename.length() + 1];
-  strcpy ( aryOut, filename.c_str() );
-
-  std::ofstream header;
-  header.open(aryOut, std::ios_base::app);
-
-  const vnl_matrix_fixed<double, 3,
-    3> imageMeasurementFrame = GetMeasurementFrame(m_DwiOriginalImage);
-  // Meausurement frame
-  header  << "measurement frame: ("
-          << imageMeasurementFrame(0, 0) << ","
-          << imageMeasurementFrame(1, 0) << ","
-          << imageMeasurementFrame(2, 0) << ") ("
-          << imageMeasurementFrame(0, 1) << ","
-          << imageMeasurementFrame(1, 1) << ","
-          << imageMeasurementFrame(2, 1) << ") ("
-          << imageMeasurementFrame(0, 2) << ","
-          << imageMeasurementFrame(1, 2) << ","
-          << imageMeasurementFrame(2, 2) << ")"
-          << std::endl;
-
-  for ( itKey = imgMetaKeys.begin(); itKey != imgMetaKeys.end(); itKey++ )
-    {
-    itk::ExposeMetaData(imgMetaDictionary, *itKey, metaString);
-    const int posLocal = itKey->find("modality");
-    if ( posLocal == -1 )
-      {
-      continue;
-      }
-
-    std::cout  << metaString << std::endl;
-    header << "modality:=" << metaString << std::endl;
-    }
-
-  if ( !bGetGridentDirections )
-    {
-    GetGridentDirections();
-    }
-
-  for ( itKey = imgMetaKeys.begin(); itKey != imgMetaKeys.end(); itKey++ )
-    {
-    itk::ExposeMetaData(imgMetaDictionary, *itKey, metaString);
-    const int posLocal = itKey->find("DWMRI_b-value");
-    if ( posLocal == -1 )
-      {
-      continue;
-      }
-
-    std::cout  << metaString << std::endl;
-    header << "DWMRI_b-value:=" << metaString << std::endl;
-    }
-
-  unsigned int temp = 0;
-  for ( unsigned int i = 0; i < GradientDirectionContainer->size(); i++ )
-    {
-    if ( qcResult->GetIntensityMotionCheckResult()[i].processing ==
-         QCResult::GRADIENT_INCLUDE )
-      {
-      header  << "DWMRI_gradient_" << std::setw(4) << std::setfill('0')
-              << temp << ":="
-              << GradientDirectionContainer->ElementAt(i)[0] << "   "
-              << GradientDirectionContainer->ElementAt(i)[1] << "   "
-              << GradientDirectionContainer->ElementAt(i)[2] << std::endl;
-      ++temp;
-      }
-    }
-
-  header.flush();
-  header.close();
-
-  std::cout << " QC Image saved " << std::endl;
 }
 
 bool CIntensityMotionCheck::ImageCheck( DwiImageType::Pointer localDWIImageToCheck )
@@ -632,7 +445,7 @@ bool CIntensityMotionCheck::ImageCheck( DwiImageType::Pointer localDWIImageToChe
     if ( !localDWIImageToCheck  )
       {
       std::cout << "DWI image error." << std::endl;
-      bGetGridentDirections = false;
+      bGetGradientDirections = false;
       return false;
       }
     // size
@@ -660,44 +473,10 @@ bool CIntensityMotionCheck::ImageCheck( DwiImageType::Pointer localDWIImageToChe
       std::cout << "Image size Check: " << "\t\tFAILED" << std::endl;
       returnValue = false;
       }
-#if 0 // It does not make sense to fail based on image origins
+    // It does not make sense to fail based on image origins
     //Diffent scan session will have different origins.
-    // origin
-    if ( protocol->GetImageProtocol().origin[0] ==  localDWIImageToCheck->GetOrigin()[0]
-         && protocol->GetImageProtocol().origin[1] ==  localDWIImageToCheck->GetOrigin()[1]
-         && protocol->GetImageProtocol().origin[2] ==  localDWIImageToCheck->GetOrigin()[2]     )
-      {
-      qcResult->GetImageInformationCheckResult(). origin = true;
-      if ( bReport )
-        {
-        outfile << "Image Origin Check: " << "\t\tOK" << std::endl;
-        }
-      std::cout << "Image Origin Check: " << "\t\tOK" << std::endl;
-      }
-    else
-      {
-      qcResult->GetImageInformationCheckResult(). origin = false;
-      if ( bReport )
-        {
-        outfile << "Image Origin Check: "  << "\t\tFAILED" << std::endl;
-        outfile << "\tImage Origin: "    << localDWIImageToCheck->GetOrigin() << std::endl;
-        outfile << "\tprotocol Origin: "
-                << protocol->GetImageProtocol().origin << std::endl;
-        }
-      std::cout << "Image Origin Check: " << "\t\tFAILED" << std::endl;
-      std::cout << "\tImage Origin: "    << localDWIImageToCheck->GetOrigin() << std::endl;
-      std::cout << "\tprotocol Origin: "
-                << protocol->GetImageProtocol().origin << std::endl;
-
-      returnValue = false;
-      }
-#endif
     // spacing
-    // std::cout<<"spacing: "<< protocol->GetImageProtocol().spacing[0]<<"
-    // "<<protocol->GetImageProtocol().spacing[1]<<"
-    // "<<protocol->GetImageProtocol().spacing[2]<<std::endl;
-    // std::cout<<"spacing: "<< m_DwiOriginalImage->GetSpacing()[0]<<"
-    // "<<m_DwiOriginalImage->GetSpacing()[1]<<" "<<m_DwiOriginalImage->GetSpacing()[2]<<std::endl;
+    //
     const double spacing_tolerance=0.01; //The numbers in the nhdr file are written in ascii, and are extracted from the space direction.  The tolerance can not be very large or false negatives will appear.
     if ( vcl_abs( protocol->GetImageProtocol().spacing[0]
            - localDWIImageToCheck->GetSpacing()[0] ) < spacing_tolerance
@@ -734,85 +513,10 @@ bool CIntensityMotionCheck::ImageCheck( DwiImageType::Pointer localDWIImageToChe
 
       returnValue = false;
       }
-#if 0 // Space directions are not required to be the same.
+    // Space directions are not required to be the same.
     //Many data sets are collected with an oblique scan direction
     // space direction
-    const vnl_matrix_fixed<double, 3, 3> imgf = localDWIImageToCheck->GetDirection().GetVnlMatrix();
 
-    if ( vcl_abs( protocol->GetImageProtocol().spacedirection[0][0]
-           - imgf(0, 0) ) < 0.000001
-         && vcl_abs( protocol->GetImageProtocol().spacedirection[0][1]
-           - imgf(0, 1) ) < 0.000001
-         && vcl_abs( protocol->GetImageProtocol().spacedirection[0][2]
-           - imgf(0, 2) ) < 0.000001
-         && vcl_abs( protocol->GetImageProtocol().spacedirection[1][0]
-           - imgf(1, 0) ) < 0.000001
-         && vcl_abs( protocol->GetImageProtocol().spacedirection[1][1]
-           - imgf(1, 1) ) < 0.000001
-         && vcl_abs( protocol->GetImageProtocol().spacedirection[1][2]
-           - imgf(1, 2) ) < 0.000001
-         && vcl_abs( protocol->GetImageProtocol().spacedirection[2][0]
-           - imgf(2, 0) ) < 0.000001
-         && vcl_abs( protocol->GetImageProtocol().spacedirection[2][1]
-           - imgf(2, 1) ) < 0.000001
-         && vcl_abs( protocol->GetImageProtocol().spacedirection[2][2]
-           - imgf(2, 2) ) < 0.000001 )
-      {
-      qcResult->GetImageInformationCheckResult(). spacedirection = true;
-      if ( bReport )
-        {
-        outfile << "Image spacedirection Check: " << "\tOK" << std::endl;
-        }
-      std::cout << "Image spacedirection Check: " << "\tOK" << std::endl;
-      }
-    else
-      {
-      qcResult->GetImageInformationCheckResult(). spacedirection = false;
-      if ( bReport )
-        {
-        outfile << "Image spacedirection Check: " << "\tFAILED" << std::endl;
-        outfile << "\tImage GetDirection: "  << imgf << std::endl;
-        outfile << "\tprotocol GetDirection: " << std::endl;
-        outfile << "\t\t"
-                << protocol->GetImageProtocol().spacedirection[0][0] << " "
-                << protocol->GetImageProtocol().spacedirection[0][1] << " "
-                << protocol->GetImageProtocol().spacedirection[0][2]
-       << std::endl;
-        outfile << "\t\t"
-                << protocol->GetImageProtocol().spacedirection[1][0] << " "
-                << protocol->GetImageProtocol().spacedirection[1][1] << " "
-                << protocol->GetImageProtocol().spacedirection[1][2]
-       << std::endl;
-        outfile << "\t\t"
-                << protocol->GetImageProtocol().spacedirection[2][0] << " "
-                << protocol->GetImageProtocol().spacedirection[2][1] << " "
-                << protocol->GetImageProtocol().spacedirection[2][2]
-       << std::endl;
-        }
-      std::cout << "Image spacedirection Check: " << "\tFAILED" << std::endl;
-      std::cout << "\tImage GetDirection: "  << imgf << std::endl;
-      std::cout << "\tprotocol GetDirection: " << std::endl;
-      std::cout << "\t\t"
-                << protocol->GetImageProtocol().spacedirection[0][0] << " "
-                << protocol->GetImageProtocol().spacedirection[0][1] << " "
-                << protocol->GetImageProtocol().spacedirection[0][2]
-     << std::endl;
-      std::cout << "\t\t"
-                << protocol->GetImageProtocol().spacedirection[1][0] << " "
-                << protocol->GetImageProtocol().spacedirection[1][1] << " "
-                << protocol->GetImageProtocol().spacedirection[1][2]
-     << std::endl;
-      std::cout << "\t\t"
-                << protocol->GetImageProtocol().spacedirection[2][0] << " "
-                << protocol->GetImageProtocol().spacedirection[2][1] << " "
-                << protocol->GetImageProtocol().spacedirection[2][2]
-     << std::endl;
-
-      returnValue = false;
-      }
-#endif
-
-    // space
     itk::MetaDataDictionary imgMetaDictionary = localDWIImageToCheck->GetMetaDataDictionary();
     std::vector<std::string> imgMetaKeys = imgMetaDictionary.GetKeys();
     std::vector<std::string>::const_iterator itKey = imgMetaKeys.begin();
@@ -902,9 +606,6 @@ bool CIntensityMotionCheck::ImageCheck( DwiImageType::Pointer localDWIImageToChe
     exit(-1);
     }
 
-  //HACK:  The following functionality should really be a separate function
-  // then crop/pad
-
   if ( protocol->GetImageProtocol().bCrop
       && ( !qcResult->GetImageInformationCheckResult().size ) )
     {
@@ -918,88 +619,89 @@ bool CIntensityMotionCheck::ImageCheck( DwiImageType::Pointer localDWIImageToChe
   return returnValue;
 }
 
+//Force the cropping of a DTI image to make it fit.
 void CIntensityMotionCheck::ForceCroppingOfImage(const bool bReport, const std::string ImageCheckReportFileName )
-      {
-    CropperType::Pointer Cropper = CropperType::New();
-    Cropper->SetInput( m_DwiForcedConformanceImage );
-      {
-      int sizePara[3];
-      sizePara[0]  = protocol->GetImageProtocol().size[0];
-      sizePara[1]  = protocol->GetImageProtocol().size[1];
-      sizePara[2]  = protocol->GetImageProtocol().size[2];
-      Cropper->SetSize(sizePara);
-      }
+{
+  CropperType::Pointer Cropper = CropperType::New();
+  Cropper->SetInput( m_DwiForcedConformanceImage );
+    {
+    int sizePara[3];
+    sizePara[0]  = protocol->GetImageProtocol().size[0];
+    sizePara[1]  = protocol->GetImageProtocol().size[1];
+    sizePara[2]  = protocol->GetImageProtocol().size[2];
+    Cropper->SetSize(sizePara);
+    }
 
-    if ( bReport )
-      {
-      Cropper->SetReportFileName( ImageCheckReportFileName ); //
-                                                              // protocol->GetImageProtocol().reportFileNameSuffix);
-      Cropper->SetReportFileMode( protocol->GetImageProtocol().reportFileMode);
-      }
-    Cropper->Update();
+  if ( bReport )
+    {
+    Cropper->SetReportFileName( ImageCheckReportFileName ); //
+    // protocol->GetImageProtocol().reportFileNameSuffix);
+    Cropper->SetReportFileMode( protocol->GetImageProtocol().reportFileMode);
+    }
+  Cropper->Update();
 
-    m_DwiForcedConformanceImage = Cropper->GetOutput();
+  m_DwiForcedConformanceImage = Cropper->GetOutput();
 
-    if ( protocol->GetImageProtocol().croppedDWIFileNameSuffix.length() > 0 )
+  if ( protocol->GetImageProtocol().croppedDWIFileNameSuffix.length() > 0 )
+    {
+    try
       {
-      try
+      std::string CroppedFileName;
+      if ( protocol->GetImageProtocol().reportFileNameSuffix.length() > 0 )
         {
-        std::string CroppedFileName;
-        if ( protocol->GetImageProtocol().reportFileNameSuffix.length() > 0 )
+        if ( protocol->GetQCOutputDirectory().length() > 0 )
           {
-          if ( protocol->GetQCOutputDirectory().length() > 0 )
+          if ( protocol->GetQCOutputDirectory().at( protocol->
+              GetQCOutputDirectory().length() - 1 ) == '\\'
+            || protocol->GetQCOutputDirectory().at( protocol->
+              GetQCOutputDirectory().length() - 1 ) == '/'     )
             {
-            if ( protocol->GetQCOutputDirectory().at( protocol->
-                     GetQCOutputDirectory().length() - 1 ) == '\\'
-                 || protocol->GetQCOutputDirectory().at( protocol->
-                     GetQCOutputDirectory().length() - 1 ) == '/'     )
-              {
-              CroppedFileName = protocol->GetQCOutputDirectory().substr(
-                0, protocol->GetQCOutputDirectory().find_last_of("/\\") );
-              }
-            else
-              {
-              CroppedFileName = protocol->GetQCOutputDirectory();
-              }
-
-            CroppedFileName.append( "/" );
-
-            std::string str
-              = m_DwiFileName.substr( 0, m_DwiFileName.find_last_of('.') );
-            str = str.substr( str.find_last_of("/\\") + 1);
-
-            CroppedFileName.append( str );
-            CroppedFileName.append(
-              protocol->GetImageProtocol().croppedDWIFileNameSuffix );
+            CroppedFileName = protocol->GetQCOutputDirectory().substr(
+              0, protocol->GetQCOutputDirectory().find_last_of("/\\") );
             }
           else
             {
-            CroppedFileName
-              = m_DwiFileName.substr( 0, m_DwiFileName.find_last_of('.') );
-            CroppedFileName.append(
-              protocol->GetImageProtocol().croppedDWIFileNameSuffix );
+            CroppedFileName = protocol->GetQCOutputDirectory();
             }
+
+          CroppedFileName.append( "/" );
+
+          std::string str
+            = m_DwiFileName.substr( 0, m_DwiFileName.find_last_of('.') );
+          str = str.substr( str.find_last_of("/\\") + 1);
+
+          CroppedFileName.append( str );
+          CroppedFileName.append(
+            protocol->GetImageProtocol().croppedDWIFileNameSuffix );
           }
-
-        std::cout << "Saving cropped DWI: " << CroppedFileName << " ... ";
-
-        DwiWriterType::Pointer    DwiWriter = DwiWriterType::New();
-        itk::NrrdImageIO::Pointer myNrrdImageIO = itk::NrrdImageIO::New();
-        DwiWriter->SetFileName( CroppedFileName ); //
-                                                   // protocol->GetImageProtocol().croppedDWIFileNameSuffix
-                                                   // );
-        DwiWriter->SetInput( m_DwiForcedConformanceImage );
-        DwiWriter->UseCompressionOn();
-        DwiWriter->Update();
+        else
+          {
+          CroppedFileName
+            = m_DwiFileName.substr( 0, m_DwiFileName.find_last_of('.') );
+          CroppedFileName.append(
+            protocol->GetImageProtocol().croppedDWIFileNameSuffix );
+          }
         }
-      catch ( itk::ExceptionObject & e )
-        {
-        std::cout << e.GetDescription() << std::endl;
-        // return -1;
-        }
-      std::cout << "DONE." << std::endl;
+
+      std::cout << "Saving cropped DWI: " << CroppedFileName << " ... ";
+
+      DwiWriterType::Pointer    DwiWriter = DwiWriterType::New();
+      itk::NrrdImageIO::Pointer myNrrdImageIO = itk::NrrdImageIO::New();
+      DwiWriter->SetFileName( CroppedFileName ); //
+      // protocol->GetImageProtocol().croppedDWIFileNameSuffix
+      // );
+      DwiWriter->SetInput( m_DwiForcedConformanceImage );
+      DwiWriter->UseCompressionOn();
+      DwiWriter->Update();
       }
+    catch ( itk::ExceptionObject & e )
+      {
+      std::cout << e.GetDescription() << std::endl;
+      // return -1;
       }
+    std::cout << "DONE." << std::endl;
+    }
+}
 
 
 bool CIntensityMotionCheck::SliceWiseCheck( DwiImageType::Pointer dwi )
@@ -1114,12 +816,6 @@ bool CIntensityMotionCheck::SliceWiseCheck( DwiImageType::Pointer dwi )
     if ( protocol->GetSliceCheckProtocol().outputDWIFileNameSuffix.length() > 0 )
       {
       std::string SliceWiseOutput;
-      //
-      //
-      //      SliceWiseOutput=m_DwiFileName.substr(0,m_DwiFileName.find_last_of('.')
-      // );
-      //       SliceWiseOutput.append(
-      // protocol->GetSliceCheckProtocol().outputDWIFileNameSuffix );
       if ( protocol->GetQCOutputDirectory().length() > 0 )
         {
         if ( protocol->GetQCOutputDirectory().at( protocol->
@@ -1884,10 +1580,6 @@ bool CIntensityMotionCheck::EddyMotionCorrect( DwiImageType::Pointer dwi )
     if ( protocol->GetEddyMotionCorrectionProtocol().reportFileNameSuffix.
            length() > 0 )
       {
-      //       ReportFileName=m_DwiFileName.substr(0,m_DwiFileName.find_last_of('.')
-      // );
-      //       ReportFileName.append(
-      // protocol->GetEddyMotionCorrectionProtocol().reportFileNameSuffix );
       if ( protocol->GetQCOutputDirectory().length() > 0 )
         {
         if ( protocol->GetQCOutputDirectory().at( protocol->
@@ -2018,14 +1710,6 @@ bool CIntensityMotionCheck::EddyMotionCorrect( DwiImageType::Pointer dwi )
          > 0 )
       {
       std::string outputDWIFileName;
-      //
-      //
-      //
-      //
-      //    outputDWIFileName=m_DwiFileName.substr(0,m_DwiFileName.find_last_of('.')
-      // );
-      //       outputDWIFileName.append(
-      // protocol->GetEddyMotionCorrectionProtocol().outputDWIFileNameSuffix );
       if ( protocol->GetQCOutputDirectory().length() > 0 )
         {
         if ( protocol->GetQCOutputDirectory().at( protocol->
@@ -2091,10 +1775,6 @@ bool CIntensityMotionCheck::GradientWiseCheck( DwiImageType::Pointer dwi )
     std::string ReportFileName;
     if ( protocol->GetGradientCheckProtocol().reportFileNameSuffix.length() > 0 )
       {
-      //       ReportFileName=m_DwiFileName.substr(0,m_DwiFileName.find_last_of('.')
-      // );
-      //       ReportFileName.append(
-      // protocol->GetGradientCheckProtocol().reportFileNameSuffix );
       if ( protocol->GetQCOutputDirectory().length() > 0 )
         {
         if ( protocol->GetQCOutputDirectory().at( protocol->
@@ -2196,14 +1876,6 @@ bool CIntensityMotionCheck::GradientWiseCheck( DwiImageType::Pointer dwi )
          > 0 )
       {
       std::string outputDWIFileName;
-      //
-      //
-      //
-      //
-      //    outputDWIFileName=m_DwiFileName.substr(0,m_DwiFileName.find_last_of('.')
-      // );
-      //       outputDWIFileName.append(
-      // protocol->GetGradientCheckProtocol().outputDWIFileNameSuffix );
       if ( protocol->GetQCOutputDirectory().length() > 0 )
         {
         if ( protocol->GetQCOutputDirectory().at( protocol->
@@ -2262,14 +1934,11 @@ bool CIntensityMotionCheck::GradientWiseCheck( DwiImageType::Pointer dwi )
   return true;
 }
 
-bool CIntensityMotionCheck::SaveQCedDWI( DwiImageType::Pointer dwi )
+bool CIntensityMotionCheck::SaveDwiForcedConformanceImage(void) const
 {
   if ( protocol->GetQCedDWIFileNameSuffix().length() > 0 )
     {
     std::string outputDWIFileName;
-    //      outputDWIFileName=m_DwiFileName.substr(0,m_DwiFileName.find_last_of('.')
-    // );
-    //      outputDWIFileName.append( protocol->GetQCedDWIFileNameSuffix());
     if ( protocol->GetQCOutputDirectory().length() > 0 )
       {
       if ( protocol->GetQCOutputDirectory().at( protocol->GetQCOutputDirectory()
@@ -2305,7 +1974,7 @@ bool CIntensityMotionCheck::SaveQCedDWI( DwiImageType::Pointer dwi )
       itk::NrrdImageIO::Pointer myNrrdImageIO = itk::NrrdImageIO::New();
       DwiWriter->SetImageIO(myNrrdImageIO);
       DwiWriter->SetFileName( outputDWIFileName );
-      DwiWriter->SetInput( dwi );
+      DwiWriter->SetInput( this->m_DwiForcedConformanceImage );
       DwiWriter->UseCompressionOn();
       DwiWriter->Update();
       }
@@ -2344,12 +2013,6 @@ unsigned char CIntensityMotionCheck::RunPipelineByProtocol()
   std::ofstream outfile;
 
   std::string ReportFileName;
-  //   ReportFileName=m_DwiFileName.substr(0,m_DwiFileName.find_last_of('.') );
-  //
-  //   if( protocol->GetReportFileNameSuffix().length() > 0)
-  //     ReportFileName.append( protocol->GetReportFileNameSuffix() );
-  //   else
-  //     ReportFileName.append( "_QC_CheckReports.txt");
   if ( protocol->GetQCOutputDirectory().length() > 0 )
     {
     if ( protocol->GetQCOutputDirectory().at( protocol->GetQCOutputDirectory().
@@ -2403,7 +2066,7 @@ unsigned char CIntensityMotionCheck::RunPipelineByProtocol()
   if ( bReport )
     {
     outfile << "================================= " << std::endl;
-    outfile << "* DWI QC Report ( DTIPrep 1.0 ) * " << std::endl;
+    outfile << "* DWI QC Report ( DTIPrep " << DTIPREP_VERSION << " ) * " << std::endl;
     outfile << "================================= " << std::endl;
     outfile << "DWI File: " << m_DwiFileName << std::endl;
     time_t rawtime; time( &rawtime );
@@ -2424,10 +2087,11 @@ unsigned char CIntensityMotionCheck::RunPipelineByProtocol()
   // E:GradientCheck()
 
   // protocol->printProtocols();
-
+#if 0
   DwiWriterType::Pointer DwiWriter = DwiWriterType::New();
   itk::NrrdImageIO::Pointer myNrrdImageIO = itk::NrrdImageIO::New();
   DwiWriter->SetImageIO(myNrrdImageIO);
+#endif
 
   m_DwiForcedConformanceImage = m_DwiOriginalImage;
 
@@ -2493,7 +2157,7 @@ unsigned char CIntensityMotionCheck::RunPipelineByProtocol()
   // Save QC'ed DWI
   std::cout << "=====================" << std::endl;
   std::cout << "Save QC'ed DWI ... ";
-  SaveQCedDWI(m_DwiForcedConformanceImage);
+  SaveDwiForcedConformanceImage();
 
   std::cout << "DONE" << std::endl;
 
@@ -2608,7 +2272,7 @@ void CIntensityMotionCheck::collectLeftDiffusionStatistics(
     = GradientDirectionContainerType::New();
   double bValue;
 
-  this->GetGridentDirections( dwi, bValue, GradContainer);
+  this->GetGradientDirections( dwi, bValue, GradContainer);
 
   // ///////
   std::vector<DiffusionDir> DiffusionDirections;
@@ -3045,6 +2709,7 @@ bool CIntensityMotionCheck::dtiestim()
     str.append(baseline);
     }
 
+  std::cout << "===============  Starting dtiestim command ===============" << std::endl;
   std::cout << "dtiestim command: " << str.c_str() << std::endl;
   system( str.c_str() );
   return true;
@@ -3151,6 +2816,7 @@ bool CIntensityMotionCheck::dtiprocess()
     string.append(fn);
     }
 
+  std::cout << "===============  Starting dtiprocess command ===============" << std::endl;
   std::cout << "dtiprocess command: " << string.c_str() << std::endl;
   system( string.c_str() );
 
@@ -3164,41 +2830,17 @@ bool CIntensityMotionCheck::DiffusionCheck( DwiImageType::Pointer dwi)
 {
   bool bReport = false;
 
-  std::string ReportFileName;
-
-  if ( protocol->GetImageProtocol().reportFileNameSuffix.length() > 0 )
-    {
-    if ( protocol->GetQCOutputDirectory().length() > 0 )
-      {
-      if ( protocol->GetQCOutputDirectory().at( protocol->GetQCOutputDirectory()
-               .length() - 1 ) == '\\'
-           || protocol->GetQCOutputDirectory().at( protocol->
-               GetQCOutputDirectory().length() - 1 ) == '/'     )
-        {
-        ReportFileName = protocol->GetQCOutputDirectory().substr(
-          0, protocol->GetQCOutputDirectory().find_last_of("/\\") );
-        }
-      else
-        {
-        ReportFileName = protocol->GetQCOutputDirectory();
-        }
-
-      ReportFileName.append( "/" );
-
-      std::string str = m_DwiFileName.substr( 0, m_DwiFileName.find_last_of('.') );
-      str = str.substr( str.find_last_of("/\\") + 1);
-
-      ReportFileName.append( str );
-      ReportFileName.append(
-        protocol->GetDiffusionProtocol().reportFileNameSuffix );
-      }
-    else
-      {
-      ReportFileName = m_DwiFileName.substr( 0, m_DwiFileName.find_last_of('.') );
-      ReportFileName.append(
-        protocol->GetDiffusionProtocol().reportFileNameSuffix );
-      }
-    }
+  //HACK:  TODO:  Extracing the ReportFileName has a lot of copy and paste code
+  // several time in the source.  This should be pulled out into it's own
+  // function as part of the protocol class.  I did it for this one case,
+  // but there are several  other cases in this file also need to be done
+  //
+  //This functionality is probably best suited to be in the protocol class
+  //as member functions:  Instead of:
+  //protocol->GetDiffusionProtocol().reportFileNameSuffix
+  //USE
+  //protocol->GetDiffusionProtocol().GetReportFileName();
+  const std::string ReportFileName=protocol->GetDiffusionProtocolReportFileName(this->m_DwiFileName);
 
   std::ofstream outfile;
   if ( protocol->GetImageProtocol().reportFileMode == 1 )
@@ -3238,14 +2880,14 @@ bool CIntensityMotionCheck::DiffusionCheck( DwiImageType::Pointer dwi)
     if ( !dwi )
       {
       std::cout << "DWI error." << std::endl;
-      bGetGridentDirections = false;
+      bGetGradientDirections = false;
       return false;
       }
 
     GradientDirectionContainerType::Pointer GradContainer
       = GradientDirectionContainerType::New();
     double bValue;
-    this->GetGridentDirections( dwi, bValue, GradContainer);
+    this->GetGradientDirections( dwi, bValue, GradContainer);
 
     if ( vcl_abs(protocol->GetDiffusionProtocol().bValue - bValue) < 0.0000001 )
       {
@@ -3285,80 +2927,8 @@ bool CIntensityMotionCheck::DiffusionCheck( DwiImageType::Pointer dwi)
     // measurement frame
     const vnl_matrix_fixed<double, 3,
       3> imageMeasurementFrame = GetMeasurementFrame(this->m_DwiForcedConformanceImage);
-#if 0 // It is not required that the measurement frames are the same for all images.
-      // Images collected at different oblique angles will likely have different measurement frames.
-      {
-      // Meausurement frame
-      if (
-        protocol->GetDiffusionProtocol().measurementFrame[0][0] ==
-        imageMeasurementFrame(0, 0)
-        && protocol->GetDiffusionProtocol().measurementFrame[0][1] ==
-        imageMeasurementFrame(0, 1)
-        && protocol->GetDiffusionProtocol().measurementFrame[0][2] ==
-        imageMeasurementFrame(0, 2)
-        && protocol->GetDiffusionProtocol().measurementFrame[1][0] ==
-        imageMeasurementFrame(1, 0)
-        && protocol->GetDiffusionProtocol().measurementFrame[1][1] ==
-        imageMeasurementFrame(1, 1)
-        && protocol->GetDiffusionProtocol().measurementFrame[1][2] ==
-        imageMeasurementFrame(1, 2)
-        && protocol->GetDiffusionProtocol().measurementFrame[2][0] ==
-        imageMeasurementFrame(2, 0)
-        && protocol->GetDiffusionProtocol().measurementFrame[2][1] ==
-        imageMeasurementFrame(2, 1)
-        && protocol->GetDiffusionProtocol().measurementFrame[2][2] ==
-        imageMeasurementFrame(2, 2) )
-        {
-        qcResult->GetDiffusionInformationCheckResult(). measurementFrame = true;
-        if ( bReport )
-          {
-          outfile << "Diffusion measurementFrame Check: \tOK" << std::endl;
-          }
-        std::cout << "Diffusion measurementFrame Check: \tOK" << std::endl;
-        }
-      else
-        {
-        returnValte = false;
-        qcResult->GetDiffusionInformationCheckResult(). measurementFrame
-          = false;
-        if ( bReport )
-          {
-          outfile << "Diffusion measurementFrame Check: \tFAILED" << std::endl;
-          }
-        std::cout << "Diffusion measurementFrame Check: \tFAILED" << std::endl;
-
-        if ( protocol->GetDiffusionProtocol().bUseDiffusionProtocol )
-          {
-          std::vector<std::vector<double> > nrrdmf(3);
-          nrrdmf[0].resize(3);
-          nrrdmf[1].resize(3);
-          nrrdmf[2].resize(3);
-          nrrdmf[0][0]
-            = protocol->GetDiffusionProtocol().measurementFrame[0][0];
-          nrrdmf[0][1]
-            = protocol->GetDiffusionProtocol().measurementFrame[0][1];
-          nrrdmf[0][2]
-            = protocol->GetDiffusionProtocol().measurementFrame[0][2];
-          nrrdmf[1][0]
-            = protocol->GetDiffusionProtocol().measurementFrame[1][0];
-          nrrdmf[1][1]
-            = protocol->GetDiffusionProtocol().measurementFrame[1][1];
-          nrrdmf[1][2]
-            = protocol->GetDiffusionProtocol().measurementFrame[1][2];
-          nrrdmf[2][0]
-            = protocol->GetDiffusionProtocol().measurementFrame[2][0];
-          nrrdmf[2][1]
-            = protocol->GetDiffusionProtocol().measurementFrame[2][1];
-          nrrdmf[2][2]
-            = protocol->GetDiffusionProtocol().measurementFrame[2][2];
-          itk::EncapsulateMetaData<std::vector<std::vector<double> > >(
-            dwi->GetMetaDataDictionary(),
-            "NRRD_measurement frame",
-            nrrdmf);
-          }
-        }
-      }
-#endif
+    // It is not required that the measurement frames are the same for all images.
+    // Images collected at different oblique angles will likely have different measurement frames.
 
     bool result = true;
     if ( GradContainer->size() !=
@@ -3617,11 +3187,8 @@ bool CIntensityMotionCheck::DiffusionCheck( DwiImageType::Pointer dwi)
            || !qcResult->GetDiffusionInformationCheckResult().gradient
            || !qcResult->GetDiffusionInformationCheckResult().measurementFrame ) )
     {
-    std::string DWIFileName;
-    //     DWIFileName=m_DwiFileName.substr(0,m_DwiFileName.find_last_of('.') );
-    //     DWIFileName.append(
-    // protocol->GetDiffusionProtocol().diffusionReplacedDWIFileNameSuffix );
 
+    std::string DWIFileName;
     if ( protocol->GetQCOutputDirectory().length() > 0 )
       {
       if ( protocol->GetQCOutputDirectory().at( protocol->GetQCOutputDirectory()

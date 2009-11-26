@@ -3,8 +3,8 @@
 Program:   NeuroLib
 Module:    $file: itkDWIEddyCurrentHeadMotionCorrector.h $
 Language:  C++
-Date:      $Date: 2009-11-24 12:27:55 $
-Version:   $Revision: 1.3 $
+Date:      $Date: 2009-11-26 21:52:35 $
+Version:   $Revision: 1.4 $
 Author:    Zhexing Liu (liuzhexing@gmail.com)
 
 Copyright (c) NIRAL, UNC. All rights reserved.
@@ -50,7 +50,7 @@ public:
     } ReportFileMode;
 
   struct struDiffusionDir {
-    std::vector<double> gradientDir;
+    std::vector<double> gradientDir; //HACK:  If gradientDir where a vnl_fixed_vector<double,3> you could compute the norm of the vector
     int repetitionNumber;
     };
 
@@ -197,7 +197,7 @@ private:
   /** container to hold output gradient directions histogram */
   std::vector<struDiffusionDir> DiffusionDirHistOutput;
 
-  void parseGridentDirections();
+  void parseGradientDirections();
 
   void collectDiffusionStatistics();
 

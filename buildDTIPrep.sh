@@ -30,6 +30,7 @@ if [ ! -f ${CC} ] || [ ! -f ${CXX} ]; then
 CC=gcc
 CXX=g++
 fi
+## Removed -Wshadow from build to prevent qt warnings form hiding current errors
 FLAGS_FROM_QT_BUILD="-arch x86_64 -Xarch_x86_64 -mmacosx-version-min=10.5 -Wall -W "
 case ${ABI} in
   "PROFILE")
@@ -45,8 +46,8 @@ case ${ABI} in
     CXXFLAGS=" -g ${FLAGS_FROM_QT_BUILD}"
     ;;
   "FAST")
-    CFLAGS="-DNDEBUG -O3 -msse -mmmx -msse2 -msse3  -Wall -W -Wshadow -Wcast-qual -Wwrite-strings -Wstrict-prototypes ${FLAGS_FROM_QT_BUILD}"
-    CXXFLAGS="-DNDEBUG -O3 -msse -mmmx -msse2 -msse3  -Wall -W -Wshadow -Wcast-qual -Wwrite-strings ${FLAGS_FROM_QT_BUILD}"
+    CFLAGS="-DNDEBUG -O3 -msse -mmmx -msse2 -msse3  ${FLAGS_FROM_QT_BUILD}"
+    CXXFLAGS="-DNDEBUG -O3 -msse -mmmx -msse2 -msse3  ${FLAGS_FROM_QT_BUILD}"
     ;;
   *)
     echo "INVALID ABI GIVEN"

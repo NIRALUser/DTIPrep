@@ -3,8 +3,8 @@
 Program:   NeuroLib
 Module:    $file: itkDWIQCSliceChecker.h $
 Language:  C++
-Date:      $Date: 2009-11-24 12:27:56 $
-Version:   $Revision: 1.6 $
+Date:      $Date: 2009-11-26 21:52:35 $
+Version:   $Revision: 1.7 $
 Author:    Zhexing Liu (liuzhexing@gmail.com)
 
 Copyright (c) NIRAL, UNC. All rights reserved.
@@ -289,7 +289,7 @@ private:
   std::vector<bool>                 qcResults;
   std::vector<std::vector<double> > normalizedMetric;
 
-  void parseGridentDirections();
+  void parseGradientDirections();
 
   void collectDiffusionStatistics();
 

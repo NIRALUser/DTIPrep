@@ -3,8 +3,8 @@
 Program:   NeuroLib
 Module:    $file: itkDWIQCInterlaceChecker.h $
 Language:  C++
-Date:      $Date: 2009-11-24 12:27:56 $
-Version:   $Revision: 1.3 $
+Date:      $Date: 2009-11-26 21:52:35 $
+Version:   $Revision: 1.4 $
 Author:    Zhexing Liu (liuzhexing@gmail.com)
 
 Copyright (c) NIRAL, UNC. All rights reserved.
@@ -217,7 +217,7 @@ private:
   std::vector<struInterlaceResults> ResultsContainer;
   std::vector<bool>                 qcResults;
 
-  void parseGridentDirections();
+  void parseGradientDirections();
 
   void collectDiffusionStatistics();
 

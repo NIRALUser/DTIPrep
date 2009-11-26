@@ -3,8 +3,8 @@
 Program:   NeuroLib
 Module:    $file: itkDWIQCGradientChecker.cpp $
 Language:  C++
-Date:      $Date: 2009-11-24 12:27:55 $
-Version:   $Revision: 1.9 $
+Date:      $Date: 2009-11-26 21:52:35 $
+Version:   $Revision: 1.10 $
 Author:    Zhexing Liu (liuzhexing@gmail.com)
 
 Copyright (c) NIRAL, UNC. All rights reserved.
@@ -377,7 +377,7 @@ DWIQCGradientChecker<TImageType>
     }
 
   // perform SliceWiseCheck
-  parseGridentDirections();
+  parseGradientDirections();
   collectDiffusionStatistics();
   initializeQCResullts();
   calculate();
@@ -1139,7 +1139,7 @@ DWIQCGradientChecker<TImageType>
 template <class TImageType>
 void
 DWIQCGradientChecker<TImageType>
-  ::parseGridentDirections()
+  ::parseGradientDirections()
 {
   InputImageConstPointer inputPtr = this->GetInput();
 

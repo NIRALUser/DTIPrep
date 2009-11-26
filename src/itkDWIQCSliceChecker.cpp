@@ -3,8 +3,8 @@
 Program:   NeuroLib
 Module:    $file: itkDWIQCSliceChecker.cpp $
 Language:  C++
-Date:      $Date: 2009-11-24 12:27:56 $
-Version:   $Revision: 1.10 $
+Date:      $Date: 2009-11-26 21:52:35 $
+Version:   $Revision: 1.11 $
 Author:    Zhexing Liu (liuzhexing@gmail.com)
 
 Copyright (c) NIRAL, UNC. All rights reserved.
@@ -143,7 +143,7 @@ DWIQCSliceChecker<TImageType>
   // perform SliceWiseCheck
   // std::cout << "Slice wise checking begins here. " <<std::endl;
 
-  parseGridentDirections();
+  parseGradientDirections();
   collectDiffusionStatistics();
   initializeQCResullts();
   calculateCorrelations( m_Smoothing );
@@ -932,6 +932,11 @@ DWIQCSliceChecker<TImageType>
     DWIBadcount = 0;
     if ( this->qcResults[i] ) // only check the left gradients
       {
+      //HACK:  Should check against some very small tolerance rather than 0.0
+      //HACK:  The values in nhdr files are ASCII, but 1e-308 does not equal 0.0, even though
+      //HACK:  it is sufficiently close to zero.
+      //HACK:  I would recommend making this a vnl_fixed_vecltor, and then 
+      //HACK:  compariing the magnitude of that vector to something like 1e-20;
       if ( this->m_GradientDirectionContainer->at(i)[0] == 0.0
            && this->m_GradientDirectionContainer->at(i)[1] == 0.0
            && this->m_GradientDirectionContainer->at(i)[2] == 0.0     )
@@ -951,13 +956,16 @@ DWIQCSliceChecker<TImageType>
           // compute the mean and stdev
           for ( unsigned int k = 0; k < ResultsContainer.size(); k++ )
             {
-            // if(k==i)
-            //  continue; // leave self out
             if ( !this->qcResults[k] )
               {
               continue;
               }
 
+            //HACK:  In general comparing floating point numbers to exact values is
+            //HACK: a very error prone (and very hard to find subtle bugs).
+            //HACK: Do a regular expression search for " *== *0.0" and make these Tolerance based comparisons
+            //HACK: Do a regular expression search for " *== *1.0" and make these Tolerance based comparisons
+            //HACK:  NOTE +0.0 != -0.0 for all compilers
             if ( this->m_GradientDirectionContainer->at(k)[0] == 0.0
                  && this->m_GradientDirectionContainer->at(k)[1] == 0.0
                  && this->m_GradientDirectionContainer->at(k)[2] == 0.0     )
@@ -979,6 +987,11 @@ DWIQCSliceChecker<TImageType>
               continue;
               }
 
+            //HACK:  In general comparing floating point numbers to exact values is
+            //HACK: a very error prone (and very hard to find subtle bugs).
+            //HACK: Do a regular expression search for " *== *0.0" and make these Tolerance based comparisons
+            //HACK: Do a regular expression search for " *== *1.0" and make these Tolerance based comparisons
+            //HACK:  NOTE +0.0 != -0.0 for all compilers
             if ( this->m_GradientDirectionContainer->at(k)[0] == 0.0
                  && this->m_GradientDirectionContainer->at(k)[1] == 0.0
                  && this->m_GradientDirectionContainer->at(k)[2] == 0.0     )
@@ -1074,6 +1087,11 @@ DWIQCSliceChecker<TImageType>
               continue;
               }
 
+            //HACK:  In general comparing floating point numbers to exact values is
+            //HACK: a very error prone (and very hard to find subtle bugs).
+            //HACK: Do a regular expression search for " *== *0.0" and make these Tolerance based comparisons
+            //HACK: Do a regular expression search for " *== *1.0" and make these Tolerance based comparisons
+            //HACK:  NOTE +0.0 != -0.0 for all compilers
             if ( this->m_GradientDirectionContainer->at(k)[0] != 0.0
                  || this->m_GradientDirectionContainer->at(k)[1] != 0.0
                  || this->m_GradientDirectionContainer->at(k)[2] != 0.0     )
@@ -1098,6 +1116,11 @@ DWIQCSliceChecker<TImageType>
               continue;
               }
 
+            //HACK:  In general comparing floating point numbers to exact values is
+            //HACK: a very error prone (and very hard to find subtle bugs).
+            //HACK: Do a regular expression search for " *== *0.0" and make these Tolerance based comparisons
+            //HACK: Do a regular expression search for " *== *1.0" and make these Tolerance based comparisons
+            //HACK:  NOTE +0.0 != -0.0 for all compilers
             if ( this->m_GradientDirectionContainer->at(k)[0] != 0.0
                  || this->m_GradientDirectionContainer->at(k)[1] != 0.0
                  || this->m_GradientDirectionContainer->at(k)[2] != 0.0     )
@@ -1179,6 +1202,11 @@ DWIQCSliceChecker<TImageType>
       {
       if ( this->qcResults[i] )
         {
+            //HACK:  In general comparing floating point numbers to exact values is
+            //HACK: a very error prone (and very hard to find subtle bugs).
+            //HACK: Do a regular expression search for " *== *0.0" and make these Tolerance based comparisons
+            //HACK: Do a regular expression search for " *== *1.0" and make these Tolerance based comparisons
+            //HACK:  NOTE +0.0 != -0.0 for all compilers
         if ( this->m_GradientDirectionContainer->at(i)[0] == 0.0
              && this->m_GradientDirectionContainer->at(i)[1] == 0.0
              && this->m_GradientDirectionContainer->at(i)[2] == 0.0     )
@@ -1196,6 +1224,11 @@ DWIQCSliceChecker<TImageType>
       {
       if ( this->qcResults[i] )
         {
+            //HACK:  In general comparing floating point numbers to exact values is
+            //HACK: a very error prone (and very hard to find subtle bugs).
+            //HACK: Do a regular expression search for " *== *0.0" and make these Tolerance based comparisons
+            //HACK: Do a regular expression search for " *== *1.0" and make these Tolerance based comparisons
+            //HACK:  NOTE +0.0 != -0.0 for all compilers
         if ( this->m_GradientDirectionContainer->at(i)[0] == 0.0
              && this->m_GradientDirectionContainer->at(i)[1] == 0.0
              && this->m_GradientDirectionContainer->at(i)[2] == 0.0     )
@@ -1230,6 +1263,11 @@ DWIQCSliceChecker<TImageType>
       {
       if ( this->qcResults[i] )
         {
+            //HACK:  In general comparing floating point numbers to exact values is
+            //HACK: a very error prone (and very hard to find subtle bugs).
+            //HACK: Do a regular expression search for " *== *0.0" and make these Tolerance based comparisons
+            //HACK: Do a regular expression search for " *== *1.0" and make these Tolerance based comparisons
+            //HACK:  NOTE +0.0 != -0.0 for all compilers
         if ( this->m_GradientDirectionContainer->at(i)[0] == 0.0
              && this->m_GradientDirectionContainer->at(i)[1] == 0.0
              && this->m_GradientDirectionContainer->at(i)[2] == 0.0     )
@@ -1247,6 +1285,11 @@ DWIQCSliceChecker<TImageType>
       {
       if ( this->qcResults[i] )
         {
+            //HACK:  In general comparing floating point numbers to exact values is
+            //HACK: a very error prone (and very hard to find subtle bugs).
+            //HACK: Do a regular expression search for " *== *0.0" and make these Tolerance based comparisons
+            //HACK: Do a regular expression search for " *== *1.0" and make these Tolerance based comparisons
+            //HACK:  NOTE +0.0 != -0.0 for all compilers
         if ( this->m_GradientDirectionContainer->at(i)[0] == 0.0
              && this->m_GradientDirectionContainer->at(i)[1] == 0.0
              && this->m_GradientDirectionContainer->at(i)[2] == 0.0     )
@@ -1281,6 +1324,11 @@ DWIQCSliceChecker<TImageType>
       {
       if ( this->qcResults[i] )
         {
+            //HACK:  In general comparing floating point numbers to exact values is
+            //HACK: a very error prone (and very hard to find subtle bugs).
+            //HACK: Do a regular expression search for " *== *0.0" and make these Tolerance based comparisons
+            //HACK: Do a regular expression search for " *== *1.0" and make these Tolerance based comparisons
+            //HACK:  NOTE +0.0 != -0.0 for all compilers
         if ( this->m_GradientDirectionContainer->at(i)[0] == 0.0
              && this->m_GradientDirectionContainer->at(i)[1] == 0.0
              && this->m_GradientDirectionContainer->at(i)[2] == 0.0     )
@@ -1298,6 +1346,11 @@ DWIQCSliceChecker<TImageType>
       {
       if ( this->qcResults[i] )
         {
+            //HACK:  In general comparing floating point numbers to exact values is
+            //HACK: a very error prone (and very hard to find subtle bugs).
+            //HACK: Do a regular expression search for " *== *0.0" and make these Tolerance based comparisons
+            //HACK: Do a regular expression search for " *== *1.0" and make these Tolerance based comparisons
+            //HACK:  NOTE +0.0 != -0.0 for all compilers
         if ( this->m_GradientDirectionContainer->at(i)[0] == 0.0
              && this->m_GradientDirectionContainer->at(i)[1] == 0.0
              && this->m_GradientDirectionContainer->at(i)[2] == 0.0     )
@@ -1332,6 +1385,11 @@ DWIQCSliceChecker<TImageType>
       {
       if ( this->qcResults[i] )
         {
+            //HACK:  In general comparing floating point numbers to exact values is
+            //HACK: a very error prone (and very hard to find subtle bugs).
+            //HACK: Do a regular expression search for " *== *0.0" and make these Tolerance based comparisons
+            //HACK: Do a regular expression search for " *== *1.0" and make these Tolerance based comparisons
+            //HACK:  NOTE +0.0 != -0.0 for all compilers
         if ( this->m_GradientDirectionContainer->at(i)[0] == 0.0
              && this->m_GradientDirectionContainer->at(i)[1] == 0.0
              && this->m_GradientDirectionContainer->at(i)[2] == 0.0     )
@@ -1349,6 +1407,11 @@ DWIQCSliceChecker<TImageType>
       {
       if ( this->qcResults[i] )
         {
+            //HACK:  In general comparing floating point numbers to exact values is
+            //HACK: a very error prone (and very hard to find subtle bugs).
+            //HACK: Do a regular expression search for " *== *0.0" and make these Tolerance based comparisons
+            //HACK: Do a regular expression search for " *== *1.0" and make these Tolerance based comparisons
+            //HACK:  NOTE +0.0 != -0.0 for all compilers
         if ( this->m_GradientDirectionContainer->at(i)[0] == 0.0
              && this->m_GradientDirectionContainer->at(i)[1] == 0.0
              && this->m_GradientDirectionContainer->at(i)[2] == 0.0     )
@@ -1383,6 +1446,11 @@ DWIQCSliceChecker<TImageType>
       {
       if ( this->qcResults[i] )
         {
+            //HACK:  In general comparing floating point numbers to exact values is
+            //HACK: a very error prone (and very hard to find subtle bugs).
+            //HACK: Do a regular expression search for " *== *0.0" and make these Tolerance based comparisons
+            //HACK: Do a regular expression search for " *== *1.0" and make these Tolerance based comparisons
+            //HACK:  NOTE +0.0 != -0.0 for all compilers
         if ( this->m_GradientDirectionContainer->at(i)[0] == 0.0
              && this->m_GradientDirectionContainer->at(i)[1] == 0.0
              && this->m_GradientDirectionContainer->at(i)[2] == 0.0     )
@@ -1400,6 +1468,11 @@ DWIQCSliceChecker<TImageType>
       {
       if ( this->qcResults[i] )
         {
+            //HACK:  In general comparing floating point numbers to exact values is
+            //HACK: a very error prone (and very hard to find subtle bugs).
+            //HACK: Do a regular expression search for " *== *0.0" and make these Tolerance based comparisons
+            //HACK: Do a regular expression search for " *== *1.0" and make these Tolerance based comparisons
+            //HACK:  NOTE +0.0 != -0.0 for all compilers
         if ( this->m_GradientDirectionContainer->at(i)[0] == 0.0
              && this->m_GradientDirectionContainer->at(i)[1] == 0.0
              && this->m_GradientDirectionContainer->at(i)[2] == 0.0     )
@@ -1438,6 +1511,11 @@ DWIQCSliceChecker<TImageType>
     badcount = 0;
     if ( this->qcResults[i] ) // only check the left gradients
       {
+            //HACK:  In general comparing floating point numbers to exact values is
+            //HACK: a very error prone (and very hard to find subtle bugs).
+            //HACK: Do a regular expression search for " *== *0.0" and make these Tolerance based comparisons
+            //HACK: Do a regular expression search for " *== *1.0" and make these Tolerance based comparisons
+            //HACK:  NOTE +0.0 != -0.0 for all compilers
       if ( this->m_GradientDirectionContainer->at(i)[0] == 0.0
            && this->m_GradientDirectionContainer->at(i)[1] == 0.0
            && this->m_GradientDirectionContainer->at(i)[2] == 0.0     )
@@ -1514,6 +1592,11 @@ DWIQCSliceChecker<TImageType>
     badcount = 0;
     if ( this->qcResults[i] ) // only check the left gradients
       {
+            //HACK:  In general comparing floating point numbers to exact values is
+            //HACK: a very error prone (and very hard to find subtle bugs).
+            //HACK: Do a regular expression search for " *== *0.0" and make these Tolerance based comparisons
+            //HACK: Do a regular expression search for " *== *1.0" and make these Tolerance based comparisons
+            //HACK:  NOTE +0.0 != -0.0 for all compilers
       if ( this->m_GradientDirectionContainer->at(i)[0] == 0.0
            && this->m_GradientDirectionContainer->at(i)[1] == 0.0
            && this->m_GradientDirectionContainer->at(i)[2] == 0.0     )
@@ -1590,6 +1673,11 @@ DWIQCSliceChecker<TImageType>
     badcount = 0;
     if ( this->qcResults[i] ) // only check the left gradients
       {
+            //HACK:  In general comparing floating point numbers to exact values is
+            //HACK: a very error prone (and very hard to find subtle bugs).
+            //HACK: Do a regular expression search for " *== *0.0" and make these Tolerance based comparisons
+            //HACK: Do a regular expression search for " *== *1.0" and make these Tolerance based comparisons
+            //HACK:  NOTE +0.0 != -0.0 for all compilers
       if ( this->m_GradientDirectionContainer->at(i)[0] == 0.0
            && this->m_GradientDirectionContainer->at(i)[1] == 0.0
            && this->m_GradientDirectionContainer->at(i)[2] == 0.0     )
@@ -3127,7 +3215,7 @@ DWIQCSliceChecker<TImageType>
 template <class TImageType>
 void
 DWIQCSliceChecker<TImageType>
-  ::parseGridentDirections()
+  ::parseGradientDirections()
 {
   InputImageConstPointer inputPtr = this->GetInput();
 

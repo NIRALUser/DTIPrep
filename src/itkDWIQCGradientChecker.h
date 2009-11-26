@@ -3,8 +3,8 @@
 Program:   NeuroLib
 Module:    $file: itkDWIQCGradientChecker.h $
 Language:  C++
-Date:      $Date: 2009-11-24 12:27:56 $
-Version:   $Revision: 1.5 $
+Date:      $Date: 2009-11-26 21:52:35 $
+Version:   $Revision: 1.6 $
 Author:    Zhexing Liu (liuzhexing@gmail.com)
 
 Copyright (c) NIRAL, UNC. All rights reserved.
@@ -208,7 +208,7 @@ private:
   /** Indicating whether to exclude the gradients with large motion artifacts */
   bool m_ExcludeGradientsWithLargeMotionArtifacts;
 
-  void parseGridentDirections();
+  void parseGradientDirections();
 
   void collectDiffusionStatistics();
 

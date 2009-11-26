@@ -124,9 +124,9 @@ public:
   GradientDirectionContainerType;
 
   // void SetFileName(std::string filename) {DwiFileName = filename; };
-  bool GetGridentDirections( bool bDisplay);
+  bool GetGradientDirections( bool bDisplay);
 
-  bool GetGridentDirections();
+  bool GetGradientDirections();
 
   bool LoadDwiImage();
 
@@ -146,10 +146,10 @@ public:
 
   void SetDWIImage(DwiImageType::Pointer DWIImage)
   {
-    DwiImage = DWIImage; bDwiLoaded = true;
+    m_DwiOriginalImage = DWIImage; bDwiLoaded = true;
   }
 
-  void GenerateCheckOutputImage( std::string filename);
+  void GenerateCheckOutputImage( const std::string filename);
 
   void DefaultProcess( );
 
@@ -171,11 +171,10 @@ private:
   QCResult qcResult;
 
   std::string            DwiFileName;
-  DwiReaderType::Pointer DwiReader;
-  DwiImageType::Pointer  DwiImage;
+  DwiImageType::Pointer  m_DwiOriginalImage;
 
   bool                                    bDwiLoaded;
-  bool                                    bGetGridentDirections;
+  bool                                    bGetGradientDirections;
   bool                                    readb0;
   double                                  b0;
   GradientDirectionContainerType::Pointer GradientDirectionContainer;

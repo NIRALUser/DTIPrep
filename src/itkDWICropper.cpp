@@ -3,8 +3,8 @@
 Program:   NeuroLib
 Module:    $file: itkDWICropper.cpp $
 Language:  C++
-Date:      $Date: 2009-11-24 12:27:55 $
-Version:   $Revision: 1.7 $
+Date:      $Date: 2009-11-26 21:52:35 $
+Version:   $Revision: 1.8 $
 Author:    Zhexing Liu (liuzhexing@gmail.com)
 
 Copyright (c) NIRAL, UNC. All rights reserved.
@@ -94,7 +94,7 @@ DWICropper<TImageType>
     return;
     }
 
-  parseGridentDirections();
+  parseGradientDirections();
   collectDiffusionStatistics();
 
   typename InputImageType::RegionType imageOriginalRegion
@@ -457,7 +457,7 @@ DWICropper<TImageType>
 template <class TImageType>
 void
 DWICropper<TImageType>
-  ::parseGridentDirections()
+  ::parseGradientDirections()
 {
   InputImageConstPointer inputPtr = this->GetInput();
 

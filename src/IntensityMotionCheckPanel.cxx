@@ -34,7 +34,7 @@ IntensityMotionCheckPanel::IntensityMotionCheckPanel(QMainWindow *parentNew) :
   verticalLayout->setContentsMargins(0, 0, 0, 0);
   progressBar->setValue(0);
 
-  DwiImage = NULL;
+  m_DwiOriginalImage = NULL;
   protocol.clear();
   bDwiLoaded = false;
   bProtocol = false;
@@ -63,7 +63,7 @@ IntensityMotionCheckPanel::IntensityMotionCheckPanel(QMainWindow *parentNew) :
 
   ThreadIntensityMotionCheck = new CThreadIntensityMotionCheck;
 
-  bGetGridentDirections = false;
+  bGetGradientDirections = false;
 
   GradientDirectionContainer = GradientDirectionContainerType::New();
 
@@ -215,7 +215,7 @@ void IntensityMotionCheckPanel::on_pushButton_RunPipeline_clicked( )
   // IntensityMotionCheck.SetQCResult(&qcResult);
   // IntensityMotionCheck.GetImagesInformation();
   // IntensityMotionCheck.CheckByProtocol();
-  if ( DwiImage->GetVectorLength() != GradientDirectionContainer->size() )
+  if ( m_DwiOriginalImage->GetVectorLength() != GradientDirectionContainer->size() )
     {
     std::cout
    << "Bad DWI: mismatch between gradient image # and gradient vector #"
@@ -310,17 +310,24 @@ bool IntensityMotionCheckPanel::LoadDwiImage()
   // std::cout<< str<<std::endl;
   // ::SetCurrentDirectory(str.c_str());
 
-  itk::NrrdImageIO::Pointer myNrrdImageIO = itk::NrrdImageIO::New();
 
-  if ( DwiFileName.length() != 0 )
+  if ( DwiFileName.length() == 0 )
     {
+    std::cout << "Dwi file name not set" << std::endl;
+    bDwiLoaded = false;
+    return false;
+    }
+  else
+    {
+    itk::NrrdImageIO::Pointer myNrrdImageIO = itk::NrrdImageIO::New();
+    DwiReaderType::Pointer DwiReader;
+    DwiReader = DwiReaderType::New();
     try
       {
-      DwiReader = DwiReaderType::New();
       DwiReader->SetImageIO(myNrrdImageIO);
       DwiReader->SetFileName(DwiFileName);
       std::cout << "Loading in IntensityMotionCheckPanel:" << DwiFileName
-                << " ... ";
+        << " ... ";
       DwiReader->Update();
       }
     catch ( itk::ExceptionObject & e )
@@ -329,32 +336,26 @@ bool IntensityMotionCheckPanel::LoadDwiImage()
       bDwiLoaded = false;
       return false;
       }
+    std::cout << "Done " << std::endl;
+
+    m_DwiOriginalImage = DwiReader->GetOutput();
+    bDwiLoaded = true;
+
+    std::cout << "Image Dimension"
+      << m_DwiOriginalImage->GetLargestPossibleRegion().GetSize().GetSizeDimension()
+      << ": ";
+    std::cout << m_DwiOriginalImage->GetLargestPossibleRegion().GetSize()[0] << " ";
+    std::cout << m_DwiOriginalImage->GetLargestPossibleRegion().GetSize()[1] << " ";
+    std::cout << m_DwiOriginalImage->GetLargestPossibleRegion().GetSize()[2] << std::endl;
+
+    std::cout << "Pixel Vector Length: " << m_DwiOriginalImage->GetVectorLength()
+      << std::endl;
+
     }
-  else
-    {
-    std::cout << "Dwi file name not set" << std::endl;
-    bDwiLoaded = false;
-    return false;
-    }
-  std::cout << "Done " << std::endl;
-
-  DwiImage = DwiReader->GetOutput();
-  bDwiLoaded = true;
-
-  std::cout << "Image Dimension"
-            << DwiImage->GetLargestPossibleRegion().GetSize().GetSizeDimension()
- << ": ";
-  std::cout << DwiImage->GetLargestPossibleRegion().GetSize()[0] << " ";
-  std::cout << DwiImage->GetLargestPossibleRegion().GetSize()[1] << " ";
-  std::cout << DwiImage->GetLargestPossibleRegion().GetSize()[2] << std::endl;
-
-  std::cout << "Pixel Vector Length: " << DwiImage->GetVectorLength()
-            << std::endl;
-
   return bDwiLoaded;
 }
 
-bool IntensityMotionCheckPanel::GetGridentDirections( bool bDisplay)
+bool IntensityMotionCheckPanel::GetGradientDirections( bool bDisplay)
 {
   if ( !bDwiLoaded )
     {
@@ -363,12 +364,12 @@ bool IntensityMotionCheckPanel::GetGridentDirections( bool bDisplay)
   if ( !bDwiLoaded )
     {
     std::cout << "DWI load error, no Gradient Direction Loaded" << std::endl;
-    bGetGridentDirections = false;
+    bGetGradientDirections = false;
     return false;
     }
 
   itk::MetaDataDictionary imgMetaDictionary
-    = this->DwiImage->GetMetaDataDictionary();                                            //
+    = this->m_DwiOriginalImage->GetMetaDataDictionary();                                            //
   std::vector<std::string> imgMetaKeys
     = imgMetaDictionary.GetKeys();
   std::vector<std::string>::const_iterator itKey = imgMetaKeys.begin();
@@ -407,17 +408,17 @@ bool IntensityMotionCheckPanel::GetGridentDirections( bool bDisplay)
   if ( GradientDirectionContainer->Size() <= 6 )
     {
     std::cout << "Gradient Images Less than 7" << std::endl;
-    bGetGridentDirections = false;
+    bGetGradientDirections = false;
     return false;
     }
 
   if ( bDisplay )
     {
     std::cout << "b Value: " << b0 << std::endl;
-    std::cout << "DWI image gradient count: " << DwiImage->GetVectorLength()
+    std::cout << "DWI image gradient count: " << m_DwiOriginalImage->GetVectorLength()
               << std::endl;
 
-    for ( unsigned int i = 0; i < DwiImage->GetVectorLength(); i++ ) //
+    for ( unsigned int i = 0; i < m_DwiOriginalImage->GetVectorLength(); i++ ) //
                                                                      // GradientDirectionContainer->Size()
       {
       //      std::cout<<"Gradient Direction "<<i<<": \t[";
@@ -427,7 +428,7 @@ bool IntensityMotionCheckPanel::GetGridentDirections( bool bDisplay)
       }
     }
 
-  bGetGridentDirections = true;
+  bGetGradientDirections = true;
   return true;
 }
 
@@ -513,28 +514,28 @@ void IntensityMotionCheckPanel::UpdatePanelDWI()
   //   pushButton_SaveDWI->setEnabled( 0 );
   pushButton_SaveDWIAs->setEnabled( 0 );
 
-  lineEdit_SizeX->setText( QString::number(this->DwiImage->
+  lineEdit_SizeX->setText( QString::number(this->m_DwiOriginalImage->
         GetLargestPossibleRegion().GetSize()[0]) );
-  lineEdit_SizeY->setText( QString::number(this->DwiImage->
+  lineEdit_SizeY->setText( QString::number(this->m_DwiOriginalImage->
         GetLargestPossibleRegion().GetSize()[1]) );
-  lineEdit_SizeZ->setText( QString::number(this->DwiImage->
+  lineEdit_SizeZ->setText( QString::number(this->m_DwiOriginalImage->
         GetLargestPossibleRegion().GetSize()[2]) );
 
-  lineEdit_OriginX->setText( QString::number(this->DwiImage->GetOrigin()[0],
+  lineEdit_OriginX->setText( QString::number(this->m_DwiOriginalImage->GetOrigin()[0],
       'f') );
-  lineEdit_OriginY->setText( QString::number(this->DwiImage->GetOrigin()[1],
+  lineEdit_OriginY->setText( QString::number(this->m_DwiOriginalImage->GetOrigin()[1],
       'f') );
-  lineEdit_OriginZ->setText( QString::number(this->DwiImage->GetOrigin()[2],
-      'f') );
-
-  lineEdit_SpacingX->setText( QString::number(this->DwiImage->GetSpacing()[0],
-      'f') );
-  lineEdit_SpacingY->setText( QString::number(this->DwiImage->GetSpacing()[1],
-      'f') );
-  lineEdit_SpacingZ->setText( QString::number(this->DwiImage->GetSpacing()[2],
+  lineEdit_OriginZ->setText( QString::number(this->m_DwiOriginalImage->GetOrigin()[2],
       'f') );
 
-  GetGridentDirections(0);
+  lineEdit_SpacingX->setText( QString::number(this->m_DwiOriginalImage->GetSpacing()[0],
+      'f') );
+  lineEdit_SpacingY->setText( QString::number(this->m_DwiOriginalImage->GetSpacing()[1],
+      'f') );
+  lineEdit_SpacingZ->setText( QString::number(this->m_DwiOriginalImage->GetSpacing()[2],
+      'f') );
+
+  GetGradientDirections(0);
 
   QTreeWidgetItem *bValue = new QTreeWidgetItem(treeWidget_DiffusionInformation);
   bValue->setText( 0, tr("DWMRI_b-value") );
@@ -553,14 +554,14 @@ void IntensityMotionCheckPanel::UpdatePanelDWI()
       );
     }
 
-  if ( DwiImage->GetVectorLength() != GradientDirectionContainer->size() )
+  if ( m_DwiOriginalImage->GetVectorLength() != GradientDirectionContainer->size() )
     {
     std::cout
    << "Bad DWI: mismatch between gradient image # and gradient vector #"
    << std::endl;
     }
   itk::MetaDataDictionary imgMetaDictionary
-    = DwiImage->GetMetaDataDictionary();
+    = m_DwiOriginalImage->GetMetaDataDictionary();
   std::vector<std::string> imgMetaKeys
     = imgMetaDictionary.GetKeys();
   std::vector<std::string>::const_iterator itKey = imgMetaKeys.begin();
@@ -571,7 +572,7 @@ void IntensityMotionCheckPanel::UpdatePanelDWI()
     {
     // imaging frame
     vnl_matrix_fixed<double, 3, 3> imgf;
-    imgf = DwiImage->GetDirection().GetVnlMatrix();
+    imgf = m_DwiOriginalImage->GetDirection().GetVnlMatrix();
 
     // Image frame
     //     std::cout << "Image frame: " << std::endl;
@@ -629,7 +630,7 @@ void IntensityMotionCheckPanel::on_pushButton_DefaultProtocol_clicked( )
   //  CreateDefaultProtocol(); //old
   //  UpdateProtocolTree(); //old
 
-  if ( DwiImage->GetVectorLength() != GradientDirectionContainer->size() )
+  if ( m_DwiOriginalImage->GetVectorLength() != GradientDirectionContainer->size() )
     {
     std::cout
    << "Bad DWI: mismatch between gradient image # and gradient vector #"
@@ -666,25 +667,25 @@ void IntensityMotionCheckPanel::DefaultProtocol()
 
   // size
   this->GetProtocol().GetImageProtocol().size[0]
-    = DwiImage->GetLargestPossibleRegion().GetSize()[0];
+    = m_DwiOriginalImage->GetLargestPossibleRegion().GetSize()[0];
   this->GetProtocol().GetImageProtocol().size[1]
-    = DwiImage->GetLargestPossibleRegion().GetSize()[1];
+    = m_DwiOriginalImage->GetLargestPossibleRegion().GetSize()[1];
   this->GetProtocol().GetImageProtocol().size[2]
-    = DwiImage->GetLargestPossibleRegion().GetSize()[2];
+    = m_DwiOriginalImage->GetLargestPossibleRegion().GetSize()[2];
 
   // origin
-  this->GetProtocol().GetImageProtocol().origin[0] = DwiImage->GetOrigin()[0];
-  this->GetProtocol().GetImageProtocol().origin[1] = DwiImage->GetOrigin()[1];
-  this->GetProtocol().GetImageProtocol().origin[2] = DwiImage->GetOrigin()[2];
+  this->GetProtocol().GetImageProtocol().origin[0] = m_DwiOriginalImage->GetOrigin()[0];
+  this->GetProtocol().GetImageProtocol().origin[1] = m_DwiOriginalImage->GetOrigin()[1];
+  this->GetProtocol().GetImageProtocol().origin[2] = m_DwiOriginalImage->GetOrigin()[2];
 
   // spacing
-  this->GetProtocol().GetImageProtocol().spacing[0] = DwiImage->GetSpacing()[0];
-  this->GetProtocol().GetImageProtocol().spacing[1] = DwiImage->GetSpacing()[1];
-  this->GetProtocol().GetImageProtocol().spacing[2] = DwiImage->GetSpacing()[2];
+  this->GetProtocol().GetImageProtocol().spacing[0] = m_DwiOriginalImage->GetSpacing()[0];
+  this->GetProtocol().GetImageProtocol().spacing[1] = m_DwiOriginalImage->GetSpacing()[1];
+  this->GetProtocol().GetImageProtocol().spacing[2] = m_DwiOriginalImage->GetSpacing()[2];
 
   // space
   itk::MetaDataDictionary imgMetaDictionary
-    = DwiImage->GetMetaDataDictionary();
+    = m_DwiOriginalImage->GetMetaDataDictionary();
   std::vector<std::string> imgMetaKeys
     = imgMetaDictionary.GetKeys();
   std::vector<std::string>::const_iterator itKey = imgMetaKeys.begin();
@@ -736,7 +737,7 @@ void IntensityMotionCheckPanel::DefaultProtocol()
   this->GetProtocol().GetImageProtocol().reportFileMode = 1;
 
   // ***** diffusion
-  GetGridentDirections( 0 );
+  GetGradientDirections( 0 );
 
   this->GetProtocol().GetDiffusionProtocol().bCheck = true;
   this->GetProtocol().GetDiffusionProtocol().bValue = this->b0;
@@ -756,7 +757,7 @@ void IntensityMotionCheckPanel::DefaultProtocol()
     {
     // imaging frame
     vnl_matrix_fixed<double, 3, 3> imgf;
-    imgf = DwiImage->GetDirection().GetVnlMatrix();
+    imgf = m_DwiOriginalImage->GetDirection().GetVnlMatrix();
 
     // Image frame
     this->GetProtocol().GetImageProtocol().spacedirection[0][0] = imgf(0, 0);
@@ -797,6 +798,7 @@ void IntensityMotionCheckPanel::DefaultProtocol()
     this->GetProtocol().GetDiffusionProtocol().measurementFrame[2][2] = mf(2, 2);
     }
 
+  //HACK:  This breaks encapsulation of the function.  SetFunctions should be used!
   this->GetProtocol().GetDiffusionProtocol().bUseDiffusionProtocol = true;
   this->GetProtocol().GetDiffusionProtocol().diffusionReplacedDWIFileNameSuffix
     = "_DiffusionReplaced.nhdr";
@@ -995,7 +997,7 @@ bool IntensityMotionCheckPanel::GetSliceProtocolParameters(
   double & gradientCorrelationDeviationThreshold
   )
 {
-  // emit Progress(j+1/DwiImage->GetVectorLength());//emit QQQ(10);
+  // emit Progress(j+1/m_DwiOriginalImage->GetVectorLength());//emit QQQ(10);
 
   if ( !bDwiLoaded  )
     {
@@ -1012,14 +1014,14 @@ bool IntensityMotionCheckPanel::GetSliceProtocolParameters(
   typedef itk::VectorIndexSelectionCastImageFilter<DwiImageType,
     GradientImageType> FilterType;
   FilterType::Pointer componentExtractor = FilterType::New();
-  componentExtractor->SetInput(DwiImage);
+  componentExtractor->SetInput(m_DwiOriginalImage);
 
   typedef itk::ExtractImageFilter<GradientImageType,
     SliceImageType> ExtractFilterType;
   ExtractFilterType::Pointer filter1 = ExtractFilterType::New();
   ExtractFilterType::Pointer filter2 = ExtractFilterType::New();
 
-  for ( unsigned int j = 0; j < DwiImage->GetVectorLength(); j++ )
+  for ( unsigned int j = 0; j < m_DwiOriginalImage->GetVectorLength(); j++ )
     {
     componentExtractor->SetIndex( j );
     componentExtractor->Update();
@@ -1070,7 +1072,7 @@ bool IntensityMotionCheckPanel::GetSliceProtocolParameters(
     ResultsContainer.push_back(Results);
     }
 
-  GetGridentDirections(0);
+  GetGradientDirections(0);
   int DWICount, BaselineCount;
 
   DWICount = 0;
@@ -1176,7 +1178,7 @@ bool IntensityMotionCheckPanel::GetSliceProtocolParameters(
   double maxBaselineCorrelationDevTime = 0.0;
   double maxGradientCorrelationDevTime = 0.0;
 
-  int sliceNum = DwiImage->GetLargestPossibleRegion().GetSize()[2];
+  int sliceNum = m_DwiOriginalImage->GetLargestPossibleRegion().GetSize()[2];
   for ( int i = 0 + (int)( sliceNum * beginSkip);
         i < sliceNum - (int)( sliceNum * endSkip);
         i++ )                                                                               //
@@ -1271,7 +1273,7 @@ bool IntensityMotionCheckPanel::GetInterlaceProtocolParameters(
     return false;
     }
 
-  GetGridentDirections(0);
+  GetGradientDirections(0);
 
   std::vector<double> baselineCorrelation;
   std::vector<double> gradientCorrelation;
@@ -1280,7 +1282,7 @@ bool IntensityMotionCheckPanel::GetInterlaceProtocolParameters(
     GradientImageType> FilterType;
   FilterType::Pointer componentExtractor = FilterType::New();
 
-  componentExtractor->SetInput(DwiImage);
+  componentExtractor->SetInput(m_DwiOriginalImage);
 
   GradientImageType::Pointer InterlaceOdd  = GradientImageType::New();
   GradientImageType::Pointer InterlaceEven = GradientImageType::New();
@@ -1316,7 +1318,7 @@ bool IntensityMotionCheckPanel::GetInterlaceProtocolParameters(
   IteratorType iterateEven( InterlaceEven,
                            InterlaceEven->GetLargestPossibleRegion() );
 
-  for ( unsigned int j = 0; j < DwiImage->GetVectorLength(); j++ )
+  for ( unsigned int j = 0; j < m_DwiOriginalImage->GetVectorLength(); j++ )
     {
     componentExtractor->SetIndex( j );
     componentExtractor->Update();
@@ -2495,16 +2497,12 @@ void IntensityMotionCheckPanel::ResultUpdate()
   return;
 }
 
-void IntensityMotionCheckPanel::GenerateCheckOutputImage( std::string filename)
+void IntensityMotionCheckPanel::GenerateCheckOutputImage( const std::string filename)
 {
   if ( !bDwiLoaded  )
     {
-    LoadDwiImage();
-    }
-  if ( !bDwiLoaded  )
-    {
     std::cout << "DWI load error, no Gradient Direction Loaded" << std::endl;
-    bGetGridentDirections = false;
+    bGetGradientDirections = false;
     return;
     }
 
@@ -2561,7 +2559,7 @@ void IntensityMotionCheckPanel::GenerateCheckOutputImage( std::string filename)
       DwiWriterType::Pointer DwiWriter = DwiWriterType::New();
       DwiWriter->SetImageIO(myNrrdImageIO);
       DwiWriter->SetFileName( filename );
-      DwiWriter->SetInput( DwiReader->GetOutput() );
+      DwiWriter->SetInput( this->m_DwiOriginalImage );
       DwiWriter->UseCompressionOn();
       DwiWriter->Update();
       }
@@ -2574,15 +2572,15 @@ void IntensityMotionCheckPanel::GenerateCheckOutputImage( std::string filename)
     }
 
   DwiImageType::Pointer newDwiImage = DwiImageType::New();
-  newDwiImage->CopyInformation(DwiImage);
-  newDwiImage->SetRegions( DwiImage->GetLargestPossibleRegion() );
+  newDwiImage->CopyInformation(m_DwiOriginalImage);
+  newDwiImage->SetRegions( m_DwiOriginalImage->GetLargestPossibleRegion() );
   newDwiImage->SetVectorLength( gradientLeft);
   //  newDwiImage->SetMetaDataDictionary(imgMetaDictionary);
   newDwiImage->Allocate();
 
   typedef itk::ImageRegionConstIteratorWithIndex<DwiImageType>
   ConstIteratorType;
-  ConstIteratorType oit( DwiImage, DwiImage->GetLargestPossibleRegion() );
+  ConstIteratorType oit( m_DwiOriginalImage, m_DwiOriginalImage->GetLargestPossibleRegion() );
   typedef itk::ImageRegionIteratorWithIndex<DwiImageType> IteratorType;
   IteratorType nit( newDwiImage, newDwiImage->GetLargestPossibleRegion() );
 
@@ -2630,7 +2628,7 @@ void IntensityMotionCheckPanel::GenerateCheckOutputImage( std::string filename)
   // newDwiImage->Delete();
 
   itk::MetaDataDictionary imgMetaDictionary
-    = DwiImage->GetMetaDataDictionary();                                            //
+    = m_DwiOriginalImage->GetMetaDataDictionary();                                            //
   std::vector<std::string> imgMetaKeys
     = imgMetaDictionary.GetKeys();
   std::vector<std::string>::const_iterator itKey = imgMetaKeys.begin();
@@ -2647,7 +2645,7 @@ void IntensityMotionCheckPanel::GenerateCheckOutputImage( std::string filename)
     {
     // imaging frame
     vnl_matrix_fixed<double, 3, 3> imgf;
-    imgf = DwiImage->GetDirection().GetVnlMatrix();
+    imgf = m_DwiOriginalImage->GetDirection().GetVnlMatrix();
 
     // Image frame
     // std::cout << "Image frame: " << std::endl;
@@ -2696,7 +2694,7 @@ void IntensityMotionCheckPanel::GenerateCheckOutputImage( std::string filename)
     header << "modality:=" << metaString << std::endl;
     }
 
-  GetGridentDirections();
+  GetGradientDirections();
 
   for ( itKey = imgMetaKeys.begin(); itKey != imgMetaKeys.end(); itKey++ )
     {
@@ -2732,7 +2730,7 @@ void IntensityMotionCheckPanel::GenerateCheckOutputImage( std::string filename)
   std::cout << " QC Image saved " << std::endl;
 }
 
-bool IntensityMotionCheckPanel::GetGridentDirections()
+bool IntensityMotionCheckPanel::GetGradientDirections()
 {
   if ( !bDwiLoaded )
     {
@@ -2741,12 +2739,12 @@ bool IntensityMotionCheckPanel::GetGridentDirections()
   if ( !bDwiLoaded )
     {
     std::cout << "DWI load error, no Gradient Direction Loaded" << std::endl;
-    bGetGridentDirections = false;
+    bGetGradientDirections = false;
     return false;
     }
 
   itk::MetaDataDictionary imgMetaDictionary
-    = DwiImage->GetMetaDataDictionary();                                            //
+    = m_DwiOriginalImage->GetMetaDataDictionary();                                            //
   std::vector<std::string> imgMetaKeys
     = imgMetaDictionary.GetKeys();
   std::vector<std::string>::const_iterator itKey = imgMetaKeys.begin();
@@ -2785,15 +2783,15 @@ bool IntensityMotionCheckPanel::GetGridentDirections()
   if ( GradientDirectionContainer->size() <= 6 )
     {
     std::cout << "Gradient Images Less than 7" << std::endl;
-    bGetGridentDirections = false;
+    bGetGradientDirections = false;
     return false;
     }
 
   std::cout << "b Value: " << b0 << std::endl;
-  std::cout << "DWI image gradient count: " << DwiImage->GetVectorLength()
+  std::cout << "DWI image gradient count: " << m_DwiOriginalImage->GetVectorLength()
             << std::endl;
 
-  for ( unsigned int i = 0; i < DwiImage->GetVectorLength(); i++ ) //
+  for ( unsigned int i = 0; i < m_DwiOriginalImage->GetVectorLength(); i++ ) //
                                                                    // GradientDirectionContainer->Size()
     {
     //    std::cout<<"Gradient Direction "<<i<<": \t[";
@@ -2802,7 +2800,7 @@ bool IntensityMotionCheckPanel::GetGridentDirections()
     //    std::cout<<GradientDirectionContainer->at(i)[2]<<" ]"<<std::endl;
     }
 
-  bGetGridentDirections = true;
+  bGetGradientDirections = true;
   return true;
 }
 
@@ -2825,7 +2823,7 @@ void IntensityMotionCheckPanel::on_pushButton_SaveDWIAs_clicked( )
 
 void IntensityMotionCheckPanel::on_pushButton_DefaultQCResult_clicked( )
 {
-  if ( DwiImage->GetVectorLength() != GradientDirectionContainer->size() )
+  if ( m_DwiOriginalImage->GetVectorLength() != GradientDirectionContainer->size() )
     {
     std::cout
    << "Bad DWI: mismatch between gradient image # and gradient vector #"
@@ -2851,7 +2849,7 @@ void IntensityMotionCheckPanel::DefaultProcess( )
   GradientIntensityMotionCheckResult IntensityMotionCheckResult;
   IntensityMotionCheckResult.processing = QCResult::GRADIENT_INCLUDE;
 
-  for ( unsigned int i = 0; i < this->DwiImage->GetVectorLength(); i++ )
+  for ( unsigned int i = 0; i < this->m_DwiOriginalImage->GetVectorLength(); i++ )
     {
     IntensityMotionCheckResult.OriginalDir[0]
       = this->GradientDirectionContainer->ElementAt(i)[0];

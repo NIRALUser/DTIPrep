@@ -64,9 +64,9 @@ public:
     return numGradients;
   }
 
-  bool GetGridentDirections();
+  bool GetGradientDirections();
 
-  bool GetGridentDirections( DwiImageType::Pointer dwi,
+  bool GetGradientDirections( DwiImageType::Pointer dwi,
     double & bValue,
     GradientDirectionContainerType::Pointer GradDireContainer);
 
@@ -78,9 +78,7 @@ public:
   bool EddyMotionCorrect( DwiImageType::Pointer dwi );
   bool EddyMotionCorrectIowa( DwiImageType::Pointer dwi );
   bool GradientWiseCheck( DwiImageType::Pointer dwi );
-  bool SaveQCedDWI(DwiImageType::Pointer dwi);
-
-
+  bool SaveDwiForcedConformanceImage(void) const;
 
   bool DTIComputing();
 
@@ -89,9 +87,6 @@ public:
 
   bool validateDiffusionStatistics();
   unsigned char  validateLeftDiffusionStatistics();  // 00000CBA:
-
-
-  void GenerateCheckOutputImage( std::string filename);
 
   void SetProtocol(Protocol *p)
   {
@@ -214,6 +209,9 @@ private:
 
   //Code that crops the dwi images
   void ForceCroppingOfImage(const bool bReport, const std::string ImageCheckReportFileName);
+
+  //HACK:  TODO:  Zhexing  private member variables should start with m_ so that it is easy to
+  //distinguish them from local variables in the member functions.
   //All these variables need to have m_ in front of them.
   bool bDwiLoaded;
 
@@ -229,14 +227,13 @@ private:
   int              gradientLeftNumber;
   std::vector<int> repetitionLeftNumber;
 
-  bool bGetGridentDirections;
+  bool bGetGradientDirections;
 
   std::string m_DwiFileName;
   std::string GlobalReportFileName;
 
   DwiImageType::Pointer m_DwiForcedConformanceImage;
   DwiImageType::Pointer  m_DwiOriginalImage;
-  DwiReaderType::Pointer DwiReader;
 
   unsigned int numGradients;
 

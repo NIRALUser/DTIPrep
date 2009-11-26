@@ -298,6 +298,52 @@ public:
     m_BadGradientPercentageTolerance = tor;
   }
 
+  //TODO:  A family of these GetXXXXXReportFileName() functions needs to be written
+  // HACK:  These functions should all be const, which means that the functions they depend on
+  // also need to be const
+  // HACK:  Body of these functions should be moved to the .cpp file
+  // HACK:  Common code accross all functions should be refactored into private function
+  // to remove as much duplicate code as possible.
+  //std::string GetDiffusionProtocolReportFileName(const std::string referenceDwiFileName) const
+  std::string GetDiffusionProtocolReportFileName(const std::string referenceDwiFileName)
+    {
+    std::string ReportFileName;
+    if ( this->GetImageProtocol().reportFileNameSuffix.length() > 0 )
+      {
+      if ( this->GetQCOutputDirectory().length() > 0 )
+        {
+        if ( this->GetQCOutputDirectory().at( this->GetQCOutputDirectory()
+            .length() - 1 ) == '\\'
+          || this->GetQCOutputDirectory().at( this->
+            GetQCOutputDirectory().length() - 1 ) == '/'     )
+          {
+          ReportFileName = this->GetQCOutputDirectory().substr(
+            0, this->GetQCOutputDirectory().find_last_of("/\\") );
+          }
+        else
+          {
+          ReportFileName = this->GetQCOutputDirectory();
+          }
+
+        ReportFileName.append( "/" );
+
+        std::string str = referenceDwiFileName.substr( 0, referenceDwiFileName.find_last_of('.') );
+        str = str.substr( str.find_last_of("/\\") + 1);
+
+        ReportFileName.append( str );
+        ReportFileName.append(
+          this->GetDiffusionProtocol().reportFileNameSuffix );
+        }
+      else
+        {
+        ReportFileName = referenceDwiFileName.substr( 0, referenceDwiFileName.find_last_of('.') );
+        ReportFileName.append(
+          this->GetDiffusionProtocol().reportFileNameSuffix );
+        }
+      }
+    return ReportFileName;
+    }
+
 private:
 
   //HACK:  All private member variables should start with "m_" to indicate

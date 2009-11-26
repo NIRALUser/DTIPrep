@@ -135,6 +135,7 @@ public:
   }
 
 private:
+  //HACK:  THese all need to have m_ for their file names.
   PrecisionType translationScale;
   PrecisionType stepLength;
   PrecisionType factor;
@@ -152,8 +153,8 @@ private:
   ImageContainerType movingImages;
   ImageContainerType baseLines;
 
-  ImageContainerType dwiContainer;
-  // OrientImageContainerType dwiContainer;
+  ImageContainerType m_dwiRegisteredImagesContainer;
+  // OrientImageContainerType dwiRegisteredImagesContainer;
 
   // NrrdHeader header;
   GradientContainerType originDirs;
@@ -161,6 +162,8 @@ private:
 
   VectorImageType::Pointer dwis;
 
+  //TODO:  Need to provide a description of what this funciton does.
+  //       What type of registration is this?
   bool  RegistrationSingleDWI( ImageType::Pointer fixedImage,
     ImageType::Pointer movingImage,
     const GradientType & gradDir, unsigned int no);
@@ -236,7 +239,8 @@ public:
     };
   };
 
-#include "itkDWIHeadMotionEddyCurrentCorrection.txx"
 } // end of namespace
+
+// Changed to a .cpp file #include "itkDWIHeadMotionEddyCurrentCorrection.txx"
 
 #endif /*__itk_DWIHeadMotionEddyCurrent_correction_h */

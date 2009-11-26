@@ -35,54 +35,55 @@ INCLUDE_DIRECTORIES(
 )
 
 SET( DTIPrep_SRCS
-  src/main.cxx  
-  src/GMainWindow.cxx  
-  src/Dicom2NrrdPanel.cxx  
-  src/IntensityMotionCheckPanel.cxx	  
-  src/ImageView2DPanelWithControls.cxx  
-  src/IntensityMotionCheck.cxx  
-  src/IntraGradientRigidRegistration.cxx  
-  src/InterGradientRigidRegistration.cxx  
-  src/RigidRegistration.cxx  
-  src/ThreadIntensityMotionCheck.cxx  
-  src/ThreadEddyMotionCorrect.cxx  
-  src/ThreadDicomToNrrd.cxx  
-  src/ThreadDicomSeriesRead.cxx  
-  src/XmlStreamReader.cpp  
-  src/XmlStreamWriter.cpp  
-  src/Protocol.cpp  
+  src/main.cxx
+  src/GMainWindow.cxx
+  src/Dicom2NrrdPanel.cxx
+  src/IntensityMotionCheckPanel.cxx
+  src/ImageView2DPanelWithControls.cxx
+  src/IntensityMotionCheck.cxx
+  src/IntraGradientRigidRegistration.cxx
+  src/InterGradientRigidRegistration.cxx
+  src/RigidRegistration.cxx
+  src/ThreadIntensityMotionCheck.cxx
+  src/ThreadEddyMotionCorrect.cxx
+  src/ThreadDicomToNrrd.cxx
+  src/ThreadDicomSeriesRead.cxx
+  src/XmlStreamReader.cpp
+  src/XmlStreamWriter.cpp
+  src/Protocol.cpp
   src/QCResult.cpp
 # new itk Classes
-  src/itkDWICropper.cpp   
-  src/itkDWIBaselineAverager.cpp   
-  src/itkDWIQCSliceChecker.cpp   
-  src/itkDWIQCInterlaceChecker.cpp   
+  src/itkDWICropper.cpp
+  src/itkDWIBaselineAverager.cpp
+  src/itkDWIQCSliceChecker.cpp
+  src/itkDWIQCInterlaceChecker.cpp
   src/itkDWIQCGradientChecker.cpp
   src/itkDWIEddyCurrentHeadMotionCorrector.cpp
 # Utah
 #  src/itkDWIHeadMotionEddyCurrentCorrection.txx
-  src/itkGradientSteepestDescentBaseOptimizer.cxx 
+  src/itkDWIHeadMotionEddyCurrentCorrection.cpp
+  src/itkGradientSteepestDescentBaseOptimizer.cxx
   src/itkGradientSteepestDescentOptimizer.cxx
 # Iowa
   src/itkVectorImageRegisterAffineFilter.h
-  src/itkVectorImageRegisterAffineFilter.txx 
+  src/itkVectorImageRegisterAffineFilter.txx
 )
 
-SET( DTIPrep_HRDS  
-  src/GMainWindow.h  
-  src/Dicom2NrrdPanel.h  
-  src/IntensityMotionCheckPanel.h  
-  src/ImageView2DPanelWithControls.h  
-  src/ThreadIntensityMotionCheck.h  
-  src/ThreadEddyMotionCorrect.h  
-  src/ThreadDicomToNrrd.h  
+SET( DTIPrep_HRDS
+  src/GMainWindow.h
+  src/Dicom2NrrdPanel.h
+  src/IntensityMotionCheckPanel.h
+  src/ImageView2DPanelWithControls.h
+  src/ThreadIntensityMotionCheck.h
+  src/ThreadEddyMotionCorrect.h
+  src/ThreadDicomToNrrd.h
   src/ThreadDicomSeriesRead.h
 )
 
-SET( DTIPrep_UIS  
-  gui/MainWindow.ui  
-  gui/Dicom2NrrdPanel.ui  
-  gui/IntensityMotionCheckPanel.ui	  
+SET( DTIPrep_UIS
+  gui/MainWindow.ui
+  gui/Dicom2NrrdPanel.ui
+  gui/IntensityMotionCheckPanel.ui
   gui/ImageView2DPanelWithControls.ui
 )
 
@@ -99,24 +100,24 @@ ADD_DEFINITIONS(-DQT_GUI_LIBS -DQT_CORE_LIB -DQT3_SUPPORT)
 SET_SOURCE_FILES_PROPERTIES(${DTIPrep_SRCS} PROPERTIES
   OBJECT_DEPENDS "${UIHeaders}")
 
-if(COMMAND cmake_policy)  
+if(COMMAND cmake_policy)
   cmake_policy(SET CMP0003 NEW)
 endif(COMMAND cmake_policy)
 
-ADD_EXECUTABLE( DTIPrep   
-  MACOSX_BUNDLE   
-  ${DTIPrep_SRCS}   
-  ${UISrcs}   
-  ${MOCSrcs}  
+ADD_EXECUTABLE( DTIPrep
+  MACOSX_BUNDLE
+  ${DTIPrep_SRCS}
+  ${UISrcs}
+  ${MOCSrcs}
   ${RCC_SRCS}
 )
 
 TARGET_LINK_LIBRARIES( DTIPrep
-  QVTK  
-# VTKWIDGETS	
+  QVTK
+# VTKWIDGETS
   ${QT_LIBRARIES}
-# ${QT_QTNETWORK_LIBRARIES}	
-  ${ITK_LIBRARIES}	
+# ${QT_QTNETWORK_LIBRARIES}
+  ${ITK_LIBRARIES}
   ${VTK_LIBRARIES}
 )
 
