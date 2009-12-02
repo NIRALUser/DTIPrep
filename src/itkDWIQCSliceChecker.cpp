@@ -363,12 +363,12 @@ DWIQCSliceChecker<TImageType>
 
         smoother1->SetInput( filter1->GetOutput() );
         smoother1->SetVariance( m_GaussianVariance );
-        smoother1->SetMaximumKernelWidth( m_MaxKernelWidth );
+        smoother1->SetMaximumKernelWidth( static_cast<unsigned int>(vcl_ceil(m_MaxKernelWidth)) );
         // smoother1->Update();
 
         smoother2->SetInput( filter2->GetOutput() );
         smoother2->SetVariance( m_GaussianVariance );
-        smoother2->SetMaximumKernelWidth( m_MaxKernelWidth );
+        smoother2->SetMaximumKernelWidth( static_cast<unsigned int>(vcl_ceil(m_MaxKernelWidth)) );
         // smoother2->Update();
 
         typedef itk::CastImageFilter<ShortSliceImageType,
