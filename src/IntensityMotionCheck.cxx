@@ -16,6 +16,8 @@
 #include <string>
 #include <math.h>
 
+#include <vcl_algorithm.h>
+
 //The version of DTI prep should be incremented with each algorithm changes
 static const std::string DTIPREP_VERSION("1.1");
 
