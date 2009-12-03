@@ -1,0 +1,5 @@
+The DTIPrep_20091203 release has many modifications introduced by Hans J. Johnson to allow correct processing of data collected at an oblique angle.  In addtion a few cases where numerical instability was causing improper failures were found and corrected.
+
+Hans
+hans-johnson@uiowa.edu
+
