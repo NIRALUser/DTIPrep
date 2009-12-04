@@ -2866,7 +2866,7 @@ bool CIntensityMotionCheck::DiffusionCheck( DwiImageType::Pointer dwi)
     outfile << "================================" << std::endl;
     }
 
-  bool returnValte = true;
+  bool returnValue = true;
 
   if ( !protocol->GetDiffusionProtocol().bCheck )
     {
@@ -2922,7 +2922,7 @@ bool CIntensityMotionCheck::DiffusionCheck( DwiImageType::Pointer dwi)
         itk::EncapsulateMetaData<std::string>(
           dwi->GetMetaDataDictionary(), "DWMRI_b-value", ossMetaString.str() );
         }
-      returnValte = false;
+      returnValue = false;
       }
 
     // HJJ -- measurement frame is not being properly used here.
@@ -3161,9 +3161,17 @@ bool CIntensityMotionCheck::DiffusionCheck( DwiImageType::Pointer dwi)
       std::cout << "Diffusion gradient Check: \t\tFAILED" << std::endl;
       }
 
-    returnValte = returnValte && result;
+    returnValue = returnValue && result;
+    
+  //HACK:  This should really be controlled by a command line option
+  //       --quitOnCheckFailure
+  if(returnValue == false)
+    {
+    std::cout << "An error occured, and processing can not continue." << std::endl;
+    exit(-1);
+    }
 
-    if ( !returnValte )
+    if ( !returnValue )
       {
       std::cout
      << "Mismatched informations was replaced with that from protocol."
@@ -3241,6 +3249,6 @@ bool CIntensityMotionCheck::DiffusionCheck( DwiImageType::Pointer dwi)
     std::cout << "DONE" << std::endl;
     }
 
-  return returnValte;
+  return returnValue;
 }
 
