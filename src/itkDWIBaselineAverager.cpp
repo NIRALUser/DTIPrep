@@ -212,7 +212,7 @@ DWIBaselineAverager<TImageType>
                                            metaString);
     }
 
-  if ( getBaselineNumber() > 1 )
+  if ( getBaselineNumber() > 0 )
     {
       {
       // baseline dir vector
@@ -240,9 +240,9 @@ DWIBaselineAverager<TImageType>
           i++ )
       {
       // Skip B0 gradients
-      if ( 1e-7 >=  this->m_GradientDirectionContainer->ElementAt(i)[0]
-           && 1e-7 >=  this->m_GradientDirectionContainer->ElementAt(i)[1]
-           && 1e-7 >=  this->m_GradientDirectionContainer->ElementAt(i)[2]    )
+      if ( 1e-7 >=  fabs(this->m_GradientDirectionContainer->ElementAt(i)[0])
+           && 1e-7 >=  fabs(this->m_GradientDirectionContainer->ElementAt(i)[1])
+           && 1e-7 >=  fabs(this->m_GradientDirectionContainer->ElementAt(i)[2])    )
         {
         continue;
         }

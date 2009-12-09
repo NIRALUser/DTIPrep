@@ -20,6 +20,8 @@ struct ImageProtocol {
 
   std::string reportFileNameSuffix;
   int reportFileMode; // 0: new   1: append
+
+  bool bQuitOnCheckFailure;
   };
 
 struct DiffusionProtocol {
@@ -34,6 +36,8 @@ struct DiffusionProtocol {
   std::string diffusionReplacedDWIFileNameSuffix;
   std::string reportFileNameSuffix;
   int reportFileMode; // 0: new   1: append
+
+  bool bQuitOnCheckFailure;
   };
 
 struct SliceCheckProtocol {
@@ -45,9 +49,14 @@ struct SliceCheckProtocol {
   double correlationDeviationThresholdbaseline;
   double correlationDeviationThresholdgradient;
 
+  bool bSubregionalCheck;
+  double subregionalCheckRelaxationFactor;
+
   std::string outputDWIFileNameSuffix;
   std::string reportFileNameSuffix;
   int reportFileMode; // 0: new   1: append
+
+  bool bQuitOnCheckFailure;
   };
 
 struct InterlaceCheckProtocol {
@@ -63,6 +72,8 @@ struct InterlaceCheckProtocol {
   std::string outputDWIFileNameSuffix;
   std::string reportFileNameSuffix;
   int reportFileMode; // 0: new   1: append
+
+  bool bQuitOnCheckFailure;
   };
 
 struct GradientCheckProtocol {
@@ -74,6 +85,8 @@ struct GradientCheckProtocol {
   std::string outputDWIFileNameSuffix;
   std::string reportFileNameSuffix;
   int reportFileMode; // 0: new   1: append
+
+  bool bQuitOnCheckFailure;
   };
 
 struct BaselineAverageProtocol {
@@ -135,6 +148,12 @@ class Protocol
 public:
   Protocol(void);
   ~Protocol(void);
+
+  enum {
+    REPORT_TYPE_SIMPLE = 0,
+    REPORT_TYPE_VERBOSE,
+    REPORT_TYPE_EASY_PARSE,
+    };
 
   enum {
     TYPE_SHORT = 0,
@@ -298,6 +317,11 @@ public:
     m_BadGradientPercentageTolerance = tor;
   }
 
+  int GetReportType() const
+  {
+    return m_ReportType;
+  }
+
   //TODO:  A family of these GetXXXXXReportFileName() functions needs to be written
   // HACK:  These functions should all be const, which means that the functions they depend on
   // also need to be const
@@ -351,7 +375,9 @@ private:
   std::string QCOutputDirectory;
   std::string QCedDWIFileNameSuffix;
   std::string reportFileNameSuffix;
-  double      m_BadGradientPercentageTolerance;
+  double m_BadGradientPercentageTolerance;
+  int m_ReportType; // 0:simple, 1:verbose, 2: iowa
+
 
   int baselineNumber;
   int bValueNumber;

@@ -7,12 +7,12 @@
 #include <math.h>
 
 Protocol::Protocol(void)
-  {
+{
   initProtocols();
-  }
+}
 
 Protocol::~Protocol(void)
-      {}
+{}
 
 // init protocols
 void Protocol::initProtocols()
@@ -21,6 +21,7 @@ void Protocol::initProtocols()
   this->QCedDWIFileNameSuffix = "_QCed.nhdr";
   this->reportFileNameSuffix = "_QCReport.txt";
   this->m_BadGradientPercentageTolerance = 0.2;
+  this->m_ReportType = REPORT_TYPE_VERBOSE;
 
   initImageProtocol();
   initDiffusionProtocol();
@@ -66,6 +67,8 @@ void Protocol::initImageProtocol()
 
   imageProtocol.reportFileNameSuffix = "_Report.txt";
   imageProtocol.reportFileMode = 1; // 0: new   1: append
+  
+  imageProtocol.bQuitOnCheckFailure = false;
 }
 
 void Protocol::initDiffusionProtocol()
@@ -77,6 +80,8 @@ void Protocol::initDiffusionProtocol()
     = "_DiffusionReplaced.nhdr";
   diffusionProtocol.reportFileNameSuffix = "_Report.txt";
   diffusionProtocol.reportFileMode = 1; // 0: new   1: append
+
+  diffusionProtocol.bQuitOnCheckFailure = true;
 }
 
 void Protocol::initSliceCheckProtocol()
@@ -92,6 +97,8 @@ void Protocol::initSliceCheckProtocol()
   sliceCheckProtocol.outputDWIFileNameSuffix = "";
   sliceCheckProtocol.reportFileNameSuffix = "_Report.txt";
   sliceCheckProtocol.reportFileMode = 1; // 0: new   1: append
+
+  sliceCheckProtocol.bQuitOnCheckFailure = true;
 }
 
 void Protocol::initInterlaceCheckProtocol()
@@ -108,6 +115,8 @@ void Protocol::initInterlaceCheckProtocol()
   interlaceCheckProtocol.outputDWIFileNameSuffix = "";
   interlaceCheckProtocol.reportFileNameSuffix = "_Report.txt";
   interlaceCheckProtocol.reportFileMode = 1; // 0: new   1: append
+
+  interlaceCheckProtocol.bQuitOnCheckFailure = true;
 }
 
 void Protocol::initGradientCheckProtocol()
@@ -120,6 +129,8 @@ void Protocol::initGradientCheckProtocol()
   gradientCheckProtocol.outputDWIFileNameSuffix = "";
   gradientCheckProtocol.reportFileNameSuffix = "_Report.txt";
   gradientCheckProtocol.reportFileMode = 1; // 0: new   1: append
+
+  gradientCheckProtocol.bQuitOnCheckFailure = true;
 }
 
 void Protocol::initBaselineAverageProtocol()
@@ -194,6 +205,20 @@ void Protocol::printProtocols()
             << std::endl;
   std::cout << "\tBadGradientPercentageTolerance: "
             << GetBadGradientPercentageTolerance() << std::endl;
+
+  switch(GetReportType())
+  {
+    case REPORT_TYPE_SIMPLE:
+      std::cout << "\treportType: SIMPLE"<< std::endl;
+      break;
+    case REPORT_TYPE_EASY_PARSE:
+      std::cout << "\treportType: EASY_PARSE"<< std::endl;
+      break;
+    case REPORT_TYPE_VERBOSE:
+      default:
+      std::cout << "\treportType: VERBOSE"<< std::endl;
+      break;
+  }
 
   printImageProtocol();
   printDiffusionProtocol();
@@ -315,6 +340,8 @@ void Protocol::printImageProtocol()
     {
     std::cout << "\treportFileMode: append" << std::endl;
     }
+
+  //if(bQuitOnCheckFailure)
 
   std::cout << std::endl;
 }
