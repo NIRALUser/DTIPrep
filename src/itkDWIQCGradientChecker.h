@@ -224,7 +224,7 @@ private:
     bool ExplicitPDFDerivatives,
     GradientResult &  regResult);
 
-  void check();
+  void DoCheck(void);
 
   void collectLeftDiffusionStatistics();
 

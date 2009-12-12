@@ -381,7 +381,7 @@ DWIQCGradientChecker<TImageType>
   collectDiffusionStatistics();
   initializeQCResullts();
   calculate();
-  check();
+  this->DoCheck();
   writeReport();
   CheckDoneOn();
 
@@ -544,7 +544,7 @@ DWIQCGradientChecker<TImageType>
 template <class TImageType>
 void
 DWIQCGradientChecker<TImageType>
-  ::check()
+  ::DoCheck()
 {
   std::cout << "Gradient checking ...";
   // calculate the mean and stdev of baseline and gradients

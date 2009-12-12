@@ -1908,7 +1908,7 @@ DWIQCSliceChecker<TImageType>
 template <class TImageType>
 void
 DWIQCSliceChecker<TImageType>
-  ::check()
+  ::DoCheck(void)
 {
   collectLeftDiffusionStatistics();
 
@@ -2383,7 +2383,7 @@ DWIQCSliceChecker<TImageType>
     for ( int i = 0; i < this->m_CheckTimes; i++ )
       {
       std::cout << " count: " << i + 1 << "...";
-      check();
+      this->DoCheck();
       if ( m_SubRegionalCheck )
         {
         SubRegionalcheck();
@@ -2404,7 +2404,7 @@ DWIQCSliceChecker<TImageType>
       //         std::cout <<"BaselineCount: "<<BaselineCount<<std::endl;
       //         std::cout <<"DWICount: "<<DWICount<<std::endl;
 
-      check();
+      this->DoCheck();
       if ( m_SubRegionalCheck )
         {
         SubRegionalcheck();

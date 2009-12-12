@@ -236,7 +236,7 @@ private:
 
   void calculateCorrelationsAndMotions();
 
-  void check();
+  void DoCheck(void);
 
   void collectLeftDiffusionStatistics();
 

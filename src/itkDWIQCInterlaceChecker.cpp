@@ -130,7 +130,7 @@ DWIQCInterlaceChecker<TImageType>
   collectDiffusionStatistics();
   initializeQCResullts();
   calculateCorrelationsAndMotions();
-  check();
+  this->DoCheck();
   collectLeftDiffusionStatistics();
   writeReport();
   CheckDoneOn();
@@ -575,7 +575,7 @@ DWIQCInterlaceChecker<TImageType>
 template <class TImageType>
 void
 DWIQCInterlaceChecker<TImageType>
-  ::check()
+  ::DoCheck(void)
 {
   std::cout << "Interlace checking ...";
   // calculate the mean and stdev of baseline and gradients

@@ -299,7 +299,7 @@ private:
 
   void calculateSubRegionalCorrelations();
 
-  void check();
+  void DoCheck(void);
 
   void SubRegionalcheck();
 
