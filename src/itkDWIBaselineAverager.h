@@ -28,280 +28,294 @@ PURPOSE.  See the above copyright notices for more information.
 
 namespace itk
 {
-/** \class DWIBaselineAverager
-* \brief DWI Baseline Averaging.
-*
-* DWIBaselineAverager DWI DWI Baseline Averaging.
-*
-* \ingroup Multithreaded
-* \ingroup Streamed
-*/
-
-template <class TImageType>
-class ITK_EXPORT DWIBaselineAverager :
-  public ImageToImageFilter<TImageType, TImageType>
-  {
-public:
-  struct struDiffusionDir {
-    std::vector<double> gradientDir;
-    int repetitionNumber;
-    };
-
-  typedef enum {
-    Direct = 0,
-    BaselineOptimized,
-    GradientOptamized,
-    } AverageMethod;
-
-  typedef enum {
-    IntensityMeanSquareDiffBased = 0,
-    MetricSumBased,                   // not being used anymore
-    TotalTransformationBased,         // not being used anymore
-    } Stop_Criteria;
-
-  typedef struct  RigidRegResult {
-    double AngleX;      // in degrees
-    double AngleY;      // in degrees
-    double AngleZ;      // in degrees
-    double TranslationX;
-    double TranslationY;
-    double TranslationZ;
-    double MutualInformation;      // -Metrix
-    } struRigidRegResult,  *pstruRigidRegResult;
-
-  typedef enum {
-    Report_New = 0,
-    Report_Append,
-    } ReportFileMode;
-
-  /** Standard class typedefs. */
-  typedef DWIBaselineAverager                        Self;
-  typedef ImageToImageFilter<TImageType, TImageType> Superclass;
-  typedef SmartPointer<Self>                         Pointer;
-  typedef SmartPointer<const Self>                   ConstPointer;
-
-  itkNewMacro(Self);
-
-  /** Run-time type information (and related methods). */
-  itkTypeMacro(DWIBaselineAverager, ImageToImageFilter);
-
-  /** Typedef to images */
-  typedef TImageType                                 OutputImageType;
-  typedef TImageType                                 InputImageType;
-
-  typedef typename OutputImageType::Pointer          OutputImagePointer;
-  typedef typename InputImageType::ConstPointer      InputImageConstPointer;
-  typedef typename Superclass::OutputImageRegionType OutputImageRegionType;
-
-  typedef unsigned short                             DwiPixelType;
-  typedef itk::Image<DwiPixelType, 2>                SliceImageType;
-  typedef itk::Image<double, 3>                      doubleImageType;
-
-  typedef typename doubleImageType::Pointer          doubleImagePointerType;
-
-  typedef itk::Image<unsigned int, 3>                UnsignedImageType;
-  typedef typename UnsignedImageType::Pointer        UnsignedImageTypePointer;
-
-  typedef vnl_vector_fixed<double, 3>                GradientDirectionType;
-
-  /** Container to hold gradient directions of the 'n' DW measurements */
-  typedef VectorContainer<unsigned int,
-    GradientDirectionType> GradientDirectionContainerType;
-
-  /** ImageDimension enumeration. */
-  itkStaticConstMacro(ImageDimension, unsigned int, TImageType::ImageDimension );
-
-  /** Get & Set the Average Method */
-  itkGetConstMacro( AverageMethod, int );
-  itkSetMacro( AverageMethod, int );
-
-  /** Get & Set the ReportFilename */
-  itkGetConstMacro( ReportFileName, std::string );
-  itkSetMacro( ReportFileName, std::string  );
-
-  /** Get & Set the m_BaselineFileName */
-  itkGetConstMacro( BaselineFileName, std::string );
-  itkSetMacro( BaselineFileName, std::string  );
-
-  /** Get & Set the m_IdwiFileName */
-  itkGetConstMacro( IdwiFileName, std::string );
-  itkSetMacro( IdwiFileName, std::string  );
-
-  /** Get & Set the Stop Criteria */
-  itkGetConstMacro( StopCriteria, int );
-  itkSetMacro( StopCriteria, int  );
+	/** \class DWIBaselineAverager
+	* \brief DWI Baseline Averaging.
+	*
+	* DWIBaselineAverager DWI DWI Baseline Averaging.
+	*
+	* \ingroup Multithreaded
+	* \ingroup Streamed
+	*/
+
+	template <class TImageType>
+	class ITK_EXPORT DWIBaselineAverager :
+		public ImageToImageFilter<TImageType, TImageType>
+	{
+	public:
+		struct struDiffusionDir {
+			std::vector<double> gradientDir;
+			int repetitionNumber;
+		};
+
+		typedef enum {
+			Direct = 0,
+			BaselineOptimized,
+			GradientOptamized,
+		} AverageMethod;
+
+		typedef enum {
+			IntensityMeanSquareDiffBased = 0,
+			MetricSumBased,                   // not being used anymore
+			TotalTransformationBased,         // not being used anymore
+		} Stop_Criteria;
+
+		typedef struct  RigidRegResult {
+			double AngleX;      // in degrees
+			double AngleY;      // in degrees
+			double AngleZ;      // in degrees
+			double TranslationX;
+			double TranslationY;
+			double TranslationZ;
+			double MutualInformation;      // -Metrix
+		} struRigidRegResult,  *pstruRigidRegResult;
+
+		typedef enum {
+			REPORT_FILE_NEW = 0,
+			REPORT_FILE_APPEND,
+		} ReportFileMode;
+
+		typedef enum {
+			REPORT_TYPE_NO = -1,
+			REPORT_TYPE_SIMPLE,
+			REPORT_TYPE_VERBOSE,
+			REPORT_TYPE_EASY_PARSE,
+		} ReportType;
+
+		/** Standard class typedefs. */
+		typedef DWIBaselineAverager                        Self;
+		typedef ImageToImageFilter<TImageType, TImageType> Superclass;
+		typedef SmartPointer<Self>                         Pointer;
+		typedef SmartPointer<const Self>                   ConstPointer;
+
+		itkNewMacro(Self);
+
+		/** Run-time type information (and related methods). */
+		itkTypeMacro(DWIBaselineAverager, ImageToImageFilter);
+
+		/** Typedef to images */
+		typedef TImageType                                 OutputImageType;
+		typedef TImageType                                 InputImageType;
+
+		typedef typename OutputImageType::Pointer          OutputImagePointer;
+		typedef typename InputImageType::ConstPointer      InputImageConstPointer;
+		typedef typename Superclass::OutputImageRegionType OutputImageRegionType;
+
+		typedef unsigned short                             DwiPixelType;
+		typedef itk::Image<DwiPixelType, 2>                SliceImageType;
+		typedef itk::Image<double, 3>                      doubleImageType;
+
+		typedef typename doubleImageType::Pointer          doubleImagePointerType;
+
+		typedef itk::Image<unsigned int, 3>                UnsignedImageType;
+		typedef typename UnsignedImageType::Pointer        UnsignedImageTypePointer;
+
+		typedef vnl_vector_fixed<double, 3>                GradientDirectionType;
+
+		/** Container to hold gradient directions of the 'n' DW measurements */
+		typedef VectorContainer<unsigned int,
+			GradientDirectionType> GradientDirectionContainerType;
+
+		/** ImageDimension enumeration. */
+		itkStaticConstMacro(ImageDimension, unsigned int, TImageType::ImageDimension );
+
+		/** Get & Set the Average Method */
+		itkGetConstMacro( AverageMethod, int );
+		itkSetMacro( AverageMethod, int );
+
+		/** Get & Set the ReportFilename */
+		itkGetConstMacro( ReportFileName, std::string );
+		itkSetMacro( ReportFileName, std::string  );
+
+		/** Get & Set the m_BaselineFileName */
+		itkGetConstMacro( BaselineFileName, std::string );
+		itkSetMacro( BaselineFileName, std::string  );
 
-  /** Get & Set the Stop Threshold */
-  itkGetConstMacro( StopThreshold, float );
-  itkSetMacro( StopThreshold, float  );
+		/** Get & Set the m_IdwiFileName */
+		itkGetConstMacro( IdwiFileName, std::string );
+		itkSetMacro( IdwiFileName, std::string  );
 
-  /** Get & Set the Stop Threshold */
-  itkGetConstMacro( MaxIteration, unsigned int );
-  itkSetMacro( MaxIteration, unsigned int  );
+		/** Get & Set the Stop Criteria */
+		itkGetConstMacro( StopCriteria, int );
+		itkSetMacro( StopCriteria, int  );
 
-  /** Get & Set the report file mode */
-  itkGetConstMacro( ReportFileMode, int );
-  itkSetMacro( ReportFileMode, int  );
+		/** Get & Set the Stop Threshold */
+		itkGetConstMacro( StopThreshold, float );
+		itkSetMacro( StopThreshold, float  );
 
-  /** Get & Set the check status */
-  itkBooleanMacro(AverageDone);
-  itkGetConstMacro(AverageDone, bool);
-  itkSetMacro(AverageDone, bool);
+		/** Get & Set the Stop Threshold */
+		itkGetConstMacro( MaxIteration, unsigned int );
+		itkSetMacro( MaxIteration, unsigned int  );
 
-  /** DWIBaselineAverager produces an image which contains a averaged baseline volumes if any.
-    * As such, DWIBaselineAverager needs to provide
-    * an implementation for GenerateOutputInformation() in order to inform
-    * the pipeline execution model.The original documentation of this
-    * method is below.
-    * \sa ProcessObject::GenerateOutputInformaton() */
-  virtual void GenerateOutputInformation();
+		/** Get & Set the report file mode */
+		itkGetConstMacro( ReportFileMode, int );
+		itkSetMacro( ReportFileMode, int  );
 
-protected:
-  DWIBaselineAverager();
-  ~DWIBaselineAverager();
+		/** Get & Set the report type */
+		itkGetConstMacro( ReportType, int );
+		itkSetMacro( ReportType, int  );
 
-  void PrintSelf(std::ostream & os, Indent indent) const;
+		/** Get & Set the check status */
+		itkBooleanMacro(AverageDone);
+		itkGetConstMacro(AverageDone, bool);
+		itkSetMacro(AverageDone, bool);
 
-  void ThreadedGenerateData(const OutputImageRegionType & outputRegionForThread,
-    int threadId );
+		/** DWIBaselineAverager produces an image which contains a averaged baseline volumes if any.
+		* As such, DWIBaselineAverager needs to provide
+		* an implementation for GenerateOutputInformation() in order to inform
+		* the pipeline execution model.The original documentation of this
+		* method is below.
+		* \sa ProcessObject::GenerateOutputInformaton() */
+		virtual void GenerateOutputInformation();
 
-private:
-  DWIBaselineAverager(const Self &);   // purposely not implemented
-  void operator=(const Self &);        // purposely not implemented
+	protected:
+		DWIBaselineAverager();
+		~DWIBaselineAverager();
 
-  /** averaged baseline */
-  UnsignedImageTypePointer averagedBaseline;
+		void PrintSelf(std::ostream & os, Indent indent) const;
 
-  /** temp baseline image  */
-  UnsignedImageTypePointer tempBaseline;
+		void ThreadedGenerateData(const OutputImageRegionType & outputRegionForThread,
+			int threadId );
 
-  /** temp idwi */
-  UnsignedImageTypePointer idwi;
+	private:
+		DWIBaselineAverager(const Self &);   // purposely not implemented
+		void operator=(const Self &);        // purposely not implemented
 
-  /** temp idwi image  */
-  doubleImagePointerType tempIDWI;
+		/** averaged baseline */
+		UnsignedImageTypePointer averagedBaseline;
 
-  /** Report File Mode */
-  int m_ReportFileMode;
+		/** temp baseline image  */
+		UnsignedImageTypePointer tempBaseline;
 
-  /** average method */
-  int m_AverageMethod;
+		/** temp idwi */
+		UnsignedImageTypePointer idwi;
 
-  /** Stop Criteria */
-  int m_StopCriteria;
+		/** temp idwi image  */
+		doubleImagePointerType tempIDWI;
 
-  /** Stop threshold */
-  float m_StopThreshold;
+		/** Report File Mode */
+		int m_ReportFileMode;
 
-  /** Max ineration */
-  unsigned int m_MaxIteration;
+		/** report type */
+		int m_ReportType;
 
-  /** indicate whether average is done */
-  bool m_AverageDone;
+		/** average method */
+		int m_AverageMethod;
 
-  /** report filename */
-  std::string m_ReportFileName;
+		/** Stop Criteria */
+		int m_StopCriteria;
 
-  /** baseline filename */
-  std::string m_BaselineFileName;
+		/** Stop threshold */
+		float m_StopThreshold;
 
-  /** idwi filename */
-  std::string m_IdwiFileName;
+		/** Max ineration */
+		unsigned int m_MaxIteration;
 
-  /** input info */
-  int baselineNumber;
-  int bValueNumber;
-  int gradientDirNumber;
-  int repetitionNumber;
-  int gradientNumber;
+		/** indicate whether average is done */
+		bool m_AverageDone;
 
-  /** output info */
-  int              baselineLeftNumber;
-  int              bValueLeftNumber;
-  int              gradientDirLeftNumber;
-  int              gradientLeftNumber;
-  std::vector<int> repetitionLeftNumber;
+		/** report filename */
+		std::string m_ReportFileName;
 
-  /** b value */
-  double b0;
+		/** baseline filename */
+		std::string m_BaselineFileName;
 
-  /** container to hold input b values */
-  std::vector<double> bValues;
+		/** idwi filename */
+		std::string m_IdwiFileName;
 
-  /** container to hold gradient directions */
-  GradientDirectionContainerType::Pointer m_GradientDirectionContainer;
+		/** input info */
+		int baselineNumber;
+		int bValueNumber;
+		int gradientDirNumber;
+		int repetitionNumber;
+		int gradientNumber;
 
-  /** container to hold input gradient directions histogram */
-  std::vector<struDiffusionDir> DiffusionDirHistInput;
+		/** output info */
+		int              baselineLeftNumber;
+		int              bValueLeftNumber;
+		int              gradientDirLeftNumber;
+		int              gradientLeftNumber;
+		std::vector<int> repetitionLeftNumber;
 
-  /** container to hold baseline image wise registration */
-  std::vector<std::vector<struRigidRegResult> > BaselineToBaselineReg;
+		/** b value */
+		double b0;
 
-  /** container to hold gradient to base wise registration */
-  std::vector<std::vector<struRigidRegResult> > GradientToBaselineReg;
+		/** container to hold input b values */
+		std::vector<double> bValues;
 
-  void parseGradientDirections();
+		/** container to hold gradient directions */
+		GradientDirectionContainerType::Pointer m_GradientDirectionContainer;
 
-  void collectDiffusionStatistics();
+		/** container to hold input gradient directions histogram */
+		std::vector<struDiffusionDir> DiffusionDirHistInput;
 
-  void average();
+		/** container to hold baseline image wise registration */
+		std::vector<std::vector<struRigidRegResult> > BaselineToBaselineReg;
 
-  void writeReport();
+		/** container to hold gradient to base wise registration */
+		std::vector<std::vector<struRigidRegResult> > GradientToBaselineReg;
 
-  void BaselineOptimizedAverage();
+		void parseGradientDirections();
 
-  void GradientOptamizedAverage();
+		void collectDiffusionStatistics();
 
-  void DirectAverage();
+		void average();
 
-  void computeIDWI();
+		void writeReport();
 
-  void rigidRegistration(
-    UnsignedImageType::Pointer fixed,
-    UnsignedImageType::Pointer moving,
-    unsigned int BinsNumber,
-    double SamplesPercent,
-    bool ExplicitPDFDerivatives,
-    struRigidRegResult &  regResult,
-    int baselineORidwi   // 0: baseline; otherwise: idwi
-    );
+		void BaselineOptimizedAverage();
 
-public:
+		void GradientOptamizedAverage();
 
-  inline GradientDirectionContainerType::Pointer  GetGradientDirectionContainer()
-  {
-    return m_GradientDirectionContainer;
-  }
+		void DirectAverage();
 
-  UnsignedImageTypePointer GetBaseline();
+		void computeIDWI();
 
-  UnsignedImageTypePointer GetIDWI();
+		void rigidRegistration(
+			UnsignedImageType::Pointer fixed,
+			UnsignedImageType::Pointer moving,
+			unsigned int BinsNumber,
+			double SamplesPercent,
+			bool ExplicitPDFDerivatives,
+			struRigidRegResult &  regResult,
+			int baselineORidwi   // 0: baseline; otherwise: idwi
+			);
 
-  inline int getBaselineNumber()
-  {
-    return baselineNumber;
-  }
+	public:
 
-  inline int getBValueNumber()
-  {
-    return bValueNumber;
-  }
+		inline GradientDirectionContainerType::Pointer  GetGradientDirectionContainer()
+		{
+			return m_GradientDirectionContainer;
+		}
 
-  inline int getGradientDirNumber()
-  {
-    return gradientDirNumber;
-  }
+		UnsignedImageTypePointer GetBaseline();
 
-  inline int getRepetitionNumber()
-  {
-    return repetitionNumber;
-  }
+		UnsignedImageTypePointer GetIDWI();
 
-  inline int getGradientNumber()
-  {
-    return gradientNumber;
-  }
-  };
+		inline int getBaselineNumber()
+		{
+			return baselineNumber;
+		}
+
+		inline int getBValueNumber()
+		{
+			return bValueNumber;
+		}
+
+		inline int getGradientDirNumber()
+		{
+			return gradientDirNumber;
+		}
+
+		inline int getRepetitionNumber()
+		{
+			return repetitionNumber;
+		}
+
+		inline int getGradientNumber()
+		{
+			return gradientNumber;
+		}
+	};
 } // end namespace itk
 
 #ifndef ITK_MANUAL_INSTANTIATION

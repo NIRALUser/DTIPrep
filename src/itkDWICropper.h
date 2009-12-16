@@ -26,184 +26,199 @@ PURPOSE.  See the above copyright notices for more information.
 
 namespace itk
 {
-/** \class DWICropper
-* \brief DWI image size crop/pad filter.
-*
-* DWICropper DWI image size crop/pad filter.
-*
-* \ingroup Multithreaded
-* \ingroup Streamed
-*/
+	/** \class DWICropper
+	* \brief DWI image size crop/pad filter.
+	*
+	* DWICropper DWI image size crop/pad filter.
+	*
+	* \ingroup Multithreaded
+	* \ingroup Streamed
+	*/
 
-template <class TImageType>
-class ITK_EXPORT DWICropper :
-  public ImageToImageFilter<TImageType, TImageType>
-  {
-public:
-  struct struDiffusionDir {
-    std::vector<double> gradientDir;
-    int repetitionNumber;
-    };
+	template <class TImageType>
+	class ITK_EXPORT DWICropper :
+		public ImageToImageFilter<TImageType, TImageType>
+	{
+	public:
+		struct struDiffusionDir {
+			std::vector<double> gradientDir;
+			int repetitionNumber;
+		};
 
-  typedef enum {
-    Report_New = 0,
-    Report_Append,
-    } ReportFileMode;
+		typedef enum {
+			REPORT_FILE_NEW = 0,
+			REPORT_FILE_APPEND,
+		} ReportFileMode;
 
-  /** Standard class typedefs. */
-  typedef DWICropper                                 Self;
-  typedef ImageToImageFilter<TImageType, TImageType> Superclass;
-  typedef SmartPointer<Self>                         Pointer;
-  typedef SmartPointer<const Self>                   ConstPointer;
+		typedef enum {
+			REPORT_TYPE_NO = -1,
+			REPORT_TYPE_SIMPLE,
+			REPORT_TYPE_VERBOSE,
+			REPORT_TYPE_EASY_PARSE,
+		} ReportType;
 
-  itkNewMacro(Self);
+		/** Standard class typedefs. */
+		typedef DWICropper                                 Self;
+		typedef ImageToImageFilter<TImageType, TImageType> Superclass;
+		typedef SmartPointer<Self>                         Pointer;
+		typedef SmartPointer<const Self>                   ConstPointer;
 
-  /** Run-time type information (and related methods). */
-  itkTypeMacro(DWICropper, ImageToImageFilter);
+		itkNewMacro(Self);
 
-  /** Typedef to images */
-  typedef TImageType                                 OutputImageType;
-  typedef TImageType                                 InputImageType;
+		/** Run-time type information (and related methods). */
+		itkTypeMacro(DWICropper, ImageToImageFilter);
 
-  typedef typename OutputImageType::Pointer          OutputImagePointer;
-  typedef typename InputImageType::ConstPointer      InputImageConstPointer;
-  typedef typename Superclass::OutputImageRegionType OutputImageRegionType;
+		/** Typedef to images */
+		typedef TImageType                                 OutputImageType;
+		typedef TImageType                                 InputImageType;
 
-  typedef unsigned short                             DwiPixelType;
-  typedef vnl_vector_fixed<double, 3>                GradientDirectionType;
+		typedef typename OutputImageType::Pointer          OutputImagePointer;
+		typedef typename InputImageType::ConstPointer      InputImageConstPointer;
+		typedef typename Superclass::OutputImageRegionType OutputImageRegionType;
 
-  /** Container to hold gradient directions of the 'n' DW measurements */
-  typedef VectorContainer<unsigned int,
-    GradientDirectionType> GradientDirectionContainerType;
+		typedef unsigned short                             DwiPixelType;
+		typedef vnl_vector_fixed<double, 3>                GradientDirectionType;
 
-  /** ImageDimension enumeration. */
-  itkStaticConstMacro(ImageDimension, unsigned int, TImageType::ImageDimension );
+		/** Container to hold gradient directions of the 'n' DW measurements */
+		typedef VectorContainer<unsigned int,
+			GradientDirectionType> GradientDirectionContainerType;
 
-  /** Get & Set the ReportFilename */
-  itkGetConstMacro( ReportFileName, std::string );
-  itkSetMacro( ReportFileName, std::string  );
+		/** ImageDimension enumeration. */
+		itkStaticConstMacro(ImageDimension, unsigned int, TImageType::ImageDimension );
 
-  /** Get & Set the report file mode */
-  itkGetConstMacro( ReportFileMode, int );
-  itkSetMacro( ReportFileMode, int  );
+		/** Get & Set the ReportFilename */
+		itkGetConstMacro( ReportFileName, std::string );
+		itkSetMacro( ReportFileName, std::string  );
 
-  /** DWICropper produces an image which is a padded/cropped version of the input.
-    * As such, DWICropper needs to provide
-    * an implementation for GenerateOutputInformation() in order to inform
-    * the pipeline execution model.The original documentation of this
-    * method is below.
-    * \sa ProcessObject::GenerateOutputInformaton() */
+		/** Get & Set the report file mode */
+		itkGetConstMacro( ReportFileMode, int );
+		itkSetMacro( ReportFileMode, int  );
 
-  virtual void GenerateOutputInformation();
+		/** Get & Set the report type */
+		itkGetConstMacro( ReportType, int );
+		itkSetMacro( ReportType, int  );
 
-  /**
-  * DWICropper needs a smaller input requested region than
-  * output requested region.  As such, PadImageFilter needs to
-  * provide an implementation for GenerateInputRequestedRegion() in
-  * order to inform the pipeline execution model.
-  *
-  * \sa ProcessObject::GenerateInputRequestedRegion()
-  */
-  virtual void GenerateInputRequestedRegion();
+		/** DWICropper produces an image which is a padded/cropped version of the input.
+		* As such, DWICropper needs to provide
+		* an implementation for GenerateOutputInformation() in order to inform
+		* the pipeline execution model.The original documentation of this
+		* method is below.
+		* \sa ProcessObject::GenerateOutputInformaton() */
 
-protected:
-  DWICropper();
-  ~DWICropper();
+		virtual void GenerateOutputInformation();
 
-  void PrintSelf(std::ostream & os, Indent indent) const;
+		/**
+		* DWICropper needs a smaller input requested region than
+		* output requested region.  As such, PadImageFilter needs to
+		* provide an implementation for GenerateInputRequestedRegion() in
+		* order to inform the pipeline execution model.
+		*
+		* \sa ProcessObject::GenerateInputRequestedRegion()
+		*/
+		virtual void GenerateInputRequestedRegion();
 
-  void ThreadedGenerateData(const OutputImageRegionType & outputRegionForThread,
-    int threadId );
+	protected:
+		DWICropper();
+		~DWICropper();
 
-private:
-  DWICropper(const Self &);     // purposely not implemented
-  void operator=(const Self &); // purposely not implemented
+		void PrintSelf(std::ostream & os, Indent indent) const;
 
-  /** region para */
-  int *region;
+		void ThreadedGenerateData(const OutputImageRegionType & outputRegionForThread,
+			int threadId );
 
-  /** size para */
-  int *size;
+	private:
+		DWICropper(const Self &);     // purposely not implemented
+		void operator=(const Self &); // purposely not implemented
 
-  /** Report File Mode */
-  int m_ReportFileMode;
+		/** region para */
+		int *region;
 
-  /** report filename */
-  std::string m_ReportFileName;
+		/** size para */
+		int *size;
 
-  /** input info */
-  int baselineNumber;
-  int bValueNumber;
-  int gradientDirNumber;
-  int repetitionNumber;
-  int gradientNumber;
+		/** Report File Mode */
+		int m_ReportFileMode;
 
-  /** b value */
-  double b0;
+		/** report type */
+		int m_ReportType;
 
-  /** container to hold input b values */
-  std::vector<double> bValues;
 
-  /** container to hold gradient directions */
-  GradientDirectionContainerType::Pointer m_GradientDirectionContainer;
+		/** report filename */
+		std::string m_ReportFileName;
 
-  /** container to hold input gradient directions histogram */
-  std::vector<struDiffusionDir> DiffusionDirHistInput;
+		/** input info */
+		int baselineNumber;
+		int bValueNumber;
+		int gradientDirNumber;
+		int repetitionNumber;
+		int gradientNumber;
 
-  void parseGradientDirections();
+		/** b value */
+		double b0;
 
-  void collectDiffusionStatistics();
+		/** container to hold input b values */
+		std::vector<double> bValues;
 
-  void writeReport();
+		/** container to hold gradient directions */
+		GradientDirectionContainerType::Pointer m_GradientDirectionContainer;
 
-  void doPadding();
+		/** container to hold input gradient directions histogram */
+		std::vector<struDiffusionDir> DiffusionDirHistInput;
 
-public:
-  inline int * GetSize()
-  {
-    return size;
-  }
+		void parseGradientDirections();
 
-  inline int * GetRegion()
-  {
-    return region;
-  }
+		void collectDiffusionStatistics();
 
-  inline void SetSize( int *s )
-  {
-    size = s;
-  }
+		void writeReport();
 
-  inline void SetRegion( int *r )
-  {
-    region = r;
-  }
+		void doPadding();
 
-  inline int getBaselineNumber()
-  {
-    return baselineNumber;
-  }
+	public:
+		inline int * GetSize()
+		{
+			return size;
+		}
 
-  inline int getBValueNumber()
-  {
-    return bValueNumber;
-  }
+		inline int * GetRegion()
+		{
+			return region;
+		}
 
-  inline int getGradientDirNumber()
-  {
-    return gradientDirNumber;
-  }
+		inline void SetSize( int *s )
+		{
+			size = s;
+		}
 
-  inline int getRepetitionNumber()
-  {
-    return repetitionNumber;
-  }
+		inline void SetRegion( int *r )
+		{
+			region = r;
+		}
 
-  inline int getGradientNumber()
-  {
-    return gradientNumber;
-  }
-  };
+		inline int getBaselineNumber()
+		{
+			return baselineNumber;
+		}
+
+		inline int getBValueNumber()
+		{
+			return bValueNumber;
+		}
+
+		inline int getGradientDirNumber()
+		{
+			return gradientDirNumber;
+		}
+
+		inline int getRepetitionNumber()
+		{
+			return repetitionNumber;
+		}
+
+		inline int getGradientNumber()
+		{
+			return gradientNumber;
+		}
+	};
 } // end namespace itk
 
 #ifndef ITK_MANUAL_INSTANTIATION
