@@ -57,7 +57,7 @@ namespace itk
 		m_AverageMethod = DWIBaselineAverager::BaselineOptimized;
 		m_StopCriteria = DWIBaselineAverager::IntensityMeanSquareDiffBased;
 		m_StopThreshold = 0.02;
-		m_MaxIteration = 500;
+		m_MaxIteration = 15;
 		m_ReportFileMode = DWIBaselineAverager::REPORT_FILE_NEW;
 		AverageDoneOff();
 	}
@@ -714,29 +714,11 @@ namespace itk
 					+ fabs(resultLocal.AngleZ) ) / 3.0;
 
 				Results.at(i) = resultLocal;
-
-				//         std::cout<<"baseline #: "<<i<<std::endl;
-				//         std::cout<<"Angles: "<<resultLocal.AngleX<<"
-				// "<<resultLocal.AngleY<<" "<<resultLocal.AngleZ<<std::endl;
-				//         std::cout<<"Trans : "<<resultLocal.TranslationX<<"
-				// "<<resultLocal.TranslationY<<" "<<resultLocal.TranslationZ<<std::endl;
-				//        std::cout<<"MI    : "<<resultLocal.MutualInformation<<std::endl;
 			}
 
-			//       std::cout<<"oldTransSum:  "<<oldTransSum<<std::endl;
-			//       std::cout<<"newTransSum:  "<<newTransSum<<std::endl;
-			//       std::cout<<"oldRotateSum: "<<oldRotateSum<<std::endl;
-			//       std::cout<<"newRotateSum: "<<newRotateSum<<std::endl;
-			//       std::cout<<"|newTransSum  - oldTransSum |: "<< fabs( newTransSum  -
-			// oldTransSum  )<<std::endl;
-			//       std::cout<<"|newRotateSum - oldRotateSum|: "<< fabs( newRotateSum -
-			// oldRotateSum )<<std::endl;
 
 			if ( m_StopCriteria == DWIBaselineAverager::TotalTransformationBased )
 			{
-				//         std::cout<<"Stop_Criteria:
-				// TotalTransformationBased"<<std::endl;
-				//         std::cout<<"StopThreshold: "<<m_StopThreshold<<std::endl;
 
 				if ( ( fabs( newTransSum  - oldTransSum  )  < m_StopThreshold )
 					&& ( fabs( newRotateSum - oldRotateSum ) < m_StopThreshold ) )                                                          //
@@ -747,16 +729,8 @@ namespace itk
 				}
 			}
 
-			//       std::cout<<"oldMISum: "<<oldMISum<<std::endl;
-			//       std::cout<<"newMISum: "<<newMISum<<std::endl;
-			//       std::cout<<"|newMISum-oldMISum|:
-			// "<<fabs(newMISum-oldMISum)<<std::endl;
-
 			if ( m_StopCriteria == DWIBaselineAverager::MetricSumBased )
 			{
-				//         std::cout<<"Stop_Criteria: MetricSumBased"<<std::endl;
-				//         std::cout<<"StopThreshold: "<<m_StopThreshold<<std::endl;
-
 				if ( fabs(newMISum - oldMISum)  < m_StopThreshold ) // 0.001
 				{
 					bRegister = false;
@@ -796,27 +770,59 @@ namespace itk
 			meanIntensity = meanIntensity / voxelCount;
 			double ratio = meanSquarediff / meanIntensity;
 
-			//       std::cout<<"voxelCount                    :
-			// "<<voxelCount<<std::endl;
-			//       std::cout<<"meanVoxelIntensity            :
-			// "<<meanIntensity<<std::endl;
-			//       std::cout<<"meanVoxelSquareRootDifference :
-			// "<<meanSquarediff<<std::endl;
-			//       std::cout<<"meanVoxelSquareRootDifference/meanVoxelIntensity:
-			// "<<ratio<<std::endl;
-
 			if ( m_StopCriteria == DWIBaselineAverager::IntensityMeanSquareDiffBased )
 			{
-				//         std::cout<<"Stop_Criteria:
-				// IntensityMeanSquareDiffBased"<<std::endl;
-				//         std::cout<<"StopThreshold: "<<m_StopThreshold<<std::endl;
-
-				if ( ratio < m_StopThreshold )  // 0.01
+				if ( ratio < m_StopThreshold )  // 0.02
 				{
 					bRegister = false;
+					break;
 				}
 			}
-		} while ( bRegister && inertationCount <= GetMaxIteration() );
+
+			if ( inertationCount > GetMaxIteration() )
+			{
+				std::cout << "Iterative registration seems not converging,doing direct averaging ...";
+				DirectAverage();
+				/*
+				std::cout << "Iterative registration seems not converging,register all the other baselines to the 1st one ...";
+				// register the other baselines to averagedBaseline			
+				for ( unsigned int i = 0; i < baselineContainer.size(); i++ )
+				{
+					struRigidRegResult resultLocal;
+
+					rigidRegistration( baselineContainer[0],
+						baselineContainer[i],
+						25,
+						0.1,
+						1,
+						resultLocal,
+						0 ); // baseline 
+				}
+
+				// average the registered baselines into averagedBaseline
+				typedef ImageRegionIteratorWithIndex<UnsignedImageType>
+				averagedBaselineIterator;
+				averagedBaselineIterator aIt( averagedBaseline,
+				averagedBaseline->GetLargestPossibleRegion() );
+				aIt.GoToBegin();
+
+				typename UnsignedImageType::IndexType pixelIndex;
+				unsigned short pixelValue;
+				while ( !aIt.IsAtEnd() )
+				{
+					pixelIndex = aIt.GetIndex();
+					aIt.Set( static_cast<unsigned short>( tempBaseline->GetPixel(pixelIndex)
+					/ ( static_cast<double>(baselineContainer.size() ) ) ) );
+					++aIt;
+				}
+				*/
+
+				bRegister = false;
+			}
+
+		} while ( bRegister);
+		// if ( ratio > m_StopThreshold ) && max interation number reached
+		// register all the other baselines to the 1st one
 
 		std::cout << "DONE" << std::endl;
 	}
@@ -850,9 +856,9 @@ namespace itk
 			pixelValue = 0.0;
 			for ( unsigned int i = 0; i < inputPtr->GetVectorLength(); i++ )
 			{
-				if ( this->m_GradientDirectionContainer->ElementAt(i)[0] == 0.0
-					&& this->m_GradientDirectionContainer->ElementAt(i)[1] == 0.0
-					&& this->m_GradientDirectionContainer->ElementAt(i)[2] == 0.0     )
+				if ( this->m_GradientDirectionContainer->ElementAt(i)[0] < 1e-7
+					&& this->m_GradientDirectionContainer->ElementAt(i)[1] < 1e-7
+					&& this->m_GradientDirectionContainer->ElementAt(i)[2] < 1e-7     )
 				{
 					// std::cout<<" GetPixel(pixelIndex): "<<
 					// inputPtr->GetPixel(pixelIndex)[i] <<std::endl;

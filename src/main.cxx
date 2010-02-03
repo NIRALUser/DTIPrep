@@ -34,8 +34,8 @@ int main ( int argc, char **argv )
 	else
 	{
 		MetaCommand command;
-
-		// checking input or DicomToNrrd Output
+		
+		// DWI filename
 		command.SetOption(
 			"DWIFileName",
 			"w",
@@ -46,30 +46,20 @@ int main ( int argc, char **argv )
 			"DWIFileName",
 			MetaCommand::STRING,
 			true);
-
-		// dicom to nrrd
-		command.SetOption(      "Dicom2Nrrd",
-			"d",
-			false,
-			"Directory containing dicom images to be converted");
-		command.SetOptionLongTag(  "Dicom2Nrrd", "DicomDirectory");
-		command.AddOptionField(    "Dicom2Nrrd",
-			"InputDicomDir",
-			MetaCommand::STRING,
-			true);
-
-		// xml based check
+		// protocol file name 
 		command.SetOption(      "xmlSetting", "p", true, 
-			"protocol xml file to be generated or used to check: 0 for generate; 1 for check");
+			"protocol xml file containing all the parameters");
 		command.SetOptionLongTag(  "xmlSetting", "xmlProtocol");
 		command.AddOptionField(    "xmlSetting",
 			"xmlFileName",
 			MetaCommand::STRING,
 			true);
-		//    command.AddOptionField(    "xmlSetting",
-		//      "useMode",
-		//      MetaCommand::INT,
-		//      true);
+		// to create a default protocol 
+		command.SetOption(      "createDefaultProtocol", "d", false, "create default protocol xml file");
+		command.SetOptionLongTag(  "createDefaultProtocol", "default");
+		// to check by the protocol 
+		command.SetOption(      "checkByProtocol", "c", false, "check by protocol xml file. Default operatoin.");
+		command.SetOptionLongTag(  "checkByProtocol", "check");
 
 		// result notes
 		command.SetOption(      "resultNotes", "n", false, "result notes");
@@ -93,231 +83,234 @@ int main ( int argc, char **argv )
 		}
 
 		string DWIFileName  = command.GetValueAsString("DWIFileName", "DWIFileName");
-		string InputDicomDir = command.GetValueAsString("Dicom2Nrrd", "InputDicomDir");
 		string xmlFileName  = command.GetValueAsString("xmlSetting", "xmlFileName");
 		string resultNotes  = command.GetValueAsString("resultNotes", "NotesFile");
 		string resultFolder = command.GetValueAsString("outputFolder","OutputFolder");
-		//    int xmlUseMode = command.GetValueAsInt("xmlSetting","useMode");
-
-		// convert
-		if ( command.GetOptionWasSet("Dicom2Nrrd") && InputDicomDir.length() !=
-			0 && DWIFileName.length() > 0  )
-		{
-			std::string str, str1, str2;
-			str += string("DicomToNrrdConverter");
-			str += string("  ");
-			str += InputDicomDir;
-			str += string("  ");
-			str += DWIFileName;
-
-			cout << "Dicom To Nrrd convert command: " << str << endl;
-			system( const_cast<char *>( str.c_str() ) );
-		}
+		
+		bool bCreateDefaultProtocol = command.GetOptionWasSet("createDefaultProtocol");
+		bool bcheckByProtocol       = command.GetOptionWasSet("checkByProtocol");
 
 		// check with  xml
 		if ( command.GetOptionWasSet("xmlSetting") && xmlFileName.length() > 0 )
 		{
 			CIntensityMotionCheck IntensityMotionCheck;
 			IntensityMotionCheck.SetDwiFileName(DWIFileName);
-			Protocol              protocol;
-			QCResult              qcResult;
-			QString               str( xmlFileName.c_str() );
-			XmlStreamReader       XmlReader(NULL);
+			Protocol protocol;
+			QCResult qcResult;
+			QString  str( xmlFileName.c_str() );
+			QFileInfo xmlFile( str);//QString::fromStdString(xmlFileName) );
+			XmlStreamReader XmlReader(NULL);
 			XmlReader.setProtocol( &protocol);
-			XmlReader.readFile(str, XmlStreamReader::ProtocolWise);
+			if( xmlFile.exists() )
+          		    XmlReader.readFile(str, XmlStreamReader::ProtocolWise);
 			protocol.GetQCOutputDirectory() = resultFolder;
 			protocol.printProtocols();
 			IntensityMotionCheck.SetProtocol( &protocol);
 			IntensityMotionCheck.SetQCResult( &qcResult);
 			IntensityMotionCheck.GetImagesInformation();
-			const unsigned char result = IntensityMotionCheck.RunPipelineByProtocol();
-			unsigned char out = result;
-			std::cout << "--------------------------------" << std::endl;
 
-			if ( resultNotes.length() > 0 )
-			{
-				std::ofstream outfile;
-
-				QFileInfo noteFile( QString::fromStdString(resultNotes) );
-				if ( !noteFile.exists() )
-				{
-					outfile.open( resultNotes.c_str(),  std::ios::app);
-					outfile
-						<<
-						"DWI\t#AllGrad/#AllGradLeft\t#b0/#b0Left\t#Grad/#GradLeft\t#GradDir/#GradDirLeft\t#Rep/#RepLeft\tImageInfo\tDiffusionInfo\tSliceWise\tInterlaceWise\tGradWise\tGradDirLess6\tSingleBValueNoB0\tTooManyBadDirs";
-				}
-				else
-				{
-					outfile.open( resultNotes.c_str(),  std::ios::app);
-				}
-
-				if ( DWIFileName.rfind('/') != string::npos )
-				{
-					std::cout << DWIFileName.substr( DWIFileName.rfind(
-						'/') + 1, DWIFileName.length() - DWIFileName.rfind('/')
-						- 1) << std::endl;
-					outfile << std::endl << DWIFileName.substr( DWIFileName.rfind(
-						'/') + 1, DWIFileName.length() - DWIFileName.rfind('/') - 1);
-				}
-				else
-				{
-					std::cout << "DWI file name: " << DWIFileName << std::endl;
-					outfile << std::endl << DWIFileName;
-				}
-
-				std::cout  << "GradientTotal#/LeftGradientTotal#: "
-					<< IntensityMotionCheck.getGradientNumber()
-					+ IntensityMotionCheck.getBaselineNumber() << "/"
-					<< IntensityMotionCheck.
-					getGradientLeftNumber()
-					+ IntensityMotionCheck.getBaselineLeftNumber() << std::endl;
-				outfile   << "\t" << IntensityMotionCheck.getGradientNumber()
-					+ IntensityMotionCheck.getBaselineNumber() << "/"
-					<< IntensityMotionCheck.
-					getGradientLeftNumber()
-					+ IntensityMotionCheck.getBaselineLeftNumber();
-
-				std::cout << "Baseline#/LeftBaseline#: "
-					<< IntensityMotionCheck.getBaselineNumber() << "/"
-					<<  IntensityMotionCheck.getBaselineLeftNumber()
-					<< std::endl;
-				outfile   << "\t" << IntensityMotionCheck.getBaselineNumber() << "/"
-					<<  IntensityMotionCheck.getBaselineLeftNumber();
-
-				std::cout << "Gradient#/LeftGradient#: "
-					<< IntensityMotionCheck.getGradientNumber() << "/"
-					<< IntensityMotionCheck.getGradientLeftNumber() << std::endl;
-				outfile   << "\t" << IntensityMotionCheck.getGradientNumber() << "/"
-					<< IntensityMotionCheck.getGradientLeftNumber();
-
-				std::cout << "GradientDir#/LeftGradientDir#: "
-					<< IntensityMotionCheck.getGradientDirNumber() << "/"
-					<< IntensityMotionCheck.getGradientDirLeftNumber()
-					<< std::endl;
-				outfile   << "\t" << IntensityMotionCheck.getGradientDirNumber()
-					<< "/" << IntensityMotionCheck.getGradientDirLeftNumber();
-
-				std::cout << "Repetition#/RepetitionLeft#: "
-					<< IntensityMotionCheck.getRepetitionNumber() << "/-"
-					<< std::endl;
-				outfile   << "\t" << IntensityMotionCheck.getRepetitionNumber() << "/-";
-
-				out = result;
-				out = out << 7;
-				out = out >> 7;
-				if ( out )
-				{
-					std::cout << "Image information check: FAILURE" << std::endl;
-					outfile << "\tFAILURE";
-				}
-				else
-				{
-					std::cout << "Image information check: PASS" << std::endl;
-					outfile << "\tPASS";
-				}
-
-				out = result;
-				out = out << 6;
-				out = out >> 7;
-				if ( out )
-				{
-					std::cout << "Diffusion information check: FAILURE" << std::endl;
-					outfile << "\tFAILURE";
-				}
-				else
-				{
-					std::cout << "Diffusion information check: PASS" << std::endl;
-					outfile << "\tPASS";
-				}
-
-				out = result;
-				out = out << 5;
-				out = out >> 7;
-				if ( out  )
-				{
-					std::cout << "Slice-wise check: FAILURE" << std::endl;
-					outfile << "\tFAILURE";
-				}
-				else
-				{
-					std::cout << "Slice-wise check: PASS" << std::endl;
-					outfile << "\tPASS";
-				}
-
-				out = result;
-				out = out << 4;
-				out = out >> 7;
-				if ( out  )
-				{
-					std::cout << "Interlace-wise check: FAILURE" <<  std::endl;
-					outfile << "\tFAILURE";
-				}
-				else
-				{
-					std::cout << "Interlace-wise check: PASS" << std::endl;
-					outfile << "\tPASS";
-				}
-
-				out = result;
-				out = out << 3;
-				out = out >> 7;
-				if ( out )
-				{
-					std::cout << "Gradient-wise check: FAILURE" << std::endl;
-					outfile << "\tFAILURE";
-				}
-				else
-				{
-					std::cout << "Gradient-wise check: PASS" << std::endl;
-					outfile << "\tPASS";
-				}
-
-				// ZYXEDCBA:
-				// X QC;Too many bad gradient directions found!
-				// Y QC; Single b-value DWI without a b0/baseline!
-				// Z QC: Gradient direction # is less than 6!
-
-				out = result;
-				out = out >> 7;
-				if ( out )
-				{
-					std::cout << "Too many bad gradient directions found!" << std::endl;
-					outfile << "\tToo many bad gradient directions found!";
-				}
-				else
-				{
-					outfile << "\t";
-				}
-
-				out = result;
-				out = out << 1;
-				out = out >> 7;
-				if ( out )
-				{
-					std::cout << "Single b-value DWI without a b0/baseline!" << std::endl;
-					outfile << "\tSingle b-value DWI without a b0/baseline!";
-				}
-				else
-				{
-					outfile << "\t";
-				}
-
-				out = result;
-				out = out << 2;
-				out = out >> 7;
-				if ( out )
-				{
-					std::cout << "Gradient direction # is less than 6!" << std::endl;
-					outfile << "\tGradient direction # is less than 6!";
-				}
-				else
-				{
-					outfile << "\t";
-				}
-
-				outfile.close();
+			if( bCreateDefaultProtocol || !xmlFile.exists() )
+			{							
+				IntensityMotionCheck.MakeDefaultProtocol( &protocol );
+				protocol.Save( xmlFileName.c_str() );
 			}
-			return result;
+			
+			if( bcheckByProtocol || ( !bCreateDefaultProtocol && ! bcheckByProtocol ) )
+			{
+				if( !bCreateDefaultProtocol && ! bcheckByProtocol )
+				{
+					std::cout<< "Create default protocol or check by protocol, at least one of them should be set." << std::endl;
+					std::cout<< "Neihter of them was set. Check by default." << std::endl;
+				}
+
+				const unsigned char result = IntensityMotionCheck.RunPipelineByProtocol();
+				unsigned char out = result;
+				std::cout << "--------------------------------" << std::endl;
+
+				if ( resultNotes.length() > 0 )
+				{
+					std::ofstream outfile;
+
+					QFileInfo noteFile( QString::fromStdString(resultNotes) );
+					if ( !noteFile.exists() )
+					{
+						outfile.open( resultNotes.c_str(),  std::ios::app);
+						outfile	<<
+							"DWI\t#AllGrad/#AllGradLeft\t#b0/#b0Left\t#Grad/#GradLeft\t#GradDir/#GradDirLeft\t#Rep/#RepLeft\tImageInfo\tDiffusionInfo\tSliceWise\tInterlaceWise\tGradWise\tGradDirLess6\tSingleBValueNoB0\tTooManyBadDirs";
+					}
+					else
+					{
+						outfile.open( resultNotes.c_str(),  std::ios::app);
+					}
+
+					if ( DWIFileName.rfind('/') != string::npos )
+					{
+						std::cout << DWIFileName.substr( DWIFileName.rfind(
+							'/') + 1, DWIFileName.length() - DWIFileName.rfind('/')
+							- 1) << std::endl;
+						outfile << std::endl << DWIFileName.substr( DWIFileName.rfind(
+							'/') + 1, DWIFileName.length() - DWIFileName.rfind('/') - 1);
+					}
+					else
+					{
+						std::cout << "DWI file name: " << DWIFileName << std::endl;
+						outfile << std::endl << DWIFileName;
+					}
+
+					std::cout  << "GradientTotal#/LeftGradientTotal#: "
+						<< IntensityMotionCheck.getGradientNumber()
+						+ IntensityMotionCheck.getBaselineNumber() << "/"
+						<< IntensityMotionCheck.
+						getGradientLeftNumber()
+						+ IntensityMotionCheck.getBaselineLeftNumber() << std::endl;
+					outfile   << "\t" << IntensityMotionCheck.getGradientNumber()
+						+ IntensityMotionCheck.getBaselineNumber() << "/"
+						<< IntensityMotionCheck.
+						getGradientLeftNumber()
+						+ IntensityMotionCheck.getBaselineLeftNumber();
+
+					std::cout << "Baseline#/LeftBaseline#: "
+						<< IntensityMotionCheck.getBaselineNumber() << "/"
+						<<  IntensityMotionCheck.getBaselineLeftNumber()
+						<< std::endl;
+					outfile   << "\t" << IntensityMotionCheck.getBaselineNumber() << "/"
+						<<  IntensityMotionCheck.getBaselineLeftNumber();
+
+					std::cout << "Gradient#/LeftGradient#: "
+						<< IntensityMotionCheck.getGradientNumber() << "/"
+						<< IntensityMotionCheck.getGradientLeftNumber() << std::endl;
+					outfile   << "\t" << IntensityMotionCheck.getGradientNumber() << "/"
+						<< IntensityMotionCheck.getGradientLeftNumber();
+
+					std::cout << "GradientDir#/LeftGradientDir#: "
+						<< IntensityMotionCheck.getGradientDirNumber() << "/"
+						<< IntensityMotionCheck.getGradientDirLeftNumber()
+						<< std::endl;
+					outfile   << "\t" << IntensityMotionCheck.getGradientDirNumber()
+						<< "/" << IntensityMotionCheck.getGradientDirLeftNumber();
+
+					std::cout << "Repetition#/RepetitionLeft#: "
+						<< IntensityMotionCheck.getRepetitionNumber() << "/-"
+						<< std::endl;
+					outfile   << "\t" << IntensityMotionCheck.getRepetitionNumber() << "/-";
+
+					out = result;
+					out = out << 7;
+					out = out >> 7;
+					if ( out )
+					{
+						std::cout << "Image information check: FAILURE" << std::endl;
+						outfile << "\tFAILURE";
+					}
+					else
+					{
+						std::cout << "Image information check: PASS" << std::endl;
+						outfile << "\tPASS";
+					}
+
+					out = result;
+					out = out << 6;
+					out = out >> 7;
+					if ( out )
+					{
+						std::cout << "Diffusion information check: FAILURE" << std::endl;
+						outfile << "\tFAILURE";
+					}
+					else
+					{
+						std::cout << "Diffusion information check: PASS" << std::endl;
+						outfile << "\tPASS";
+					}
+
+					out = result;
+					out = out << 5;
+					out = out >> 7;
+					if ( out  )
+					{
+						std::cout << "Slice-wise check: FAILURE" << std::endl;
+						outfile << "\tFAILURE";
+					}
+					else
+					{
+						std::cout << "Slice-wise check: PASS" << std::endl;
+						outfile << "\tPASS";
+					}
+
+					out = result;
+					out = out << 4;
+					out = out >> 7;
+					if ( out  )
+					{
+						std::cout << "Interlace-wise check: FAILURE" <<  std::endl;
+						outfile << "\tFAILURE";
+					}
+					else
+					{
+						std::cout << "Interlace-wise check: PASS" << std::endl;
+						outfile << "\tPASS";
+					}
+
+					out = result;
+					out = out << 3;
+					out = out >> 7;
+					if ( out )
+					{
+						std::cout << "Gradient-wise check: FAILURE" << std::endl;
+						outfile << "\tFAILURE";
+					}
+					else
+					{
+						std::cout << "Gradient-wise check: PASS" << std::endl;
+						outfile << "\tPASS";
+					}
+
+					// ZYXEDCBA:
+					// X QC;Too many bad gradient directions found!
+					// Y QC; Single b-value DWI without a b0/baseline!
+					// Z QC: Gradient direction # is less than 6!
+
+					out = result;
+					out = out >> 7;
+					if ( out )
+					{
+						std::cout << "Too many bad gradient directions found!" << std::endl;
+						outfile << "\tToo many bad gradient directions found!";
+					}
+					else
+					{
+						outfile << "\t";
+					}
+
+					out = result;
+					out = out << 1;
+					out = out >> 7;
+					if ( out )
+					{
+						std::cout << "Single b-value DWI without a b0/baseline!" << std::endl;
+						outfile << "\tSingle b-value DWI without a b0/baseline!";
+					}
+					else
+					{
+						outfile << "\t";
+					}
+
+					out = result;
+					out = out << 2;
+					out = out >> 7;
+					if ( out )
+					{
+						std::cout << "Gradient direction # is less than 6!" << std::endl;
+						outfile << "\tGradient direction # is less than 6!";
+					}
+					else
+					{
+						outfile << "\t";
+					}
+
+					outfile.close();
+				}
+				return result;
+			}
 		}
 		return 0;
 	}

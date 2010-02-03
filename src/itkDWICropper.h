@@ -131,7 +131,9 @@ namespace itk
 		void operator=(const Self &); // purposely not implemented
 
 		/** region para */
-		int *region;
+		int *region; 	// region[0]: index i, region[1]:size i;
+				// region[2]: index j, region[3]:size j;
+				// region[4]: index k, region[5]:size k;
 
 		/** size para */
 		int *size;

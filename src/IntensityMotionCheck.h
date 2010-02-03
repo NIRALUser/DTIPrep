@@ -219,7 +219,7 @@ public:
 
 	bool LoadDwiImage();
 
-	bool MakeDefaultProtocol( Protocol *protocol, DwiImageType::Pointer dwi);
+	bool MakeDefaultProtocol( Protocol *protocol);
 
 private:
 	void collectDiffusionStatistics();

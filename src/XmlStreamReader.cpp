@@ -465,7 +465,7 @@ void XmlStreamReader::parseXMLParametersToProtocol()
 					subvalues = value.split(" ");
 					foreach (QString subvalue, subvalues)
 					{
-						protocol->GetImageProtocol(). spacedirection[temp / 3][temp % 3]
+						protocol->GetImageProtocol(). spacedirection[temp % 3][temp / 3] // column dominant
 						= subvalue.toDouble();
 						temp++;
 					}
@@ -563,7 +563,7 @@ void XmlStreamReader::parseXMLParametersToProtocol()
 					subvalues = value.split(" ");
 					foreach (QString subvalue, subvalues)
 					{
-						protocol->GetDiffusionProtocol(). measurementFrame[temp / 3][temp % 3]
+						protocol->GetDiffusionProtocol(). measurementFrame[temp % 3][temp / 3] // column dominant
 						= subvalue.toDouble();
 						temp++;
 					}

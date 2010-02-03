@@ -1338,7 +1338,7 @@ bool CIntensityMotionCheck::BaselineAverage( DwiImageType::Pointer dwi )
 			protocol->GetBaselineAverageProtocol().averageMethod );
 		BaselineAverager->SetStopThreshold(
 			protocol->GetBaselineAverageProtocol().stopThreshold );
-		BaselineAverager->SetMaxIteration( 500 );
+		BaselineAverager->SetMaxIteration( 15 );
 		BaselineAverager->SetReportType(protocol->GetReportType() );
 
 		try
@@ -3618,17 +3618,23 @@ bool CIntensityMotionCheck::DiffusionCheck( DwiImageType::Pointer dwi)
 	return returnValte;
 }
 
-bool CIntensityMotionCheck::MakeDefaultProtocol( Protocol *protocol, DwiImageType::Pointer dwi )
+bool CIntensityMotionCheck::MakeDefaultProtocol( Protocol *protocol )
 {
-	if ( !dwi )
-	{
-		std::cout << "DWI error." << std::endl;    
-		return false;
-	}
 
 	if ( !protocol )
 	{
 		std::cout << "protocol error." << std::endl;    
+		return false;
+	}
+
+	if ( !bDwiLoaded  )
+	{
+		LoadDwiImage();
+	}
+	
+  	if ( !m_DwiOriginalImage )
+	{
+		std::cout << "DWI error." << std::endl;    
 		return false;
 	}
 
@@ -3646,25 +3652,25 @@ bool CIntensityMotionCheck::MakeDefaultProtocol( Protocol *protocol, DwiImageTyp
 
 	// size
 	protocol->GetImageProtocol().size[0]
-	= dwi->GetLargestPossibleRegion().GetSize()[0];
+	= m_DwiOriginalImage->GetLargestPossibleRegion().GetSize()[0];
 	protocol->GetImageProtocol().size[1]
-	= dwi->GetLargestPossibleRegion().GetSize()[1];
+	= m_DwiOriginalImage->GetLargestPossibleRegion().GetSize()[1];
 	protocol->GetImageProtocol().size[2]
-	= dwi->GetLargestPossibleRegion().GetSize()[2];
+	= m_DwiOriginalImage->GetLargestPossibleRegion().GetSize()[2];
 
 	// origin
-	protocol->GetImageProtocol().origin[0] = dwi->GetOrigin()[0];
-	protocol->GetImageProtocol().origin[1] = dwi->GetOrigin()[1];
-	protocol->GetImageProtocol().origin[2] = dwi->GetOrigin()[2];
+	protocol->GetImageProtocol().origin[0] = m_DwiOriginalImage->GetOrigin()[0];
+	protocol->GetImageProtocol().origin[1] = m_DwiOriginalImage->GetOrigin()[1];
+	protocol->GetImageProtocol().origin[2] = m_DwiOriginalImage->GetOrigin()[2];
 
 	// spacing
-	protocol->GetImageProtocol().spacing[0] = dwi->GetSpacing()[0];
-	protocol->GetImageProtocol().spacing[1] = dwi->GetSpacing()[1];
-	protocol->GetImageProtocol().spacing[2] = dwi->GetSpacing()[2];
+	protocol->GetImageProtocol().spacing[0] = m_DwiOriginalImage->GetSpacing()[0];
+	protocol->GetImageProtocol().spacing[1] = m_DwiOriginalImage->GetSpacing()[1];
+	protocol->GetImageProtocol().spacing[2] = m_DwiOriginalImage->GetSpacing()[2];
 
 	// space
 	itk::MetaDataDictionary imgMetaDictionary
-		= dwi->GetMetaDataDictionary();
+		= m_DwiOriginalImage->GetMetaDataDictionary();
 	std::vector<std::string> imgMetaKeys
 		= imgMetaDictionary.GetKeys();
 	std::vector<std::string>::const_iterator itKey = imgMetaKeys.begin();
@@ -3735,7 +3741,7 @@ bool CIntensityMotionCheck::MakeDefaultProtocol( Protocol *protocol, DwiImageTyp
 
 	// imaging frame
 	vnl_matrix_fixed<double, 3, 3> imgf;
-	imgf = dwi->GetDirection().GetVnlMatrix();
+	imgf = m_DwiOriginalImage->GetDirection().GetVnlMatrix();
 
 	protocol->GetImageProtocol().spacedirection[0][0] = imgf(0, 0);
 	protocol->GetImageProtocol().spacedirection[0][1] = imgf(0, 1);

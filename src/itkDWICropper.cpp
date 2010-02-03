@@ -41,7 +41,7 @@ namespace itk
 	DWICropper<TImageType>
 		::DWICropper()
 	{
-		region = new int[6];
+		region = NULL; 
 		size = NULL;
 	}
 
@@ -52,13 +52,9 @@ namespace itk
 	DWICropper<TImageType>
 		::~DWICropper()
 	{
-		if ( region )
-		{
-			delete region;
-		}
 		if ( size )
 		{
-			delete size;
+			delete region;
 		}
 	}
 
@@ -108,8 +104,7 @@ namespace itk
 
 		if ( size )
 		{
-			//       for(unsigned int i=0;i<3;i++)
-			//         std::cout<<"size["<<i<<"]: "<<size[i]<<std::endl;
+			region = new int[6];
 
 			region[0] = ( (int)imageOriginalSize[0] - size[0] ) / 2;
 			region[1] = ( (int)imageOriginalSize[1] - size[1] ) / 2;

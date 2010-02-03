@@ -599,7 +599,7 @@ void IntensityMotionCheckPanel::UpdatePanelDWI()
 			for ( unsigned int j = 0; j < 3; ++j )
 			{
 				mf(i, j) = nrrdmf[j][i];
-				nrrdmf[j][i] = imgf(i, j);
+				//nrrdmf[j][i] = imgf(i, j);
 			}
 		}
 
@@ -754,7 +754,7 @@ void IntensityMotionCheckPanel::DefaultProtocol()
 		this->GetProtocol().GetDiffusionProtocol().gradients.push_back(vect);
 	}
 
-	//  measurement frame
+	//  
 	if ( imgMetaDictionary.HasKey("NRRD_measurement frame") )
 	{
 		// imaging frame
@@ -785,7 +785,6 @@ void IntensityMotionCheckPanel::DefaultProtocol()
 			for ( unsigned int j = 0; j < 3; ++j )
 			{
 				mf(i, j) = nrrdmf[j][i];
-				nrrdmf[j][i] = imgf(i, j);
 			}
 		}
 		// Meausurement frame
@@ -1593,24 +1592,15 @@ void IntensityMotionCheckPanel::UpdateProtocolToTreeWidget( )
 		itemImageInformation);
 	itemSpaceDirections->setText( 0, tr("IMAGE_directions") );
 	itemSpaceDirections->setText(1, QString("%1 %2 %3, %4 %5 %6, %7 %8 %9")
-		.arg(this->GetProtocol().GetImageProtocol().spacedirection[0][0], 0, 'f',
-		6)
-		.arg(this->GetProtocol().GetImageProtocol().spacedirection[0][1], 0, 'f',
-		6)
-		.arg(this->GetProtocol().GetImageProtocol().spacedirection[0][2], 0, 'f',
-		6)
-		.arg(this->GetProtocol().GetImageProtocol().spacedirection[1][0], 0, 'f',
-		6)
-		.arg(this->GetProtocol().GetImageProtocol().spacedirection[1][1], 0, 'f',
-		6)
-		.arg(this->GetProtocol().GetImageProtocol().spacedirection[1][2], 0, 'f',
-		6)
-		.arg(this->GetProtocol().GetImageProtocol().spacedirection[2][0], 0, 'f',
-		6)
-		.arg(this->GetProtocol().GetImageProtocol().spacedirection[2][1], 0, 'f',
-		6)
-		.arg(this->GetProtocol().GetImageProtocol().spacedirection[2][2], 0, 'f',
-		6)
+		.arg(this->GetProtocol().GetImageProtocol().spacedirection[0][0], 0, 'f', 6)
+		.arg(this->GetProtocol().GetImageProtocol().spacedirection[1][0], 0, 'f', 6)
+		.arg(this->GetProtocol().GetImageProtocol().spacedirection[2][0], 0, 'f', 6)
+		.arg(this->GetProtocol().GetImageProtocol().spacedirection[0][1], 0, 'f', 6)
+		.arg(this->GetProtocol().GetImageProtocol().spacedirection[1][1], 0, 'f', 6)
+		.arg(this->GetProtocol().GetImageProtocol().spacedirection[2][1], 0, 'f', 6)
+		.arg(this->GetProtocol().GetImageProtocol().spacedirection[0][2], 0, 'f', 6)
+		.arg(this->GetProtocol().GetImageProtocol().spacedirection[1][2], 0, 'f', 6)
+		.arg(this->GetProtocol().GetImageProtocol().spacedirection[2][2], 0, 'f', 6)
 		);
 
 	QTreeWidgetItem *itemSizes = new QTreeWidgetItem(itemImageInformation);
@@ -1709,24 +1699,15 @@ void IntensityMotionCheckPanel::UpdateProtocolToTreeWidget( )
 		itemDiffusionInformation);
 	itemMeasurementFrame->setText( 0, tr("DIFFUSION_measurementFrame") );
 	itemMeasurementFrame->setText(1, QString("%1 %2 %3, %4 %5 %6, %7 %8 %9")
-		.arg(this->GetProtocol().GetDiffusionProtocol().measurementFrame[0][0], 0,
-		'f', 6)
-		.arg(this->GetProtocol().GetDiffusionProtocol().measurementFrame[0][1], 0,
-		'f', 6)
-		.arg(this->GetProtocol().GetDiffusionProtocol().measurementFrame[0][2], 0,
-		'f', 6)
-		.arg(this->GetProtocol().GetDiffusionProtocol().measurementFrame[1][0], 0,
-		'f', 6)
-		.arg(this->GetProtocol().GetDiffusionProtocol().measurementFrame[1][1], 0,
-		'f', 6)
-		.arg(this->GetProtocol().GetDiffusionProtocol().measurementFrame[1][2], 0,
-		'f', 6)
-		.arg(this->GetProtocol().GetDiffusionProtocol().measurementFrame[2][0], 0,
-		'f', 6)
-		.arg(this->GetProtocol().GetDiffusionProtocol().measurementFrame[2][1], 0,
-		'f', 6)
-		.arg(this->GetProtocol().GetDiffusionProtocol().measurementFrame[2][2], 0,
-		'f', 6)
+		.arg(this->GetProtocol().GetDiffusionProtocol().measurementFrame[0][0], 0, 'f', 6)
+		.arg(this->GetProtocol().GetDiffusionProtocol().measurementFrame[1][0], 0, 'f', 6)
+		.arg(this->GetProtocol().GetDiffusionProtocol().measurementFrame[2][0], 0, 'f', 6)
+		.arg(this->GetProtocol().GetDiffusionProtocol().measurementFrame[0][1], 0, 'f', 6)
+		.arg(this->GetProtocol().GetDiffusionProtocol().measurementFrame[1][1], 0, 'f', 6)
+		.arg(this->GetProtocol().GetDiffusionProtocol().measurementFrame[2][1], 0, 'f', 6)
+		.arg(this->GetProtocol().GetDiffusionProtocol().measurementFrame[0][2], 0, 'f', 6)
+		.arg(this->GetProtocol().GetDiffusionProtocol().measurementFrame[1][2], 0, 'f', 6)
+		.arg(this->GetProtocol().GetDiffusionProtocol().measurementFrame[2][2], 0, 'f', 6)
 		);
 
 	QTreeWidgetItem *itemBValue = new QTreeWidgetItem(itemDiffusionInformation);

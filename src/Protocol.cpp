@@ -1031,10 +1031,17 @@ void Protocol::Save( std::string xml)
 	std::string xmlFileName = xml;
 	std::ofstream outfile;
 
-	if( xmlFileName.substr(xmlFileName.rfind('.')).compare("xml") !=0 )
-	{
-		xmlFileName.append(".xml");
+	if(xmlFileName.rfind('.')!=std::string::npos)
+	{		
+		if( xmlFileName.substr(xmlFileName.rfind('.')+1).compare("xml") !=0 )
+		{
+			xmlFileName.append(".xml");
+		}
 	}
+	else
+		xmlFileName.append(".xml");	
+
+
 	outfile.open(xmlFileName.c_str());
 
 	outfile << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" << std::endl;
@@ -1064,43 +1071,43 @@ void Protocol::Save( std::string xml)
 	switch(GetImageProtocol().space)
 	{
 	case SPACE_LAI:
-		outfile << "            <value> left-anterior-inferior</value>" << std::endl;
+		outfile << "            <value>left-anterior-inferior</value>" << std::endl;
 		break;
 	case SPACE_LAS:
-		outfile << "            <value> left-anterior-superior</value>" << std::endl;
+		outfile << "            <value>left-anterior-superior</value>" << std::endl;
 		break;
 	case SPACE_LPI:
-		outfile << "            <value> left-posterior-inferior</value>" << std::endl;
+		outfile << "            <value>left-posterior-inferior</value>" << std::endl;
 		break;
 	case SPACE_LPS:
-		outfile << "            <value> left-posterior-superior</value>" << std::endl;
+		outfile << "            <value>left-posterior-superior</value>" << std::endl;
 		break;
 	case SPACE_RAI:
-		outfile << "            <value> right-anterior-inferior</value>" << std::endl;
+		outfile << "            <value>right-anterior-inferior</value>" << std::endl;
 		break;
 	case SPACE_RAS:
-		outfile << "            <value> right-anterior-superior</value>" << std::endl;
+		outfile << "            <value>right-anterior-superior</value>" << std::endl;
 		break;
 	case SPACE_RPI:
-		outfile << "            <value> right-posterior-inferior</value>" << std::endl;
+		outfile << "            <value>right-posterior-inferior</value>" << std::endl;
 		break;
 	case SPACE_RPS:
-		outfile << "            <value> right-posterior-superior</value>" << std::endl;
+		outfile << "            <value>right-posterior-superior</value>" << std::endl;
 		break;
 	}  
 	outfile << "        </entry>" << std::endl;
 	outfile << "        <entry parameter=\"IMAGE_directions\">" << std::endl;
 	outfile << "            <value>" 
 		<< GetImageProtocol().spacedirection[0][0] << " " 
-		<< GetImageProtocol().spacedirection[0][1] << " " 
-		<< GetImageProtocol().spacedirection[0][2] << "</value>" << std::endl;
-	outfile << "            <value>"
 		<< GetImageProtocol().spacedirection[1][0] << " " 
-		<< GetImageProtocol().spacedirection[1][1] << " " 
-		<< GetImageProtocol().spacedirection[1][2] << "</value>" << std::endl;
+		<< GetImageProtocol().spacedirection[2][0] << "</value>" << std::endl;
 	outfile << "            <value>"
-		<< GetImageProtocol().spacedirection[2][0] << " " 
-		<< GetImageProtocol().spacedirection[2][1] << " " 
+		<< GetImageProtocol().spacedirection[0][1] << " " 
+		<< GetImageProtocol().spacedirection[1][1] << " " 
+		<< GetImageProtocol().spacedirection[2][1] << "</value>" << std::endl;
+	outfile << "            <value>"
+		<< GetImageProtocol().spacedirection[0][2] << " " 
+		<< GetImageProtocol().spacedirection[1][2] << " " 
 		<< GetImageProtocol().spacedirection[2][2] << "</value>" << std::endl;
 	outfile << "        </entry>" << std::endl;
 	outfile << "        <entry parameter=\"IMAGE_size\">" << std::endl;
@@ -1110,13 +1117,13 @@ void Protocol::Save( std::string xml)
 	outfile << "        </entry>" << std::endl;
 	outfile << "        <entry parameter=\"IMAGE_spacing\">" << std::endl;
 	outfile << "            <value>" << GetImageProtocol().spacing[0] << "</value>" << std::endl;
-	outfile << "            <value>" << GetImageProtocol().spacing[0] << "</value>" << std::endl;
-	outfile << "            <value>" << GetImageProtocol().spacing[0] << "</value>" << std::endl;
+	outfile << "            <value>" << GetImageProtocol().spacing[1] << "</value>" << std::endl;
+	outfile << "            <value>" << GetImageProtocol().spacing[2] << "</value>" << std::endl;
 	outfile << "        </entry>" << std::endl;
 	outfile << "        <entry parameter=\"IMAGE_origin\">" << std::endl;
 	outfile << "            <value>" << GetImageProtocol().origin[0] << "</value>" << std::endl;
-	outfile << "            <value>" << GetImageProtocol().origin[0] << "</value>" << std::endl;
-	outfile << "            <value>" << GetImageProtocol().origin[0] << "</value>" << std::endl;
+	outfile << "            <value>" << GetImageProtocol().origin[1] << "</value>" << std::endl;
+	outfile << "            <value>" << GetImageProtocol().origin[2] << "</value>" << std::endl;
 	outfile << "        </entry>" << std::endl;
 	outfile << "        <entry parameter=\"IMAGE_bCrop\">" << std::endl;
 	if( GetImageProtocol().bCrop )
@@ -1158,15 +1165,15 @@ void Protocol::Save( std::string xml)
 	outfile << "        <entry parameter=\"DIFFUSION_measurementFrame\">" << std::endl;
 	outfile << "            <value>" 
 		<< GetDiffusionProtocol().measurementFrame[0][0] << " " 
-		<< GetDiffusionProtocol().measurementFrame[0][1] << " " 
-		<< GetDiffusionProtocol().measurementFrame[0][2] << "</value>" << std::endl;
-	outfile << "            <value>"
 		<< GetDiffusionProtocol().measurementFrame[1][0] << " " 
-		<< GetDiffusionProtocol().measurementFrame[1][1] << " " 
-		<< GetDiffusionProtocol().measurementFrame[1][2] << "</value>" << std::endl;
+		<< GetDiffusionProtocol().measurementFrame[2][0] << "</value>" << std::endl;
 	outfile << "            <value>"
-		<< GetDiffusionProtocol().measurementFrame[2][0] << " " 
-		<< GetDiffusionProtocol().measurementFrame[2][1] << " " 
+		<< GetDiffusionProtocol().measurementFrame[0][1] << " " 
+		<< GetDiffusionProtocol().measurementFrame[1][1] << " " 
+		<< GetDiffusionProtocol().measurementFrame[2][1] << "</value>" << std::endl;
+	outfile << "            <value>"
+		<< GetDiffusionProtocol().measurementFrame[0][2] << " " 
+		<< GetDiffusionProtocol().measurementFrame[1][2] << " " 
 		<< GetDiffusionProtocol().measurementFrame[2][2] << "</value>" << std::endl;
 
 	outfile << "        </entry>" << std::endl;
@@ -1360,7 +1367,7 @@ void Protocol::Save( std::string xml)
 	outfile << "        <entry parameter=\"DTI_tensor\">" << std::endl;
 	outfile << "            <value>_DTI.nhdr</value>" << std::endl;
 	outfile << "        </entry>" << std::endl;
-	outfile << "        <entry parameter=\"DTI_baseline"<< std::endl;
+	outfile << "        <entry parameter=\"DTI_baseline\">"<< std::endl;
 	outfile << "            <value>Yes</value>" << std::endl;
 	outfile << "            <value>_Baseline.nhdr</value>" << std::endl;
 	outfile << "        </entry>" << std::endl;
