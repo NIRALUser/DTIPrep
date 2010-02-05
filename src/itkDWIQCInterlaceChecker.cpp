@@ -1737,7 +1737,7 @@ namespace itk
 			InputImageConstPointer inputPtr = this->GetInput();
 			OutputImagePointer     outputPtr = this->GetOutput();
 
-			int gradientLeft = 0;
+			unsigned int gradientLeft = 0;
 			gradientLeft = this->baselineLeftNumber + this->gradientLeftNumber;
 			if ( gradientLeft == inputPtr->GetVectorLength() )
 			{
@@ -1839,7 +1839,7 @@ namespace itk
 
 			// gradient vectors
 			int temp = 0;
-			for ( int i = 0; i < this->m_GradientDirectionContainer->Size(); i++ )
+			for ( unsigned int i = 0; i < this->m_GradientDirectionContainer->Size(); i++ )
 			{
 				if ( !this->qcResults[i] )
 				{
@@ -1894,7 +1894,7 @@ namespace itk
 				inputIndex = outputIndex;
 
 				int element = 0;
-				for ( int i = 0; i < this->qcResults.size(); i++ )
+				for ( unsigned int i = 0; i < this->qcResults.size(); i++ )
 				{
 					if ( !this->qcResults[i] )
 					{

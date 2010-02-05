@@ -595,7 +595,8 @@ namespace itk
 		}
 
 		std::ofstream outfile;
-		int DWICount, BaselineCount;
+		//int DWICount;
+		//int BaselineCount;
 
 		if ( GetReportFileMode() == DWIQCGradientChecker::REPORT_FILE_APPEND )
 		{
@@ -1508,7 +1509,7 @@ namespace itk
 			InputImageConstPointer inputPtr = this->GetInput();
 			OutputImagePointer     outputPtr = this->GetOutput();
 
-			int gradientLeft = 0;
+			unsigned int gradientLeft = 0;
 			gradientLeft = this->baselineLeftNumber + this->gradientLeftNumber;
 			if ( gradientLeft == inputPtr->GetVectorLength() )
 			{

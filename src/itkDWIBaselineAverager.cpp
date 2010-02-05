@@ -893,7 +893,7 @@ namespace itk
 		{
 			outfile.open( GetReportFileName().c_str() );
 		}
-		int DWICount, BaselineCount;
+		//int DWICount, BaselineCount;
 		int temp = 0;
 
 		switch( m_ReportType)
