@@ -24,6 +24,7 @@ else
   BUILDTYPE=$2
 fi
 
+### Use the newer compilers if they are available
 CC=/usr/bin/gcc-4.2
 CXX=/usr/bin/g++-4.2
 if [ ! -f ${CC} ] || [ ! -f ${CXX} ]; then
@@ -74,6 +75,7 @@ ABI_DIR=${COMPILE_DIR}/$(uname)_$(uname -m)-${ABI}
 mkdir -p ${ABI_DIR}
 
 ITK_BUILD=${ABI_DIR}/InsightToolkit-CVS-build
+
 if [ 1 == 1 ];then  ## Temporary bypass of building ITK
   LOCAL_PATH=$(dirname $0)
   echo "${LOCAL_PATH}"
@@ -118,6 +120,7 @@ fi  ## Temporary bypass of building ITK
 #export QTDIR=/opt/qt-4.5.2/
 #export QTDIR=/usr
 export QTDIR=/opt/qt-everywhere-opensource-src-4.6.1
+export QTDIR=/opt/qt-4.6.1
 VTK_BUILD=${ABI_DIR}/VTK-CVS-build
 
 if [ 1 == 1 ] ; then  ## Skipping local vtk
