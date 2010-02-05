@@ -1,11 +1,42 @@
 PROJECT ( DTIPrep )
-cmake_minimum_required( VERSION 2.6 )
+set(LOCAL_PROJECT_NAME DTIPrep)
+cmake_minimum_required(VERSION 2.6)
+cmake_policy(VERSION 2.6)
 
-FIND_PACKAGE( VTK REQUIRED )
-INCLUDE(${VTK_USE_FILE})
+ENABLE_TESTING()
+include(Dart)
+#include(CPack)
 
-FIND_PACKAGE( ITK REQUIRED )
-INCLUDE(${ITK_USE_FILE})
+## A simple macro to set variables ONLY if it has not been set
+## This is needed when stand-alone packages are combined into
+## a larger package, and the desired behavior is that all the
+## binary results end up in the combined directory.
+if(NOT SETIFEMPTY)
+macro(SETIFEMPTY)
+  set(KEY ${ARGV0})
+  set(VALUE ${ARGV1})
+  if(NOT ${KEY})
+    set(${KEY} ${VALUE})
+  endif(NOT ${KEY})
+endmacro(SETIFEMPTY KEY VALUE)
+endif(NOT SETIFEMPTY)
+###
+SETIFEMPTY(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/lib)
+SETIFEMPTY(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/lib)
+SETIFEMPTY(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/bin)
+SETIFEMPTY(CMAKE_BUNDLE_OUTPUT_DIRECTORY  ${CMAKE_CURRENT_BINARY_DIR}/bin)
+
+
+if(NOT ITK_FOUND)
+    find_package(ITK REQUIRED)
+    include(${ITK_USE_FILE})
+endif(NOT ITK_FOUND)
+
+if(NOT VTK_FOUND)
+    find_package(VTK REQUIRED)
+    include(${VTK_USE_FILE})
+endif(NOT VTK_FOUND)
+
 
 # use what QVTK built with
 SET(QT_MOC_EXECUTABLE ${VTK_QT_MOC_EXECUTABLE} CACHE FILEPATH "")
@@ -118,4 +149,11 @@ TARGET_LINK_LIBRARIES( DTIPrep
   ${VTK_LIBRARIES}
 )
 
+
+INSTALL(TARGETS
+  DTIPrep
+                 BUNDLE DESTINATION  bin
+                 RUNTIME DESTINATION bin
+                 LIBRARY DESTINATION lib
+                 ARCHIVE DESTINATION lib/static)
 
