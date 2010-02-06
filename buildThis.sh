@@ -74,6 +74,28 @@ COMPILE_DIR=$(dirname ${SOURCE_DIR})/${PROJECTNAME}-COMPILE/
 ABI_DIR=${COMPILE_DIR}/$(uname)_$(uname -m)-${ABI}
 mkdir -p ${ABI_DIR}
 
+###### Find QT
+QTSETDIR ()
+{
+  testdir=$1;
+  if [ -z "${QTDIR}" ] && [ -d ${testdir} ]; then
+    export QTDIR=${testdir};
+  fi
+}
+
+
+QTSETDIR /opt/qt-4.6.1
+QTSETDIR /opt/qt-4.6-rc1
+QTSETDIR /opt/qt-4.5.2/
+QTSETDIR /opt/qt-everywhere-opensource-src-4.6.1
+
+if [ -z "${QTDIR}" ] || [ ! -d ${QTDIR} ]; then
+  echo "Valid QTDIR not found: ${QTDIR} : You will likely have to modify this script."
+  exit -1;
+fi
+echo "Valid QTDIR found: ${QTDIR}"
+
+##################
 ITK_BUILD=${ABI_DIR}/InsightToolkit-CVS-build
 
 if [ 1 == 1 ];then  ## Temporary bypass of building ITK
@@ -116,11 +138,6 @@ if [ 1 == 1 ];then  ## Temporary bypass of building ITK
   popd
 fi  ## Temporary bypass of building ITK
 
-#export QTDIR=/opt/qt-4.6-rc1
-#export QTDIR=/opt/qt-4.5.2/
-#export QTDIR=/usr
-export QTDIR=/opt/qt-everywhere-opensource-src-4.6.1
-export QTDIR=/opt/qt-4.6.1
 VTK_BUILD=${ABI_DIR}/VTK-CVS-build
 
 if [ 1 == 1 ] ; then  ## Skipping local vtk
@@ -172,6 +189,7 @@ CMAKE_MODULE_PATH=${LOCAL_PATH}/CMake CC=${CC} CXX=${CXX} CFLAGS=${CFLAGS} CXXFL
                   -DCOMPILE_DISPLAY:BOOL=OFF \
                   -DBUILD_TESTING:BOOL=ON \
                   -DUSE_QT_LIBRARY:BOOL=ON \
+                  -DCMAKE_INSTALL_PREFIX:PATH=/opt/NAMICDTI \
                   -DQT_QMAKE_EXECUTABLE:FILEPATH=${QTDIR}/bin/qmake \
                   -DQT_SEARCH_PATH:FILEPATH=${QTDIR} \
                   -DDESIRED_QT_VERSION:STRING=4
