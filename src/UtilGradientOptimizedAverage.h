@@ -151,7 +151,6 @@ void
 
     //const UnsignedImageType::SizeType sizes = m_averagedBaseline->GetLargestPossibleRegion().GetSize();
     const long voxelCount  =m_averagedBaseline->GetLargestPossibleRegion().GetNumberOfPixels();
-    std::cout << __FILE__ << " " << __LINE__  << " voxelCount " << voxelCount << std::endl;
     meanSquarediff = vcl_sqrt(meanSquarediff / voxelCount);
     meanIntensity = meanIntensity / voxelCount;
     const double ratio = meanSquarediff / meanIntensity;

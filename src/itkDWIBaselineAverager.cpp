@@ -386,7 +386,7 @@ namespace itk
                 }
               if(FoundBaselines != this->getBaselineNumber() )
                 {
-                std::cout << "WRONG NUMBER OF BASELINES FOUND: " << __FILE__ << " " << __LINE__ << " " <<
+                std::cout << "WRONG NUMBER OF BASELINES FOUND: "  <<
                  this->getBaselineNumber() << " != " << FoundBaselines << std::endl;
                 exit(-1);
                 }

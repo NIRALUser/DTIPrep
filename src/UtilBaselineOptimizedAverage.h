@@ -17,28 +17,6 @@ namespace itk {
     )
       {
       // first do direct averaging baselines
-      std::cout << __FILE__ << " " << __LINE__ << std::endl;
-
-
-
-      for ( unsigned int i = 0; i < baselineContainer.size(); i++ )
-        {
-              char FileNameTempTransformed[1000];
-              sprintf(FileNameTempTransformed,"%03d_DEBUG_BASELINE.nii.gz",i);
-              typename itk::ImageFileWriter<TImageType>::Pointer DebugTransformed=itk::ImageFileWriter<TImageType>::New();
-              DebugTransformed->SetInput(baselineContainer[i]);
-              DebugTransformed->SetFileName(FileNameTempTransformed);
-              DebugTransformed->Update();
-        }
-        {
-              char FileNameTempTransformed[1000];
-              sprintf(FileNameTempTransformed,"%03d_DEBUG_INITIAL_AVERAGE.nii.gz",0);
-              typename itk::ImageFileWriter<itk::Image<float,3> >::Pointer DebugTransformed=itk::ImageFileWriter<itk::Image<float,3> >::New();
-              DebugTransformed->SetInput(InitialAndReturnedAverageBaseline);
-              DebugTransformed->SetFileName(FileNameTempTransformed);
-              DebugTransformed->Update();
-        }
-
       std::vector<struRigidRegResult> allImageRegistrations;
       allImageRegistrations.resize(baselineContainer.size());
       std::vector<typename TImageType::Pointer> temporaryDeformedImages;
@@ -71,7 +49,6 @@ namespace itk {
       bool         bRegister = true;
       unsigned int iterationCount = 0;
 
-      std::cout << __FILE__ << " " << __LINE__ << std::endl;
       std::cout << "Baseline optimized averaging baseline ..." << std::endl;
       do
         {
@@ -154,37 +131,6 @@ namespace itk {
               ++aIt;
               }
             }
-#define DEBUG_IMAGES
-#ifdef DEBUG_IMAGES
-              {
-#if 0
-              static unsigned int debugIndex=0;
-              char FileNameTempTransformed[1000];
-              sprintf(FileNameTempTransformed,"%03d_DEBUG_TRANSFORMED.nii.gz",debugIndex);
-              typename itk::ImageFileWriter<TImageType>::Pointer DebugTransformed=itk::ImageFileWriter<TImageType>::New();
-              DebugTransformed->SetInput(temporaryDeformedImages[i]);
-              DebugTransformed->SetFileName(FileNameTempTransformed);
-              DebugTransformed->Update();
-
-              char FileNameTempFIXED[1000];
-              sprintf(FileNameTempFIXED,"%03d_DEBUG_FIXED.nii.gz",debugIndex);
-              typename itk::ImageFileWriter<TImageType>::Pointer DebugFixed=itk::ImageFileWriter<TImageType>::New();
-              DebugFixed->SetInput(InitialAndReturnedAverageBaseline);
-              DebugFixed->SetFileName(FileNameTempFIXED);
-              DebugFixed->Update();
-#endif
-
-              static unsigned int debugIndex=0;
-              char FileNameTempTransformed[1000];
-              sprintf(FileNameTempTransformed,"%03d_DEBUG_AVERAGES.nii.gz",debugIndex);
-              typename itk::ImageFileWriter<FloatImageType>::Pointer DebugTransformed=itk::ImageFileWriter<FloatImageType>::New();
-              DebugTransformed->SetInput(newAverageAccumulator);
-              DebugTransformed->SetFileName(FileNameTempTransformed);
-              DebugTransformed->Update();
-
-              debugIndex++;
-              }
-#endif
           //Now update the estimate of the average
           // average the registered baselines into InitialAndReturnedAverageBaseline
           typedef ImageRegionConstIteratorWithIndex<FloatImageType> averagedBaselineIterator;
@@ -204,12 +150,10 @@ namespace itk {
           meanSquarediff = vcl_sqrt(meanSquarediff / voxelCount);
           meanIntensity = meanIntensity / voxelCount;
 
-          std::cout << __FILE__ << " " << __LINE__  << " voxelCount " << voxelCount << std::endl;
           std::cout << " meanSquarediff " << meanSquarediff << std::endl;
           std::cout << " meanIntensity " << meanIntensity << std::endl;
 
-            { //Cast Convert Here!
-            //XXXXXX;
+            {
           InitialAndReturnedAverageBaseline=newAverageAccumulator;
             }
           }
