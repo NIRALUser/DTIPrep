@@ -246,7 +246,7 @@ namespace itk
 		void writeReport();
 
 	public:
-		OutputImagePointer GetExcludedGradiennts();
+		OutputImagePointer GetExcludedGradients();
 
 		inline std::vector<bool> getQCResults()
 		{

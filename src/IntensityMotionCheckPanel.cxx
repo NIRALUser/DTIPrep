@@ -1307,16 +1307,14 @@ bool IntensityMotionCheckPanel::GetInterlaceProtocolParameters(
 	/ 2;
 	region.SetSize( sizeLocal );
 
-	GradientImageType::SpacingType spacing;
-	spacing = componentExtractor->GetOutput()->GetSpacing();
+	const GradientImageType::SpacingType spacing = componentExtractor->GetOutput()->GetSpacing();
 
 	InterlaceOdd->CopyInformation( componentExtractor->GetOutput() );
-	InterlaceEven->CopyInformation( componentExtractor->GetOutput() );
-
 	InterlaceOdd->SetRegions( region );
-	InterlaceEven->SetRegions( region );
-
 	InterlaceOdd->Allocate();
+
+	InterlaceEven->CopyInformation( componentExtractor->GetOutput() );
+	InterlaceEven->SetRegions( region );
 	InterlaceEven->Allocate();
 
 	typedef itk::ImageRegionIteratorWithIndex<GradientImageType> IteratorType;
@@ -2678,9 +2676,8 @@ void IntensityMotionCheckPanel::GenerateCheckOutputImage( const std::string file
 	DwiImageType::Pointer newDwiImage = DwiImageType::New();
 	newDwiImage->CopyInformation(m_DwiOriginalImage);
 	newDwiImage->SetRegions( m_DwiOriginalImage->GetLargestPossibleRegion() );
-	newDwiImage->SetVectorLength( gradientLeft);
-	//  newDwiImage->SetMetaDataDictionary(imgMetaDictionary);
 	newDwiImage->Allocate();
+	newDwiImage->SetVectorLength( gradientLeft);
 
 	typedef itk::ImageRegionConstIteratorWithIndex<DwiImageType>
 		ConstIteratorType;

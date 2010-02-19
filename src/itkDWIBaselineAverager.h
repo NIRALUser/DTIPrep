@@ -26,8 +26,19 @@ PURPOSE.  See the above copyright notices for more information.
 #include "itkVectorContainer.h"
 #include "itkVersorRigid3DTransform.h"
 
+
+#define NearZeroSmallNumber 1e-7
+
 namespace itk
 {
+
+		typedef enum {
+			IntensityMeanSquareDiffBased = 0,
+			MetricSumBased,                   // not being used anymore
+			TotalTransformationBased,         // not being used anymore
+		} StopCriteriaEnum;
+
+
 	/** \class DWIBaselineAverager
 	* \brief DWI Baseline Averaging.
 	*
@@ -36,15 +47,14 @@ namespace itk
 	* \ingroup Multithreaded
 	* \ingroup Streamed
 	*/
-
-	template <class TImageType>
+	template <class TVectorImageType>
 	class ITK_EXPORT DWIBaselineAverager :
-		public ImageToImageFilter<TImageType, TImageType>
+		public ImageToImageFilter<TVectorImageType, TVectorImageType>
 	{
 	public:
 		struct struDiffusionDir {
 			std::vector<double> gradientDir;
-			int repetitionNumber;
+			int m_repetitionNumber;
 		};
 
 		typedef enum {
@@ -52,22 +62,6 @@ namespace itk
 			BaselineOptimized,
 			GradientOptamized,
 		} AverageMethod;
-
-		typedef enum {
-			IntensityMeanSquareDiffBased = 0,
-			MetricSumBased,                   // not being used anymore
-			TotalTransformationBased,         // not being used anymore
-		} Stop_Criteria;
-
-		typedef struct  RigidRegResult {
-			double AngleX;      // in degrees
-			double AngleY;      // in degrees
-			double AngleZ;      // in degrees
-			double TranslationX;
-			double TranslationY;
-			double TranslationZ;
-			double MutualInformation;      // -Metrix
-		} struRigidRegResult,  *pstruRigidRegResult;
 
 		typedef enum {
 			REPORT_FILE_NEW = 0,
@@ -83,7 +77,7 @@ namespace itk
 
 		/** Standard class typedefs. */
 		typedef DWIBaselineAverager                        Self;
-		typedef ImageToImageFilter<TImageType, TImageType> Superclass;
+		typedef ImageToImageFilter<TVectorImageType, TVectorImageType> Superclass;
 		typedef SmartPointer<Self>                         Pointer;
 		typedef SmartPointer<const Self>                   ConstPointer;
 
@@ -93,16 +87,16 @@ namespace itk
 		itkTypeMacro(DWIBaselineAverager, ImageToImageFilter);
 
 		/** Typedef to images */
-		typedef TImageType                                 OutputImageType;
-		typedef TImageType                                 InputImageType;
+		typedef TVectorImageType                                 OutputImageType;
 
 		typedef typename OutputImageType::Pointer          OutputImagePointer;
-		typedef typename InputImageType::ConstPointer      InputImageConstPointer;
+		typedef typename TVectorImageType::ConstPointer    InputImageConstPointer;
 		typedef typename Superclass::OutputImageRegionType OutputImageRegionType;
 
 		typedef unsigned short                             DwiPixelType;
 		typedef itk::Image<DwiPixelType, 2>                SliceImageType;
-		typedef itk::Image<double, 3>                      doubleImageType;
+    //HACK:  Made this float instead of double
+		typedef itk::Image<float, 3>                      doubleImageType;
 
 		typedef typename doubleImageType::Pointer          doubleImagePointerType;
 
@@ -116,7 +110,7 @@ namespace itk
 			GradientDirectionType> GradientDirectionContainerType;
 
 		/** ImageDimension enumeration. */
-		itkStaticConstMacro(ImageDimension, unsigned int, TImageType::ImageDimension );
+		itkStaticConstMacro(ImageDimension, unsigned int, TVectorImageType::ImageDimension );
 
 		/** Get & Set the Average Method */
 		itkGetConstMacro( AverageMethod, int );
@@ -135,8 +129,8 @@ namespace itk
 		itkSetMacro( IdwiFileName, std::string  );
 
 		/** Get & Set the Stop Criteria */
-		itkGetConstMacro( StopCriteria, int );
-		itkSetMacro( StopCriteria, int  );
+		itkGetConstMacro( StopCriteria, StopCriteriaEnum );
+		itkSetMacro( StopCriteria, StopCriteriaEnum);
 
 		/** Get & Set the Stop Threshold */
 		itkGetConstMacro( StopThreshold, float );
@@ -181,16 +175,16 @@ namespace itk
 		void operator=(const Self &);        // purposely not implemented
 
 		/** averaged baseline */
-		UnsignedImageTypePointer averagedBaseline;
+		doubleImagePointerType m_averagedBaseline;
 
 		/** temp baseline image  */
-		UnsignedImageTypePointer tempBaseline;
+//		UnsignedImageTypePointer m_tempBaseline;
 
 		/** temp idwi */
 		UnsignedImageTypePointer idwi;
 
 		/** temp idwi image  */
-		doubleImagePointerType tempIDWI;
+		doubleImagePointerType m_tempIDWI;
 
 		/** Report File Mode */
 		int m_ReportFileMode;
@@ -202,7 +196,7 @@ namespace itk
 		int m_AverageMethod;
 
 		/** Stop Criteria */
-		int m_StopCriteria;
+		StopCriteriaEnum m_StopCriteria;
 
 		/** Stop threshold */
 		float m_StopThreshold;
@@ -223,36 +217,36 @@ namespace itk
 		std::string m_IdwiFileName;
 
 		/** input info */
-		int baselineNumber;
-		int bValueNumber;
-		int gradientDirNumber;
-		int repetitionNumber;
-		int gradientNumber;
+		unsigned int m_baselineNumber;
+		int m_bValueNumber;
+		int m_gradientDirNumber;
+//		int m_repetitionNumber;
+		int m_gradientNumber;
 
 		/** output info */
-		int              baselineLeftNumber;
-		int              bValueLeftNumber;
-		int              gradientDirLeftNumber;
-		int              gradientLeftNumber;
-		std::vector<int> repetitionLeftNumber;
+		//HACK:  Not used int              m_baselineLeftNumber;
+		//HACK:  Not used int              m_bValueLeftNumber;
+		//HACK:  Not used int              m_gradientDirLeftNumber;
+		//HACK:  Not used int              m_gradientLeftNumber;
+		//HACK:  Not used std::vector<int> m_repetitionLeftNumber;
 
 		/** b value */
-		double b0;
+		double m_b0;
 
 		/** container to hold input b values */
-		std::vector<double> bValues;
+		std::vector<double> m_bValues;
 
 		/** container to hold gradient directions */
 		GradientDirectionContainerType::Pointer m_GradientDirectionContainer;
 
 		/** container to hold input gradient directions histogram */
-		std::vector<struDiffusionDir> DiffusionDirHistInput;
+		//std::vector<struDiffusionDir> DiffusionDirHistInput;
 
 		/** container to hold baseline image wise registration */
-		std::vector<std::vector<struRigidRegResult> > BaselineToBaselineReg;
+		//std::vector<std::vector<struRigidRegResult> > BaselineToBaselineReg;
 
 		/** container to hold gradient to base wise registration */
-		std::vector<std::vector<struRigidRegResult> > GradientToBaselineReg;
+		//std::vector<std::vector<struRigidRegResult> > GradientToBaselineReg;
 
 		void parseGradientDirections();
 
@@ -262,23 +256,13 @@ namespace itk
 
 		void writeReport();
 
-		void BaselineOptimizedAverage();
+//		void BaselineOptimizedAverage();
 
-		void GradientOptamizedAverage();
+		void GradientOptimizedAverage();
 
 		void DirectAverage();
 
 		void computeIDWI();
-
-		void rigidRegistration(
-			UnsignedImageType::Pointer fixed,
-			UnsignedImageType::Pointer moving,
-			unsigned int BinsNumber,
-			double SamplesPercent,
-			bool ExplicitPDFDerivatives,
-			struRigidRegResult &  regResult,
-			int baselineORidwi   // 0: baseline; otherwise: idwi
-			);
 
 	public:
 
@@ -287,34 +271,43 @@ namespace itk
 			return m_GradientDirectionContainer;
 		}
 
-		UnsignedImageTypePointer GetBaseline();
-
-		UnsignedImageTypePointer GetIDWI();
-
-		inline int getBaselineNumber()
+		inline unsigned int getBaselineNumber()
 		{
-			return baselineNumber;
+			return m_baselineNumber;
 		}
 
 		inline int getBValueNumber()
 		{
-			return bValueNumber;
+			return m_bValueNumber;
 		}
 
 		inline int getGradientDirNumber()
 		{
-			return gradientDirNumber;
+			return m_gradientDirNumber;
 		}
-
+#if 0
 		inline int getRepetitionNumber()
 		{
-			return repetitionNumber;
+			return m_repetitionNumber;
 		}
+#endif
 
 		inline int getGradientNumber()
 		{
-			return gradientNumber;
+			return m_gradientNumber;
 		}
+
+    bool GradientDirectionIsB0Image(const unsigned int DirectionIndex) const
+      {
+          const GradientDirectionType & currentGradient=this->m_GradientDirectionContainer->ElementAt(DirectionIndex);
+      return (
+           vcl_abs(currentGradient[0]) < NearZeroSmallNumber
+        && vcl_abs(currentGradient[1]) < NearZeroSmallNumber
+        && vcl_abs(currentGradient[2]) < NearZeroSmallNumber
+      );
+      }
+
+
 	};
 } // end namespace itk
 

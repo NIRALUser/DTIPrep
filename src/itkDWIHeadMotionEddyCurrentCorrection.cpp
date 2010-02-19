@@ -21,8 +21,8 @@ VectorImage<float, 3>::Pointer  DWIHeadMotionEddyCurrentCorrection::Registration
   dwis = VectorImageType::New();
   dwis->CopyInformation(fixedImage);
   dwis->SetRegions(fixedImage->GetLargestPossibleRegion());
-  dwis->SetVectorLength( movingImages.size() + 1 ) ; // grads+b0
   dwis->Allocate();
+  dwis->SetVectorLength( movingImages.size() + 1 ) ; // grads+b0
 
   this->m_dwiRegisteredImagesContainer.push_back( fixedImage );
   //generate target images
@@ -322,9 +322,14 @@ bool DWIHeadMotionEddyCurrentCorrection::RegistrationSingleDWI(
   resampler->SetTransform( finalTransform );
   resampler->SetInput( caster->GetOutput() );
 
-  resampler->SetSize(    fixedImageLocal->GetLargestPossibleRegion().GetSize() );
-  resampler->SetOutputOrigin(  fixedImageLocal->GetOrigin() );
-  resampler->SetOutputSpacing( fixedImageLocal->GetSpacing() );
+#if 1
+      resampler->SetOutputParametersFromImage( fixedImageLocal );
+#else
+      resampler->SetSize(    fixedImageLocal->GetLargestPossibleRegion().GetSize() );
+      resampler->SetOutputOrigin(  fixedImageLocal->GetOrigin() );
+      resampler->SetOutputSpacing( fixedImageLocal->GetSpacing() );
+      //Need to set outputDirection also!
+#endif
   resampler->SetDefaultPixelValue( 0 );
   //TODO:  Resample filter should provide options on the command line
   //TODO: for selecting INTERPLATOR as windowed sinc, bspline, or linear interpolation

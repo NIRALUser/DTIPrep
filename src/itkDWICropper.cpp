@@ -428,7 +428,8 @@ namespace itk
 			if ( repetNum[i] != repetNum[0] )
 			{
 				std::cout
-					<< "Warnning:Not all the gradient directions have same repetition. "
+					<< "Warning: Not all the gradient directions have same repetition. "
+            << "GradientNumber= " << i << " " << repetNum[i] << " != " << repetNum[0]
 					<< std::endl;
 				repetitionNumber = -1;
 			}

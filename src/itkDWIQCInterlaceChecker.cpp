@@ -491,16 +491,14 @@ namespace itk
 		/ 2;
 		region.SetSize( size );
 
-		GradientImageType::SpacingType spacing;
-		spacing = componentExtractor->GetOutput()->GetSpacing();
+    //const GradientImageType::SpacingType spacing = componentExtractor->GetOutput()->GetSpacing();
 
 		InterlaceOdd->CopyInformation( componentExtractor->GetOutput() );
-		InterlaceEven->CopyInformation( componentExtractor->GetOutput() );
-
 		InterlaceOdd->SetRegions( region );
-		InterlaceEven->SetRegions( region );
-
 		InterlaceOdd->Allocate();
+
+		InterlaceEven->CopyInformation( componentExtractor->GetOutput() );
+		InterlaceEven->SetRegions( region );
 		InterlaceEven->Allocate();
 
 		typedef itk::ImageRegionIteratorWithIndex<GradientImageType> IteratorType;
@@ -1568,8 +1566,9 @@ namespace itk
 			if ( repetNum[i] != repetNum[0] )
 			{
 				std::cout
-					<< "Warrning: Not all the gradient directions have same repetition. "
-					<< std::endl;
+					<< "Warning: InterlaceChecker:  Not all the gradient directions have same repetition. "
+            << "GradientNumber[" << i << "] : " << repetNum[i] << " != " << repetNum[0]
+          << " " << std::endl;
 				repetitionNumber = -1;
 			}
 		}
@@ -1729,7 +1728,7 @@ namespace itk
 	template <class TImageType>
 	typename TImageType::Pointer
 		DWIQCInterlaceChecker<TImageType>
-		::GetExcludedGradiennts()
+		::GetExcludedGradients()
 	{
 		if ( GetCheckDone() )
 		{
@@ -1747,12 +1746,6 @@ namespace itk
 
 			// Define/declare an iterator that will walk the output region for this
 			// thread.
-			excludedDwiImage = TImageType::New();
-			excludedDwiImage->CopyInformation(inputPtr);
-			excludedDwiImage->SetRegions( inputPtr->GetLargestPossibleRegion() );
-			excludedDwiImage->SetVectorLength(
-				inputPtr->GetVectorLength() - gradientLeft);
-
 			// meta data
 			itk::MetaDataDictionary outputMetaDictionary;
 
@@ -1869,8 +1862,13 @@ namespace itk
 					++temp;
 				}
 			}
-			excludedDwiImage->SetMetaDataDictionary(outputMetaDictionary);    //
+			excludedDwiImage = TImageType::New();
+			excludedDwiImage->CopyInformation(inputPtr);
+			excludedDwiImage->SetRegions( inputPtr->GetLargestPossibleRegion() );
 			excludedDwiImage->Allocate();
+			excludedDwiImage->SetVectorLength(
+				inputPtr->GetVectorLength() - gradientLeft);
+			excludedDwiImage->SetMetaDataDictionary(outputMetaDictionary);    //
 
 			typedef ImageRegionIteratorWithIndex<TImageType> OutputIterator;
 			OutputIterator outIt( excludedDwiImage,

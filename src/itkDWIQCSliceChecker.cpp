@@ -175,13 +175,6 @@ namespace itk
 		//  measurement frame
 		if ( imgMetaDictionary.HasKey("NRRD_measurement frame") )
 		{
-#if 0
-			// measurement frame
-			vnl_matrix_fixed<double, 3, 3> mf;
-			// imaging frame
-			vnl_matrix_fixed<double, 3, 3> imgf;
-			imgf = inputPtr->GetDirection().GetVnlMatrix();
-#endif
 
 			// Meausurement frame
 			std::vector<std::vector<double> > nrrdmf;
@@ -3637,7 +3630,8 @@ namespace itk
 			if ( repetNum[i] != repetNum[0] )
 			{
 				std::cout
-					<< "Warrning: Not all the gradient directions have same repetition. "
+					<< "Warrning: SliceChecker: Not all the gradient directions have same repetition. "
+            << "GradientNumber= " << i << " " << repetNum[i] << " != " << repetNum[0]
 					<< std::endl;
 				repetitionNumber = -1;
 			}
@@ -3805,7 +3799,7 @@ namespace itk
 	template <class TImageType>
 	typename TImageType::Pointer
 		DWIQCSliceChecker<TImageType>
-		::GetExcludedGradiennts()
+		::GetExcludedGradients()
 	{
 		if ( GetCheckDone() )
 		{
@@ -3823,11 +3817,6 @@ namespace itk
 
 			// Define/declare an iterator that will walk the output region for this
 			// thread.
-			excludedDwiImage = TImageType::New();
-			excludedDwiImage->CopyInformation(inputPtr);
-			excludedDwiImage->SetRegions( inputPtr->GetLargestPossibleRegion() );
-			excludedDwiImage->SetVectorLength(
-				inputPtr->GetVectorLength() - gradientLeft);
 
 			// meta data
 			itk::MetaDataDictionary outputMetaDictionary;
@@ -3948,8 +3937,13 @@ namespace itk
 					++temp;
 				}
 			}
-			excludedDwiImage->SetMetaDataDictionary(outputMetaDictionary);    //
+			excludedDwiImage = TImageType::New();
+			excludedDwiImage->CopyInformation(inputPtr);
+			excludedDwiImage->SetRegions( inputPtr->GetLargestPossibleRegion() );
 			excludedDwiImage->Allocate();
+			excludedDwiImage->SetVectorLength(
+				inputPtr->GetVectorLength() - gradientLeft);
+			excludedDwiImage->SetMetaDataDictionary(outputMetaDictionary);    //
 
 			typedef ImageRegionIteratorWithIndex<TImageType> OutputIterator;
 			OutputIterator outIt( excludedDwiImage,

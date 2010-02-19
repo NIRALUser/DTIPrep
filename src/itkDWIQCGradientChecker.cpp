@@ -1326,7 +1326,8 @@ namespace itk
 			if ( repetNum[i] != repetNum[0] )
 			{
 				std::cout
-					<< "Warrning: Not all the gradient directions have same repetition. "
+					<< "Warning: Not all the gradient directions have same repetition. "
+            << "GradientNumber= " << i << " " << repetNum[i] << " != " << repetNum[0]
 					<< std::endl;
 				repetitionNumber = -1;
 			}
@@ -1501,7 +1502,7 @@ namespace itk
 	template <class TImageType>
 	typename TImageType::Pointer
 		DWIQCGradientChecker<TImageType>
-		::GetExcludedGradiennts()
+		::GetExcludedGradients()
 	{
 		if ( GetCheckDone() )
 		{
@@ -1509,8 +1510,7 @@ namespace itk
 			InputImageConstPointer inputPtr = this->GetInput();
 			OutputImagePointer     outputPtr = this->GetOutput();
 
-			unsigned int gradientLeft = 0;
-			gradientLeft = this->baselineLeftNumber + this->gradientLeftNumber;
+			unsigned int gradientLeft = this->baselineLeftNumber + this->gradientLeftNumber;
 			if ( gradientLeft == inputPtr->GetVectorLength() )
 			{
 				std::cout << "No gradient excluded" << std::endl;
@@ -1519,12 +1519,6 @@ namespace itk
 
 			// Define/declare an iterator that will walk the output region for this
 			// thread.
-			excludedDwiImage = TImageType::New();
-			excludedDwiImage->CopyInformation(inputPtr);
-			excludedDwiImage->SetRegions( inputPtr->GetLargestPossibleRegion() );
-			excludedDwiImage->SetVectorLength(
-				inputPtr->GetVectorLength() - gradientLeft);
-
 			// meta data
 			itk::MetaDataDictionary outputMetaDictionary;
 
@@ -1539,11 +1533,6 @@ namespace itk
 			vnl_matrix_fixed<double, 3, 3> mf;
 			if ( imgMetaDictionary.HasKey("NRRD_measurement frame") )
 			{
-#if 0   // NOT USED:
-				// imaging frame
-				vnl_matrix_fixed<double, 3, 3> imgf;
-				imgf = inputPtr->GetDirection().GetVnlMatrix();
-#endif
 
 				// Meausurement frame
 				std::vector<std::vector<double> > nrrdmf;
@@ -1651,8 +1640,13 @@ namespace itk
 					++temp;
 				}
 			}
-			excludedDwiImage->SetMetaDataDictionary(outputMetaDictionary);    //
+			excludedDwiImage = TImageType::New();
+			excludedDwiImage->CopyInformation(inputPtr);
+			excludedDwiImage->SetRegions( inputPtr->GetLargestPossibleRegion() );
 			excludedDwiImage->Allocate();
+			excludedDwiImage->SetVectorLength(
+        inputPtr->GetVectorLength() - gradientLeft);
+			excludedDwiImage->SetMetaDataDictionary(outputMetaDictionary);    //
 
 			typedef ImageRegionIteratorWithIndex<TImageType> OutputIterator;
 			OutputIterator outIt( excludedDwiImage,
@@ -1660,8 +1654,6 @@ namespace itk
 
 			// Define a few indices that will be used to translate from an input pixel
 			// to an output pixel
-			typename TImageType::IndexType outputIndex;
-			typename TImageType::IndexType inputIndex;
 
 			typename TImageType::PixelType value;
 			value.SetSize( inputPtr->GetVectorLength() - gradientLeft );
@@ -1670,10 +1662,9 @@ namespace itk
 			while ( !outIt.IsAtEnd() )
 			{
 				// determine the index of the output pixel
-				outputIndex = outIt.GetIndex();
-
+			  const typename TImageType::IndexType outputIndex = outIt.GetIndex();
 				// determine the input pixel location associated with this output pixel
-				inputIndex = outputIndex;
+			  const typename TImageType::IndexType inputIndex = outputIndex;
 
 				int element = 0;
 				for ( unsigned int i = 0; i < this->qcResults.size(); i++ )
@@ -1690,7 +1681,6 @@ namespace itk
 			}
 			return excludedDwiImage;
 		}
-
 		return NULL;
 	}
 } // namespace itk

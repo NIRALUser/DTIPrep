@@ -958,7 +958,7 @@ bool CIntensityMotionCheck::SliceWiseCheck( DwiImageType::Pointer dwi )
 				itk::NrrdImageIO::Pointer myNrrdImageIO = itk::NrrdImageIO::New();
 				DwiWriter->SetImageIO(myNrrdImageIO);
 				DwiWriter->SetFileName( SliceWiseExcludeOutput );
-				DwiWriter->SetInput( SliceChecker->GetExcludedGradiennts() );
+				DwiWriter->SetInput( SliceChecker->GetExcludedGradients() );
 				DwiWriter->UseCompressionOn();
 				DwiWriter->Update();
 			}
@@ -1234,7 +1234,7 @@ bool CIntensityMotionCheck::InterlaceWiseCheck( DwiImageType::Pointer dwi )
 				itk::NrrdImageIO::Pointer myNrrdImageIO = itk::NrrdImageIO::New();
 				DwiWriter->SetImageIO(myNrrdImageIO);
 				DwiWriter->SetFileName( InterlaceWiseExcludeOutput );
-				DwiWriter->SetInput( InterlaceChecker->GetExcludedGradiennts() );
+				DwiWriter->SetInput( InterlaceChecker->GetExcludedGradients() );
 				DwiWriter->UseCompressionOn();
 				DwiWriter->Update();
 			}
@@ -2200,7 +2200,7 @@ bool CIntensityMotionCheck::GradientWiseCheck( DwiImageType::Pointer dwi )
 				itk::NrrdImageIO::Pointer myNrrdImageIO = itk::NrrdImageIO::New();
 				DwiWriter->SetImageIO(myNrrdImageIO);
 				DwiWriter->SetFileName( GradientWiseExcludeOutput );
-				DwiWriter->SetInput( GradientChecker->GetExcludedGradiennts() );
+				DwiWriter->SetInput( GradientChecker->GetExcludedGradients() );
 				DwiWriter->UseCompressionOn();
 				DwiWriter->Update();
 			}
@@ -2935,6 +2935,7 @@ void CIntensityMotionCheck::collectDiffusionStatistics()
 				std::cout
 					<<
 					"DWI data error. Not all the gradient directions have same repetition. "
+            << "GradientNumber= " << i << " " << repetNum[i] << " != " << repetNum[0]
 					<< std::endl;
 				repetitionNumber = -1;
 			}

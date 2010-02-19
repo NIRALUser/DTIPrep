@@ -338,7 +338,7 @@ namespace itk
 			double MaxKernelWidth );
 
 	public:
-		OutputImagePointer GetExcludedGradiennts();
+		OutputImagePointer GetExcludedGradients();
 
 		inline std::vector<bool> getQCResults()
 		{

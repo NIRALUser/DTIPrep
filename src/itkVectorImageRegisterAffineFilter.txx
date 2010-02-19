@@ -60,10 +60,6 @@ void VectorImageRegisterAffineFilter<TInputImage, TOutputImage>
   typename ProgressAccumulator::Pointer progress = ProgressAccumulator::New();
   progress->SetMiniPipelineFilter(this);
   
-  // No need to allocate the output since the minipipeline does it
-  // this->AllocateOutputs();
-  
-
   MetricTypePointer         metric        = MetricType::New();
   OptimizerTypePointer      optimizer     = OptimizerType::New();
   InterpolatorTypePointer   interpolator  = InterpolatorType::New();
@@ -71,13 +67,17 @@ void VectorImageRegisterAffineFilter<TInputImage, TOutputImage>
   
   /* Allocate Output Image*/
   m_Output = OutputImageType::New( );
-  m_Output->SetRegions( this->GetInput()->GetLargestPossibleRegion() );
+#if 0
   m_Output->SetSpacing( this->GetInput()->GetSpacing() );
   m_Output->SetOrigin( this->GetInput()->GetOrigin() );
   m_Output->SetDirection( this->GetInput()->GetDirection() );
+#else
+  m_Output->CopyInformation( this->GetInput() );
+#endif
+  m_Output->SetRegions( this->GetInput()->GetLargestPossibleRegion() );
+  m_Output->Allocate();
   m_Output->SetVectorLength( this->GetInput()->GetVectorLength() );
   m_Output->SetMetaDataDictionary( this->GetInput()->GetMetaDataDictionary() );
-  m_Output->Allocate();
  
   /* Create the Vector Index Extraction / Cast Filter */
   VectorIndexFilterPointer extractImageFilter = VectorIndexFilterType::New();
@@ -89,16 +89,20 @@ void VectorImageRegisterAffineFilter<TInputImage, TOutputImage>
   
   /* Create the Image Resampling Filter */
   ResampleFilterTypePointer resampler = ResampleFilterType::New();
+#if 1
+      resampler->SetOutputParametersFromImage( m_FixedImage );
+#else
   resampler->SetSize(    m_FixedImage->GetLargestPossibleRegion().GetSize() );
   resampler->SetOutputOrigin(  m_FixedImage->GetOrigin() );
   resampler->SetOutputSpacing( m_FixedImage->GetSpacing() );
   resampler->SetOutputDirection( m_FixedImage->GetDirection() );
+#endif
   resampler->SetDefaultPixelValue( 0 );
   
   /* Create the Cast Image Filter */
   CastFilterTypePointer castImageFilter = CastFilterType::New( );
   
-  /* Allocate the Writer - if requested */
+  /* Instantiate the Writer - if requested */
   typedef itk::TransformFileWriter  TransformWriterType;
   TransformWriterType::Pointer    transformWriter = NULL;
   if (m_OutputParameterFile.length() != 0)
