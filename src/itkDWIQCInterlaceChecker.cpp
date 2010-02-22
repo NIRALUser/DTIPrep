@@ -152,14 +152,6 @@ namespace itk
 		//  measurement frame
 		if ( imgMetaDictionary.HasKey("NRRD_measurement frame") )
 		{
-#if 0
-			// measurement frame
-			vnl_matrix_fixed<double, 3, 3> mf;
-			// imaging frame
-			vnl_matrix_fixed<double, 3, 3> imgf;
-			imgf = inputPtr->GetDirection().GetVnlMatrix();
-#endif
-
 			// Meausurement frame
 			std::vector<std::vector<double> > nrrdmf;
 			itk::ExposeMetaData<std::vector<std::vector<double> > >(
@@ -610,42 +602,36 @@ namespace itk
 		}
 
 		if ( getBValueNumber() >= 3
-			|| ( getBValueNumber() == 2 && getBaselineNumber() > 0 ) )                   //
-			//
-			// ensure
-			//
-			// a
-			//
-			// quardratic
-			//
-			// fit
+			|| ( getBValueNumber() == 2 && getBaselineNumber() > 0 ) )   
+			// ensure a quardratic fit
 		{
-			//       std::cout<<" multiple b valued DWI, do a quadratic-curve fitting
-			// between b-value and image correlation for each gradient "<<std::endl;
+			//std::cout<<" multiple b valued DWI, do a quadratic-curve fitting between b-value and image correlation for each gradient "<<std::endl;
 			vnl_matrix<double> bMatrix( getBaselineNumber() + getGradientNumber(), 3);
 			vnl_matrix<double> correlationVector(
 				getBaselineNumber() + getGradientNumber(), 1);
 			// unsigned int matrixLineNumber = 0;
-			for ( unsigned int i = 0; i < this->ResultsContainer.size(); i++ ) // for
+			for ( unsigned int i = 0; i < this->ResultsContainer.size(); i++ ) 
 				// each
 				//
 				// gradient
 			{
+				//std::cout<<" gradinent #: " << i << std::endl;
 				bMatrix[i][0] = this->bValues[i] * this->bValues[i];
 				bMatrix[i][1] = this->bValues[i];
 				bMatrix[i][2] = 1.0;
 
 				correlationVector[i][0] = this->ResultsContainer[i].Correlation;
 			}
+
 			//
 			vnl_matrix_fixed<double, 3, 1> coefficients;
-			//       coefficients =
-			//
+			vnl_matrix_fixed<double, 3, 3> coefficientsTemp;
+			//coefficients =
 			// vnl_matrix_inverse<double>(bMatrix.transpose()*bMatrix)*bMatrix.transpose()*correlationVector;
 			//      std::cout<<"coefficients1: \n"<<coefficients<<std::endl;
 
-			coefficients = vnl_matrix_inverse<double>(bMatrix.transpose() * bMatrix);
-			coefficients = coefficients * bMatrix.transpose() * correlationVector;
+			coefficientsTemp = vnl_matrix_inverse<double>(bMatrix.transpose() * bMatrix);
+			coefficients = coefficientsTemp * bMatrix.transpose() * correlationVector;
 			//       std::cout<<"coefficients2: \n"<<coefficients<<std::endl;
 
 			for ( unsigned int i = 0; i < this->ResultsContainer.size(); i++ ) // for
@@ -653,16 +639,17 @@ namespace itk
 				//
 				// gradient
 			{
-				//         std::cout<<"[i]: "<<i<<std::endl;
+				//std::cout<<"grad[i]: "<<i<<std::endl;
 				normalizedMetric[i] = this->ResultsContainer[i].Correlation
 					- ( this->bValues[i] * this->bValues[i]
 				* coefficients[0][0]
 				+ this->bValues[i] * coefficients[1][0]
 				+ coefficients[2][0] );
-				//         std::cout<<"ResultsContainer[i].Correlation: "<<
-				// ResultsContainer[i].Correlation <<std::endl;
-				//         std::cout<<"normalizedMetric[i]: "<< normalizedMetric[i]
-				// <<std::endl;
+				//     std::cout<<"ResultsContainer[i].Correlation: "
+				//		<< ResultsContainer[i].Correlation <<std::endl;
+				//    std::cout<<"normalizedMetric[i]: "
+				//		<< normalizedMetric[i]
+				// 		<<std::endl;
 			}
 
 			// to compute the mean and stdev after quardratic fitting
@@ -679,9 +666,9 @@ namespace itk
 				{
 					this->quardraticFittedDeviations
 						+= ( normalizedMetric[i]
-					- quardraticFittedMeans )
+						- quardraticFittedMeans )
 						* ( normalizedMetric[i]
-					- quardraticFittedMeans )
+						- quardraticFittedMeans )
 						/ (double)(DWICount + BaselineCount - 1);
 				}
 				else
@@ -691,7 +678,7 @@ namespace itk
 			}
 			quardraticFittedDeviations = sqrt(quardraticFittedDeviations);
 
-			//       std::cout<<"quardraticFittedMeans: "<< quardraticFittedMeans
+			//std::cout<<"quardraticFittedMeans: "<< quardraticFittedMeans
 			// <<std::endl;
 			//       std::cout<<"quardraticFittedDeviations: "<<
 			// quardraticFittedDeviations <<std::endl;
@@ -754,40 +741,26 @@ namespace itk
 			interlaceBaselineDeviations = sqrt(interlaceBaselineDeviations);
 			interlaceGradientDeviations = sqrt(interlaceGradientDeviations);
 
-			//     std::cout<<"interlaceBaselineDeviations:
-			// "<<interlaceBaselineDeviations<<std::endl;
-			//     std::cout<<"interlaceGradientDeviations:
-			// "<<interlaceGradientDeviations<<std::endl;
-			//
+			//     std::cout<<"interlaceBaselineDeviations: "<<interlaceBaselineDeviations<<std::endl;
+			//    std::cout<<"interlaceGradientDeviations: "<<interlaceGradientDeviations<<std::endl;
+			
 			//     std::cout<<"m_RotationThreshold: "<<m_RotationThreshold<<std::endl;
-			//     std::cout<<"m_TranslationThreshold:
-			// "<<m_TranslationThreshold<<std::endl;
-			//     std::cout<<"m_CorrelationThresholdBaseline:
-			// "<<m_CorrelationThresholdBaseline<<std::endl;
-			//     std::cout<<"m_CorrelationStedvTimesBaseline:
-			// "<<m_CorrelationStedvTimesBaseline<<std::endl;
-			//     std::cout<<"m_CorrelationThresholdGradient:
-			// "<<m_CorrelationThresholdGradient<<std::endl;
-			//     std::cout<<"m_CorrelationStdevTimesGradient:
-			// "<<m_CorrelationStdevTimesGradient<<std::endl;
-			//     std::cout<<"0.5*this->GetInput()->GetSpacing()[2]:
-			// "<<0.5*this->GetInput()->GetSpacing()[2]<<std::endl;
+			//     std::cout<<"m_TranslationThreshold: "<<m_TranslationThreshold<<std::endl;
+			//     std::cout<<"m_CorrelationThresholdBaseline: "<<m_CorrelationThresholdBaseline<<std::endl;
+			//     std::cout<<"m_CorrelationStedvTimesBaseline: "<<m_CorrelationStedvTimesBaseline<<std::endl;
+			//     std::cout<<"m_CorrelationThresholdGradient: "<<m_CorrelationThresholdGradient<<std::endl;
+			//     std::cout<<"m_CorrelationStdevTimesGradient: "<<m_CorrelationStdevTimesGradient<<std::endl;
+			//     std::cout<<"0.5*this->GetInput()->GetSpacing()[2]: "
+			// 		<<0.5*this->GetInput()->GetSpacing()[2]<<std::endl;
 		}
 
 		// really checking begins here
 		if ( getBValueNumber() >= 3
 			|| ( getBValueNumber() == 2 && getBaselineNumber() > 0 ) )                   //
 			//
-			// ensure
-			//
-			// a
-			//
-			// quardratic
-			//
-			// fit
+			// ensure a quardratic fit
 		{
-			//       std::cout<<" multiple b valued DWI, do a quadratic-curve fitting
-			// between b-values and image correlation for each gradient "<<std::endl;
+			// std::cout<<" multiple b valued DWI, do a quadratic-curve fitting etween b-values and image correlation for each gradient "<<std::endl;
 			for ( unsigned int i = 0; i < this->ResultsContainer.size(); i++ )
 			{
 				if ( fabs(this->ResultsContainer[i].AngleX) > m_RotationThreshold
@@ -1565,10 +1538,10 @@ namespace itk
 		{
 			if ( repetNum[i] != repetNum[0] )
 			{
-				std::cout
-					<< "Warning: InterlaceChecker:  Not all the gradient directions have same repetition. "
-            << "GradientNumber[" << i << "] : " << repetNum[i] << " != " << repetNum[0]
-          << " " << std::endl;
+				//std::cout
+				//	<< "Warning: InterlaceChecker:  Not all the gradient directions have same repetition. "
+            			//	<< "GradientNumber[" << i << "] : " << repetNum[i] << " != " << repetNum[0]
+         			//	 << " " << std::endl;
 				repetitionNumber = -1;
 			}
 		}
@@ -1736,8 +1709,7 @@ namespace itk
 			InputImageConstPointer inputPtr = this->GetInput();
 			OutputImagePointer     outputPtr = this->GetOutput();
 
-			unsigned int gradientLeft = 0;
-			gradientLeft = this->baselineLeftNumber + this->gradientLeftNumber;
+			unsigned int gradientLeft = this->baselineLeftNumber + this->gradientLeftNumber;
 			if ( gradientLeft == inputPtr->GetVectorLength() )
 			{
 				std::cout << "No gradient excluded" << std::endl;
@@ -1759,13 +1731,6 @@ namespace itk
 			//  measurement frame
 			if ( imgMetaDictionary.HasKey("NRRD_measurement frame") )
 			{
-#if 0
-				// measurement frame
-				vnl_matrix_fixed<double, 3, 3> mf;
-				// imaging frame
-				vnl_matrix_fixed<double, 3, 3> imgf;
-				imgf = inputPtr->GetDirection().GetVnlMatrix();
-#endif
 
 				// Meausurement frame
 				std::vector<std::vector<double> > nrrdmf;
@@ -1864,10 +1829,9 @@ namespace itk
 			}
 			excludedDwiImage = TImageType::New();
 			excludedDwiImage->CopyInformation(inputPtr);
-			excludedDwiImage->SetRegions( inputPtr->GetLargestPossibleRegion() );
+			excludedDwiImage->SetRegions( inputPtr->GetLargestPossibleRegion() );			
+			excludedDwiImage->SetVectorLength(inputPtr->GetVectorLength() - gradientLeft);
 			excludedDwiImage->Allocate();
-			excludedDwiImage->SetVectorLength(
-				inputPtr->GetVectorLength() - gradientLeft);
 			excludedDwiImage->SetMetaDataDictionary(outputMetaDictionary);    //
 
 			typedef ImageRegionIteratorWithIndex<TImageType> OutputIterator;

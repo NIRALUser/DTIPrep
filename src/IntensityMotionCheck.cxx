@@ -916,67 +916,74 @@ bool CIntensityMotionCheck::SliceWiseCheck( DwiImageType::Pointer dwi )
 		}
 
 		// save the excluded gradients to a nrrd file
-		if ( protocol->GetSliceCheckProtocol().excludedDWINrrdFileNameSuffix.length() > 0 )
+		if ( ! SliceChecker->GetExcludedGradients()  )
 		{
-			std::string SliceWiseExcludeOutput;
-			if ( protocol->GetQCOutputDirectory().length() > 0 )
+			std::cout << "No excluded gradient file created." << std::endl;	 
+		}
+		else
+		{
+			if ( protocol->GetSliceCheckProtocol().excludedDWINrrdFileNameSuffix.length() > 0 )
 			{
-				if ( protocol->GetQCOutputDirectory().at( protocol->
-					GetQCOutputDirectory().length() - 1 ) == '\\'
-					|| protocol->GetQCOutputDirectory().at( protocol->
-					GetQCOutputDirectory().length() - 1 ) == '/'     )
+				std::string SliceWiseExcludeOutput;
+				if ( protocol->GetQCOutputDirectory().length() > 0 )
 				{
-					SliceWiseExcludeOutput = protocol->GetQCOutputDirectory().substr(
-						0, protocol->GetQCOutputDirectory().find_last_of("/\\") );
+					if ( protocol->GetQCOutputDirectory().at( protocol->
+						GetQCOutputDirectory().length() - 1 ) == '\\'
+						|| protocol->GetQCOutputDirectory().at( protocol->
+						GetQCOutputDirectory().length() - 1 ) == '/'     )
+					{
+						SliceWiseExcludeOutput = protocol->GetQCOutputDirectory().substr(
+							0, protocol->GetQCOutputDirectory().find_last_of("/\\") );
+					}
+					else
+					{
+						SliceWiseExcludeOutput = protocol->GetQCOutputDirectory();
+					}
+
+					SliceWiseExcludeOutput.append( "/" );
+
+					std::string str = m_DwiFileName.substr( 0, m_DwiFileName.find_last_of('.') );
+					str = str.substr( str.find_last_of("/\\") + 1);
+
+					SliceWiseExcludeOutput.append( str );
+					SliceWiseExcludeOutput.append(
+						protocol->GetSliceCheckProtocol().excludedDWINrrdFileNameSuffix );
 				}
 				else
 				{
-					SliceWiseExcludeOutput = protocol->GetQCOutputDirectory();
+					SliceWiseExcludeOutput = m_DwiFileName.substr( 0, m_DwiFileName.find_last_of('.') );
+					SliceWiseExcludeOutput.append(
+						protocol->GetSliceCheckProtocol().excludedDWINrrdFileNameSuffix );
 				}
 
-				SliceWiseExcludeOutput.append( "/" );
-
-				std::string str = m_DwiFileName.substr( 0, m_DwiFileName.find_last_of('.') );
-				str = str.substr( str.find_last_of("/\\") + 1);
-
-				SliceWiseExcludeOutput.append( str );
-				SliceWiseExcludeOutput.append(
-					protocol->GetSliceCheckProtocol().excludedDWINrrdFileNameSuffix );
+				try
+				{
+					std::cout << "Saving excluded gradients of slice check: " << SliceWiseExcludeOutput
+						<< " ... ";
+					DwiWriterType::Pointer DwiWriter = DwiWriterType::New();
+					itk::NrrdImageIO::Pointer myNrrdImageIO = itk::NrrdImageIO::New();
+					DwiWriter->SetImageIO(myNrrdImageIO);
+					DwiWriter->SetFileName( SliceWiseExcludeOutput );
+					DwiWriter->SetInput( SliceChecker->GetExcludedGradients() );
+					DwiWriter->UseCompressionOn();
+					DwiWriter->Update();
+				}
+				catch ( itk::ExceptionObject & e )
+				{
+					std::cout << e.GetDescription() << std::endl;
+				}
+				std::cout << "DONE" << std::endl;
 			}
-			else
-			{
-				SliceWiseExcludeOutput = m_DwiFileName.substr( 0, m_DwiFileName.find_last_of('.') );
-				SliceWiseExcludeOutput.append(
-					protocol->GetSliceCheckProtocol().excludedDWINrrdFileNameSuffix );
-			}
-
-			try
-			{
-				std::cout << "Saving excluded gradients of slice check: " << SliceWiseExcludeOutput
-					<< " ... ";
-				DwiWriterType::Pointer DwiWriter = DwiWriterType::New();
-				itk::NrrdImageIO::Pointer myNrrdImageIO = itk::NrrdImageIO::New();
-				DwiWriter->SetImageIO(myNrrdImageIO);
-				DwiWriter->SetFileName( SliceWiseExcludeOutput );
-				DwiWriter->SetInput( SliceChecker->GetExcludedGradients() );
-				DwiWriter->UseCompressionOn();
-				DwiWriter->Update();
-			}
-			catch ( itk::ExceptionObject & e )
-			{
-				std::cout << e.GetDescription() << std::endl;
-			}
-			std::cout << "DONE" << std::endl;
 		}
 
 		//validate the SliceWise output
 		std::ofstream outfile; 
 		outfile.open(ReportFileName.c_str(), std::ios::app);
 
-		outfile<<"=="<<std::endl;
+		//outfile<<"=="<<std::endl;
 		//outfile<<"SliceWisw check summary:"<<std::endl;
 
-		std::cout<<"=="<<std::endl;
+		//std::cout<<"=="<<std::endl;
 		//std::cout<<"SliceWisw check summary:"<<std::endl;
 
 		if(SliceChecker->getGradientDirLeftNumber()<6)
@@ -1192,67 +1199,74 @@ bool CIntensityMotionCheck::InterlaceWiseCheck( DwiImageType::Pointer dwi )
 		}
 
 		// save the excluded gradients to a nrrd file
-		if ( protocol->GetInterlaceCheckProtocol().excludedDWINrrdFileNameSuffix.length() > 0 )
+		if ( ! InterlaceChecker->GetExcludedGradients() )
 		{
-			std::string InterlaceWiseExcludeOutput;
-			if ( protocol->GetQCOutputDirectory().length() > 0 )
+			std::cout << "No excluded gradient file created." << std::endl;	 
+		}
+		else
+		{
+			if ( protocol->GetInterlaceCheckProtocol().excludedDWINrrdFileNameSuffix.length() > 0 )
 			{
-				if ( protocol->GetQCOutputDirectory().at( protocol->
-					GetQCOutputDirectory().length() - 1 ) == '\\'
-					|| protocol->GetQCOutputDirectory().at( protocol->
-					GetQCOutputDirectory().length() - 1 ) == '/'     )
+				std::string InterlaceWiseExcludeOutput;
+				if ( protocol->GetQCOutputDirectory().length() > 0 )
 				{
-					InterlaceWiseExcludeOutput = protocol->GetQCOutputDirectory().substr(
-						0, protocol->GetQCOutputDirectory().find_last_of("/\\") );
+					if ( protocol->GetQCOutputDirectory().at( protocol->
+						GetQCOutputDirectory().length() - 1 ) == '\\'
+						|| protocol->GetQCOutputDirectory().at( protocol->
+						GetQCOutputDirectory().length() - 1 ) == '/'     )
+					{
+						InterlaceWiseExcludeOutput = protocol->GetQCOutputDirectory().substr(
+							0, protocol->GetQCOutputDirectory().find_last_of("/\\") );
+					}
+					else
+					{
+						InterlaceWiseExcludeOutput = protocol->GetQCOutputDirectory();
+					}
+
+					InterlaceWiseExcludeOutput.append( "/" );
+
+					std::string str = m_DwiFileName.substr( 0, m_DwiFileName.find_last_of('.') );
+					str = str.substr( str.find_last_of("/\\") + 1);
+
+					InterlaceWiseExcludeOutput.append( str );
+					InterlaceWiseExcludeOutput.append(
+						protocol->GetInterlaceCheckProtocol().excludedDWINrrdFileNameSuffix );
 				}
 				else
 				{
-					InterlaceWiseExcludeOutput = protocol->GetQCOutputDirectory();
+					InterlaceWiseExcludeOutput = m_DwiFileName.substr( 0, m_DwiFileName.find_last_of('.') );
+					InterlaceWiseExcludeOutput.append(
+						protocol->GetInterlaceCheckProtocol().excludedDWINrrdFileNameSuffix );
 				}
 
-				InterlaceWiseExcludeOutput.append( "/" );
-
-				std::string str = m_DwiFileName.substr( 0, m_DwiFileName.find_last_of('.') );
-				str = str.substr( str.find_last_of("/\\") + 1);
-
-				InterlaceWiseExcludeOutput.append( str );
-				InterlaceWiseExcludeOutput.append(
-					protocol->GetInterlaceCheckProtocol().excludedDWINrrdFileNameSuffix );
+				try
+				{
+					std::cout << "Saving excluded gradients of interlace check: " << InterlaceWiseExcludeOutput
+						<< " ... ";
+					DwiWriterType::Pointer DwiWriter = DwiWriterType::New();
+					itk::NrrdImageIO::Pointer myNrrdImageIO = itk::NrrdImageIO::New();
+					DwiWriter->SetImageIO(myNrrdImageIO);
+					DwiWriter->SetFileName( InterlaceWiseExcludeOutput );
+					DwiWriter->SetInput( InterlaceChecker->GetExcludedGradients() );
+					DwiWriter->UseCompressionOn();
+					DwiWriter->Update();
+				}
+				catch ( itk::ExceptionObject & e )
+				{
+					std::cout << e.GetDescription() << std::endl;
+				}
+				std::cout << "DONE" << std::endl;
 			}
-			else
-			{
-				InterlaceWiseExcludeOutput = m_DwiFileName.substr( 0, m_DwiFileName.find_last_of('.') );
-				InterlaceWiseExcludeOutput.append(
-					protocol->GetInterlaceCheckProtocol().excludedDWINrrdFileNameSuffix );
-			}
-
-			try
-			{
-				std::cout << "Saving excluded gradients of interlace check: " << InterlaceWiseExcludeOutput
-					<< " ... ";
-				DwiWriterType::Pointer DwiWriter = DwiWriterType::New();
-				itk::NrrdImageIO::Pointer myNrrdImageIO = itk::NrrdImageIO::New();
-				DwiWriter->SetImageIO(myNrrdImageIO);
-				DwiWriter->SetFileName( InterlaceWiseExcludeOutput );
-				DwiWriter->SetInput( InterlaceChecker->GetExcludedGradients() );
-				DwiWriter->UseCompressionOn();
-				DwiWriter->Update();
-			}
-			catch ( itk::ExceptionObject & e )
-			{
-				std::cout << e.GetDescription() << std::endl;
-			}
-			std::cout << "DONE" << std::endl;
 		}
 
 		//validate the interlace Wise output
 		std::ofstream outfile; 
 		outfile.open(ReportFileName.c_str(), std::ios::app);
 
-		outfile<<"=="<<std::endl;
+		//outfile<<"=="<<std::endl;
 		//outfile<<"InterlaceWisw check summary:"<<std::endl;
 
-		std::cout<<"=="<<std::endl;
+		//std::cout<<"=="<<std::endl;
 		//std::cout<<"InterlaceWisw check summary::"<<std::endl;
 
 		if(InterlaceChecker->getGradientDirLeftNumber()<6)
@@ -1601,22 +1615,12 @@ bool CIntensityMotionCheck::EddyMotionCorrectIowa( DwiImageType::Pointer dwi )
 		}
 
 		//
-		//
-		//
-		//
-		//
-		//
 		// EddyMotionCorrectorIowa->SetNumberOfBins(protocol->GetEddyMotionCorrectionProtocol().numberOfBins
 		// );
 		//     EddyMotionCorrectorIowa->SetSamples(
 		// protocol->GetEddyMotionCorrectionProtocol().numberOfSamples );
 		//     EddyMotionCorrectorIowa->SetTranslationScale(
 		// protocol->GetEddyMotionCorrectionProtocol().translationScale );
-		//
-		//
-		//
-		//
-		//
 		//
 		// EddyMotionCorrectorIowa->SetStepLength(protocol->GetEddyMotionCorrectionProtocol().stepLength
 		// );
@@ -1732,10 +1736,6 @@ bool CIntensityMotionCheck::EddyMotionCorrectIowa( DwiImageType::Pointer dwi )
 		> 0 )
 		{
 			std::string outputDWIFileName;
-			//
-			//
-			//
-			//
 			//    outputDWIFileName=m_DwiFileName.substr(0,m_DwiFileName.find_last_of('.')
 			// );
 			//       outputDWIFileName.append(
@@ -2056,7 +2056,6 @@ bool CIntensityMotionCheck::GradientWiseCheck( DwiImageType::Pointer dwi )
 		}
 
 		m_DwiForcedConformanceImage = GradientChecker->GetOutput();
-
 		// update the QCResults
 		for ( unsigned int i = 0;
 			i < GradientChecker->GetGradientDirectionContainer()->size();
@@ -2067,19 +2066,14 @@ bool CIntensityMotionCheck::GradientWiseCheck( DwiImageType::Pointer dwi )
 				j++ )
 			{
 				if ( vcl_abs(GradientChecker->GetGradientDirectionContainer()->at(i)[0]
-				- this->qcResult->GetIntensityMotionCheckResult()[j].
-					CorrectedDir[0]) <
-					0.000001
-					&& vcl_abs(GradientChecker->GetGradientDirectionContainer()->at(i)
-					[1]
-				- this->qcResult->GetIntensityMotionCheckResult()[j].
-					CorrectedDir[1]) <
-					0.000001
-					&& vcl_abs(GradientChecker->GetGradientDirectionContainer()->at(i)
-					[2]
-				- this->qcResult->GetIntensityMotionCheckResult()[j].
-					CorrectedDir[2]) <
-					0.000001    )
+				- this->qcResult->GetIntensityMotionCheckResult()[j].CorrectedDir[0]) 
+					< 0.000001
+					&& vcl_abs(GradientChecker->GetGradientDirectionContainer()->at(i)[1]
+				- this->qcResult->GetIntensityMotionCheckResult()[j].CorrectedDir[1]) 
+					< 0.000001
+					&& vcl_abs(GradientChecker->GetGradientDirectionContainer()->at(i)[2]
+				- this->qcResult->GetIntensityMotionCheckResult()[j].CorrectedDir[2])				
+ 					< 0.000001    )
 				{
 					if ( this->qcResult->GetIntensityMotionCheckResult()[j].processing >
 						QCResult::GRADIENT_EDDY_MOTION_CORRECTED )
@@ -2100,10 +2094,9 @@ bool CIntensityMotionCheck::GradientWiseCheck( DwiImageType::Pointer dwi )
 				}
 			}
 		}
-
+ 
 		// save the output of gradient check
-		if ( protocol->GetGradientCheckProtocol().outputDWIFileNameSuffix.length()
-					> 0 )
+		if ( protocol->GetGradientCheckProtocol().outputDWIFileNameSuffix.length() > 0 )
 		{
 			std::string outputDWIFileName;
 			if ( protocol->GetQCOutputDirectory().length() > 0 )
@@ -2139,8 +2132,7 @@ bool CIntensityMotionCheck::GradientWiseCheck( DwiImageType::Pointer dwi )
 
 			try
 			{
-				std::cout << "Saving output of gradient check: "
-					<< outputDWIFileName << " ... ";
+				std::cout << "Saving output of gradient check: "<< outputDWIFileName << " ... ";
 				DwiWriterType::Pointer DwiWriter = DwiWriterType::New();
 				itk::NrrdImageIO::Pointer myNrrdImageIO = itk::NrrdImageIO::New();
 				DwiWriter->SetImageIO(myNrrdImageIO);
@@ -2157,68 +2149,76 @@ bool CIntensityMotionCheck::GradientWiseCheck( DwiImageType::Pointer dwi )
 			std::cout << "DONE" << std::endl;
 		}
 
-		// save the excluded gradients to a nrrd file
-		if ( protocol->GetInterlaceCheckProtocol().excludedDWINrrdFileNameSuffix.length() > 0 )
+		// save the excluded DWIs in gradient wise checking
+		if ( ! GradientChecker->GetExcludedGradients() )
 		{
-			std::string GradientWiseExcludeOutput;
-			if ( protocol->GetQCOutputDirectory().length() > 0 )
+			std::cout << "No excluded gradient file created." << std::endl;	 
+		}
+		else
+		{
+
+			if ( protocol->GetInterlaceCheckProtocol().excludedDWINrrdFileNameSuffix.length() > 0 )
 			{
-				if ( protocol->GetQCOutputDirectory().at( protocol->
-					GetQCOutputDirectory().length() - 1 ) == '\\'
-					|| protocol->GetQCOutputDirectory().at( protocol->
-					GetQCOutputDirectory().length() - 1 ) == '/'     )
+				std::string GradientWiseExcludeOutput;
+				if ( protocol->GetQCOutputDirectory().length() > 0 )
 				{
-					GradientWiseExcludeOutput = protocol->GetQCOutputDirectory().substr(
-						0, protocol->GetQCOutputDirectory().find_last_of("/\\") );
+					if ( protocol->GetQCOutputDirectory().at( protocol->
+						GetQCOutputDirectory().length() - 1 ) == '\\'
+						|| protocol->GetQCOutputDirectory().at( protocol->
+						GetQCOutputDirectory().length() - 1 ) == '/'     )
+					{
+						GradientWiseExcludeOutput = protocol->GetQCOutputDirectory().substr(
+							0, protocol->GetQCOutputDirectory().find_last_of("/\\") );
+					}
+					else
+					{
+						GradientWiseExcludeOutput = protocol->GetQCOutputDirectory();
+					}
+
+					GradientWiseExcludeOutput.append( "/" );
+
+					std::string str = m_DwiFileName.substr( 0, m_DwiFileName.find_last_of('.') );
+					str = str.substr( str.find_last_of("/\\") + 1);
+
+					GradientWiseExcludeOutput.append( str );
+					GradientWiseExcludeOutput.append(
+						protocol->GetInterlaceCheckProtocol().excludedDWINrrdFileNameSuffix );
 				}
 				else
 				{
-					GradientWiseExcludeOutput = protocol->GetQCOutputDirectory();
+					GradientWiseExcludeOutput = m_DwiFileName.substr( 0, m_DwiFileName.find_last_of('.') );
+					GradientWiseExcludeOutput.append(
+						protocol->GetGradientCheckProtocol().excludedDWINrrdFileNameSuffix );
 				}
 
-				GradientWiseExcludeOutput.append( "/" );
-
-				std::string str = m_DwiFileName.substr( 0, m_DwiFileName.find_last_of('.') );
-				str = str.substr( str.find_last_of("/\\") + 1);
-
-				GradientWiseExcludeOutput.append( str );
-				GradientWiseExcludeOutput.append(
-					protocol->GetInterlaceCheckProtocol().excludedDWINrrdFileNameSuffix );
-			}
-			else
-			{
-				GradientWiseExcludeOutput = m_DwiFileName.substr( 0, m_DwiFileName.find_last_of('.') );
-				GradientWiseExcludeOutput.append(
-					protocol->GetGradientCheckProtocol().excludedDWINrrdFileNameSuffix );
-			}
-
-			try
-			{
-				std::cout << "Saving excluded gradients of interlace check: " << GradientWiseExcludeOutput
+				try
+				{
+					std::cout << "Saving excluded gradients of interlace check: " << GradientWiseExcludeOutput
 					<< " ... ";
-				DwiWriterType::Pointer DwiWriter = DwiWriterType::New();
-				itk::NrrdImageIO::Pointer myNrrdImageIO = itk::NrrdImageIO::New();
-				DwiWriter->SetImageIO(myNrrdImageIO);
-				DwiWriter->SetFileName( GradientWiseExcludeOutput );
-				DwiWriter->SetInput( GradientChecker->GetExcludedGradients() );
-				DwiWriter->UseCompressionOn();
-				DwiWriter->Update();
+					DwiWriterType::Pointer DwiWriter = DwiWriterType::New();
+					itk::NrrdImageIO::Pointer myNrrdImageIO = itk::NrrdImageIO::New();
+					DwiWriter->SetImageIO(myNrrdImageIO);
+					DwiWriter->SetFileName( GradientWiseExcludeOutput );
+					DwiWriter->SetInput( GradientChecker->GetExcludedGradients() );
+					DwiWriter->UseCompressionOn();
+					DwiWriter->Update();
+				}
+				catch ( itk::ExceptionObject & e )
+				{
+					std::cout << e.GetDescription() << std::endl;
+				}
+				std::cout << "DONE" << std::endl;
 			}
-			catch ( itk::ExceptionObject & e )
-			{
-				std::cout << e.GetDescription() << std::endl;
-			}
-			std::cout << "DONE" << std::endl;
 		}
 
 		//validate the gradient Wise output
 		std::ofstream outfile; 
 		outfile.open(ReportFileName.c_str(), std::ios::app);
 
-		outfile<<"=="<<std::endl;
+		//outfile<<"=="<<std::endl;
 		//outfile<<"GradientWisw check summary:"<<std::endl;
 
-		std::cout<<"=="<<std::endl;
+		//std::cout<<"=="<<std::endl;
 		//std::cout<<"GradientWisw check summary::"<<std::endl;
 
 		if(GradientChecker->getGradientDirLeftNumber()<6)

@@ -382,6 +382,7 @@ namespace itk
 		initializeQCResullts();
 		calculate();
 		DoCheck();
+		collectLeftDiffusionStatistics();
 		writeReport();
 		CheckDoneOn();
 
@@ -407,14 +408,6 @@ namespace itk
 		//  measurement frame
 		if ( imgMetaDictionary.HasKey("NRRD_measurement frame") )
 		{
-#if 0
-			// measurement frame
-			vnl_matrix_fixed<double, 3, 3> mf;
-			// imaging frame
-			vnl_matrix_fixed<double, 3, 3> imgf;
-			imgf = inputPtr->GetDirection().GetVnlMatrix();
-#endif
-
 			// Meausurement frame
 			std::vector<std::vector<double> > nrrdmf;
 			itk::ExposeMetaData<std::vector<std::vector<double> > >(
@@ -547,7 +540,7 @@ namespace itk
 		::DoCheck()
 	{
 		std::cout << "Gradient checking ...";
-		// calculate the mean and stdev of baseline and gradients
+		
 		//     int DWICount, BaselineCount;
 		//     BaselineCount  = getBaselineNumber();
 		//     DWICount    = getGradientNumber();
@@ -563,14 +556,10 @@ namespace itk
 		{
 			if ( fabs(this->ResultsContainer[i].AngleX) > m_RotationThreshold
 				|| fabs(this->ResultsContainer[i].AngleY) > m_RotationThreshold
-				|| fabs(this->ResultsContainer[i].AngleZ) >
-				m_RotationThreshold
-				|| fabs(this->ResultsContainer[i].TranslationX) >
-				m_TranslationThreshold
-				|| fabs(this->ResultsContainer[i].TranslationY) >
-				m_TranslationThreshold
-				|| fabs(this->ResultsContainer[i].TranslationZ) >
-				m_TranslationThreshold     )
+				|| fabs(this->ResultsContainer[i].AngleZ) > m_RotationThreshold
+				|| fabs(this->ResultsContainer[i].TranslationX) > m_TranslationThreshold
+				|| fabs(this->ResultsContainer[i].TranslationY) > m_TranslationThreshold
+				|| fabs(this->ResultsContainer[i].TranslationZ) > m_TranslationThreshold     )
 			{
 				this->qcResults[i] = 0;
 			}
@@ -1325,10 +1314,10 @@ namespace itk
 		{
 			if ( repetNum[i] != repetNum[0] )
 			{
-				std::cout
-					<< "Warning: Not all the gradient directions have same repetition. "
-            << "GradientNumber= " << i << " " << repetNum[i] << " != " << repetNum[0]
-					<< std::endl;
+				//std::cout
+				//	<< "Warning: Not all the gradient directions have same repetition. "
+            			//<< "GradientNumber= " << i << " " << repetNum[i] << " != " << repetNum[0]
+				//	<< std::endl;
 				repetitionNumber = -1;
 			}
 		}
@@ -1545,14 +1534,6 @@ namespace itk
 					"NRRD_measurement frame",
 					nrrdmf);
 
-				// Measurement frame
-				for ( size_t i = 0; i < 3; i++ )
-				{
-					for ( size_t j = 0; j < 3; j++ )
-					{
-						mf[i][j] = nrrdmf[i][j];
-					}
-				}
 			}
 
 			// modality
@@ -1642,10 +1623,9 @@ namespace itk
 			}
 			excludedDwiImage = TImageType::New();
 			excludedDwiImage->CopyInformation(inputPtr);
-			excludedDwiImage->SetRegions( inputPtr->GetLargestPossibleRegion() );
+			excludedDwiImage->SetRegions( inputPtr->GetLargestPossibleRegion() );			
+			excludedDwiImage->SetVectorLength(inputPtr->GetVectorLength() - gradientLeft);
 			excludedDwiImage->Allocate();
-			excludedDwiImage->SetVectorLength(
-        inputPtr->GetVectorLength() - gradientLeft);
 			excludedDwiImage->SetMetaDataDictionary(outputMetaDictionary);    //
 
 			typedef ImageRegionIteratorWithIndex<TImageType> OutputIterator;

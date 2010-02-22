@@ -427,10 +427,10 @@ namespace itk
 		{
 			if ( repetNum[i] != repetNum[0] )
 			{
-				std::cout
-					<< "Warning: Not all the gradient directions have same repetition. "
-            << "GradientNumber= " << i << " " << repetNum[i] << " != " << repetNum[0]
-					<< std::endl;
+				//std::cout
+				//	<< "Warning: Not all the gradient directions have same repetition. "
+            			//<< "GradientNumber= " << i << " " << repetNum[i] << " != " << repetNum[0]
+				//	<< std::endl;
 				repetitionNumber = -1;
 			}
 		}

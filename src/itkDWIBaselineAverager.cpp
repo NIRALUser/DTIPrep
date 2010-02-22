@@ -633,7 +633,6 @@ namespace itk
         outfile << "\tbValueNumber: "    << m_bValueNumber    << std::endl;
         outfile << "\tbaselineNumber: "  << m_baselineNumber  << std::endl;
         outfile << "\tgradientDirNumber: " << m_gradientDirNumber  << std::endl;
-//        outfile << "\trepetitionNumber: " << m_repetitionNumber  << std::endl;
 
         outfile << std::endl << "\t# " << "\tDirVector" << std::endl;
         for ( unsigned int i = 0; i < this->m_GradientDirectionContainer->size(); i++ )
@@ -743,7 +742,6 @@ namespace itk
         outfile << "Baseline_Avg\tbValueNumber "    << m_bValueNumber    << std::endl;
         outfile << "Baseline_Avg\tbaselineNumber "  << m_baselineNumber  << std::endl;
         outfile << "Baseline_Avg\tgradientDirNumber " << m_gradientDirNumber  << std::endl;
-//        outfile << "Baseline_Avg\trepetitionNumber " << m_repetitionNumber  << std::endl;
 
         outfile << std::endl << "Pre_baseline_avg\tGradientNum " << "\tx\ty\tz" << std::endl;
         for ( unsigned int i = 0; i < this->m_GradientDirectionContainer->size(); i++ )
@@ -874,11 +872,7 @@ namespace itk
         )
           {
           this->m_baselineNumber = DiffusionDirections[i].m_repetitionNumber;
-#if 0
-          std::cout <<
-            "DiffusionDirections[i].m_repetitionNumber: " << i<<  " "
-            << DiffusionDirections[i].m_repetitionNumber <<std::endl;
-#endif
+
           }
         else
           {
@@ -919,22 +913,6 @@ namespace itk
       this->m_gradientDirNumber = repetNum.size();
       this->m_bValueNumber = dirNorm.size();
 
-      //HACK:  Why do repition numbers need to be the same?
-      //       Why does the baseline averager need to know any thing about repititions?
-      //NOTE:  m_repetitionNumber is never used
-      //HACK:  m_repetitionNumber = repetNum[0];
-      for ( unsigned int i = 1; i < repetNum.size(); i++ )
-        {
-        if ( repetNum[i] != repetNum[0] )
-          {
-          std::cout
-            << "Warning: collectStatistics: Not all the gradient directions have same repetition. "
-            << "GradientNumber[" << i << "]: " << repetNum[i] << " != " << repetNum[0]
-            << std::endl;
-      //    m_repetitionNumber = -1;
-          }
-        }
-
       this->m_gradientNumber = this->m_GradientDirectionContainer->size() - this->m_baselineNumber;
 
 #if 0
@@ -943,15 +921,7 @@ namespace itk
       std::cout<<"  m_bValueNumber: "    <<m_bValueNumber    <<std::endl;
       std::cout<<"  m_gradientDirNumber: "  <<m_gradientDirNumber  <<std::endl;
       std::cout<<"  m_gradientNumber: "    <<m_gradientNumber  <<std::endl;
-      std::cout<<"  m_repetitionNumber: "  <<m_repetitionNumber  <<std::endl;
-      for ( unsigned int i = 0; i < DiffusionDirections.size(); i++ )
-        {
-        std::cout << "dir["<< i << "] @ " << DiffusionDirections[i].m_repetitionNumber << " : ["
-          << DiffusionDirections[i].gradientDir[0] << ","
-          << DiffusionDirections[i].gradientDir[1] << ","
-          << DiffusionDirections[i].gradientDir[2] << "]"
-          << std::endl;
-        }
+
 #endif
       return;
       }

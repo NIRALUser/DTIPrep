@@ -220,7 +220,6 @@ namespace itk
 		unsigned int m_baselineNumber;
 		int m_bValueNumber;
 		int m_gradientDirNumber;
-//		int m_repetitionNumber;
 		int m_gradientNumber;
 
 		/** output info */
@@ -285,12 +284,6 @@ namespace itk
 		{
 			return m_gradientDirNumber;
 		}
-#if 0
-		inline int getRepetitionNumber()
-		{
-			return m_repetitionNumber;
-		}
-#endif
 
 		inline int getGradientNumber()
 		{

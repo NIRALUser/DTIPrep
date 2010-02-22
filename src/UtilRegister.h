@@ -1,6 +1,6 @@
-
 #ifndef __UTILREGISTER_H__
 #define __UTILREGISTER_H__
+
 namespace itk {
   class  struRigidRegResult
     {
@@ -188,7 +188,7 @@ namespace itk {
       typename ResampleFilterType::Pointer resampler = ResampleFilterType::New();
       resampler->SetInput( movingImage );
       resampler->SetTransform( outputTransformResult.GetTransform() );
-      resampler->SetOutputParametersFromImage( fixedImage );
+      //resampler->SetOutputParametersFromImage( fixedImage );
       resampler->SetDefaultPixelValue( 0 );
       resampler->Update();
 
@@ -222,4 +222,5 @@ namespace itk {
       }
 } //end namespace itk
 
-#endif __UTILREGISTER_H__
+#endif //__UTILREGISTER_H__
+

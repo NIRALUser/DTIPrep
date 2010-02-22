@@ -184,4 +184,4 @@ namespace itk {
 
 } //end namespace itk
 
-#endif __UTILBASELINEOPTIMIZEDAVERAGE_H__
+#endif //__UTILBASELINEOPTIMIZEDAVERAGE_H__

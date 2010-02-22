@@ -3629,10 +3629,10 @@ namespace itk
 		{
 			if ( repetNum[i] != repetNum[0] )
 			{
-				std::cout
-					<< "Warrning: SliceChecker: Not all the gradient directions have same repetition. "
-            << "GradientNumber= " << i << " " << repetNum[i] << " != " << repetNum[0]
-					<< std::endl;
+				//std::cout
+				//	<< "Warrning: SliceChecker: Not all the gradient directions have same repetition. "
+			        //    << "GradientNumber= " << i << " " << repetNum[i] << " != " << repetNum[0]
+				//	<< std::endl;
 				repetitionNumber = -1;
 			}
 		}
@@ -3807,8 +3807,7 @@ namespace itk
 			InputImageConstPointer inputPtr = this->GetInput();
 			OutputImagePointer     outputPtr = this->GetOutput();
 
-			unsigned short gradientLeft = 0;
-			gradientLeft = this->baselineLeftNumber + this->gradientLeftNumber;
+			unsigned short gradientLeft = this->baselineLeftNumber + this->gradientLeftNumber;
 			if ( gradientLeft == inputPtr->GetVectorLength() )
 			{
 				std::cout << "No gradient excluded" << std::endl;
@@ -3939,10 +3938,9 @@ namespace itk
 			}
 			excludedDwiImage = TImageType::New();
 			excludedDwiImage->CopyInformation(inputPtr);
-			excludedDwiImage->SetRegions( inputPtr->GetLargestPossibleRegion() );
+			excludedDwiImage->SetRegions( inputPtr->GetLargestPossibleRegion() );			
+			excludedDwiImage->SetVectorLength(inputPtr->GetVectorLength() - gradientLeft);
 			excludedDwiImage->Allocate();
-			excludedDwiImage->SetVectorLength(
-				inputPtr->GetVectorLength() - gradientLeft);
 			excludedDwiImage->SetMetaDataDictionary(outputMetaDictionary);    //
 
 			typedef ImageRegionIteratorWithIndex<TImageType> OutputIterator;
