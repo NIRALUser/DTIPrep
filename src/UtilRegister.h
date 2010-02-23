@@ -123,6 +123,7 @@ namespace itk {
       {
       typedef itk::BRAINSFitHelper HelperType;
       HelperType::Pointer intraSubjectRegistrationHelper=HelperType::New();
+      intraSubjectRegistrationHelper->SetObserveIterations(false);
       intraSubjectRegistrationHelper->SetNumberOfSamples(500000);
       intraSubjectRegistrationHelper->SetNumberOfHistogramBins(50);
         {
@@ -188,36 +189,12 @@ namespace itk {
       typename ResampleFilterType::Pointer resampler = ResampleFilterType::New();
       resampler->SetInput( movingImage );
       resampler->SetTransform( outputTransformResult.GetTransform() );
-      //resampler->SetOutputParametersFromImage( fixedImage );
+      resampler->SetOutputParametersFromImage( fixedImage );
       resampler->SetDefaultPixelValue( 0 );
       resampler->Update();
 
       typename TOutputImageType::Pointer transformedImage = resampler->GetOutput();
       OutputBaselineImage=transformedImage;
-
-#if 0
-      typedef ImageRegionIteratorWithIndex<TFixedImageType> transformedImageIterator;
-      transformedImageIterator transIt( transformedImage, transformedImage->GetLargestPossibleRegion() );
-      transIt.GoToBegin();
-      while ( !transIt.IsAtEnd() )
-        {
-        const typename TFixedImageType::IndexType pixelIndex = transIt.GetIndex();
-        if ( baselineORidwi == 0 ) // baseline
-          {
-          OutputBaselineImage->SetPixel( pixelIndex, 
-            OutputBaselineImage->GetPixel( pixelIndex ) + (int)(transIt.Get() + 0.5) );
-          }
-        else   // DW gradient
-          {
-          outputIDWIImage->SetPixel( pixelIndex,
-            outputIDWIImage->GetPixel( pixelIndex ) * transIt.Get() );
-          }
-
-        // movingImage->SetPixel( pixelIndex, transIt.Get()); // replace the input
-        // image: this will result in aggressive smoothing
-        ++transIt;
-        }
-#endif
       return outputTransformResult;
       }
 } //end namespace itk
