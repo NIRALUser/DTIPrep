@@ -189,7 +189,13 @@ namespace itk {
       typename ResampleFilterType::Pointer resampler = ResampleFilterType::New();
       resampler->SetInput( movingImage );
       resampler->SetTransform( outputTransformResult.GetTransform() );
-      resampler->SetOutputParametersFromImage( fixedImage );
+      //resampler->SetOutputParametersFromImage( fixedImage );
+      resampler->SetOutputOrigin ( fixedImage->GetOrigin() );
+      resampler->SetOutputSpacing ( fixedImage->GetSpacing() );
+      resampler->SetOutputDirection ( fixedImage->GetDirection() );
+      resampler->SetOutputStartIndex ( fixedImage->GetLargestPossibleRegion().GetIndex() );
+      resampler->SetSize ( fixedImage->GetLargestPossibleRegion().GetSize() );
+
       resampler->SetDefaultPixelValue( 0 );
       resampler->Update();
 
