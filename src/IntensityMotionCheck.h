@@ -59,14 +59,15 @@ public:
 
 	void GetImagesInformation();
 
-	unsigned int GetGradientsNumber()
+	inline unsigned int GetGradientsNumber()
 	{
-		return numGradients;
+		return m_numGradients;
 	}
 
 	bool GetGradientDirections();
 
-	bool GetGradientDirections( DwiImageType::Pointer dwi,
+	bool GetGradientDirections( 
+		DwiImageType::Pointer dwi,
 		double & bValue,
 		GradientDirectionContainerType::Pointer GradDireContainer);
 
@@ -95,70 +96,69 @@ public:
 	bool validateDiffusionStatistics();
 	unsigned char  validateLeftDiffusionStatistics();  // 00000CBA:
 
-	void SetProtocol(Protocol *p)
+	inline void SetProtocol(Protocol *p)
 	{
 		this->protocol = p;
 	}
 
-	void SetQCResult(QCResult *r)
+	inline void SetQCResult(QCResult *r)
 	{
 		qcResult = r;
 	}
 
-	QCResult * GetQCResult()
+	inline QCResult * GetQCResult()
 	{
 		return qcResult;
 	}
 
-
-	int getBaselineNumber()
+	inline int getBaselineNumber()
 	{
-		return baselineNumber;
+		return m_baselineNumber;
 	}
 
-	int getBValueNumber()
+	inline int getBValueNumber()
 	{
-		return bValueNumber;
+		return m_bValueNumber;
 	}
 
-	int getGradientDirNumber()
+	inline int getGradientDirNumber()
 	{
-		return gradientDirNumber;
+		return m_gradientDirNumber;
 	}
 
-	int getRepetitionNumber()
+	inline int getRepetitionNumber()
 	{
-		return repetitionNumber;
+		return m_repetitionNumber;
 	}
 
-	int getGradientNumber()
+	inline int getGradientNumber()
 	{
-		return gradientNumber;
+		return m_gradientNumber;
 	}
 
-	int getBaselineLeftNumber() const
+	inline int getBaselineLeftNumber() const
 	{
-		return baselineLeftNumber;
+		return m_baselineLeftNumber;
 	}
 
-	int getBValueLeftNumber() const
+	inline int getBValueLeftNumber() const
 	{
-		return bValueLeftNumber;
+		return m_bValueLeftNumber;
 	}
 
-	int getGradientDirLeftNumber() const
+	inline int getGradientDirLeftNumber() const
 	{
-		return gradientDirLeftNumber;
+		return m_gradientDirLeftNumber;
 	}
 
-	int getGradientLeftNumber() const
+	inline int getGradientLeftNumber() const
 	{
-		return gradientLeftNumber;
+		return m_gradientLeftNumber;
 	}
 
-	std::vector<int> getRepetitionLeftNumber() const
+	inline std::vector<int> getRepetitionLeftNumber() const
 	{
-		return repetitionLeftNumber;
+		return m_repetitionLeftNumber;
 	}
 
 
@@ -189,12 +189,12 @@ public:
 
 	inline GradientDirectionContainerType::Pointer GetGradientDirectionContainer() const
 	{
-		return GradientDirectionContainer;
+		return m_GradientDirectionContainer;
 	}
 
 	inline bool GetDwiLoadStatus() const
 	{
-		return bDwiLoaded;
+		return m_bDwiLoaded;
 	}
 
 	inline std::string GetDwiFileName() const
@@ -233,52 +233,52 @@ private:
 	//HACK:  TODO:  Zhexing  private member variables should start with m_ so that it is easy to
 	//distinguish them from local variables in the member functions.
 	//All these variables need to have m_ in front of them.
-	bool bDwiLoaded;
+	bool m_bDwiLoaded;
 
-	int baselineNumber;
-	int bValueNumber;
-	int gradientDirNumber;
-	int repetitionNumber;
-	int gradientNumber;
+	int m_baselineNumber;
+	int m_bValueNumber;
+	int m_gradientDirNumber;
+	int m_repetitionNumber;
+	int m_gradientNumber;
 
-	int              baselineLeftNumber;
-	int              bValueLeftNumber;
-	int              gradientDirLeftNumber;
-	int              gradientLeftNumber;
-	std::vector<int> repetitionLeftNumber;
+	int m_baselineLeftNumber;
+	int m_bValueLeftNumber;
+	int m_gradientDirLeftNumber;
+	int m_gradientLeftNumber;
+	std::vector<int> m_repetitionLeftNumber;
 
-	bool bGetGradientDirections;
+	bool m_bGetGradientDirections;
 
 	std::string m_DwiFileName;
 	std::string m_XmlFileName;
-	std::string GlobalReportFileName;
+	std::string m_GlobalReportFileName;
 
 	DwiImageType::Pointer m_DwiForcedConformanceImage;
 	DwiImageType::Pointer  m_DwiOriginalImage;
 
-	unsigned int numGradients;
+	unsigned int m_numGradients;
 
-	GradientDirectionContainerType::Pointer GradientDirectionContainer;
+	GradientDirectionContainerType::Pointer m_GradientDirectionContainer;
 
 	// for all gradients  slice wise correlation
-	std::vector<double> means;
-	std::vector<double> deviations;
+	std::vector<double> m_means;
+	std::vector<double> m_deviations;
 
 	// for all baseline slice wise correlation
-	std::vector<double> baselineMeans;
-	std::vector<double> baselineDeviations;
+	std::vector<double> m_baselineMeans;
+	std::vector<double> m_baselineDeviations;
 
 	// for interlace baseline correlation
-	double interlaceBaselineMeans;
-	double interlaceBaselineDeviations;
+	double m_interlaceBaselineMeans;
+	double m_interlaceBaselineDeviations;
 
 	// for interlace gradient correlation
-	double interlaceGradientMeans;
-	double interlaceGradientDeviations;
+	double m_interlaceGradientMeans;
+	double m_interlaceGradientDeviations;
 
 	Protocol *protocol;
 	QCResult *qcResult;
 
-	bool   readb0;
-	double b0;
+	bool   m_readb0;
+	double m_b0;
 };

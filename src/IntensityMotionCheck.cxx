@@ -60,14 +60,14 @@ CIntensityMotionCheck::GetMeasurementFrame(
 
 CIntensityMotionCheck::CIntensityMotionCheck(void)
 {
-	baselineNumber    = 0;
-	bValueNumber    = 1;
-	repetitionNumber  = 1;
-	gradientDirNumber  = 0;
+	m_baselineNumber    = 0;
+	m_bValueNumber    = 1;
+	m_repetitionNumber  = 1;
+	m_gradientDirNumber  = 0;
 
 	m_DwiOriginalImage = NULL;
-	bDwiLoaded = false;
-	bGetGradientDirections = false;
+	m_bDwiLoaded = false;
+	m_bGetGradientDirections = false;
 	// bGetGradientImages=false;
 
 	m_DwiFileName = "";
@@ -91,7 +91,7 @@ bool CIntensityMotionCheck::LoadDwiImage()
 	{
 		std::cout << "Dwi file name not set" << std::endl;
 		m_DwiOriginalImage = NULL;
-		bDwiLoaded = false;
+		m_bDwiLoaded = false;
 		return false;
 	}
 	else
@@ -111,7 +111,7 @@ bool CIntensityMotionCheck::LoadDwiImage()
 		{
 			std::cout << e.GetDescription() << std::endl;
 			m_DwiOriginalImage = NULL;
-			bDwiLoaded = false;
+			m_bDwiLoaded = false;
 			return false;
 		}
 
@@ -120,11 +120,11 @@ bool CIntensityMotionCheck::LoadDwiImage()
 		m_DwiOriginalImage = DwiReader->GetOutput();
 		m_DwiForcedConformanceImage = m_DwiOriginalImage;
 
-		bDwiLoaded = true;
+		m_bDwiLoaded = true;
 
 		GetGradientDirections();
 
-		if ( bGetGradientDirections )
+		if ( m_bGetGradientDirections )
 		{
 			collectDiffusionStatistics();
 		}
@@ -139,7 +139,7 @@ bool CIntensityMotionCheck::LoadDwiImage()
 		//   std::cout<<m_DwiOriginalImage->GetLargestPossibleRegion().GetSize()[1]<<" ";
 		//   std::cout<<m_DwiOriginalImage->GetLargestPossibleRegion().GetSize()[2]<<std::endl;
 
-		this->numGradients = m_DwiOriginalImage->GetVectorLength();
+		this->m_numGradients = m_DwiOriginalImage->GetVectorLength();
 		//   std::cout<<"Pixel Vector Length:
 		// "<<m_DwiOriginalImage->GetVectorLength()<<std::endl;
 
@@ -150,17 +150,17 @@ bool CIntensityMotionCheck::LoadDwiImage()
 		qcResult->Clear();
 		for ( unsigned int j = 0; j < m_DwiOriginalImage->GetVectorLength(); j++ )
 		{
-			result.OriginalDir[0] = this->GradientDirectionContainer->ElementAt(j)[0];
-			result.OriginalDir[1] = this->GradientDirectionContainer->ElementAt(j)[1];
-			result.OriginalDir[2] = this->GradientDirectionContainer->ElementAt(j)[2];
+			result.OriginalDir[0] = this->m_GradientDirectionContainer->ElementAt(j)[0];
+			result.OriginalDir[1] = this->m_GradientDirectionContainer->ElementAt(j)[1];
+			result.OriginalDir[2] = this->m_GradientDirectionContainer->ElementAt(j)[2];
 
-			result.ReplacedDir[0] = this->GradientDirectionContainer->ElementAt(j)[0];
-			result.ReplacedDir[1] = this->GradientDirectionContainer->ElementAt(j)[1];
-			result.ReplacedDir[2] = this->GradientDirectionContainer->ElementAt(j)[2];
+			result.ReplacedDir[0] = this->m_GradientDirectionContainer->ElementAt(j)[0];
+			result.ReplacedDir[1] = this->m_GradientDirectionContainer->ElementAt(j)[1];
+			result.ReplacedDir[2] = this->m_GradientDirectionContainer->ElementAt(j)[2];
 
-			result.CorrectedDir[0] = this->GradientDirectionContainer->ElementAt(j)[0];
-			result.CorrectedDir[1] = this->GradientDirectionContainer->ElementAt(j)[1];
-			result.CorrectedDir[2] = this->GradientDirectionContainer->ElementAt(j)[2];
+			result.CorrectedDir[0] = this->m_GradientDirectionContainer->ElementAt(j)[0];
+			result.CorrectedDir[1] = this->m_GradientDirectionContainer->ElementAt(j)[1];
+			result.CorrectedDir[2] = this->m_GradientDirectionContainer->ElementAt(j)[2];
 
 			qcResult->GetIntensityMotionCheckResult().push_back(result);
 		}
@@ -172,14 +172,14 @@ bool CIntensityMotionCheck::LoadDwiImage()
 
 bool CIntensityMotionCheck::GetGradientDirections()
 {
-	if ( !bDwiLoaded )
+	if ( !m_bDwiLoaded )
 	{
 		LoadDwiImage();
 	}
-	if ( !bDwiLoaded )
+	if ( !m_bDwiLoaded )
 	{
 		std::cout << "DWI load error, no Gradient Direction Loaded" << std::endl;
-		bGetGradientDirections = false;
+		m_bGetGradientDirections = false;
 		return false;
 	}
 
@@ -193,8 +193,8 @@ bool CIntensityMotionCheck::GetGradientDirections()
 	// int numberOfImages=0;
 	TensorReconstructionImageFilterType::GradientDirectionType vect3d;
 
-	GradientDirectionContainer = GradientDirectionContainerType::New();
-	GradientDirectionContainer->clear();
+	m_GradientDirectionContainer = GradientDirectionContainerType::New();
+	m_GradientDirectionContainer->clear();
 
 	for (; itKey != imgMetaKeys.end(); itKey++ )
 	{
@@ -206,35 +206,36 @@ bool CIntensityMotionCheck::GetGradientDirections()
 			iss >> vect3d[0] >> vect3d[1] >> vect3d[2];
 			// sscanf(metaString.c_str(), "%lf %lf %lf\n", &x, &y, &z);
 			// vect3d[0] = x; vect3d[1] = y; vect3d[2] = z;
-			GradientDirectionContainer->push_back(vect3d);
+			m_GradientDirectionContainer->push_back(vect3d);
 		}
 		else if ( itKey->find("DWMRI_b-value") != std::string::npos )
 		{
-			readb0 = true;
-			b0 = atof( metaString.c_str() );
+			m_readb0 = true;
+			m_b0 = atof( metaString.c_str() );
 			// std::cout<<"b Value: "<<b0<<std::endl;
 		}
 	}
 
-	if ( !readb0 )
+	if ( !m_readb0 )
 	{
 		std::cout << "BValue not specified in header file" << std::endl;
 		return false;
 	}
-	if ( GradientDirectionContainer->size() <= 6 )
+	if ( m_GradientDirectionContainer->size() <= 6 )
 	{
 		std::cout << "Gradient Images Less than 7" << std::endl;
 		// bGetGradientDirections=false;
 		return false;
 	}
 
-	bGetGradientDirections = true;
+	m_bGetGradientDirections = true;
 	return true;
 }
 
-bool CIntensityMotionCheck::GetGradientDirections( DwiImageType::Pointer dwi,
-												  double & bValue,
-												  GradientDirectionContainerType::Pointer GradDireContainer )
+bool CIntensityMotionCheck::GetGradientDirections( 
+	DwiImageType::Pointer dwi,
+	double & bValue,
+	GradientDirectionContainerType::Pointer GradDireContainer )
 {
 	if ( !dwi )
 	{
@@ -247,7 +248,7 @@ bool CIntensityMotionCheck::GetGradientDirections( DwiImageType::Pointer dwi,
 	std::vector<std::string> imgMetaKeys
 		= imgMetaDictionary.GetKeys();
 	std::vector<std::string>::const_iterator itKey = imgMetaKeys.begin();
-	std::string                              metaString;
+	std::string  metaString;
 
 	// int numberOfImages=0;
 	TensorReconstructionImageFilterType::GradientDirectionType vect3d;
@@ -284,14 +285,14 @@ bool CIntensityMotionCheck::GetGradientDirections( DwiImageType::Pointer dwi,
 
 void CIntensityMotionCheck::GetImagesInformation()
 {
-	if ( !bDwiLoaded )
+	if ( !m_bDwiLoaded )
 	{
 		LoadDwiImage();
 	}
-	if ( !bDwiLoaded )
+	if ( !m_bDwiLoaded )
 	{
 		std::cout << "DWI load error, no Gradient Direction Loaded" << std::endl;
-		bGetGradientDirections = false;
+		m_bGetGradientDirections = false;
 		return;
 	}
 
@@ -300,7 +301,7 @@ void CIntensityMotionCheck::GetImagesInformation()
 	std::vector<std::string> imgMetaKeys
 		= imgMetaDictionary.GetKeys();
 	std::vector<std::string>::const_iterator itKey = imgMetaKeys.begin();
-	std::string                              metaString;
+	std::string metaString;
 
 	TensorReconstructionImageFilterType::GradientDirectionType vect3d;
 
@@ -327,8 +328,8 @@ void CIntensityMotionCheck::GetImagesInformation()
 		}
 		else if ( itKey->find("DWMRI_b-value") != std::string::npos )
 		{
-			readb0 = true;
-			b0 = atof( metaString.c_str() );
+			m_readb0 = true;
+			m_b0 = atof( metaString.c_str() );
 		}
 		else if ( itKey->find("space") != std::string::npos )
 		{
@@ -456,7 +457,7 @@ unsigned char CIntensityMotionCheck::ImageCheck( DwiImageType::Pointer localDWII
 		if ( !localDWIImageToCheck  )
 		{
 			std::cout << "DWI image error." << std::endl;
-			bGetGradientDirections = false;
+			m_bGetGradientDirections = false;
 			return false;
 		}
 		// size
@@ -519,7 +520,9 @@ unsigned char CIntensityMotionCheck::ImageCheck( DwiImageType::Pointer localDWII
 
 		// spacing
 		// Now you can set in protocol whether to exit when spacings or sizes are found mismatched
-		const double spacing_tolerance=0.01; //The numbers in the nhdr file are written in ascii, and are extracted from the space direction.  The tolerance can not be very large or false negatives will appear.
+		const double spacing_tolerance=0.01; 	//The numbers in the nhdr file are written in ascii
+							// and are extracted from the space direction.  The tolerance can not be very
+							// large or false negatives will appear.
 		if ( vcl_abs( protocol->GetImageProtocol().spacing[0]
 		- localDWIImageToCheck->GetSpacing()[0] ) < spacing_tolerance
 			&& vcl_abs( protocol->GetImageProtocol().spacing[1]
@@ -2312,15 +2315,14 @@ unsigned char CIntensityMotionCheck::RunPipelineByProtocol()
 		return -1;
 	}
 
-	if ( m_DwiOriginalImage->GetVectorLength() != GradientDirectionContainer->size() )
+	if ( m_DwiOriginalImage->GetVectorLength() != m_GradientDirectionContainer->size() )
 	{
-		std::cout
-			<< "Bad DWI: mismatch between gradient image # and gradient vector #"
+		std::cout << "Bad DWI: mismatch between gradient image # and gradient vector #"
 			<< std::endl;
 		return -1;
 	}
 
-	if ( !bDwiLoaded  )
+	if ( !m_bDwiLoaded  )
 	{
 		LoadDwiImage();
 	}
@@ -2582,7 +2584,7 @@ unsigned char CIntensityMotionCheck::validateLeftDiffusionStatistics()
 
 	unsigned char ret = 0;
 
-	if ( this->gradientDirLeftNumber < 6 )
+	if ( this->m_gradientDirLeftNumber < 6 )
 	{
 		std::cout << "\tGradient direction # is less than 6!" << std::endl;
 		if ( bReport )
@@ -2592,7 +2594,7 @@ unsigned char CIntensityMotionCheck::validateLeftDiffusionStatistics()
 		ret = ret | 1;
 	}
 
-	if ( this->baselineLeftNumber == 0 && this->bValueLeftNumber == 1 )
+	if ( this->m_baselineLeftNumber == 0 && this->m_bValueLeftNumber == 1 )
 	{
 		std::cout << "\tSingle b-value DWI without a b0/baseline!" << std::endl;
 		if ( bReport )
@@ -2602,8 +2604,8 @@ unsigned char CIntensityMotionCheck::validateLeftDiffusionStatistics()
 		ret = ret | 2;
 	}
 
-	if ( ( ( this->gradientDirNumber ) - ( this->gradientDirLeftNumber ) ) >
-		protocol->GetBadGradientPercentageTolerance() * ( this->gradientDirNumber ) )
+	if ( ( ( this->m_gradientDirNumber ) - ( this->m_gradientDirLeftNumber ) ) >
+		protocol->GetBadGradientPercentageTolerance() * ( this->m_gradientDirNumber ) )
 	{
 		std::cout << "\tToo many bad gradient directions found! " << std::endl;
 		if ( bReport )
@@ -2686,20 +2688,20 @@ void CIntensityMotionCheck::collectLeftDiffusionStatistics(
 	std::vector<double> dirMode;
 	dirMode.clear();
 
-	this->baselineLeftNumber = 0;
+	this->m_baselineLeftNumber = 0;
 	for ( unsigned int i = 0; i < DiffusionDirections.size(); i++ )
 	{
 		if ( DiffusionDirections[i].gradientDir[0] == 0.0
 			&& DiffusionDirections[i].gradientDir[1] == 0.0
 			&& DiffusionDirections[i].gradientDir[2] == 0.0 )
 		{
-			this->baselineLeftNumber = DiffusionDirections[i].repetitionNumber;
+			this->m_baselineLeftNumber = DiffusionDirections[i].repetitionNumber;
 			// std::cout<<"DiffusionDirections[i].repetitionNumber: " <<i<<"
 			//  "<<DiffusionDirections[i].repetitionNumber <<std::endl;
 		}
 		else
 		{
-			this->repetitionLeftNumber.push_back(
+			this->m_repetitionLeftNumber.push_back(
 				DiffusionDirections[i].repetitionNumber);
 
 			double modeSqr =  DiffusionDirections[i].gradientDir[0]
@@ -2743,36 +2745,36 @@ void CIntensityMotionCheck::collectLeftDiffusionStatistics(
 	//   std::cout<<" repetNum.size(): " <<  repetNum.size() <<std::endl;
 	//   std::cout<<" dirMode.size(): " <<  dirMode.size() <<std::endl;
 
-	this->gradientDirLeftNumber = 0;
-	this->gradientLeftNumber = 0;
-	for ( unsigned int i = 0; i < this->repetitionLeftNumber.size(); i++ )
+	this->m_gradientDirLeftNumber = 0;
+	this->m_gradientLeftNumber = 0;
+	for ( unsigned int i = 0; i < this->m_repetitionLeftNumber.size(); i++ )
 	{
-		this->gradientLeftNumber += this->repetitionLeftNumber[i];
-		if ( this->repetitionLeftNumber[i] > 0 )
+		this->m_gradientLeftNumber += this->m_repetitionLeftNumber[i];
+		if ( this->m_repetitionLeftNumber[i] > 0 )
 		{
-			this->gradientDirLeftNumber++;
+			this->m_gradientDirLeftNumber++;
 		}
 	}
 
-	this->bValueLeftNumber = dirMode.size();
+	this->m_bValueLeftNumber = dirMode.size();
 
 	std::cout << "Left DWI Diffusion: "  << std::endl;
-	std::cout << "\tbaselineLeftNumber: "  << baselineLeftNumber  << std::endl;
-	std::cout << "\tbValueLeftNumber: "  << bValueLeftNumber    << std::endl;
-	std::cout << "\tgradientDirLeftNumber: " << gradientDirLeftNumber
+	std::cout << "\tbaselineLeftNumber: "  << m_baselineLeftNumber  << std::endl;
+	std::cout << "\tbValueLeftNumber: "  << m_bValueLeftNumber    << std::endl;
+	std::cout << "\tgradientDirLeftNumber: " << m_gradientDirLeftNumber
 		<< std::endl;
 
 	if ( reportfilename.length() > 0 )
 	{
 		std::ofstream outfile;
-		outfile.open( this->GlobalReportFileName.c_str(), std::ios::app);
+		outfile.open( this->m_GlobalReportFileName.c_str(), std::ios::app);
 		outfile << "--------------------------------" << std::endl;
 		outfile << "Diffusion Gradient information:" << std::endl;
 
 		outfile << "Left DWI Diffusion: "    << std::endl;
-		outfile << "\tbaselineLeftNumber: "  << baselineLeftNumber  << std::endl;
-		outfile << "\tbValueLeftNumber: "    << bValueLeftNumber    << std::endl;
-		outfile << "\tgradientDirLeftNumber: " << gradientDirLeftNumber
+		outfile << "\tbaselineLeftNumber: "  << m_baselineLeftNumber  << std::endl;
+		outfile << "\tbValueLeftNumber: "    << m_bValueLeftNumber    << std::endl;
+		outfile << "\tgradientDirLeftNumber: " << m_gradientDirLeftNumber
 			<< std::endl;
 
 		for ( unsigned int i = 0; i < DiffusionDirections.size(); i++ )
@@ -2814,18 +2816,18 @@ void CIntensityMotionCheck::collectDiffusionStatistics()
 
 	//   std::cout<<"this->GetDiffusionProtocol().gradients.size(): " <<
 	// this->GetDiffusionProtocol().gradients.size() <<std::endl;
-	for ( unsigned int i = 0; i < this->GradientDirectionContainer->size(); i++ )
+	for ( unsigned int i = 0; i < this->m_GradientDirectionContainer->size(); i++ )
 	{
 		if ( DiffusionDirections.size() > 0 )
 		{
 			bool newDir = true;
 			for ( unsigned int j = 0; j < DiffusionDirections.size(); j++ )
 			{
-				if ( this->GradientDirectionContainer->ElementAt(i)[0] ==
+				if ( this->m_GradientDirectionContainer->ElementAt(i)[0] ==
 					DiffusionDirections[j].gradientDir[0]
-				&& this->GradientDirectionContainer->ElementAt(i)[1] ==
+				&& this->m_GradientDirectionContainer->ElementAt(i)[1] ==
 					DiffusionDirections[j].gradientDir[1]
-				&& this->GradientDirectionContainer->ElementAt(i)[2] ==
+				&& this->m_GradientDirectionContainer->ElementAt(i)[2] ==
 					DiffusionDirections[j].gradientDir[2] )
 				{
 					DiffusionDirections[j].repetitionNumber++;
@@ -2835,9 +2837,9 @@ void CIntensityMotionCheck::collectDiffusionStatistics()
 			if ( newDir )
 			{
 				std::vector<double> dir;
-				dir.push_back(this->GradientDirectionContainer->ElementAt(i)[0]);
-				dir.push_back(this->GradientDirectionContainer->ElementAt(i)[1]);
-				dir.push_back(this->GradientDirectionContainer->ElementAt(i)[2]);
+				dir.push_back(this->m_GradientDirectionContainer->ElementAt(i)[0]);
+				dir.push_back(this->m_GradientDirectionContainer->ElementAt(i)[1]);
+				dir.push_back(this->m_GradientDirectionContainer->ElementAt(i)[2]);
 
 				DiffusionDir diffusionDir;
 				diffusionDir.gradientDir = dir;
@@ -2849,9 +2851,9 @@ void CIntensityMotionCheck::collectDiffusionStatistics()
 		else
 		{
 			std::vector<double> dir;
-			dir.push_back(this->GradientDirectionContainer->ElementAt(i)[0]);
-			dir.push_back(this->GradientDirectionContainer->ElementAt(i)[1]);
-			dir.push_back(this->GradientDirectionContainer->ElementAt(i)[2]);
+			dir.push_back(this->m_GradientDirectionContainer->ElementAt(i)[0]);
+			dir.push_back(this->m_GradientDirectionContainer->ElementAt(i)[1]);
+			dir.push_back(this->m_GradientDirectionContainer->ElementAt(i)[2]);
 
 			DiffusionDir diffusionDir;
 			diffusionDir.gradientDir = dir;
@@ -2875,7 +2877,7 @@ void CIntensityMotionCheck::collectDiffusionStatistics()
 			&& DiffusionDirections[i].gradientDir[1] == 0.0
 			&& DiffusionDirections[i].gradientDir[2] == 0.0 )
 		{
-			this->baselineNumber = DiffusionDirections[i].repetitionNumber;
+			this->m_baselineNumber = DiffusionDirections[i].repetitionNumber;
 			//      std::cout<<" DiffusionDirections[i].repetitionNumber: " <<i<<"
 			//  "<<DiffusionDirections[i].repetitionNumber <<std::endl;
 		}
@@ -2922,22 +2924,20 @@ void CIntensityMotionCheck::collectDiffusionStatistics()
 	//     std::cout<<"  repetNum.size(): " <<  repetNum.size() <<std::endl;
 	//     std::cout<<"  dirMode.size(): " <<  dirMode.size() <<std::endl;
 
-	this->gradientDirNumber = repetNum.size();
-	this->bValueNumber = dirMode.size();
+	this->m_gradientDirNumber = repetNum.size();
+	this->m_bValueNumber = dirMode.size();
 
 	if ( repetNum.size() > 1 )
 	{
-		repetitionNumber = repetNum[0];
+		m_repetitionNumber = repetNum[0];
 		for ( unsigned int i = 1; i < repetNum.size(); i++ )
 		{
 			if ( repetNum[i] != repetNum[0] )
 			{
-				std::cout
-					<<
-					"DWI data error. Not all the gradient directions have same repetition. "
-            << "GradientNumber= " << i << " " << repetNum[i] << " != " << repetNum[0]
-					<< std::endl;
-				repetitionNumber = -1;
+				std::cout 	<< "DWI data error. Not all the gradient directions have same repetition. "
+           				 	<< "GradientNumber= " << i << " " << repetNum[i] << " != " << repetNum[0]
+						<< std::endl;
+				m_repetitionNumber = -1;
 			}
 		}
 	}
@@ -2947,8 +2947,8 @@ void CIntensityMotionCheck::collectDiffusionStatistics()
 			<< std::endl;
 	}
 
-	this->gradientNumber = this->GradientDirectionContainer->size()
-		- this->baselineNumber;
+	this->m_gradientNumber = this->m_GradientDirectionContainer->size()
+		- this->m_baselineNumber;
 
 	//   std::cout<<"DWI Diffusion: "    <<std::endl;
 	//  std::cout<<"  baselineNumber: "    <<baselineNumber  <<std::endl;
@@ -3220,7 +3220,7 @@ bool CIntensityMotionCheck::DiffusionCheck( DwiImageType::Pointer dwi)
 		outfile << "================================" << std::endl;
 	}
 
-	bool returnValte = true;
+	bool returnValue = true;
 
 	outfile << std::endl;
 	if ( !protocol->GetDiffusionProtocol().bCheck )
@@ -3237,7 +3237,7 @@ bool CIntensityMotionCheck::DiffusionCheck( DwiImageType::Pointer dwi)
 		if ( !dwi )
 		{
 			std::cout << "DWI error." << std::endl;
-			bGetGradientDirections = false;
+			m_bGetGradientDirections = false;
 			return false;
 		}
 
@@ -3270,7 +3270,7 @@ bool CIntensityMotionCheck::DiffusionCheck( DwiImageType::Pointer dwi)
 					outfile << "Diffusion_information_checking"
 					<< "DWMRI_bValue_check " << "FAILED" << std::endl;
 				if(protocol->GetReportType() == 1)
-					outfile << "DWMRI_bValue\t\tmismatch with DWI = " << this->b0
+					outfile << "DWMRI_bValue\t\tmismatch with DWI = " << this->m_b0
 					<< "\t\t\t\tprotocol = "
 					<< protocol->GetDiffusionProtocol().bValue << std::endl;
 			}
@@ -3286,13 +3286,13 @@ bool CIntensityMotionCheck::DiffusionCheck( DwiImageType::Pointer dwi)
 				itk::EncapsulateMetaData<std::string>(
 					dwi->GetMetaDataDictionary(), "DWMRI_b-value", ossMetaString.str() );
 			}
-			returnValte = false;
+			returnValue = false;
 		}
 
 		// HJJ -- measurement frame is not being properly used here.
 		// measurement frame
-		const vnl_matrix_fixed<double, 3,
-			3> imageMeasurementFrame = GetMeasurementFrame(this->m_DwiForcedConformanceImage);
+		const vnl_matrix_fixed<double, 3, 3> imageMeasurementFrame 
+			= GetMeasurementFrame(this->m_DwiForcedConformanceImage);
 		// It is not required that the measurement frames are the same for all images.
 		// Images collected at different oblique angles will likely have different measurement frames.
 
@@ -3327,60 +3327,84 @@ bool CIntensityMotionCheck::DiffusionCheck( DwiImageType::Pointer dwi)
 				// direction.
 				// const float gradientTolerancePercentOfSmallestAngle=0.2;
 				const float gradientToleranceForSameness = 1; // Allow 1 degree
-				// difference for                                                      //
-				// sameness//(180.0/static_cast<float>(protocol->GetDiffusionProtocol().gradients.size()))*gradientTolerancePercentOfSmallestAngle;
+				// difference for sameness
+				//(180.0/static_cast<float>(protocol->GetDiffusionProtocol().gradients.size()))
+				//*gradientTolerancePercentOfSmallestAngle;
 
-				const vnl_matrix_fixed<double, 3,
-					3> mfInverseFromProtocol = vnl_inverse(
-					protocol->GetDiffusionProtocol().measurementFrame);
+				const vnl_matrix_fixed<double, 3, 3> mfInverseFromProtocol
+					= vnl_inverse(protocol->GetDiffusionProtocol().measurementFrame);
 
 				vnl_vector_fixed<double, 3> tempGradientFromProtocol;
-				tempGradientFromProtocol[0]
-				= protocol->GetDiffusionProtocol().gradients[i][0];
-				tempGradientFromProtocol[1]
-				= protocol->GetDiffusionProtocol().gradients[i][1];
-				tempGradientFromProtocol[2]
-				= protocol->GetDiffusionProtocol().gradients[i][2];
-				tempGradientFromProtocol.normalize(); // Sometimes this is not
-				// normalized due to numerical
-				// precision problems.
-				const vnl_vector_fixed<double,
-					3> gradientFromProtocol = mfInverseFromProtocol
-					* tempGradientFromProtocol;
+				tempGradientFromProtocol[0] = protocol->GetDiffusionProtocol().gradients[i][0];
+				tempGradientFromProtocol[1] = protocol->GetDiffusionProtocol().gradients[i][1];
+				tempGradientFromProtocol[2] = protocol->GetDiffusionProtocol().gradients[i][2];
+				
+				const vnl_vector_fixed<double,3> gradientFromProtocol
+					= mfInverseFromProtocol * tempGradientFromProtocol;
+				const vnl_matrix_fixed<double, 3, 3> mfInverseFromImage
+					= vnl_inverse(imageMeasurementFrame);
+				vnl_vector_fixed<double, 3> tempGradientFromImage
+					= GradContainer->ElementAt(i);				
+				
+				bool bColinear = false;
+				double gradientMinAngle = 90.0;
+				double gradMagnitude = 0.0;
+				double gradProtocolMagnitude = 0.0;
+				//if ( vcl_abs(protocol->GetDiffusionProtocol().gradients[i][0]
+				//	- GradContainer->ElementAt(i)[0]) < 0.00001
+				//	&& vcl_abs(protocol->GetDiffusionProtocol().gradients[i][1]
+				//	- GradContainer->ElementAt(i)[1]) < 0.00001
+				//	&& vcl_abs(protocol->GetDiffusionProtocol().gradients[i][2]
+				//	- GradContainer->ElementAt(i)[2]) < 0.00001 )
+				//	bColinear = true; 
 
-				const vnl_matrix_fixed<double, 3, 3> mfInverseFromImage = vnl_inverse(
-					imageMeasurementFrame);
-				vnl_vector_fixed<double,
-					3> tempGradientFromImage = GradContainer->ElementAt(i);
-				tempGradientFromImage.normalize();
-				const vnl_vector_fixed<double,
-					3>   gradientFromImage = mfInverseFromImage * tempGradientFromImage;
-				double gradientDot = dot_product(
-					gradientFromProtocol,
-					gradientFromImage);
+				// to check baselines
+				if ( vcl_abs( tempGradientFromImage.magnitude() ) < 1e-4 )
+				{
+					if( vcl_abs( tempGradientFromProtocol.magnitude() ) < 1e-4 )
+						bColinear = true; // image: baseline   protocol: baseline
+					else
+						bColinear = false; // image: baseline  protocol: non-baseline; missing dir information
+				}
+				else
+				{
+					if( vcl_abs( tempGradientFromProtocol.magnitude() ) < 1e-4 )
+						bColinear = false;  // image: non-baseline  protocol: baseline
+					else	 
+					{
+						tempGradientFromProtocol.normalize(); 
+						tempGradientFromImage.normalize();
+						// Sometimes this is not
+						// normalized due to numerical precision problems.
+					
+						const vnl_vector_fixed<double, 3> gradientFromImage
+							= mfInverseFromImage * tempGradientFromImage;
+						double gradientDot = dot_product(gradientFromProtocol, gradientFromImage);
 
-				gradientDot = ( gradientDot > 1 ) ? 1 : gradientDot;
-				// Avoid numerical precision problems
-				gradientDot = ( gradientDot < -1 ) ? -1 : gradientDot; 
-				// Avoid numerical precision problems
-				const double gradientAngle = vcl_abs( vcl_acos(
-					gradientDot) * 180.0 * vnl_math::one_over_pi);
-				const double gradientMinAngle
-					= vcl_min( gradientAngle, vcl_abs(180.0 - gradientAngle) );
-				// Now see if the gradients are colinear in opposite directions;
-#define USE_GRADIENT_COLINEARITY_AS_TEST 1
-#if USE_GRADIENT_COLINEARITY_AS_TEST
-				const double gradMagnitude = gradientFromImage.magnitude();
-				if ( ( gradientMinAngle < gradientToleranceForSameness )
-					|| ( gradMagnitude < 1e-4 ) )
-#else
-				if ( vcl_abs(protocol->GetDiffusionProtocol().gradients[i][0]
-				- GradContainer->ElementAt(i)[0]) < 0.00001
-					&& vcl_abs(protocol->GetDiffusionProtocol().gradients[i][1]
-				- GradContainer->ElementAt(i)[1]) < 0.00001
-					&& vcl_abs(protocol->GetDiffusionProtocol().gradients[i][2]
-				- GradContainer->ElementAt(i)[2]) < 0.00001 )
-#endif
+						gradientDot = ( gradientDot > 1 ) ? 1 : gradientDot;
+						// Avoid numerical precision problems
+						gradientDot = ( gradientDot < -1 ) ? -1 : gradientDot; 
+						// Avoid numerical precision problems
+						const double gradientAngle = vcl_abs( vcl_acos(
+							gradientDot) * 180.0 * vnl_math::one_over_pi);
+						gradientMinAngle
+							= vcl_min( gradientAngle, vcl_abs(180.0 - gradientAngle) );
+
+						// Now see if the gradients are colinear in opposite directions;
+						gradMagnitude = gradientFromImage.magnitude();
+						gradProtocolMagnitude = tempGradientFromProtocol.magnitude();
+						//std::cout << "gradProtocolMagnitude: " 
+						//<< gradProtocolMagnitude << std::endl;
+						if ( gradientMinAngle < gradientToleranceForSameness )
+							bColinear = true;   
+							// image: non-baseline  protocol: non-baseline --colinear
+						else
+							bColinear = false;   
+							// image: non-baseline  protocol: non-baseline --non-colinear
+					}
+				}
+
+				if( bColinear )
 				{
 					result = result && true;
 				}
@@ -3389,7 +3413,7 @@ bool CIntensityMotionCheck::DiffusionCheck( DwiImageType::Pointer dwi)
 					if ( bReport )
 					{
 						outfile  << "DWMRI_gradient_" << std::setw(4)
-							<< std::setfill('0') << i << "\tmismatch with DWI = [ "
+							<< std::setfill('0') << i << " mismatch! DWI: [ "
 							<< std::setw(9) << std::setiosflags(std::ios::fixed)
 							<< std::setprecision(6) << std::setiosflags(
 							std::ios::right)
@@ -3401,7 +3425,7 @@ bool CIntensityMotionCheck::DiffusionCheck( DwiImageType::Pointer dwi)
 							<< std::setw(9) << std::setiosflags(std::ios::fixed)
 							<< std::setprecision(6) << std::setiosflags(
 							std::ios::right)
-							<< GradContainer->ElementAt(i)[2] << " ] \tprotocol = [ "
+							<< GradContainer->ElementAt(i)[2] << " ] protocol: [ "
 							<< std::setw(9) << std::setiosflags(std::ios::fixed)
 							<< std::setprecision(6) << std::setiosflags(
 							std::ios::right)
@@ -3414,17 +3438,16 @@ bool CIntensityMotionCheck::DiffusionCheck( DwiImageType::Pointer dwi)
 							<< std::setprecision(6) << std::setiosflags(
 							std::ios::right)
 							<< protocol->GetDiffusionProtocol().gradients[i][2]
-						<< " ]"
+							<< " ]"
 							<< "  Colinearity angle (degrees): "
-							<<  gradientMinAngle << " < "
-							<< gradientToleranceForSameness
-							<< " : "
-							<< gradMagnitude << " : "
-							<< ( gradientMinAngle <
-							gradientToleranceForSameness ) << std::endl;
+							<< gradientMinAngle << " > "
+							<< gradientToleranceForSameness	
+							//<< " : "<< gradMagnitude << " - "
+							//<< gradProtocolMagnitude 
+							<< std::endl;
 
-						std::cout << "DWMRI_gradient_" << std::setw(4)
-							<< std::setfill('0') << i << "\tmismatch with DWI = [ "
+							std::cout << "DWMRI_gradient_" << std::setw(4)
+							<< std::setfill('0') << i << " mismatch! DWI: [ "
 							<< std::setw(9) << std::setiosflags(std::ios::fixed)
 							<< std::setprecision(6) << std::setiosflags(
 							std::ios::right)
@@ -3436,29 +3459,28 @@ bool CIntensityMotionCheck::DiffusionCheck( DwiImageType::Pointer dwi)
 							<< std::setw(9) << std::setiosflags(std::ios::fixed)
 							<< std::setprecision(6) << std::setiosflags(
 							std::ios::right)
-							<< GradContainer->ElementAt(i)[2] << " ] \tprotocol = [ "
+							<< GradContainer->ElementAt(i)[2] << " ] protocol: [ "
 							<< std::setw(9) << std::setiosflags(std::ios::fixed)
 							<< std::setprecision(6) << std::setiosflags(
 							std::ios::right)
 							<< protocol->GetDiffusionProtocol().gradients[i][0]
-						<< " "
+							<< " "
 							<< std::setw(9) << std::setiosflags(std::ios::fixed)
 							<< std::setprecision(6) << std::setiosflags(
 							std::ios::right)
 							<< protocol->GetDiffusionProtocol().gradients[i][1]
-						<< " "
+							<< " "
 							<< std::setw(9) << std::setiosflags(std::ios::fixed)
 							<< std::setprecision(6) << std::setiosflags(
 							std::ios::right)
 							<< protocol->GetDiffusionProtocol().gradients[i][2]
-						<< " ]"
+							<< " ]"
 							<< "  Colinearity angle (degrees): "
-							<<  gradientMinAngle << " < "
+							<<  gradientMinAngle << " > "
 							<< gradientToleranceForSameness
-							<< " : "
-							<< gradMagnitude << " : "
-							<< ( gradientMinAngle <
-							gradientToleranceForSameness ) << std::endl;
+							//<< " : "<< gradMagnitude << " - "
+							//<< gradProtocolMagnitude 
+							<< std::endl;
 					}
 
 					if ( protocol->GetDiffusionProtocol().bUseDiffusionProtocol )
@@ -3471,13 +3493,13 @@ bool CIntensityMotionCheck::DiffusionCheck( DwiImageType::Pointer dwi)
 							<< std::setprecision(6)
 							<< std::setiosflags(std::ios::right)
 							<< protocol->GetDiffusionProtocol().gradients[i][0]
-						<< "    "
+							<< "    "
 							<< std::setw(9)
 							<< std::setiosflags(std::ios::fixed)
 							<< std::setprecision(6)
 							<< std::setiosflags(std::ios::right)
 							<< protocol->GetDiffusionProtocol().gradients[i][1]
-						<< "    "
+							<< "    "
 							<< std::setw(9)
 							<< std::setiosflags(std::ios::fixed)
 							<< std::setprecision(6)
@@ -3489,18 +3511,18 @@ bool CIntensityMotionCheck::DiffusionCheck( DwiImageType::Pointer dwi)
 							ossMetaKey.str(),  ossMetaString.str() );
 
 						qcResult->GetIntensityMotionCheckResult()[i].ReplacedDir[0]
-						=  protocol->GetDiffusionProtocol().gradients[i][0];
+							=  protocol->GetDiffusionProtocol().gradients[i][0];
 						qcResult->GetIntensityMotionCheckResult()[i].ReplacedDir[1]
-						=  protocol->GetDiffusionProtocol().gradients[i][1];
+							=  protocol->GetDiffusionProtocol().gradients[i][1];
 						qcResult->GetIntensityMotionCheckResult()[i].ReplacedDir[2]
-						=  protocol->GetDiffusionProtocol().gradients[i][2];
+							=  protocol->GetDiffusionProtocol().gradients[i][2];
 
 						qcResult->GetIntensityMotionCheckResult()[i].CorrectedDir[0]
-						= protocol->GetDiffusionProtocol().gradients[i][0];
+							= protocol->GetDiffusionProtocol().gradients[i][0];
 						qcResult->GetIntensityMotionCheckResult()[i].CorrectedDir[1]
-						= protocol->GetDiffusionProtocol().gradients[i][1];
+							= protocol->GetDiffusionProtocol().gradients[i][1];
 						qcResult->GetIntensityMotionCheckResult()[i].CorrectedDir[2]
-						= protocol->GetDiffusionProtocol().gradients[i][2];
+							= protocol->GetDiffusionProtocol().gradients[i][2];
 					}
 
 					qcResult->GetDiffusionInformationCheckResult().gradient = false;
@@ -3514,7 +3536,7 @@ bool CIntensityMotionCheck::DiffusionCheck( DwiImageType::Pointer dwi)
 			qcResult->GetDiffusionInformationCheckResult().gradient = true;
 			if ( bReport )
 			{
-				if( protocol->GetReportType() == 1 || protocol->GetReportType() == 0 )   
+				if( protocol->GetReportType() == 1 || protocol->GetReportType() == 0 )
 					outfile << "Diffusion gradient Check: \tOK" << std::endl;
 				if( protocol->GetReportType() == 2 )   
 					outfile << "Diffusion_information_checking "
@@ -3531,22 +3553,28 @@ bool CIntensityMotionCheck::DiffusionCheck( DwiImageType::Pointer dwi)
 					outfile << "Diffusion gradient Check: \tFAILED" << std::endl;
 				if( protocol->GetReportType() == 2 )   
 					outfile << "Diffusion_information_checking "
-					<< "Diffusion_vector_check "<< "FAILED" << std::endl;
+						<< "Diffusion_vector_check "<< "FAILED" << std::endl;
+				if(protocol->GetDiffusionProtocol().bUseDiffusionProtocol)
+					outfile << "Mismatched information was replaced with that from protocol." 
+						<< std::endl;
+
 			}
 			std::cout << "Diffusion gradient Check: \tFAILED" << std::endl;
+			if(protocol->GetDiffusionProtocol().bUseDiffusionProtocol)
+				std::cout << "Mismatched information was replaced with that from protocol." 
+						<< std::endl;
 		}
 
-		returnValte = returnValte && result;
+		returnValue = returnValue && result;
 
-		if ( !returnValte )
+		if ( !returnValue )
 		{
 			std::cout
-				<< "Mismatched informations was replaced with that from protocol."
-				<< std::endl;
+				<< "Diffusion information Check FAILED." << std::endl;
 			if ( bReport )
 			{
 				outfile
-					<< "Mismatched information was replaced with that from protocol."
+					<< "Diffusion information Check FAILED." 
 					<< std::endl;
 			}
 		}
@@ -3558,8 +3586,8 @@ bool CIntensityMotionCheck::DiffusionCheck( DwiImageType::Pointer dwi)
 	}
 
 	// then save the updated DWI
-	if ( protocol->GetDiffusionProtocol().diffusionReplacedDWIFileNameSuffix.
-		length() > 0
+	if ( protocol->GetDiffusionProtocol().diffusionReplacedDWIFileNameSuffix.length() > 0
+		&& protocol->GetDiffusionProtocol().bUseDiffusionProtocol
 		&& ( !qcResult->GetDiffusionInformationCheckResult().b
 		|| !qcResult->GetDiffusionInformationCheckResult().gradient
 		|| !qcResult->GetDiffusionInformationCheckResult().measurementFrame ) )
@@ -3616,7 +3644,7 @@ bool CIntensityMotionCheck::DiffusionCheck( DwiImageType::Pointer dwi)
 		std::cout << "DONE" << std::endl;
 	}
 
-	return returnValte;
+	return returnValue;
 }
 
 bool CIntensityMotionCheck::MakeDefaultProtocol( Protocol *protocol )
@@ -3628,7 +3656,7 @@ bool CIntensityMotionCheck::MakeDefaultProtocol( Protocol *protocol )
 		return false;
 	}
 
-	if ( !bDwiLoaded  )
+	if ( !m_bDwiLoaded  )
 	{
 		LoadDwiImage();
 	}
@@ -3728,14 +3756,14 @@ bool CIntensityMotionCheck::MakeDefaultProtocol( Protocol *protocol )
 	GetGradientDirections();
 
 	protocol->GetDiffusionProtocol().bCheck = true;
-	protocol->GetDiffusionProtocol().bValue = this->b0;
+	protocol->GetDiffusionProtocol().bValue = this->m_b0;
 
-	for ( unsigned int i = 0; i < GradientDirectionContainer->size(); i++ )
+	for ( unsigned int i = 0; i < m_GradientDirectionContainer->size(); i++ )
 	{
 		vnl_vector_fixed<double, 3> vect;
-		vect[0] = ( GradientDirectionContainer->ElementAt(i)[0] );
-		vect[1] = ( GradientDirectionContainer->ElementAt(i)[1] );
-		vect[2] = ( GradientDirectionContainer->ElementAt(i)[2] );
+		vect[0] = ( m_GradientDirectionContainer->ElementAt(i)[0] );
+		vect[1] = ( m_GradientDirectionContainer->ElementAt(i)[1] );
+		vect[2] = ( m_GradientDirectionContainer->ElementAt(i)[2] );
 
 		protocol->GetDiffusionProtocol().gradients.push_back(vect);
 	}

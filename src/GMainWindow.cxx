@@ -842,32 +842,12 @@ void GMainWindow::on_actionOpenDWINrrd_triggered()
     }
   statusBar()->showMessage(tr(" done"), 2000);
   std::cout << "done " << std::endl;
-  //    std::cout<<"Image size"<<
-  //
-  // DwiReader->GetOutput()->GetLargestPossibleRegion().GetSize().GetSizeDimension()<<":
-  // ";
-  //
-  //
-  //
-  //
-  //
-  // std::cout<<DwiReader->GetOutput()->GetLargestPossibleRegion().GetSize()[0]<<"
-  // ";
-  //
-  //
-  //
-  //
-  //
-  // std::cout<<DwiReader->GetOutput()->GetLargestPossibleRegion().GetSize()[1]<<"
-  // ";
-  //
-  //
-  //
-  //
-  //
-  // std::cout<<DwiReader->GetOutput()->GetLargestPossibleRegion().GetSize()[2]<<std::endl;
-  //    std::cout<<"Pixel Vector Length:
-  // "<<DwiReader->GetOutput()->GetVectorLength()<<std::endl;
+  //std::cout<<"Image size"<<
+  //DwiReader->GetOutput()->GetLargestPossibleRegion().GetSize().GetSizeDimension()<<": ";
+  //std::cout<<DwiReader->GetOutput()->GetLargestPossibleRegion().GetSize()[0]<<" ";
+  //std::cout<<DwiReader->GetOutput()->GetLargestPossibleRegion().GetSize()[1]<<" ";
+  //std::cout<<DwiReader->GetOutput()->GetLargestPossibleRegion().GetSize()[2]<<std::endl;
+  //std::cout<<"Pixel Vector Length: "<<DwiReader->GetOutput()->GetVectorLength()<<std::endl;
 
   bDwiLoaded = true;
   DWIImage = DwiReader->GetOutput();
