@@ -83,7 +83,7 @@ QTSETDIR ()
   fi
 }
 
-
+export QTDIR="" #Explicitly unset the QTDIR variable to avoid fink installations of QT.
 QTSETDIR /opt/qt-4.6.1
 QTSETDIR /opt/qt-4.6-rc1
 QTSETDIR /opt/qt-4.5.2/
