@@ -1,11 +1,12 @@
-PROJECT ( DTIPrep )
+project(DTIPrep)
 set(LOCAL_PROJECT_NAME DTIPrep)
-cmake_minimum_required(VERSION 2.6)
-cmake_policy(VERSION 2.6)
+cmake_minimum_required(VERSION 2.8)
+cmake_policy(VERSION 2.8)
 
-ENABLE_TESTING()
+enable_testing()
 include(Dart)
-#include(CPack)
+include(CPack)
+include(ExternalProject)
 
 ## A simple macro to set variables ONLY if it has not been set
 ## This is needed when stand-alone packages are combined into
@@ -25,163 +26,194 @@ SETIFEMPTY(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/lib)
 SETIFEMPTY(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/lib)
 SETIFEMPTY(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/bin)
 SETIFEMPTY(CMAKE_BUNDLE_OUTPUT_DIRECTORY  ${CMAKE_CURRENT_BINARY_DIR}/bin)
+SET(CMAKE_INSTALL_PREFIX ${CMAKE_CURRENT_BINARY_DIR} CACHE PATH "The place to install everything" FORCE)
 
+# Compute -G arg for configuring external projects with the same CMake generator:
+#
+if(CMAKE_EXTRA_GENERATOR)
+  set(gen "${CMAKE_EXTRA_GENERATOR} - ${CMAKE_GENERATOR}")
+else()
+  set(gen "${CMAKE_GENERATOR}")
+endif()
 
-if(NOT ITK_FOUND)
-    find_package(ITK REQUIRED)
-    include(${ITK_USE_FILE})
-endif(NOT ITK_FOUND)
+set(BUILD_SHARED_LIBS OFF) ## shared libs.
 
-if(NOT VTK_FOUND)
-    find_package(VTK REQUIRED)
-    include(${VTK_USE_FILE})
-endif(NOT VTK_FOUND)
-
-##  In many cases stand-alone sub-projects include private versions
-##  of DicomToNrrd
-##  that can be built stand alone are combined in larger packages.
-##  This logic will include DicomToNrrd only if it
-##  has not already been included by a previous package.
-if(NOT ADDFIRSTINSTANCE_DIRECTORY)
-macro(ADDFIRSTINSTANCE_DIRECTORY PROJECT_NAMESPACE STANDALONENAME)
-  if(BUILD${STANDALONENAME}FROM${PROJECT_NAMESPACE} OR NOT ${STANDALONENAME}_ALREADYINCLUDED)
-    set(BUILD${STANDALONENAME}FROM${PROJECT_NAMESPACE} ON CACHE BOOL "FLAG FOR ${STANDALONENAME} building to prevent recursion.")
-    set(${STANDALONENAME}_ALREADYINCLUDED ON CACHE BOOL "FLAG FOR ${STANDALONENAME} to indicate that it is already included.")
-    add_subdirectory(${STANDALONENAME})
-  endif( BUILD${STANDALONENAME}FROM${PROJECT_NAMESPACE} OR NOT ${STANDALONENAME}_ALREADYINCLUDED)
-endmacro(ADDFIRSTINSTANCE_DIRECTORY)
-endif(NOT ADDFIRSTINSTANCE_DIRECTORY)
-###
-ADDFIRSTINSTANCE_DIRECTORY(${LOCAL_PROJECT_NAME} BRAINSFit)
-
-# use what QVTK built with
-SET(QT_MOC_EXECUTABLE ${VTK_QT_MOC_EXECUTABLE} CACHE FILEPATH "")
-SET(QT_UIC_EXECUTABLE ${VTK_QT_UIC_EXECUTABLE} CACHE FILEPATH "")
-SET(QT_QMAKE_EXECUTABLE ${VTK_QT_QMAKE_EXECUTABLE} CACHE FILEPATH "")
-SET(DESIRED_QT_VERSION ${VTK_DESIRED_QT_VERSION} CACHE FILEPATH "")
-
-if(NOT Qt_FOUND)
-FIND_PACKAGE( Qt REQUIRED )
-IF(QT_USE_FILE)
-  SET(QT_USE_QTXML TRUE)
-  SET(QT_USE_DBUS FALSE)
-  INCLUDE(${QT_USE_FILE})
-ENDIF(QT_USE_FILE)
-endif(NOT Qt_FOUND)
-
-# Use the include path and library for Qt that is used by VTK.
-INCLUDE_DIRECTORIES(
-  ${CMAKE_CURRENT_BINARY_DIR}
-  ${CMAKE_CURRENT_SOURCE_DIR}
-  ${VTK_INCLUDE_DIR}
-  ${ITK_INCLUDE_DIR}
-  ${QT_INCLUDE_DIR}
-)
-
-# No need to add with nothing to compile. ADD_SUBDIRECTORY(BRAINSFit_Common)
-##HACK:  
-SET(BRAINSFit_SOURCE_DIR  ${CMAKE_CURRENT_SOURCE_DIR}/BRAINSFit)
-INCLUDE_DIRECTORIES(${BRAINSFit_SOURCE_DIR})
-INCLUDE_DIRECTORIES(${BRAINSFit_SOURCE_DIR}/BRAINSFit_Common)
-INCLUDE_DIRECTORIES(${BRAINSFit_SOURCE_DIR}/LargestForegroundFilledMaskImageFilter)
-INCLUDE_DIRECTORIES(${BRAINSFit_SOURCE_DIR}/FindCenterOfBrainFilter)
-
-
-#ADD_SUBDIRECTORY(src)
-#ADD_SUBDIRECTORY(gui)
-
-SET( DTIPrep_SRCS
-  src/main.cxx
-  src/GMainWindow.cxx
-  src/Dicom2NrrdPanel.cxx
-  src/IntensityMotionCheckPanel.cxx
-  src/ImageView2DPanelWithControls.cxx
-  src/IntensityMotionCheck.cxx
-  src/IntraGradientRigidRegistration.cxx
-  src/InterGradientRigidRegistration.cxx
-  src/RigidRegistration.cxx
-  src/ThreadIntensityMotionCheck.cxx
-  src/ThreadEddyMotionCorrect.cxx
-  src/ThreadDicomToNrrd.cxx
-  src/ThreadDicomSeriesRead.cxx
-  src/XmlStreamReader.cpp
-  src/XmlStreamWriter.cpp
-  src/Protocol.cpp
-  src/QCResult.cpp
-# new itk Classes
-  src/itkDWICropper.cpp
-  src/itkDWIBaselineAverager.cpp
-  src/itkDWIQCSliceChecker.cpp
-  src/itkDWIQCInterlaceChecker.cpp
-  src/itkDWIQCGradientChecker.cpp
-  src/itkDWIEddyCurrentHeadMotionCorrector.cpp
-# Utah
-#  src/itkDWIHeadMotionEddyCurrentCorrection.txx
-  src/itkDWIHeadMotionEddyCurrentCorrection.cpp
-  src/itkGradientSteepestDescentBaseOptimizer.cxx
-  src/itkGradientSteepestDescentOptimizer.cxx
-# Iowa
-  src/itkVectorImageRegisterAffineFilter.h
-  src/itkVectorImageRegisterAffineFilter.txx
-)
-
-SET( DTIPrep_HRDS
-  src/GMainWindow.h
-  src/Dicom2NrrdPanel.h
-  src/IntensityMotionCheckPanel.h
-  src/ImageView2DPanelWithControls.h
-  src/ThreadIntensityMotionCheck.h
-  src/ThreadEddyMotionCorrect.h
-  src/ThreadDicomToNrrd.h
-  src/ThreadDicomSeriesRead.h
-)
-
-SET( DTIPrep_UIS
-  gui/MainWindow.ui
-  gui/Dicom2NrrdPanel.ui
-  gui/IntensityMotionCheckPanel.ui
-  gui/ImageView2DPanelWithControls.ui
-)
-
-SET(DTIPrep_RCCS gui/DTIPrep.qrc)
-
-# generate rules for building source files from the resources
-QT4_ADD_RESOURCES(RCC_SRCS ${DTIPrep_RCCS})
-
-QT4_WRAP_UI( UIHeaders ${DTIPrep_UIS} )
-QT4_WRAP_CPP( MOCSrcs ${DTIPrep_HRDS} )
-
-ADD_DEFINITIONS(-DQT_GUI_LIBS -DQT_CORE_LIB -DQT3_SUPPORT)
-
-SET_SOURCE_FILES_PROPERTIES(${DTIPrep_SRCS} PROPERTIES
-  OBJECT_DEPENDS "${UIHeaders}")
-
-if(COMMAND cmake_policy)
-  cmake_policy(SET CMP0003 NEW)
-endif(COMMAND cmake_policy)
-
-ADD_EXECUTABLE( DTIPrep
-  MACOSX_BUNDLE
-  ${DTIPrep_SRCS}
-  ${UISrcs}
-  ${MOCSrcs}
-  ${RCC_SRCS}
-)
-
-TARGET_LINK_LIBRARIES( DTIPrep
-  QVTK
-  ${QT_LIBRARIES}
-  ${QT_QTDBUS_LIBRARY}
-  ${ITK_LIBRARIES}
-  ${VTK_LIBRARIES}
-  BRAINSFITCOMMONLIB
+SET(LOCAL_CMAKE_BUILD_OPTIONS
+  -DCMAKE_SKIP_RPATH:BOOL=ON
+  -DCMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
+  -DCMAKE_CXX_FLAGS_RELEASE:STRING=${CMAKE_CXX_FLAGS_RELEASE}
+  -DCMAKE_CXX_FLAGS_DEBUG:STRING=${CMAKE_CXX_FLAGS_DEBUG}
+  -DCMAKE_CXX_FLAGS:STRING=${CMAKE_CXX_FLAGS}
+  -DCMAKE_C_FLAGS_RELEASE:STRING=${CMAKE_C_FLAGS_RELEASE}
+  -DCMAKE_C_FLAGS_DEBUG:STRING=${CMAKE_C_FLAGS_DEBUG}
+  -DCMAKE_C_FLAGS:STRING=${CMAKE_C_FLAGS}
+  -DBUILD_EXAMPLES:BOOL=OFF
+  -DBUILD_SHARED_LIBS:BOOL=${BUILD_SHARED_LIBS}
+  -DBUILD_TESTING:BOOL=OFF
+  -DCMAKE_GENERATOR:STRING=${CMAKE_GENERATOR}
+  -DCMAKE_EXTRA_GENERATOR:STRING=${CMAKE_EXTRA_GENERATOR}
+  -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_INSTALL_PREFIX}
+  -DCMAKE_LIBRARY_OUTPUT_DIRECTORY:PATH=${CMAKE_LIBRARY_OUTPUT_DIRECTORY}
+  -DCMAKE_ARCHIVE_OUTPUT_DIRECTORY:PATH=${CMAKE_ARCHIVE_OUTPUT_DIRECTORY}
+  -DCMAKE_RUNTIME_OUTPUT_DIRECTORY:PATH=${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
+  -DCMAKE_BUNDLE_OUTPUT_DIRECTORY:PATH=${CMAKE_BUNDLE_OUTPUT_DIRECTORY}
+  -DLIBRARY_OUTPUT_PATH:PATH=${CMAKE_LIBRARY_OUTPUT_DIRECTORY}
+  -DEXECUTABLE_OUTPUT_PATH:PATH=${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
+  -DDART_TESTING_TIMEOUT:STRING=${DART_TESTING_TIMEOUT}
+  -DMEMORYCHECK_COMMAND_OPTIONS:STRING=${MEMORYCHECK_COMMAND_OPTIONS}
+  -DMEMORYCHECK_COMMAND:PATH=${MEMORYCHECK_COMMAND}
+  -DCMAKE_SHARED_LINKER_FLAGS:STRING=${CMAKE_SHARED_LINKER_FLAGS}
+  -DCMAKE_EXE_LINKER_FLAGS:STRING=${CMAKE_EXE_LINKER_FLAGS}
+  -DCMAKE_MODULE_LINKER_FLAGS:STRING=${CMAKE_MODULE_LINKER_FLAGS}
+  -DSITE:STRING=${SITE}
+  -DBUILDNAME:STRING=${BUILDNAME}
 )
 
 
-INSTALL(TARGETS
-  DTIPrep
-                 BUNDLE DESTINATION  bin
-                 RUNTIME DESTINATION bin
-                 LIBRARY DESTINATION lib
-                 ARCHIVE DESTINATION lib/static)
+#-----------------------------------------------------------------------------
+# Get and build itk
+set(ITK_DIR ${CMAKE_INSTALL_PREFIX}/lib/InsightToolkit)
+## empty until ITK is brought into here as an ExternalProject
+set ( ITK_DEPEND "") 
+set(proj Insight)
+ExternalProject_Add(${proj}
+  CVS_REPOSITORY ":pserver:anonymous:insight@public.kitware.com:/cvsroot/Insight"
+  CVS_MODULE "Insight"
+  CVS_TAG -D 2010-04-13
+  SOURCE_DIR Insight
+  BINARY_DIR Insight-build
+  CMAKE_GENERATOR ${gen}
+  CMAKE_ARGS
+    ${LOCAL_CMAKE_BUILD_OPTIONS}
+    -DITK_USE_REVIEW:BOOL=ON
+    -DITK_USE_REVIEW_STATISTICS:BOOL=ON
+    -DITK_USE_TRANSFORM_IO_FACTORIES:BOOL=ON
+    -DITK_USE_ORIENTED_IMAGE_DIRECTION:BOOL=ON
+    -DITK_IMAGE_BEHAVES_AS_ORIENTED_IMAGE:BOOL=ON
+    -DITK_USE_OPTIMIZED_REGISTRATION_METHODS:BOOL=ON
+    -DITK_USE_PORTABLE_ROUND:BOOL=ON
+    -DITK_USE_CENTERED_PIXEL_COORDINATES_CONSISTENTLY:BOOL=ON
+    -DITK_USE_TRANSFORM_IO_FACTORIES:BOOL=ON
+    -DITK_LEGACY_REMOVE:BOOL=ON
+    INSTALL_DIR ${CMAKE_INSTALL_PREFIX}
+)
+set ( ITK_DEPEND Insight) ## Set the dependancy for ITK
 
+set(VTK_DEPENDANCY)
+  ##
+  set(VTK_DIR ${CMAKE_INSTALL_PREFIX}/lib/vtk-5.6)
+
+#-----------------------------------------------------------------------------
+# Get and build VTK
+#
+
+set(proj vtk_proj)
+set(VTK_DEPENDANCY ${proj})
+
+set(vtk_tag -r VTK-5-6)
+set(vtk_module VTK)
+
+set(vtk_WRAP_TCL OFF)
+set(vtk_WRAP_PYTHON OFF)
+
+find_package(Qt4 REQUIRED)
+if(QT_USE_FILE)
+  include(${QT_USE_FILE})
+endif(QT_USE_FILE)
+
+#    -DQT_QMAKE_EXECUTABLE:FILEPATH=${QTDIR}/bin/qmake \
+#    -DQT_SEARCH_PATH:FILEPATH=${QTDIR}
+set(QT_ARGS
+    -DDESIRED_QT_VERSION:STRING=4
+    -DQT_QMAKE_EXECUTABLE:FILEPATH=${QT_QMAKE_EXECUTABLE}
+  )
+
+set(vtk_QT_ARGS)
+set(vtk_QT_ARGS
+    ${QT_ARGS}
+    -DVTK_USE_GUISUPPORT:BOOL=ON
+    -DVTK_USE_QVTK:BOOL=ON
+    -DVTK_USE_QT:BOOL=ON
+)
+if(APPLE)
+set(vtk_QT_ARGS
+  ${vtk_QT_ARGS}
+    -DVTK_USE_CARBON:BOOL=OFF
+    -DVTK_USE_COCOA:BOOL=ON
+    )
+endif(APPLE)
+
+
+
+set(VTK_CMAKE
+   -DVTK_DIR:PATH=${VTK_DIR}
+    ${QT_ARGS}
+)
+
+ExternalProject_Add(${proj}
+  CVS_REPOSITORY ":pserver:anonymous:vtk@public.kitware.com:/cvsroot/VTK"
+  CVS_MODULE "${vtk_module}"
+  CVS_TAG ${vtk_tag}
+  SOURCE_DIR ${proj}
+  BINARY_DIR ${proj}-build
+  CMAKE_GENERATOR ${gen}
+  CMAKE_ARGS
+    ${LOCAL_CMAKE_BUILD_OPTIONS}
+    -DVTK_USE_PARALLEL:BOOL=ON
+    -DVTK_DEBUG_LEAKS:BOOL=OFF
+    -DVTK_WRAP_TCL:BOOL=${vtk_WRAP_TCL}
+    -DVTK_WRAP_PYTHON:BOOL=${vtk_WRAP_PYTHON}
+    ${vtk_QT_ARGS}
+  INSTALL_DIR "${CMAKE_INSTALL_PREFIX}"
+)
+
+
+
+set(GenerateCLP_DIR ${CMAKE_INSTALL_PREFIX}/lib/GenerateCLP)
+##  Build the SlicerExecutionModel Once, and let all derived project use the same version
+#-----------------------------------------------------------------------------
+# Get and build SlicerExecutionModel
+set(GenerateCLP_DIR ${CMAKE_INSTALL_PREFIX}/lib/GenerateCLP)
+set(proj SlicerExecutionModel)
+ExternalProject_Add(${proj}
+  SVN_REPOSITORY "http://svn.slicer.org/Slicer3/trunk/Libs/SlicerExecutionModel"
+  SOURCE_DIR SlicerExecutionModel
+  BINARY_DIR SlicerExecutionModel-build
+  DEPENDS ${ITK_DEPEND}
+  CMAKE_GENERATOR ${gen}
+  CMAKE_ARGS
+    ${LOCAL_CMAKE_BUILD_OPTIONS}
+    -DITK_DIR:PATH=${ITK_DIR}
+  INSTALL_DIR ${CMAKE_INSTALL_PREFIX}
+)
+
+set(proj BRAINSCommonLib)
+ExternalProject_Add(${proj}
+  SVN_REPOSITORY "https://www.nitrc.org/svn/brains/BRAINSCommonLib/trunk"
+  SOURCE_DIR ${proj}
+  BINARY_DIR ${proj}-build
+  DEPENDS  ${ITK_DEPEND}
+  CMAKE_GENERATOR ${gen}
+  CMAKE_ARGS
+    ${LOCAL_CMAKE_BUILD_OPTIONS}
+    -DITK_DIR:PATH=${ITK_DIR}
+  INSTALL_DIR ${CMAKE_INSTALL_PREFIX}
+)
+
+set(EXTERNAL_PACKAGES src)
+foreach(proj ${EXTERNAL_PACKAGES})
+  ExternalProject_Add(${proj}
+    SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/${proj}
+    DOWNLOAD_COMMAND ""
+    BINARY_DIR ${proj}-build
+    DEPENDS  BRAINSCommonLib ${VTK_DEPENDANCY} ${ITK_DEPEND} SlicerExecutionModel
+    CMAKE_GENERATOR ${gen}
+    CMAKE_ARGS
+      ${LOCAL_CMAKE_BUILD_OPTIONS}
+      ${QT_ARGS}
+      -DGenerateCLP_DIR:PATH=${GenerateCLP_DIR}
+      -DITK_DIR:PATH=${ITK_DIR}
+      -DVTK_DIR:PATH=${VTK_DIR}
+    INSTALL_DIR ${CMAKE_INSTALL_PREFIX}
+  )
+endforeach()
