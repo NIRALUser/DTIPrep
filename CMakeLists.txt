@@ -200,6 +200,7 @@ ExternalProject_Add(${proj}
   INSTALL_DIR ${CMAKE_INSTALL_PREFIX}
 )
 
+### Build DTIPrep
 set(EXTERNAL_PACKAGES src)
 foreach(proj ${EXTERNAL_PACKAGES})
   ExternalProject_Add(${proj}
@@ -217,3 +218,81 @@ foreach(proj ${EXTERNAL_PACKAGES})
     INSTALL_DIR ${CMAKE_INSTALL_PREFIX}
   )
 endforeach()
+
+### Build DicomToNrrdConverter   http://svn.slicer.org/Slicer3/trunk/Applications/CLI/DicomToNrrdConverter
+set(EXTERNAL_PACKAGES DicomToNrrdConverter)
+foreach(proj ${EXTERNAL_PACKAGES})
+  ExternalProject_Add(${proj}
+    SVN_REPOSITORY "http://svn.slicer.org/Slicer3/trunk/Applications/CLI/DicomToNrrdConverter"
+    SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/${proj}
+    BINARY_DIR ${proj}-build
+    DEPENDS  BRAINSCommonLib ${VTK_DEPENDANCY} ${ITK_DEPEND} SlicerExecutionModel
+    CMAKE_GENERATOR ${gen}
+    CMAKE_ARGS
+      ${LOCAL_CMAKE_BUILD_OPTIONS}
+      ${QT_ARGS}
+      -DGenerateCLP_DIR:PATH=${GenerateCLP_DIR}
+      -DITK_DIR:PATH=${ITK_DIR}
+    INSTALL_DIR ${CMAKE_INSTALL_PREFIX}
+  )
+endforeach()
+
+### Build DTIProcess             https://www.nitrc.org/svn/dtiprocess/trunk
+set(EXTERNAL_PACKAGES DTIProcess)
+foreach(proj ${EXTERNAL_PACKAGES})
+  ExternalProject_Add(${proj}
+    SVN_REPOSITORY "https://www.nitrc.org/svn/dtiprocess/trunk"
+    SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/${proj}
+    BINARY_DIR ${proj}-build
+    DEPENDS  BRAINSCommonLib ${VTK_DEPENDANCY} ${ITK_DEPEND} SlicerExecutionModel
+    CMAKE_GENERATOR ${gen}
+    CMAKE_ARGS
+      ${LOCAL_CMAKE_BUILD_OPTIONS}
+      ${QT_ARGS}
+      -DGenerateCLP_DIR:PATH=${GenerateCLP_DIR}
+      -DITK_DIR:PATH=${ITK_DIR}
+      -DVTK_DIR:PATH=${VTK_DIR}
+    INSTALL_DIR ${CMAKE_INSTALL_PREFIX}
+  )
+endforeach()
+
+### Build GTRACT                 https://www.nitrc.org/svn/vmagnotta/GTRACT
+set(EXTERNAL_PACKAGES GTRACT)
+foreach(proj ${EXTERNAL_PACKAGES})
+  ExternalProject_Add(${proj}
+    SVN_REPOSITORY "https://www.nitrc.org/svn/vmagnotta/GTRACT"
+    SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/${proj}
+    BINARY_DIR ${proj}-build
+    DEPENDS  BRAINSCommonLib ${VTK_DEPENDANCY} ${ITK_DEPEND} SlicerExecutionModel
+    CMAKE_GENERATOR ${gen}
+    CMAKE_ARGS
+      ${LOCAL_CMAKE_BUILD_OPTIONS}
+      ${QT_ARGS}
+      -DGenerateCLP_DIR:PATH=${GenerateCLP_DIR}
+      -DITK_DIR:PATH=${ITK_DIR}
+      -DVTK_DIR:PATH=${VTK_DIR}
+    INSTALL_DIR ${CMAKE_INSTALL_PREFIX}
+  )
+endforeach()
+
+### Build MultiImageRegistration http://svn.na-mic.org/NAMICSandBox/trunk/MultiImageRegistration
+set(EXTERNAL_PACKAGES MultiImageRegistration)
+foreach(proj ${EXTERNAL_PACKAGES})
+  ExternalProject_Add(${proj}
+    SVN_REPOSITORY "http://svn.na-mic.org/NAMICSandBox/trunk/MultiImageRegistration"
+    SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/${proj}
+    BINARY_DIR ${proj}-build
+    DEPENDS  BRAINSCommonLib ${VTK_DEPENDANCY} ${ITK_DEPEND} SlicerExecutionModel
+    CMAKE_GENERATOR ${gen}
+    CMAKE_ARGS
+      ${LOCAL_CMAKE_BUILD_OPTIONS}
+      ${QT_ARGS}
+      -DGenerateCLP_DIR:PATH=${GenerateCLP_DIR}
+      -DITK_DIR:PATH=${ITK_DIR}
+      -DVTK_DIR:PATH=${VTK_DIR}
+    INSTALL_DIR ${CMAKE_INSTALL_PREFIX}
+  )
+endforeach()
+
+#QuantitativeFiberClustering     https://www.nitrc.org/svn/quantitativedti/QuantitativeDiffusionTools/trunk
+#QuantitativeFiberClusteringDocs https://www.nitrc.org/svn/quantitativedti/QuantitativeDiffusionDocs/trunk
