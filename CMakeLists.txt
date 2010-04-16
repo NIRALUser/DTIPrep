@@ -143,8 +143,6 @@ set(vtk_QT_ARGS
     )
 endif(APPLE)
 
-
-
 set(VTK_CMAKE
    -DVTK_DIR:PATH=${VTK_DIR}
     ${QT_ARGS}
@@ -166,8 +164,6 @@ ExternalProject_Add(${proj}
     ${vtk_QT_ARGS}
   INSTALL_DIR "${CMAKE_INSTALL_PREFIX}"
 )
-
-
 
 set(GenerateCLP_DIR ${CMAKE_INSTALL_PREFIX}/lib/GenerateCLP)
 ##  Build the SlicerExecutionModel Once, and let all derived project use the same version
@@ -224,7 +220,7 @@ set(EXTERNAL_PACKAGES DicomToNrrdConverter)
 foreach(proj ${EXTERNAL_PACKAGES})
   ExternalProject_Add(${proj}
     SVN_REPOSITORY "http://svn.slicer.org/Slicer3/trunk/Applications/CLI/DicomToNrrdConverter"
-    SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/${proj}
+    SOURCE_DIR ${proj}
     BINARY_DIR ${proj}-build
     DEPENDS  BRAINSCommonLib ${VTK_DEPENDANCY} ${ITK_DEPEND} SlicerExecutionModel
     CMAKE_GENERATOR ${gen}
@@ -242,7 +238,7 @@ set(EXTERNAL_PACKAGES DTIProcess)
 foreach(proj ${EXTERNAL_PACKAGES})
   ExternalProject_Add(${proj}
     SVN_REPOSITORY "https://www.nitrc.org/svn/dtiprocess/trunk"
-    SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/${proj}
+    SOURCE_DIR ${proj}
     BINARY_DIR ${proj}-build
     DEPENDS  BRAINSCommonLib ${VTK_DEPENDANCY} ${ITK_DEPEND} SlicerExecutionModel
     CMAKE_GENERATOR ${gen}
@@ -257,11 +253,11 @@ foreach(proj ${EXTERNAL_PACKAGES})
 endforeach()
 
 ### Build GTRACT                 https://www.nitrc.org/svn/vmagnotta/GTRACT
-set(EXTERNAL_PACKAGES GTRACT)
+set(EXTERNAL_PACKAGES GTRACTprog)
 foreach(proj ${EXTERNAL_PACKAGES})
   ExternalProject_Add(${proj}
     SVN_REPOSITORY "https://www.nitrc.org/svn/vmagnotta/GTRACT"
-    SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/${proj}
+    SOURCE_DIR ${proj}
     BINARY_DIR ${proj}-build
     DEPENDS  BRAINSCommonLib ${VTK_DEPENDANCY} ${ITK_DEPEND} SlicerExecutionModel
     CMAKE_GENERATOR ${gen}
@@ -280,7 +276,7 @@ set(EXTERNAL_PACKAGES MultiImageRegistration)
 foreach(proj ${EXTERNAL_PACKAGES})
   ExternalProject_Add(${proj}
     SVN_REPOSITORY "http://svn.na-mic.org/NAMICSandBox/trunk/MultiImageRegistration"
-    SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/${proj}
+    SOURCE_DIR ${proj}
     BINARY_DIR ${proj}-build
     DEPENDS  BRAINSCommonLib ${VTK_DEPENDANCY} ${ITK_DEPEND} SlicerExecutionModel
     CMAKE_GENERATOR ${gen}
