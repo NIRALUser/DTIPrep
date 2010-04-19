@@ -1,4 +1,4 @@
-project(DTIPrepTools)
+project(DTIPrepTools CXX)
 set(LOCAL_PROJECT_NAME DTIPrepTools)
 cmake_minimum_required(VERSION 2.8)
 cmake_policy(VERSION 2.8)
