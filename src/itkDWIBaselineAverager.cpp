@@ -47,6 +47,8 @@ PURPOSE.  See the above copyright notices for more information.
 
 #include "UtilRegister.h"
 #include "UtilBaselineOptimizedAverage.h"
+#include "itkMultiImageRegistrationFilter.h"
+
 #if 0 //HACK
 #include "UtilGradientOptimizedAverage.h"
 #endif
@@ -328,7 +330,7 @@ namespace itk
       else
         {
         InputImageConstPointer inputPtr = this->GetInput();
-        m_averagedBaseline = doubleImageType::New();
+        m_averagedBaseline = floatImageType::New();
         m_averagedBaseline->CopyInformation(inputPtr);
         m_averagedBaseline->SetRegions( inputPtr->GetLargestPossibleRegion() );
         m_averagedBaseline->Allocate();
@@ -343,6 +345,67 @@ namespace itk
           {
           switch ( this->m_AverageMethod )
             {
+          case DWIBaselineAverager::BSplineOptimized:
+              {
+              std::cout << "Staring Direct Averaging." << std::endl;
+              this->DirectAverage();
+              std::cout << "Finishing Direct Averaging." << std::endl;
+              //TODO:  We keep doing the same work over and over again with very little differences in the code
+              //  It may be possible to extract the baseline images only once.
+              //  This code could be made into a separate function so that it is not replicated.
+              // std::cout<<"registering all baseline onto averaged .";
+              InputImageConstPointer inputPtr = this->GetInput();
+              // copy baseline images into baselineContainer
+              std::vector<floatImageType::Pointer> baselineContainer;
+                {
+              unsigned int FoundBaselines=0;
+              for ( unsigned int i = 0; i < inputPtr->GetVectorLength(); i++ )
+                {
+
+                if ( this->GradientDirectionIsB0Image(i) == true )
+                  {
+                  //TODO:  This should use the extract vector element filter.
+                    {
+                    std::cout << "Extracting element " << i << std::endl;
+                    typedef typename itk::VectorIndexSelectionCastImageFilter<TVectorImageType, floatImageType> ExtractBaselineFilterType;
+                    typename ExtractBaselineFilterType::Pointer componentExtractor = ExtractBaselineFilterType::New();
+                    componentExtractor->SetInput(inputPtr);
+                    componentExtractor->SetIndex( i );
+                    try
+                      {
+                      componentExtractor->Update();
+                      }
+                    catch (itk::ExceptionObject &err)
+                      {
+                      std::cout<<err.GetDescription()<<std::endl;
+                      throw;
+                      }
+                    typename floatImageType::Pointer baseline = componentExtractor->GetOutput();
+                    baselineContainer.push_back(baseline);
+                    }
+                  FoundBaselines++;
+                  }
+                }
+                if(FoundBaselines != this->getBaselineNumber() )
+                {
+                std::cout << "WRONG NUMBER OF BASELINES FOUND: "  <<
+                 this->getBaselineNumber() << " != " << FoundBaselines << std::endl;
+                exit(-1);
+                }
+                }
+              std::cout << "BSplineOptimized" << std::endl;
+              MultiImageRegistrationFilter::Pointer registration = MultiImageRegistrationFilter::New();
+              registration->SetImages(baselineContainer);
+              //registration->SetOptAffineNumberOfIterations(10);
+              //registration->SetOptBsplineNumberOfIterations(10);
+              //registration->SetNumberOfSpatialSamplesBsplinePercentage(0.005);
+              registration->Update();
+              this->m_averagedBaseline = registration->GetOutput();
+              
+              this->computeIDWI();
+ 
+              }
+              break;
           case DWIBaselineAverager::BaselineOptimized:
               {
               std::cout << "Staring Direct Averaging." << std::endl;
@@ -438,7 +501,7 @@ namespace itk
         {
         //std::cout << "WARNING:  Averaging values together for baselines, without registration!" << std::endl;
         m_averagedBaseline->FillBuffer(0.0);
-        typedef ImageRegionIteratorWithIndex<doubleImageType> averagedBaselineIterator;
+        typedef ImageRegionIteratorWithIndex<floatImageType> averagedBaselineIterator;
         averagedBaselineIterator aIt( m_averagedBaseline, m_averagedBaseline->GetLargestPossibleRegion() );
         InputImageConstPointer inputPtr = this->GetInput();
         unsigned int FoundBaselines=0;

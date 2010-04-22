@@ -59,6 +59,7 @@ namespace itk
 
 		typedef enum {
 			Direct = 0,
+                        BSplineOptimized,
 			BaselineOptimized,
 			GradientOptamized,
 		} AverageMethod;
@@ -96,9 +97,9 @@ namespace itk
 		typedef unsigned short                             DwiPixelType;
 		typedef itk::Image<DwiPixelType, 2>                SliceImageType;
     //HACK:  Made this float instead of double
-		typedef itk::Image<float, 3>                      doubleImageType;
+		typedef itk::Image<float, 3>                      floatImageType;
 
-		typedef typename doubleImageType::Pointer          doubleImagePointerType;
+		typedef typename floatImageType::Pointer          floatImagePointerType;
 
 		typedef itk::Image<unsigned int, 3>                UnsignedImageType;
 		typedef typename UnsignedImageType::Pointer        UnsignedImageTypePointer;
@@ -175,7 +176,7 @@ namespace itk
 		void operator=(const Self &);        // purposely not implemented
 
 		/** averaged baseline */
-		doubleImagePointerType m_averagedBaseline;
+		floatImagePointerType m_averagedBaseline;
 
 		/** temp baseline image  */
 //		UnsignedImageTypePointer m_tempBaseline;
@@ -184,7 +185,7 @@ namespace itk
 		UnsignedImageTypePointer idwi;
 
 		/** temp idwi image  */
-		doubleImagePointerType m_tempIDWI;
+		floatImagePointerType m_tempIDWI;
 
 		/** Report File Mode */
 		int m_ReportFileMode;
