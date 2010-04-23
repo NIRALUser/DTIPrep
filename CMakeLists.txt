@@ -26,7 +26,9 @@ SETIFEMPTY(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/lib)
 SETIFEMPTY(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/lib)
 SETIFEMPTY(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/bin)
 SETIFEMPTY(CMAKE_BUNDLE_OUTPUT_DIRECTORY  ${CMAKE_CURRENT_BINARY_DIR}/bin)
-SET(CMAKE_INSTALL_PREFIX ${CMAKE_CURRENT_BINARY_DIR} CACHE PATH "The place to install everything" FORCE)
+if(CMAKE_INSTALL_PREFIX EQUAL "/usr/local")
+  SET(CMAKE_INSTALL_PREFIX "/opt/NAMIC/DTIPrep" CACHE PATH "The place to install everything" FORCE)
+endif()
 
 # Compute -G arg for configuring external projects with the same CMake generator:
 #
@@ -69,17 +71,14 @@ set(LOCAL_CMAKE_BUILD_OPTIONS
   -DBUILDNAME:STRING=${BUILDNAME}
 )
 
-
 #-----------------------------------------------------------------------------
 # Get and build itk
-set(ITK_DIR ${CMAKE_INSTALL_PREFIX}/lib/InsightToolkit)
 ## empty until ITK is brought into here as an ExternalProject
-set ( ITK_DEPEND "") 
 set(proj Insight)
 ExternalProject_Add(${proj}
   CVS_REPOSITORY ":pserver:anonymous:insight@public.kitware.com:/cvsroot/Insight"
   CVS_MODULE "Insight"
-  CVS_TAG -D 2010-04-13
+  CVS_TAG -r ITK-3-18
   SOURCE_DIR Insight
   BINARY_DIR Insight-build
   CMAKE_GENERATOR ${gen}
@@ -95,19 +94,20 @@ ExternalProject_Add(${proj}
     -DITK_USE_CENTERED_PIXEL_COORDINATES_CONSISTENTLY:BOOL=ON
     -DITK_USE_TRANSFORM_IO_FACTORIES:BOOL=ON
     -DITK_LEGACY_REMOVE:BOOL=ON
-    INSTALL_DIR ${CMAKE_INSTALL_PREFIX}
+  INSTALL_COMMAND ""
+  #  INSTALL_DIR "${CMAKE_INSTALL_PREFIX}"
 )
 set ( ITK_DEPEND Insight) ## Set the dependancy for ITK
+set(ITK_DIR ${CMAKE_CURRENT_BINARY_DIR}/Insight-build)
 
 set(VTK_DEPENDANCY)
   ##
-  set(VTK_DIR ${CMAKE_INSTALL_PREFIX}/lib/vtk-5.6)
 
 #-----------------------------------------------------------------------------
 # Get and build VTK
 #
 
-set(proj vtk_proj)
+set(proj vtk-5-6)
 set(VTK_DEPENDANCY ${proj})
 
 set(vtk_tag -r VTK-5-6)
@@ -143,11 +143,6 @@ set(vtk_QT_ARGS
     )
 endif(APPLE)
 
-set(VTK_CMAKE
-   -DVTK_DIR:PATH=${VTK_DIR}
-    ${QT_ARGS}
-)
-
 ExternalProject_Add(${proj}
   CVS_REPOSITORY ":pserver:anonymous:vtk@public.kitware.com:/cvsroot/VTK"
   CVS_MODULE "${vtk_module}"
@@ -161,15 +156,23 @@ ExternalProject_Add(${proj}
     -DVTK_DEBUG_LEAKS:BOOL=OFF
     -DVTK_WRAP_TCL:BOOL=${vtk_WRAP_TCL}
     -DVTK_WRAP_PYTHON:BOOL=${vtk_WRAP_PYTHON}
+    # Qt 4.6 binary libs are built with empty OBJCXX_FLAGS
+    -DVTK_REQUIRED_OBJCXX_FLAGS:STRING=
     ${vtk_QT_ARGS}
-  INSTALL_DIR "${CMAKE_INSTALL_PREFIX}"
+  INSTALL_COMMAND ""
+  #  INSTALL_DIR "${CMAKE_INSTALL_PREFIX}"
 )
+set(VTK_DIR ${CMAKE_CURRENT_BINARY_DIR}/${proj}-build)
+set(VTK_CMAKE
+   -DVTK_DIR:PATH=${VTK_DIR}
+    ${QT_ARGS}
+)
+MESSAGE(STATUS "Setting VTK_DIR to -DVTK_DIR:PATH=${VTK_DIR}")
 
-set(GenerateCLP_DIR ${CMAKE_INSTALL_PREFIX}/lib/GenerateCLP)
+
 ##  Build the SlicerExecutionModel Once, and let all derived project use the same version
 #-----------------------------------------------------------------------------
 # Get and build SlicerExecutionModel
-set(GenerateCLP_DIR ${CMAKE_INSTALL_PREFIX}/lib/GenerateCLP)
 set(proj SlicerExecutionModel)
 ExternalProject_Add(${proj}
   SVN_REPOSITORY "http://svn.slicer.org/Slicer3/trunk/Libs/SlicerExecutionModel"
@@ -180,40 +183,25 @@ ExternalProject_Add(${proj}
   CMAKE_ARGS
     ${LOCAL_CMAKE_BUILD_OPTIONS}
     -DITK_DIR:PATH=${ITK_DIR}
-  INSTALL_DIR ${CMAKE_INSTALL_PREFIX}
+  INSTALL_COMMAND ""
+  #  INSTALL_DIR "${CMAKE_INSTALL_PREFIX}"
 )
+set(GenerateCLP_DIR ${CMAKE_CURRENT_BINARY_DIR}/SlicerExecutionModel-build/GenerateCLP)
 
 set(proj BRAINSCommonLib)
 ExternalProject_Add(${proj}
   SVN_REPOSITORY "https://www.nitrc.org/svn/brains/BRAINSCommonLib/trunk"
   SOURCE_DIR ${proj}
   BINARY_DIR ${proj}-build
-  DEPENDS  ${ITK_DEPEND}
+  DEPENDS ${ITK_DEPEND}
   CMAKE_GENERATOR ${gen}
   CMAKE_ARGS
     ${LOCAL_CMAKE_BUILD_OPTIONS}
     -DITK_DIR:PATH=${ITK_DIR}
-  INSTALL_DIR ${CMAKE_INSTALL_PREFIX}
+  INSTALL_COMMAND ""
+  #  INSTALL_DIR "${CMAKE_INSTALL_PREFIX}"
 )
-
-### Build DTIPrep
-set(EXTERNAL_PACKAGES src)
-foreach(proj ${EXTERNAL_PACKAGES})
-  ExternalProject_Add(${proj}
-    SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/${proj}
-    DOWNLOAD_COMMAND ""
-    BINARY_DIR ${proj}-build
-    DEPENDS  BRAINSCommonLib ${VTK_DEPENDANCY} ${ITK_DEPEND} SlicerExecutionModel
-    CMAKE_GENERATOR ${gen}
-    CMAKE_ARGS
-      ${LOCAL_CMAKE_BUILD_OPTIONS}
-      ${QT_ARGS}
-      -DGenerateCLP_DIR:PATH=${GenerateCLP_DIR}
-      -DITK_DIR:PATH=${ITK_DIR}
-      -DVTK_DIR:PATH=${VTK_DIR}
-    INSTALL_DIR ${CMAKE_INSTALL_PREFIX}
-  )
-endforeach()
+set(BRAINSCommonLib_DIR ${CMAKE_CURRENT_BINARY_DIR}/BRAINSCommonLib-build)
 
 ### Build DicomToNrrdConverter   http://svn.slicer.org/Slicer3/trunk/Applications/CLI/DicomToNrrdConverter
 set(EXTERNAL_PACKAGES DicomToNrrdConverter)
@@ -222,14 +210,15 @@ foreach(proj ${EXTERNAL_PACKAGES})
     SVN_REPOSITORY "http://svn.slicer.org/Slicer3/trunk/Applications/CLI/DicomToNrrdConverter"
     SOURCE_DIR ${proj}
     BINARY_DIR ${proj}-build
-    DEPENDS  BRAINSCommonLib ${VTK_DEPENDANCY} ${ITK_DEPEND} SlicerExecutionModel
+    DEPENDS  ${ITK_DEPEND} SlicerExecutionModel
     CMAKE_GENERATOR ${gen}
     CMAKE_ARGS
       ${LOCAL_CMAKE_BUILD_OPTIONS}
       ${QT_ARGS}
       -DGenerateCLP_DIR:PATH=${GenerateCLP_DIR}
       -DITK_DIR:PATH=${ITK_DIR}
-    INSTALL_DIR ${CMAKE_INSTALL_PREFIX}
+  INSTALL_COMMAND ""
+  #  INSTALL_DIR "${CMAKE_INSTALL_PREFIX}"
   )
 endforeach()
 
@@ -240,7 +229,7 @@ foreach(proj ${EXTERNAL_PACKAGES})
     SVN_REPOSITORY "https://www.nitrc.org/svn/dtiprocess/trunk"
     SOURCE_DIR ${proj}
     BINARY_DIR ${proj}-build
-    DEPENDS  BRAINSCommonLib ${VTK_DEPENDANCY} ${ITK_DEPEND} SlicerExecutionModel
+    DEPENDS  ${VTK_DEPENDANCY} ${ITK_DEPEND} SlicerExecutionModel
     CMAKE_GENERATOR ${gen}
     CMAKE_ARGS
       ${LOCAL_CMAKE_BUILD_OPTIONS}
@@ -248,7 +237,8 @@ foreach(proj ${EXTERNAL_PACKAGES})
       -DGenerateCLP_DIR:PATH=${GenerateCLP_DIR}
       -DITK_DIR:PATH=${ITK_DIR}
       -DVTK_DIR:PATH=${VTK_DIR}
-    INSTALL_DIR ${CMAKE_INSTALL_PREFIX}
+  INSTALL_COMMAND ""
+  #  INSTALL_DIR "${CMAKE_INSTALL_PREFIX}"
   )
 endforeach()
 
@@ -264,10 +254,12 @@ foreach(proj ${EXTERNAL_PACKAGES})
     CMAKE_ARGS
       ${LOCAL_CMAKE_BUILD_OPTIONS}
       ${QT_ARGS}
+      -DBRAINSCommonLib_DIR:PATH=${BRAINSCommonLib_DIR}
       -DGenerateCLP_DIR:PATH=${GenerateCLP_DIR}
       -DITK_DIR:PATH=${ITK_DIR}
       -DVTK_DIR:PATH=${VTK_DIR}
-    INSTALL_DIR ${CMAKE_INSTALL_PREFIX}
+  INSTALL_COMMAND ""
+  #  INSTALL_DIR "${CMAKE_INSTALL_PREFIX}"
   )
 endforeach()
 
@@ -283,10 +275,35 @@ foreach(proj ${EXTERNAL_PACKAGES})
     CMAKE_ARGS
       ${LOCAL_CMAKE_BUILD_OPTIONS}
       ${QT_ARGS}
+      -DBRAINSCommonLib_DIR:PATH=${BRAINSCommonLib_DIR}
       -DGenerateCLP_DIR:PATH=${GenerateCLP_DIR}
       -DITK_DIR:PATH=${ITK_DIR}
       -DVTK_DIR:PATH=${VTK_DIR}
-    INSTALL_DIR ${CMAKE_INSTALL_PREFIX}
+  INSTALL_COMMAND ""
+  #  INSTALL_DIR "${CMAKE_INSTALL_PREFIX}"
+  )
+endforeach()
+set(MultiImageRegistration_DIR ${CMAKE_CURRENT_BINARY_DIR}/MultiImageRegistration-build)
+
+### Build DTIPrep
+set(EXTERNAL_PACKAGES src)
+foreach(proj ${EXTERNAL_PACKAGES})
+  ExternalProject_Add(${proj}
+    SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/${proj}
+    DOWNLOAD_COMMAND ""
+    BINARY_DIR ${proj}-build
+    DEPENDS  MultiImageRegistration BRAINSCommonLib ${VTK_DEPENDANCY} ${ITK_DEPEND} SlicerExecutionModel
+    CMAKE_GENERATOR ${gen}
+    CMAKE_ARGS
+      ${LOCAL_CMAKE_BUILD_OPTIONS}
+      ${QT_ARGS}
+      -DBRAINSCommonLib_DIR:PATH=${BRAINSCommonLib_DIR}
+      -DMultiImageRegistration_DIR:PATH=${MultiImageRegistration_DIR}
+      -DGenerateCLP_DIR:PATH=${GenerateCLP_DIR}
+      -DITK_DIR:PATH=${ITK_DIR}
+      -DVTK_DIR:PATH=${VTK_DIR}
+  INSTALL_COMMAND ""
+  #  INSTALL_DIR "${CMAKE_INSTALL_PREFIX}"
   )
 endforeach()
 
