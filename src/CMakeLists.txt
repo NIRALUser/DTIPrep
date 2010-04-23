@@ -152,3 +152,59 @@ INSTALL(TARGETS
                  LIBRARY DESTINATION lib
                  ARCHIVE DESTINATION lib/static)
 
+SET(plugin_dest_dir bin)
+SET(qtconf_dest_dir bin)
+SET(APPS "\${CMAKE_INSTALL_PREFIX}/bin/DTIPrep")
+IF(APPLE)
+  SET(plugin_dest_dir DTIPrep.app/Contents/MacOS)
+  SET(qtconf_dest_dir DTIPrep.app/Contents/Resources)
+  SET(APPS "\${CMAKE_INSTALL_PREFIX}/bin/DTIPrep.app")
+ENDIF(APPLE)
+IF(WIN32)
+  SET(APPS "\${CMAKE_INSTALL_PREFIX}/bin/DTIPrep.exe")
+ENDIF(WIN32)
+
+#--------------------------------------------------------------------------------
+# Install needed Qt plugins by copying directories from the qt installation
+# One can cull what gets copied by using 'REGEX "..." EXCLUDE'
+#INSTALL(DIRECTORY "${QT_PLUGINS_DIR}/imageformats" DESTINATION ${plugin_dest_dir}/plugins COMPONENT Runtime)
+
+if(APPLE)
+#--------------------------------------------------------------------------------
+# install a qt.conf file
+# this inserts some cmake code into the install script to write the file
+INSTALL(CODE "
+    file(WRITE \"\${CMAKE_INSTALL_PREFIX}/${qtconf_dest_dir}/qt.conf\" \"\")
+    " COMPONENT Runtime)
+INSTALL(CODE "
+    execute_process(COMMAND cp -r \"${QT_LIBRARY_DIR}/QtGui.framework/Resources/qt_menu.nib\" \".\" WORKING_DIRECTORY ${CMAKE_INSTALL_PREFIX}/${qtconf_dest_dir})")
+endif(APPLE)
+#--------------------------------------------------------------------------------
+# Use BundleUtilities to get all other dependencies for the application to work.
+# It takes a bundle or executable along with possible plugins and inspects it
+# for dependencies.  If they are not system dependencies, they are copied.
+
+# directories to look for dependencies
+SET(DIRS 
+${QT_LIBRARY_DIRS} 
+${ITK_DIR} 
+${VTK_DIR} 
+${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/lib
+)
+# Now the work of copying dependencies into the bundle/package
+# The quotes are escaped and variables to use at install time have their $ escaped
+# An alternative is the do a configure_file() on a script and use install(SCRIPT  ...).
+# Note that the image plugins depend on QtSvg and QtXml, and it got those copied
+# over.
+INSTALL(CODE "
+   include(BundleUtilities)
+    fixup_bundle(\"${APPS}\" \"\${QTPLUGINS}\" \"${DIRS}\")
+    " COMPONENT Runtime)
+
+
+# To Create a package, one can run "cpack -G DragNDrop CPackConfig.cmake" on Mac OS X
+# where CPackConfig.cmake is created by including CPack
+# And then there's ways to customize this as well
+set(CPACK_BINARY_DRAGNDROP ON)
+include(CPack)
+
