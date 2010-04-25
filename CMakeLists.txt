@@ -7,40 +7,22 @@ enable_testing()
 include(Dart)
 include(CPack)
 include(ExternalProject)
+set(BRAINS_CMAKE_HELPER_DIR ${CMAKE_CURRENT_SOURCE_DIR}/BuildScripts)
+include(${BRAINS_CMAKE_HELPER_DIR}/CMakeBuildMacros.cmake)
 
-## A simple macro to set variables ONLY if it has not been set
-## This is needed when stand-alone packages are combined into
-## a larger package, and the desired behavior is that all the
-## binary results end up in the combined directory.
-if(NOT SETIFEMPTY)
-macro(SETIFEMPTY)
-  set(KEY ${ARGV0})
-  set(VALUE ${ARGV1})
-  if(NOT ${KEY})
-    set(${KEY} ${VALUE})
-  endif(NOT ${KEY})
-endmacro(SETIFEMPTY KEY VALUE)
-endif(NOT SETIFEMPTY)
 ###
 SETIFEMPTY(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/lib)
 SETIFEMPTY(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/lib)
 SETIFEMPTY(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/bin)
 SETIFEMPTY(CMAKE_BUNDLE_OUTPUT_DIRECTORY  ${CMAKE_CURRENT_BINARY_DIR}/bin)
-if(CMAKE_INSTALL_PREFIX EQUAL "/usr/local")
-  SET(CMAKE_INSTALL_PREFIX "/opt/NAMIC/DTIPrep" CACHE PATH "The place to install everything" FORCE)
-endif()
+#if(CMAKE_INSTALL_PREFIX EQUAL "/usr/local")
+  set(CMAKE_INSTALL_PREFIX "/opt/NAMIC/DTIPrep" CACHE PATH "The place to install everything" FORCE)
+#endif()
 
-# Compute -G arg for configuring external projects with the same CMake generator:
-#
-if(CMAKE_EXTRA_GENERATOR)
-  set(gen "${CMAKE_EXTRA_GENERATOR} - ${CMAKE_GENERATOR}")
-else()
-  set(gen "${CMAKE_GENERATOR}")
-endif()
 
-set(BUILD_SHARED_LIBS OFF) ## shared libs.
 
 set(LOCAL_CMAKE_BUILD_OPTIONS
+  -DMAKECOMMAND:STRING=${MAKECOMMAND}
   -DCMAKE_SKIP_RPATH:BOOL=ON
   -DCMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
   -DCMAKE_CXX_FLAGS_RELEASE:STRING=${CMAKE_CXX_FLAGS_RELEASE}
@@ -51,7 +33,7 @@ set(LOCAL_CMAKE_BUILD_OPTIONS
   -DCMAKE_C_FLAGS:STRING=${CMAKE_C_FLAGS}
   -DBUILD_EXAMPLES:BOOL=OFF
   -DBUILD_SHARED_LIBS:BOOL=${BUILD_SHARED_LIBS}
-  -DBUILD_TESTING:BOOL=OFF
+  -DBUILD_TESTING:BOOL=${BUILD_TESTING}
   -DCMAKE_GENERATOR:STRING=${CMAKE_GENERATOR}
   -DCMAKE_EXTRA_GENERATOR:STRING=${CMAKE_EXTRA_GENERATOR}
   -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_INSTALL_PREFIX}
@@ -69,139 +51,22 @@ set(LOCAL_CMAKE_BUILD_OPTIONS
   -DCMAKE_MODULE_LINKER_FLAGS:STRING=${CMAKE_MODULE_LINKER_FLAGS}
   -DSITE:STRING=${SITE}
   -DBUILDNAME:STRING=${BUILDNAME}
+  -DBRAINS_CMAKE_HELPER_DIR:PATH=${BRAINS_CMAKE_HELPER_DIR}
 )
 
-#-----------------------------------------------------------------------------
-# Get and build itk
-## empty until ITK is brought into here as an ExternalProject
-set(proj Insight)
-ExternalProject_Add(${proj}
-  CVS_REPOSITORY ":pserver:anonymous:insight@public.kitware.com:/cvsroot/Insight"
-  CVS_MODULE "Insight"
-  CVS_TAG -r ITK-3-18
-  SOURCE_DIR Insight
-  BINARY_DIR Insight-build
-  CMAKE_GENERATOR ${gen}
-  CMAKE_ARGS
-    ${LOCAL_CMAKE_BUILD_OPTIONS}
-    -DITK_USE_REVIEW:BOOL=ON
-    -DITK_USE_REVIEW_STATISTICS:BOOL=ON
-    -DITK_USE_TRANSFORM_IO_FACTORIES:BOOL=ON
-    -DITK_USE_ORIENTED_IMAGE_DIRECTION:BOOL=ON
-    -DITK_IMAGE_BEHAVES_AS_ORIENTED_IMAGE:BOOL=ON
-    -DITK_USE_OPTIMIZED_REGISTRATION_METHODS:BOOL=ON
-    -DITK_USE_PORTABLE_ROUND:BOOL=ON
-    -DITK_USE_CENTERED_PIXEL_COORDINATES_CONSISTENTLY:BOOL=ON
-    -DITK_USE_TRANSFORM_IO_FACTORIES:BOOL=ON
-    -DITK_LEGACY_REMOVE:BOOL=ON
-  INSTALL_COMMAND ""
-  #  INSTALL_DIR "${CMAKE_INSTALL_PREFIX}"
-)
-set ( ITK_DEPEND Insight) ## Set the dependancy for ITK
-set(ITK_DIR ${CMAKE_CURRENT_BINARY_DIR}/Insight-build)
-
-set(VTK_DEPENDANCY)
-  ##
-
-#-----------------------------------------------------------------------------
-# Get and build VTK
+# Compute -G arg for configuring external projects with the same CMake generator:
 #
+if(CMAKE_EXTRA_GENERATOR)
+  set(gen "${CMAKE_EXTRA_GENERATOR} - ${CMAKE_GENERATOR}")
+else()
+  set(gen "${CMAKE_GENERATOR}")
+endif()
 
-set(proj vtk-5-6)
-set(VTK_DEPENDANCY ${proj})
-
-set(vtk_tag -r VTK-5-6)
-set(vtk_module VTK)
-
-set(vtk_WRAP_TCL OFF)
-set(vtk_WRAP_PYTHON OFF)
-
-find_package(Qt4 REQUIRED)
-if(QT_USE_FILE)
-  include(${QT_USE_FILE})
-endif(QT_USE_FILE)
-
-#    -DQT_QMAKE_EXECUTABLE:FILEPATH=${QTDIR}/bin/qmake \
-#    -DQT_SEARCH_PATH:FILEPATH=${QTDIR}
-set(QT_ARGS
-    -DDESIRED_QT_VERSION:STRING=4
-    -DQT_QMAKE_EXECUTABLE:FILEPATH=${QT_QMAKE_EXECUTABLE}
-  )
-
-set(vtk_QT_ARGS)
-set(vtk_QT_ARGS
-    ${QT_ARGS}
-    -DVTK_USE_GUISUPPORT:BOOL=ON
-    -DVTK_USE_QVTK:BOOL=ON
-    -DVTK_USE_QT:BOOL=ON
-)
-if(APPLE)
-set(vtk_QT_ARGS
-  ${vtk_QT_ARGS}
-    -DVTK_USE_CARBON:BOOL=OFF
-    -DVTK_USE_COCOA:BOOL=ON
-    )
-endif(APPLE)
-
-ExternalProject_Add(${proj}
-  CVS_REPOSITORY ":pserver:anonymous:vtk@public.kitware.com:/cvsroot/VTK"
-  CVS_MODULE "${vtk_module}"
-  CVS_TAG ${vtk_tag}
-  SOURCE_DIR ${proj}
-  BINARY_DIR ${proj}-build
-  CMAKE_GENERATOR ${gen}
-  CMAKE_ARGS
-    ${LOCAL_CMAKE_BUILD_OPTIONS}
-    -DVTK_USE_PARALLEL:BOOL=ON
-    -DVTK_DEBUG_LEAKS:BOOL=OFF
-    -DVTK_WRAP_TCL:BOOL=${vtk_WRAP_TCL}
-    -DVTK_WRAP_PYTHON:BOOL=${vtk_WRAP_PYTHON}
-    # Qt 4.6 binary libs are built with empty OBJCXX_FLAGS
-    -DVTK_REQUIRED_OBJCXX_FLAGS:STRING=
-    ${vtk_QT_ARGS}
-  INSTALL_COMMAND ""
-  #  INSTALL_DIR "${CMAKE_INSTALL_PREFIX}"
-)
-set(VTK_DIR ${CMAKE_CURRENT_BINARY_DIR}/${proj}-build)
-set(VTK_CMAKE
-   -DVTK_DIR:PATH=${VTK_DIR}
-    ${QT_ARGS}
-)
-MESSAGE(STATUS "Setting VTK_DIR to -DVTK_DIR:PATH=${VTK_DIR}")
-
-
-##  Build the SlicerExecutionModel Once, and let all derived project use the same version
-#-----------------------------------------------------------------------------
-# Get and build SlicerExecutionModel
-set(proj SlicerExecutionModel)
-ExternalProject_Add(${proj}
-  SVN_REPOSITORY "http://svn.slicer.org/Slicer3/trunk/Libs/SlicerExecutionModel"
-  SOURCE_DIR SlicerExecutionModel
-  BINARY_DIR SlicerExecutionModel-build
-  DEPENDS ${ITK_DEPEND}
-  CMAKE_GENERATOR ${gen}
-  CMAKE_ARGS
-    ${LOCAL_CMAKE_BUILD_OPTIONS}
-    -DITK_DIR:PATH=${ITK_DIR}
-  INSTALL_COMMAND ""
-  #  INSTALL_DIR "${CMAKE_INSTALL_PREFIX}"
-)
-set(GenerateCLP_DIR ${CMAKE_CURRENT_BINARY_DIR}/SlicerExecutionModel-build/GenerateCLP)
-
-set(proj BRAINSCommonLib)
-ExternalProject_Add(${proj}
-  SVN_REPOSITORY "https://www.nitrc.org/svn/brains/BRAINSCommonLib/trunk"
-  SOURCE_DIR ${proj}
-  BINARY_DIR ${proj}-build
-  DEPENDS ${ITK_DEPEND}
-  CMAKE_GENERATOR ${gen}
-  CMAKE_ARGS
-    ${LOCAL_CMAKE_BUILD_OPTIONS}
-    -DITK_DIR:PATH=${ITK_DIR}
-  INSTALL_COMMAND ""
-  #  INSTALL_DIR "${CMAKE_INSTALL_PREFIX}"
-)
-set(BRAINSCommonLib_DIR ${CMAKE_CURRENT_BINARY_DIR}/BRAINSCommonLib-build)
+include(${BRAINS_CMAKE_HELPER_DIR}/CMakeCommonExternalDefinitions.cmake)
+PACKAGE_NEEDS_ITK                 ("${LOCAL_CMAKE_BUILD_OPTIONS}" "${gen}")
+PACKAGE_NEEDS_VTKWITHQT           ("${LOCAL_CMAKE_BUILD_OPTIONS}" "${gen}")
+PACKAGE_NEEDS_SlicerExecutionModel("${LOCAL_CMAKE_BUILD_OPTIONS}" "${gen}")
+PACKAGE_NEEDS_BRAINSCommonLib     ("${LOCAL_CMAKE_BUILD_OPTIONS}" "${gen}")
 
 ### Build DicomToNrrdConverter   http://svn.slicer.org/Slicer3/trunk/Applications/CLI/DicomToNrrdConverter
 set(EXTERNAL_PACKAGES DicomToNrrdConverter)
