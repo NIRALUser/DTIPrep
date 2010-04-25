@@ -94,7 +94,7 @@ foreach(proj ${EXTERNAL_PACKAGES})
     SVN_REPOSITORY "https://www.nitrc.org/svn/dtiprocess/trunk"
     SOURCE_DIR ${proj}
     BINARY_DIR ${proj}-build
-    DEPENDS  ${VTK_DEPENDANCY} ${ITK_DEPEND} SlicerExecutionModel
+    DEPENDS  ${VTK_DEPEND} ${ITK_DEPEND} SlicerExecutionModel
     CMAKE_GENERATOR ${gen}
     CMAKE_ARGS
       ${LOCAL_CMAKE_BUILD_OPTIONS}
@@ -114,7 +114,7 @@ foreach(proj ${EXTERNAL_PACKAGES})
     SVN_REPOSITORY "https://www.nitrc.org/svn/vmagnotta/GTRACT"
     SOURCE_DIR ${proj}
     BINARY_DIR ${proj}-build
-    DEPENDS  BRAINSCommonLib ${VTK_DEPENDANCY} ${ITK_DEPEND} SlicerExecutionModel
+    DEPENDS  BRAINSCommonLib ${VTK_DEPEND} ${ITK_DEPEND} SlicerExecutionModel
     CMAKE_GENERATOR ${gen}
     CMAKE_ARGS
       ${LOCAL_CMAKE_BUILD_OPTIONS}
@@ -135,7 +135,7 @@ foreach(proj ${EXTERNAL_PACKAGES})
     SVN_REPOSITORY "http://svn.na-mic.org/NAMICSandBox/trunk/MultiImageRegistration"
     SOURCE_DIR ${proj}
     BINARY_DIR ${proj}-build
-    DEPENDS  BRAINSCommonLib ${VTK_DEPENDANCY} ${ITK_DEPEND} SlicerExecutionModel
+    DEPENDS  BRAINSCommonLib ${VTK_DEPEND} ${ITK_DEPEND} SlicerExecutionModel
     CMAKE_GENERATOR ${gen}
     CMAKE_ARGS
       ${LOCAL_CMAKE_BUILD_OPTIONS}
@@ -157,7 +157,7 @@ foreach(proj ${EXTERNAL_PACKAGES})
     SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/${proj}
     DOWNLOAD_COMMAND ""
     BINARY_DIR ${proj}-build
-    DEPENDS  MultiImageRegistration BRAINSCommonLib ${VTK_DEPENDANCY} ${ITK_DEPEND} SlicerExecutionModel
+    DEPENDS  MultiImageRegistration BRAINSCommonLib ${VTK_DEPEND} ${ITK_DEPEND} SlicerExecutionModel
     CMAKE_GENERATOR ${gen}
     CMAKE_ARGS
       ${LOCAL_CMAKE_BUILD_OPTIONS}
