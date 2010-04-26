@@ -295,22 +295,22 @@ LinearHeadEddy3DCorrection<TScalarType, NInputDimensions, NOutputDimensions>
                          / vw;
 
   //Fill the Jacobian Matrix
-  this->m_Jacobian[0][0] = J11;	// x /Rx 
-  this->m_Jacobian[0][1] = J12;	// x /Ry
-  this->m_Jacobian[0][2] = J13;	// x /Rz  
-  this->m_Jacobian[0][3] = 1.0;	// x /Tx 
+  this->m_Jacobian[0][0] = J11;  // x /Rx 
+  this->m_Jacobian[0][1] = J12;  // x /Ry
+  this->m_Jacobian[0][2] = J13;  // x /Rz  
+  this->m_Jacobian[0][3] = 1.0;  // x /Tx 
 
 
-  this->m_Jacobian[1][0] = c1 * J11 + c2 * J21 + c3 * J31;	// y /Rx 
-  this->m_Jacobian[1][1] = c1 * J12 + c2 * J22 + c3 * J32;	// y /Ry
-  this->m_Jacobian[1][2] = c1 * J13 + c2 * J23 + c3 * J33;	// y /Rz  
-  this->m_Jacobian[1][3] = c1;					// y /Tx
-  this->m_Jacobian[1][4] = c2;					// y /Ty
-  this->m_Jacobian[1][5] = c3;					// y /Tz
-  this->m_Jacobian[1][6] = v2[0];				// y /c1
-  this->m_Jacobian[1][7] = v2[1];				// y /c2
-  this->m_Jacobian[1][8] = v2[2];				// y /c3
-  this->m_Jacobian[1][9] = 1.0;					// y /c0
+  this->m_Jacobian[1][0] = c1 * J11 + c2 * J21 + c3 * J31;  // y /Rx 
+  this->m_Jacobian[1][1] = c1 * J12 + c2 * J22 + c3 * J32;  // y /Ry
+  this->m_Jacobian[1][2] = c1 * J13 + c2 * J23 + c3 * J33;  // y /Rz  
+  this->m_Jacobian[1][3] = c1;          // y /Tx
+  this->m_Jacobian[1][4] = c2;          // y /Ty
+  this->m_Jacobian[1][5] = c3;          // y /Tz
+  this->m_Jacobian[1][6] = v2[0];        // y /c1
+  this->m_Jacobian[1][7] = v2[1];        // y /c2
+  this->m_Jacobian[1][8] = v2[2];        // y /c3
+  this->m_Jacobian[1][9] = 1.0;          // y /c0
 
   this->m_Jacobian[2][0] = J31; //z /Rx
   this->m_Jacobian[2][1] = J32; //z /Ry

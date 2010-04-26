@@ -337,10 +337,10 @@ LinearEddyCurrentTransform<TScalarType, NInputDimensions, NOutputDimensions>
 ::GetParameters( void ) const
 {
  
-  this->m_Parameters[0] = m_Matrix[1][0];	//for X axis shear c1
-  this->m_Parameters[1] = m_Matrix[1][1];	//for Y axis scale c2
-  this->m_Parameters[2] = m_Matrix[1][2];	//for Z axis shear c3
-  this->m_Parameters[3] = m_Translation[1]; 	//This is for global translation on Y axis c0
+  this->m_Parameters[0] = m_Matrix[1][0];  //for X axis shear c1
+  this->m_Parameters[1] = m_Matrix[1][1];  //for Y axis scale c2
+  this->m_Parameters[2] = m_Matrix[1][2];  //for Z axis shear c3
+  this->m_Parameters[3] = m_Translation[1];   //This is for global translation on Y axis c0
 
   return this->m_Parameters;
 }
@@ -369,9 +369,9 @@ LinearEddyCurrentTransform<TScalarType, NInputDimensions, NOutputDimensions>
 
  
 
-  m_Matrix[1][0] = this->m_Parameters[0];	//for c1
-  m_Matrix[1][1] = this->m_Parameters[1];	//for c2
-  m_Matrix[1][2] = this->m_Parameters[2];	//for c3
+  m_Matrix[1][0] = this->m_Parameters[0];  //for c1
+  m_Matrix[1][1] = this->m_Parameters[1];  //for c2
+  m_Matrix[1][2] = this->m_Parameters[2];  //for c3
 
   // Transfer the constant part
   for(unsigned int i=0; i<NOutputDimensions; i++) 

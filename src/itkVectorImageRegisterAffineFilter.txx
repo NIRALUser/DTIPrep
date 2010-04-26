@@ -116,8 +116,8 @@ void VectorImageRegisterAffineFilter<TInputImage, TOutputImage>
   for (int i=0;i<static_cast<int>(this->GetInput()->GetVectorLength());i++)
     {
     itkDebugMacro("\tRegister Volume: " << i);
-	std::cout <<"." ; //liuzx
-	
+  std::cout <<"." ; //liuzx
+  
     extractImageFilter->SetIndex( i );
     extractImageFilter->Update( );
     
@@ -249,7 +249,7 @@ void VectorImageRegisterAffineFilter<TInputImage, TOutputImage>
       ot.Set( vectorImagePixel );
       }
     
-	// Update Gradient directions 
+  // Update Gradient directions 
     vnl_vector<double> curGradientDirection(3);
     char tmpStr[64];
     sprintf(tmpStr, "DWMRI_gradient_%04d", i);
@@ -262,17 +262,17 @@ void VectorImageRegisterAffineFilter<TInputImage, TOutputImage>
     itk::ExposeMetaData<std::string>(inputMetaDataDictionary, KeyString, NrrdValue);
     /* %lf is 'long float', i.e., double. */
     sscanf(NrrdValue.c_str()," %lf %lf %lf", &curGradientDirection[0], &curGradientDirection[1], &curGradientDirection[2]);
-	//std::cout << "Matrix : " << finalTransform->GetMatrix().GetVnlMatrix() << std::endl;
-	
-	Matrix3D   NonOrthog = finalTransform->GetMatrix();
+  //std::cout << "Matrix : " << finalTransform->GetMatrix().GetVnlMatrix() << std::endl;
+  
+  Matrix3D   NonOrthog = finalTransform->GetMatrix();
     Matrix3D   Orthog( this->orthogonalize(NonOrthog) );
 
-	//std::cout << "Matrix : " << Orthog.GetVnlMatrix() << std::endl;
+  //std::cout << "Matrix : " << Orthog.GetVnlMatrix() << std::endl;
     curGradientDirection = Orthog.GetVnlMatrix() * curGradientDirection;
     sprintf(tmpStr," %18.15lf %18.15lf %18.15lf", curGradientDirection[0], curGradientDirection[1], curGradientDirection[2]);
     NrrdValue = tmpStr;
     itk::EncapsulateMetaData<std::string>(m_Output->GetMetaDataDictionary(), KeyString, NrrdValue);
-	
+  
     /* Update Progress */
     this->UpdateProgress((float)(i+1)/(float)(this->GetInput()->GetVectorLength()));      
     }

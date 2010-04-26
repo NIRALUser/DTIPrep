@@ -27,296 +27,296 @@ PURPOSE.  See the above copyright notices for more information.
 
 namespace itk
 {
-	/** \class DWIQCGradientChecker
-	* \brief DWI QC by gradient-wise motion Check.
-	*
-	* DWIQCGradientChecker DWI QC by gradient-wise motion Check.
-	*
-	* \ingroup Multithreaded
-	* \ingroup Streamed
-	*/
-
-	template <class TImageType>
-	class ITK_EXPORT DWIQCGradientChecker :
-		public ImageToImageFilter<TImageType, TImageType>
-	{
-	public:
-		typedef enum {
-			REPORT_FILE_NEW = 0,
-			REPORT_FILE_APPEND,
-		} ReportFileMode;
-
-		typedef enum {
-			REPORT_TYPE_NO = -1,
-			REPORT_TYPE_SIMPLE,
-			REPORT_TYPE_VERBOSE,
-			REPORT_TYPE_EASY_PARSE,
-		} ReportType;
-
-
-		struct struDiffusionDir {
-			std::vector<double> gradientDir;
-			int repetitionNumber;
-		};
-
-		typedef struct  GradientResult {
-			double AngleX;      // in degrees
-			double AngleY;      // in degrees
-			double AngleZ;      // in degrees
-			double TranslationX;
-			double TranslationY;
-			double TranslationZ;
-			double MutualInformation;      // -Metrix
-		} struGradientResult,  *pstruInterGradientResult;
-
-		/** Standard class typedefs. */
-		typedef DWIQCGradientChecker                       Self;
-		typedef ImageToImageFilter<TImageType, TImageType> Superclass;
-		typedef SmartPointer<Self>                         Pointer;
-		typedef SmartPointer<const Self>                   ConstPointer;
-
-		itkNewMacro(Self);
-
-		/** Run-time type information (and related methods). */
-		itkTypeMacro(DWIQCGradientChecker, ImageToImageFilter);
-
-		/** Typedef to images */
-		typedef TImageType                                 OutputImageType;
-		typedef TImageType                                 InputImageType;
-		typedef typename OutputImageType::Pointer          OutputImagePointer;
-		typedef typename InputImageType::ConstPointer      InputImageConstPointer;
-		typedef typename Superclass::OutputImageRegionType OutputImageRegionType;
-
-		typedef unsigned short                             DwiPixelType;
-		typedef itk::Image<DwiPixelType, 2>                SliceImageType;
-		typedef itk::Image<DwiPixelType, 3>                GradientImageType;
-
-		typedef vnl_vector_fixed<double, 3>                GradientDirectionType;
-
-		/** Container to hold gradient directions of the 'n' DW measurements */
-		typedef VectorContainer<unsigned int,
-			GradientDirectionType> GradientDirectionContainerType;
-
-		/** ImageDimension enumeration. */
-		itkStaticConstMacro(ImageDimension, unsigned int, TImageType::ImageDimension );
-
-		/** Get & Set the TranslationThreshold */
-		itkGetConstMacro( TranslationThreshold, float );
-		itkSetMacro( TranslationThreshold, float );
-
-		/** Get & Set the RotationThreshold */
-		itkGetConstMacro( RotationThreshold, float );
-		itkSetMacro( RotationThreshold, float );
-
-		/** Get & Set the StdevTimes */
-		itkBooleanMacro(CheckDone);
-		itkGetConstMacro(CheckDone, bool);
-		itkSetMacro(CheckDone, bool);
-
-		/** Get & Set the ExcludeGradientsWithLargeMotionArtifacts */
-		itkBooleanMacro( ExcludeGradientsWithLargeMotionArtifacts );
-		itkGetConstMacro( ExcludeGradientsWithLargeMotionArtifacts, bool);
-		itkSetMacro( ExcludeGradientsWithLargeMotionArtifacts, bool);
-
-		/** Get & Set the report file mode */
-		itkGetConstMacro( ReportFileMode, int );
-		itkSetMacro( ReportFileMode, int  );
-
-		/** Get & Set the ReportFilename */
-		itkGetConstMacro( ReportFileName, std::string );
-		itkSetMacro( ReportFileName, std::string  );
-
-		/** Get & Set the report type */
-		itkGetConstMacro( ReportType, int );
-		itkSetMacro( ReportType, int  );
+  /** \class DWIQCGradientChecker
+  * \brief DWI QC by gradient-wise motion Check.
+  *
+  * DWIQCGradientChecker DWI QC by gradient-wise motion Check.
+  *
+  * \ingroup Multithreaded
+  * \ingroup Streamed
+  */
+
+  template <class TImageType>
+  class ITK_EXPORT DWIQCGradientChecker :
+    public ImageToImageFilter<TImageType, TImageType>
+  {
+  public:
+    typedef enum {
+      REPORT_FILE_NEW = 0,
+      REPORT_FILE_APPEND,
+    } ReportFileMode;
+
+    typedef enum {
+      REPORT_TYPE_NO = -1,
+      REPORT_TYPE_SIMPLE,
+      REPORT_TYPE_VERBOSE,
+      REPORT_TYPE_EASY_PARSE,
+    } ReportType;
+
+
+    struct struDiffusionDir {
+      std::vector<double> gradientDir;
+      int repetitionNumber;
+    };
+
+    typedef struct  GradientResult {
+      double AngleX;      // in degrees
+      double AngleY;      // in degrees
+      double AngleZ;      // in degrees
+      double TranslationX;
+      double TranslationY;
+      double TranslationZ;
+      double MutualInformation;      // -Metrix
+    } struGradientResult,  *pstruInterGradientResult;
+
+    /** Standard class typedefs. */
+    typedef DWIQCGradientChecker                       Self;
+    typedef ImageToImageFilter<TImageType, TImageType> Superclass;
+    typedef SmartPointer<Self>                         Pointer;
+    typedef SmartPointer<const Self>                   ConstPointer;
+
+    itkNewMacro(Self);
+
+    /** Run-time type information (and related methods). */
+    itkTypeMacro(DWIQCGradientChecker, ImageToImageFilter);
+
+    /** Typedef to images */
+    typedef TImageType                                 OutputImageType;
+    typedef TImageType                                 InputImageType;
+    typedef typename OutputImageType::Pointer          OutputImagePointer;
+    typedef typename InputImageType::ConstPointer      InputImageConstPointer;
+    typedef typename Superclass::OutputImageRegionType OutputImageRegionType;
+
+    typedef unsigned short                             DwiPixelType;
+    typedef itk::Image<DwiPixelType, 2>                SliceImageType;
+    typedef itk::Image<DwiPixelType, 3>                GradientImageType;
+
+    typedef vnl_vector_fixed<double, 3>                GradientDirectionType;
+
+    /** Container to hold gradient directions of the 'n' DW measurements */
+    typedef VectorContainer<unsigned int,
+      GradientDirectionType> GradientDirectionContainerType;
+
+    /** ImageDimension enumeration. */
+    itkStaticConstMacro(ImageDimension, unsigned int, TImageType::ImageDimension );
+
+    /** Get & Set the TranslationThreshold */
+    itkGetConstMacro( TranslationThreshold, float );
+    itkSetMacro( TranslationThreshold, float );
+
+    /** Get & Set the RotationThreshold */
+    itkGetConstMacro( RotationThreshold, float );
+    itkSetMacro( RotationThreshold, float );
+
+    /** Get & Set the StdevTimes */
+    itkBooleanMacro(CheckDone);
+    itkGetConstMacro(CheckDone, bool);
+    itkSetMacro(CheckDone, bool);
+
+    /** Get & Set the ExcludeGradientsWithLargeMotionArtifacts */
+    itkBooleanMacro( ExcludeGradientsWithLargeMotionArtifacts );
+    itkGetConstMacro( ExcludeGradientsWithLargeMotionArtifacts, bool);
+    itkSetMacro( ExcludeGradientsWithLargeMotionArtifacts, bool);
+
+    /** Get & Set the report file mode */
+    itkGetConstMacro( ReportFileMode, int );
+    itkSetMacro( ReportFileMode, int  );
+
+    /** Get & Set the ReportFilename */
+    itkGetConstMacro( ReportFileName, std::string );
+    itkSetMacro( ReportFileName, std::string  );
+
+    /** Get & Set the report type */
+    itkGetConstMacro( ReportType, int );
+    itkSetMacro( ReportType, int  );
 
-		/** DWIQCGradientChecker produces an image which is a different vector length
-		* than its input image. As such, DWIQCGradientChecker needs to provide
-		* an implementation for GenerateOutputInformation() in order to inform
-		* the pipeline execution model.The original documentation of this
-		* method is below.
-		* \sa ProcessObject::GenerateOutputInformaton() */
-		virtual void GenerateOutputInformation();
+    /** DWIQCGradientChecker produces an image which is a different vector length
+    * than its input image. As such, DWIQCGradientChecker needs to provide
+    * an implementation for GenerateOutputInformation() in order to inform
+    * the pipeline execution model.The original documentation of this
+    * method is below.
+    * \sa ProcessObject::GenerateOutputInformaton() */
+    virtual void GenerateOutputInformation();
 
-		inline std::vector<bool> GetQCResults()
-		{
-			return qcResults;
-		}
+    inline std::vector<bool> GetQCResults()
+    {
+      return qcResults;
+    }
 
-	protected:
-		DWIQCGradientChecker();
-		~DWIQCGradientChecker();
+  protected:
+    DWIQCGradientChecker();
+    ~DWIQCGradientChecker();
 
-		void PrintSelf(std::ostream & os, Indent indent) const;
+    void PrintSelf(std::ostream & os, Indent indent) const;
 
-		void ThreadedGenerateData(const OutputImageRegionType & outputRegionForThread,
-			int threadId );
+    void ThreadedGenerateData(const OutputImageRegionType & outputRegionForThread,
+      int threadId );
 
-	private:
-		DWIQCGradientChecker(const Self &);  // purposely not implemented
-		void operator=(const Self &);        // purposely not implemented
+  private:
+    DWIQCGradientChecker(const Self &);  // purposely not implemented
+    void operator=(const Self &);        // purposely not implemented
 
-		/** check parameters */
-		unsigned int m_ReferenceIndex;
+    /** check parameters */
+    unsigned int m_ReferenceIndex;
 
-		float m_TranslationThreshold;
-		float m_RotationThreshold;
+    float m_TranslationThreshold;
+    float m_RotationThreshold;
 
-		/** indicate whether chech is done */
-		bool m_CheckDone;
+    /** indicate whether chech is done */
+    bool m_CheckDone;
 
-		/** excluded gradients filename */
-		OutputImagePointer excludedDwiImage;
+    /** excluded gradients filename */
+    OutputImagePointer excludedDwiImage;
 
-		/** report filename */
-		std::string m_ReportFileName;
+    /** report filename */
+    std::string m_ReportFileName;
 
-		/** Report File Mode */
-		int m_ReportFileMode;
+    /** Report File Mode */
+    int m_ReportFileMode;
 
-		/** report type */
-		int m_ReportType;
+    /** report type */
+    int m_ReportType;
 
-		/** input info */
-		int baselineNumber;
-		int bValueNumber;
-		int gradientDirNumber;
-		int repetitionNumber;
-		int gradientNumber;
+    /** input info */
+    int baselineNumber;
+    int bValueNumber;
+    int gradientDirNumber;
+    int repetitionNumber;
+    int gradientNumber;
 
-		/** output info */
-		int              baselineLeftNumber;
-		int              bValueLeftNumber;
-		int              gradientDirLeftNumber;
-		int              gradientLeftNumber;
-		std::vector<int> repetitionLeftNumber;
+    /** output info */
+    int              baselineLeftNumber;
+    int              bValueLeftNumber;
+    int              gradientDirLeftNumber;
+    int              gradientLeftNumber;
+    std::vector<int> repetitionLeftNumber;
 
-		/** b value */
-		double b0;
+    /** b value */
+    double b0;
 
-		/** container to hold input b values */
-		std::vector<double> bValues;
+    /** container to hold input b values */
+    std::vector<double> bValues;
 
-		/** container to hold gradient directions */
-		GradientDirectionContainerType::Pointer m_GradientDirectionContainer;
+    /** container to hold gradient directions */
+    GradientDirectionContainerType::Pointer m_GradientDirectionContainer;
 
-		/** container to hold input gradient directions histogram */
-		std::vector<struDiffusionDir> DiffusionDirHistInput;
+    /** container to hold input gradient directions histogram */
+    std::vector<struDiffusionDir> DiffusionDirHistInput;
 
-		/** container to hold output gradient directions histogram */
-		std::vector<struDiffusionDir> DiffusionDirHistOutput;
+    /** container to hold output gradient directions histogram */
+    std::vector<struDiffusionDir> DiffusionDirHistOutput;
 
-		/** for all gradients  slice wise correlation */
-		std::vector<double> gradientMeans;
-		std::vector<double> gradientDeviations;
+    /** for all gradients  slice wise correlation */
+    std::vector<double> gradientMeans;
+    std::vector<double> gradientDeviations;
 
-		/** for all baseline slice wise correlation */
-		std::vector<double> baselineMeans;
-		std::vector<double> baselineDeviations;
+    /** for all baseline slice wise correlation */
+    std::vector<double> baselineMeans;
+    std::vector<double> baselineDeviations;
 
-		/** initialize qcResullts */
-		std::vector<struGradientResult> ResultsContainer;     // starts from #1 slice,
-		// "correlation<=0"
-		// means a "bad slice"
-		std::vector<bool> qcResults;
-
-		/** Indicating whether to exclude the gradients with large motion artifacts */
-		bool m_ExcludeGradientsWithLargeMotionArtifacts;
-
-		void parseGradientDirections();
-
-		void collectDiffusionStatistics();
-
-		void initializeQCResullts();
-
-		void calculate();
-
-		void rigidRegistration(
-			GradientImageType::Pointer fixed,
-			GradientImageType::Pointer moving,
-			unsigned int BinsNumber,
-			double SamplesPercent,
-			bool ExplicitPDFDerivatives,
-			GradientResult &  regResult);
-
-		void DoCheck();
-
-		void collectLeftDiffusionStatistics();
-
-		void writeReport();
-
-	public:
-		OutputImagePointer GetExcludedGradients();
-
-		inline std::vector<bool> getQCResults()
-		{
-			return qcResults;
-		}
-
-		inline GradientDirectionContainerType::Pointer  GetGradientDirectionContainer()
-		{
-			return m_GradientDirectionContainer;
-		}
-
-		inline int getBaselineNumber()
-		{
-			return baselineNumber;
-		}
-
-		inline int getBValueNumber()
-		{
-			return bValueNumber;
-		}
-
-		inline int getGradientDirNumber()
-		{
-			return gradientDirNumber;
-		}
-
-		inline int getRepetitionNumber()
-		{
-			return repetitionNumber;
-		}
-
-		inline int getGradientNumber()
-		{
-			return gradientNumber;
-		}
-
-		// bool validateDiffusionStatistics();
-
-		inline int getBaselineLeftNumber()
-		{
-			return baselineLeftNumber;
-		}
-
-		inline int getBValueLeftNumber()
-		{
-			return bValueLeftNumber;
-		}
-
-		inline int getGradientDirLeftNumber()
-		{
-			return gradientDirLeftNumber;
-		}
-
-		inline int getGradientLeftNumber()
-		{
-			return gradientLeftNumber;
-		}
-
-		inline std::vector<int> getRepetitionLeftNumber()
-		{
-			return repetitionLeftNumber;
-		}
-
-		// unsigned char  validateLeftDiffusionStatistics();
-		// 00000CBA:
-		// A: Gradient direction # is less than 6!
-		// B: Single b-value DWI without a b0/baseline!
-		// C: Too many bad gradient directions found!
-		// 0: valid
-	};
+    /** initialize qcResullts */
+    std::vector<struGradientResult> ResultsContainer;     // starts from #1 slice,
+    // "correlation<=0"
+    // means a "bad slice"
+    std::vector<bool> qcResults;
+
+    /** Indicating whether to exclude the gradients with large motion artifacts */
+    bool m_ExcludeGradientsWithLargeMotionArtifacts;
+
+    void parseGradientDirections();
+
+    void collectDiffusionStatistics();
+
+    void initializeQCResullts();
+
+    void calculate();
+
+    void rigidRegistration(
+      GradientImageType::Pointer fixed,
+      GradientImageType::Pointer moving,
+      unsigned int BinsNumber,
+      double SamplesPercent,
+      bool ExplicitPDFDerivatives,
+      GradientResult &  regResult);
+
+    void DoCheck();
+
+    void collectLeftDiffusionStatistics();
+
+    void writeReport();
+
+  public:
+    OutputImagePointer GetExcludedGradients();
+
+    inline std::vector<bool> getQCResults()
+    {
+      return qcResults;
+    }
+
+    inline GradientDirectionContainerType::Pointer  GetGradientDirectionContainer()
+    {
+      return m_GradientDirectionContainer;
+    }
+
+    inline int getBaselineNumber()
+    {
+      return baselineNumber;
+    }
+
+    inline int getBValueNumber()
+    {
+      return bValueNumber;
+    }
+
+    inline int getGradientDirNumber()
+    {
+      return gradientDirNumber;
+    }
+
+    inline int getRepetitionNumber()
+    {
+      return repetitionNumber;
+    }
+
+    inline int getGradientNumber()
+    {
+      return gradientNumber;
+    }
+
+    // bool validateDiffusionStatistics();
+
+    inline int getBaselineLeftNumber()
+    {
+      return baselineLeftNumber;
+    }
+
+    inline int getBValueLeftNumber()
+    {
+      return bValueLeftNumber;
+    }
+
+    inline int getGradientDirLeftNumber()
+    {
+      return gradientDirLeftNumber;
+    }
+
+    inline int getGradientLeftNumber()
+    {
+      return gradientLeftNumber;
+    }
+
+    inline std::vector<int> getRepetitionLeftNumber()
+    {
+      return repetitionLeftNumber;
+    }
+
+    // unsigned char  validateLeftDiffusionStatistics();
+    // 00000CBA:
+    // A: Gradient direction # is less than 6!
+    // B: Single b-value DWI without a b0/baseline!
+    // C: Too many bad gradient directions found!
+    // 0: valid
+  };
 } // end namespace itk
 
 #ifndef ITK_MANUAL_INSTANTIATION
