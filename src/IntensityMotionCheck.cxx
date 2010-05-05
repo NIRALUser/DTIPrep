@@ -3212,7 +3212,7 @@ bool CIntensityMotionCheck::DiffusionCheck( DwiImageType::Pointer dwi)
     bReport = true;
   }
 
-  if ( bReport && protocol->GetReportType() == 1 || protocol->GetReportType() == 0 )
+  if ( (bReport && protocol->GetReportType() == 1) || (protocol->GetReportType() == 0) )
   {
     outfile << std::endl;
     outfile << "================================" << std::endl;
@@ -3379,14 +3379,18 @@ bool CIntensityMotionCheck::DiffusionCheck( DwiImageType::Pointer dwi)
           
             const vnl_vector_fixed<double, 3> gradientFromImage
               = mfInverseFromImage * tempGradientFromImage;
-            double gradientDot = dot_product(gradientFromProtocol, gradientFromImage);
+	    //Compute the dor product out of the normalize vectors ! Otherwise, if the bvalue of the current vector is not the max bvalue, the angle is wrong
+	    //double gradientDot = dot_product(gradientFromProtocol, gradientFromImage);
+	    //changed to:
+            double gradientDot = dot_product(tempGradientFromProtocol, gradientFromImage);
 
             gradientDot = ( gradientDot > 1 ) ? 1 : gradientDot;
             // Avoid numerical precision problems
             gradientDot = ( gradientDot < -1 ) ? -1 : gradientDot; 
             // Avoid numerical precision problems
-            const double gradientAngle = vcl_abs( vcl_acos(
-              gradientDot) * 180.0 * vnl_math::one_over_pi);
+	   
+	    const double gradientAngle = vcl_abs( vcl_acos(gradientDot) * 180.0 * vnl_math::one_over_pi);
+
             gradientMinAngle
               = vcl_min( gradientAngle, vcl_abs(180.0 - gradientAngle) );
 
