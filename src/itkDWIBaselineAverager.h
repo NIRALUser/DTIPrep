@@ -59,9 +59,9 @@ namespace itk
 
     typedef enum {
       Direct = 0,
-                        BSplineOptimized,
       BaselineOptimized,
       GradientOptamized,
+      BSplineOptimized,
     } AverageMethod;
 
     typedef enum {
