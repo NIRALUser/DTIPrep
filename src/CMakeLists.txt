@@ -141,6 +141,7 @@ TARGET_LINK_LIBRARIES( DTIPrep
   ${ITK_LIBRARIES}
   ${VTK_LIBRARIES}
   BRAINSCommonLib
+  ITKStatistics
   MultiImageRegistrationLib
 )
 

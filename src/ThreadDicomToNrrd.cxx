@@ -2,6 +2,7 @@
 
 #include <string>
 #include <iostream>
+#include <stdlib.h>
 
 CThreadDicomToNrrd::CThreadDicomToNrrd(QObject *parentLocal) :
   QThread(parentLocal)
