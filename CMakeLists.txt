@@ -85,7 +85,29 @@ foreach(proj ${EXTERNAL_PACKAGES})
   INSTALL_COMMAND ""
   #  INSTALL_DIR "${CMAKE_INSTALL_PREFIX}"
   )
+  FORCE_BUILD_CHECK(${proj})
 endforeach()
+
+### Build DiffusionApplications   http://svn.slicer.org/Slicer3/trunk/Applications/CLI/DiffusionApplications
+set(EXTERNAL_PACKAGES DiffusionApplications)
+foreach(proj ${EXTERNAL_PACKAGES})
+  ExternalProject_Add(${proj}
+    SVN_REPOSITORY "http://svn.slicer.org/Slicer3/trunk/Applications/CLI/DiffusionApplications"
+    SOURCE_DIR ${proj}
+    BINARY_DIR ${proj}-build
+    DEPENDS  ${ITK_DEPEND} SlicerExecutionModel
+    CMAKE_GENERATOR ${gen}
+    CMAKE_ARGS
+      ${LOCAL_CMAKE_BUILD_OPTIONS}
+      ${QT_ARGS}
+      -DGenerateCLP_DIR:PATH=${GenerateCLP_DIR}
+      -DITK_DIR:PATH=${ITK_DIR}
+  INSTALL_COMMAND ""
+  #  INSTALL_DIR "${CMAKE_INSTALL_PREFIX}"
+  )
+  FORCE_BUILD_CHECK(${proj})
+endforeach()
+
 
 ### Build DTIProcess             https://www.nitrc.org/svn/dtiprocess/trunk
 set(EXTERNAL_PACKAGES DTIProcess)
@@ -105,6 +127,7 @@ foreach(proj ${EXTERNAL_PACKAGES})
   INSTALL_COMMAND ""
   #  INSTALL_DIR "${CMAKE_INSTALL_PREFIX}"
   )
+  FORCE_BUILD_CHECK(${proj})
 endforeach()
 
 ### Build GTRACT                 https://www.nitrc.org/svn/vmagnotta/GTRACT
@@ -126,6 +149,7 @@ foreach(proj ${EXTERNAL_PACKAGES})
   INSTALL_COMMAND ""
   #  INSTALL_DIR "${CMAKE_INSTALL_PREFIX}"
   )
+  FORCE_BUILD_CHECK(${proj})
 endforeach()
 
 ### Build MultiImageRegistration http://svn.na-mic.org/NAMICSandBox/trunk/MultiImageRegistration
@@ -147,6 +171,7 @@ foreach(proj ${EXTERNAL_PACKAGES})
   INSTALL_COMMAND ""
   #  INSTALL_DIR "${CMAKE_INSTALL_PREFIX}"
   )
+  FORCE_BUILD_CHECK(${proj})
 endforeach()
 set(MultiImageRegistration_DIR ${CMAKE_CURRENT_BINARY_DIR}/MultiImageRegistration-build)
 
@@ -170,7 +195,10 @@ foreach(proj ${EXTERNAL_PACKAGES})
   INSTALL_COMMAND ""
   #  INSTALL_DIR "${CMAKE_INSTALL_PREFIX}"
   )
+  FORCE_BUILD_CHECK(${proj})
+
 endforeach()
 
 #QuantitativeFiberClustering     https://www.nitrc.org/svn/quantitativedti/QuantitativeDiffusionTools/trunk
 #QuantitativeFiberClusteringDocs https://www.nitrc.org/svn/quantitativedti/QuantitativeDiffusionDocs/trunk
+

@@ -68,7 +68,7 @@ echo FULL_SOURCE_PATH $FULL_SOURCE_PATH
 ABI_DIR=${COMPILE_DIR}/$(uname)_$(uname -m)-${ABI}
 mkdir -p ${ABI_DIR}
 
-export QTDIR=/usr/lib/qt4
+export QTDIR=/opt/qt-4.6.1
 export PATH=${QTDIR}/bin:${PATH}
 #export QTDIR=/opt/QtCarbon
 #export PATH=${QTDIR}/bin:${PATH}
