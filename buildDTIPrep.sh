@@ -69,6 +69,7 @@ ABI_DIR=${COMPILE_DIR}/$(uname)_$(uname -m)-${ABI}
 mkdir -p ${ABI_DIR}
 
 export QTDIR=/opt/qt-4.6.1
+export QTDIR=/opt/Qt
 export PATH=${QTDIR}/bin:${PATH}
 #export QTDIR=/opt/QtCarbon
 #export PATH=${QTDIR}/bin:${PATH}

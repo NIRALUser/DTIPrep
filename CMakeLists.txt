@@ -152,6 +152,28 @@ foreach(proj ${EXTERNAL_PACKAGES})
   FORCE_BUILD_CHECK(${proj})
 endforeach()
 
+### Build BRAINSFit https://www.nitrc.org/svn/multimodereg/trunk
+set(EXTERNAL_PACKAGES BRAINSFit)
+foreach(proj ${EXTERNAL_PACKAGES})
+  ExternalProject_Add(${proj}
+    SVN_REPOSITORY "https://www.nitrc.org/svn/multimodereg/trunk"
+    SOURCE_DIR ${proj}
+    BINARY_DIR ${proj}-build
+    DEPENDS  BRAINSCommonLib ${VTK_DEPEND} ${ITK_DEPEND} SlicerExecutionModel
+    CMAKE_GENERATOR ${gen}
+    CMAKE_ARGS
+      ${LOCAL_CMAKE_BUILD_OPTIONS}
+      ${QT_ARGS}
+      -DBRAINSCommonLib_DIR:PATH=${BRAINSCommonLib_DIR}
+      -DGenerateCLP_DIR:PATH=${GenerateCLP_DIR}
+      -DITK_DIR:PATH=${ITK_DIR}
+      -DVTK_DIR:PATH=${VTK_DIR}
+  INSTALL_COMMAND ""
+  #  INSTALL_DIR "${CMAKE_INSTALL_PREFIX}"
+  )
+  FORCE_BUILD_CHECK(${proj})
+endforeach()
+
 ### Build MultiImageRegistration http://svn.na-mic.org/NAMICSandBox/trunk/MultiImageRegistration
 set(EXTERNAL_PACKAGES MultiImageRegistration)
 foreach(proj ${EXTERNAL_PACKAGES})
