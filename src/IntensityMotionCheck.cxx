@@ -49,10 +49,6 @@ CIntensityMotionCheck::GetMeasurementFrame(
       }
     }
   }
-  
-  // JTM - START DEBUG: delete later
-  std::cout << __LINE__ << "DEBUG: image measurement frame (scanner space) \n" <<  imageMeasurementFrame << std::endl;
-  // JTM - END DEBUG: delete later
 
   return imageMeasurementFrame;
 }
@@ -3297,13 +3293,13 @@ bool CIntensityMotionCheck::DiffusionCheck( DwiImageType::Pointer dwi)
     // Images collected at different oblique angles will likely have different measurement frames.
 	  
     // JTM - START DEBUG: delete later
-    std::cout << __LINE__ << "DEBUG: image measurement frame (scanner space) \n" <<  imageMeasurementFrame << std::endl;
+    std::cout << "Image measurement frame (scanner space) \n" <<  imageMeasurementFrame << std::endl;
     // JTM - END DEBUG: delete later
     
     // JTM - START DEBUG: delete later
     vnl_matrix_fixed<double, 3, 3> protocolMeasurementFrame
     = protocol->GetDiffusionProtocol().measurementFrame;
-    std::cout << __LINE__ << "DEBUG: protocol measurement frame (scanner space) \n" <<  protocolMeasurementFrame << std::endl;
+    std::cout << "Protocol measurement frame (scanner space) \n" <<  protocolMeasurementFrame << std::endl;
     // JTM - END DEBUG: delete later
     
     // JTM - Normalize protocol measurement frame
@@ -3339,7 +3335,7 @@ bool CIntensityMotionCheck::DiffusionCheck( DwiImageType::Pointer dwi)
     normMeasurementFrameFromProtocol[2][2] = normMeasurementFrameFromProtocol3[2];
     
     // JTM - START DEBUG: delete later
-    std::cout << __LINE__ << "DEBUG: protocol measurement frame (normalized) \n" <<  normMeasurementFrameFromProtocol << std::endl;
+    std::cout << "Protocol measurement frame (normalized) \n" <<  normMeasurementFrameFromProtocol << std::endl;
     // JTM - END DEBUG: delete later
     
     // JTM - Take inverse of normalized protocol measurement frame
@@ -3347,7 +3343,7 @@ bool CIntensityMotionCheck::DiffusionCheck( DwiImageType::Pointer dwi)
     = vnl_inverse(normMeasurementFrameFromProtocol);
     
     // JTM - START DEBUG: delete later
-    std::cout << __LINE__ << "DEBUG: protocol measurement frame (normalized inverse) \n" <<  mfInverseFromProtocol << std::endl;
+    std::cout << "Protocol measurement frame (normalized inverse) \n" <<  mfInverseFromProtocol << std::endl;
     // JTM - END DEBUG: delete later
     
     // JTM - Normalize image measurement frame
@@ -3383,7 +3379,7 @@ bool CIntensityMotionCheck::DiffusionCheck( DwiImageType::Pointer dwi)
     normMeasurementFrameFromImage[2][2] = normMeasurementFrameFromImage3[2];
     
     // JTM - START DEBUG: delete later
-    std::cout << __LINE__ << "DEBUG: image measurement frame (normalized) \n" <<  normMeasurementFrameFromImage << std::endl;
+    std::cout << "Image measurement frame (normalized) \n" <<  normMeasurementFrameFromImage << std::endl;
     // JTM - END DEBUG: delete later
     
     // JTM - Take inverse of normalized image measurement frame
@@ -3391,8 +3387,7 @@ bool CIntensityMotionCheck::DiffusionCheck( DwiImageType::Pointer dwi)
     = vnl_inverse(normMeasurementFrameFromImage);
     
     // JTM - START DEBUG: delete later
-    std::cout << __LINE__ << "DEBUG: image measurement frame (normalized inverse) \n" <<  mfInverseFromImage << std::endl;
-    std::cout << "===================================================================" << std::endl;
+    std::cout << "Image measurement frame (normalized inverse) \n" <<  mfInverseFromImage << std::endl;
     // JTM - END DEBUG: delete later
 	  
     bool result = true;
@@ -3439,14 +3434,14 @@ bool CIntensityMotionCheck::DiffusionCheck( DwiImageType::Pointer dwi)
         // JTM - START DEBUG: delete later
         std::cout << "===================================================" << std::endl;
         std::cout << "Gradient " << i << std::endl;
-        std::cout << __LINE__ << "DEBUG: gradient from protocol (scanner space) \n" <<  tempGradientFromProtocol << std::endl;
+        std::cout << "Gradient from protocol (scanner space) \n" <<  tempGradientFromProtocol << std::endl;
         // JTM - END DEBUG: delete later
 		  
         vnl_vector_fixed<double, 3> tempGradientFromImage
           = GradContainer->ElementAt(i);
         
         // JTM - START DEBUG: delete later
-        std::cout << __LINE__ << "DEBUG: gradient from image (scanner space) \n" <<  tempGradientFromImage << std::endl;
+        std::cout << "Gradient from image (scanner space) \n" <<  tempGradientFromImage << std::endl;
         // JTM - END DEBUG: delete later
         
         bool bColinear = false;
@@ -3488,8 +3483,8 @@ bool CIntensityMotionCheck::DiffusionCheck( DwiImageType::Pointer dwi)
               = mfInverseFromProtocol * tempGradientFromProtocol;
 			  
             // JTM - START DEBUG: delete later
-            std::cout << __LINE__ << "DEBUG: gradient from image (anatomical space) \n" <<  gradientFromImage << std::endl;
-            std::cout << __LINE__ << "DEBUG: gradient from protocol (anatomical space) \n" <<  gradientFromProtocol << std::endl;
+            std::cout << "Gradient from image (anatomical space) \n" <<  gradientFromImage << std::endl;
+            std::cout << "Gradient from protocol (anatomical space) \n" <<  gradientFromProtocol << std::endl;
             // JTM - END DEBUG: delete later
 			  
             //Compute the dot product out of the normalize vectors ! Otherwise, if the bvalue of the current vector is not the max bvalue, the angle is wrong
@@ -3523,8 +3518,8 @@ bool CIntensityMotionCheck::DiffusionCheck( DwiImageType::Pointer dwi)
               // image: non-baseline  protocol: non-baseline --non-colinear
             
             // JTM - START DEBUG: delete later
-            std::cout << __LINE__ << "DEBUG: dot product: " <<  gradientDot << std::endl;
-            std::cout << __LINE__ << "DEBUG: minimum angle: " <<  gradientMinAngle << std::endl;
+            std::cout << "Dot product: " <<  gradientDot << std::endl;
+            std::cout << "Minimum angle between vectors: " <<  gradientMinAngle << std::endl;
             // JTM - END DEBUG: delete later
           }
         }

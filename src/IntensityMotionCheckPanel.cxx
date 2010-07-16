@@ -779,7 +779,7 @@ void IntensityMotionCheckPanel::DefaultProtocol()
         this->GetProtocol().GetDiffusionProtocol().measurementFrame[i][j] = nrrdmf[i][j];
       }
     }
-    std::cout << "DEBUG: QQQQQQQQQQQQ\n" <<  this->GetProtocol().GetDiffusionProtocol().measurementFrame << std::flush << std::endl;
+    std::cout << this->GetProtocol().GetDiffusionProtocol().measurementFrame << std::flush << std::endl;
     }
   }
 
@@ -1675,9 +1675,8 @@ void IntensityMotionCheckPanel::UpdateProtocolToTreeWidget( )
   else
   {
     itemDiffusionInformation->setText( 1, tr("No") );
-  }
-  std::cout<<"PPPPPP\n"<< this->GetProtocol().GetDiffusionProtocol().measurementFrame <<
-  "PPPPPPPP\n\n\n\n\n" << std::flush << std::endl;
+  } 
+  std::cout<< this->GetProtocol().GetDiffusionProtocol().measurementFrame << std::flush << std::endl;
   
   QTreeWidgetItem *itemMeasurementFrame = new QTreeWidgetItem(
     itemDiffusionInformation);
