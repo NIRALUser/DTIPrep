@@ -568,9 +568,9 @@ void IntensityMotionCheckPanel::UpdatePanelDWI()
   //  measurement frame
   if ( imgMetaDictionary.HasKey("NRRD_measurement frame") )
   {
+    {
     // imaging frame
-    vnl_matrix_fixed<double, 3, 3> imgf;
-    imgf = m_DwiOriginalImage->GetDirection().GetVnlMatrix();
+    const vnl_matrix_fixed<double, 3, 3> &imgf= m_DwiOriginalImage->GetDirection().GetVnlMatrix();
 
     // Image frame
     // std::cout << "Image frame: " << std::endl;
@@ -585,35 +585,24 @@ void IntensityMotionCheckPanel::UpdatePanelDWI()
     lineEdit_SpaceDir31->setText( QString::number(imgf(2, 0), 'f') );
     lineEdit_SpaceDir32->setText( QString::number(imgf(2, 1), 'f') );
     lineEdit_SpaceDir33->setText( QString::number(imgf(2, 2), 'f') );
-
+    }
+    {
     std::vector<std::vector<double> > nrrdmf;
     itk::ExposeMetaData<std::vector<std::vector<double> > >(
       imgMetaDictionary,
       "NRRD_measurement frame",
       nrrdmf);
 
-    // measurement frame
-    vnl_matrix_fixed<double, 3, 3> mf;
-    for ( unsigned int i = 0; i < 3; ++i )
-    {
-      for ( unsigned int j = 0; j < 3; ++j )
-      {
-        mf(i, j) = nrrdmf[j][i];
-        //nrrdmf[j][i] = imgf(i, j);
-      }
+    lineEdit_MeasurementFrame11->setText( QString::number(nrrdmf[0][0], 'f') );
+    lineEdit_MeasurementFrame12->setText( QString::number(nrrdmf[0][1], 'f') );
+    lineEdit_MeasurementFrame13->setText( QString::number(nrrdmf[0][2], 'f') );
+    lineEdit_MeasurementFrame21->setText( QString::number(nrrdmf[1][0], 'f') );
+    lineEdit_MeasurementFrame22->setText( QString::number(nrrdmf[1][1], 'f') );
+    lineEdit_MeasurementFrame23->setText( QString::number(nrrdmf[1][2], 'f') );
+    lineEdit_MeasurementFrame31->setText( QString::number(nrrdmf[2][0], 'f') );
+    lineEdit_MeasurementFrame32->setText( QString::number(nrrdmf[2][1], 'f') );
+    lineEdit_MeasurementFrame33->setText( QString::number(nrrdmf[2][2], 'f') );
     }
-
-    //   std::cout << "Meausurement frame: " << mf << std::endl;
-
-    lineEdit_MeasurementFrame11->setText( QString::number(mf(0, 0), 'f') );
-    lineEdit_MeasurementFrame12->setText( QString::number(mf(0, 1), 'f') );
-    lineEdit_MeasurementFrame13->setText( QString::number(mf(0, 2), 'f') );
-    lineEdit_MeasurementFrame21->setText( QString::number(mf(1, 0), 'f') );
-    lineEdit_MeasurementFrame22->setText( QString::number(mf(1, 1), 'f') );
-    lineEdit_MeasurementFrame23->setText( QString::number(mf(1, 2), 'f') );
-    lineEdit_MeasurementFrame31->setText( QString::number(mf(2, 0), 'f') );
-    lineEdit_MeasurementFrame32->setText( QString::number(mf(2, 1), 'f') );
-    lineEdit_MeasurementFrame33->setText( QString::number(mf(2, 2), 'f') );
   }
 
   // space
@@ -757,11 +746,12 @@ void IntensityMotionCheckPanel::DefaultProtocol()
   //  
   if ( imgMetaDictionary.HasKey("NRRD_measurement frame") )
   {
+    {
     // imaging frame
-    vnl_matrix_fixed<double, 3, 3> imgf;
-    imgf = m_DwiOriginalImage->GetDirection().GetVnlMatrix();
+    const vnl_matrix_fixed<double, 3, 3> &imgf= m_DwiOriginalImage->GetDirection().GetVnlMatrix();
 
     // Image frame
+    this->GetProtocol().GetImageProtocol().spacedirection=m_DwiOriginalImage->GetDirection().GetVnlMatrix();
     this->GetProtocol().GetImageProtocol().spacedirection[0][0] = imgf(0, 0);
     this->GetProtocol().GetImageProtocol().spacedirection[0][1] = imgf(0, 1);
     this->GetProtocol().GetImageProtocol().spacedirection[0][2] = imgf(0, 2);
@@ -771,7 +761,8 @@ void IntensityMotionCheckPanel::DefaultProtocol()
     this->GetProtocol().GetImageProtocol().spacedirection[2][0] = imgf(2, 0);
     this->GetProtocol().GetImageProtocol().spacedirection[2][1] = imgf(2, 1);
     this->GetProtocol().GetImageProtocol().spacedirection[2][2] = imgf(2, 2);
-
+    }
+    {
     std::vector<std::vector<double> > nrrdmf;
     itk::ExposeMetaData<std::vector<std::vector<double> > >(
       imgMetaDictionary,
@@ -779,24 +770,17 @@ void IntensityMotionCheckPanel::DefaultProtocol()
       nrrdmf);
 
     // measurement frame
-    vnl_matrix_fixed<double, 3, 3> mf;
+
     for ( unsigned int i = 0; i < 3; ++i )
     {
       for ( unsigned int j = 0; j < 3; ++j )
       {
-        mf(i, j) = nrrdmf[j][i];
+        // Meausurement frame
+        this->GetProtocol().GetDiffusionProtocol().measurementFrame[i][j] = nrrdmf[i][j];
       }
     }
-    // Meausurement frame
-    this->GetProtocol().GetDiffusionProtocol().measurementFrame[0][0] = mf(0, 0);
-    this->GetProtocol().GetDiffusionProtocol().measurementFrame[0][1] = mf(0, 1);
-    this->GetProtocol().GetDiffusionProtocol().measurementFrame[0][2] = mf(0, 2);
-    this->GetProtocol().GetDiffusionProtocol().measurementFrame[1][0] = mf(1, 0);
-    this->GetProtocol().GetDiffusionProtocol().measurementFrame[1][1] = mf(1, 1);
-    this->GetProtocol().GetDiffusionProtocol().measurementFrame[1][2] = mf(1, 2);
-    this->GetProtocol().GetDiffusionProtocol().measurementFrame[2][0] = mf(2, 0);
-    this->GetProtocol().GetDiffusionProtocol().measurementFrame[2][1] = mf(2, 1);
-    this->GetProtocol().GetDiffusionProtocol().measurementFrame[2][2] = mf(2, 2);
+    std::cout << "DEBUG: QQQQQQQQQQQQ\n" <<  this->GetProtocol().GetDiffusionProtocol().measurementFrame << std::flush << std::endl;
+    }
   }
 
   //HACK:  This breaks encapsulation of the function.  SetFunctions should be used!
@@ -1692,19 +1676,21 @@ void IntensityMotionCheckPanel::UpdateProtocolToTreeWidget( )
   {
     itemDiffusionInformation->setText( 1, tr("No") );
   }
-
+  std::cout<<"PPPPPP\n"<< this->GetProtocol().GetDiffusionProtocol().measurementFrame <<
+  "PPPPPPPP\n\n\n\n\n" << std::flush << std::endl;
+  
   QTreeWidgetItem *itemMeasurementFrame = new QTreeWidgetItem(
     itemDiffusionInformation);
   itemMeasurementFrame->setText( 0, tr("DIFFUSION_measurementFrame") );
   itemMeasurementFrame->setText(1, QString("%1 %2 %3, %4 %5 %6, %7 %8 %9")
     .arg(this->GetProtocol().GetDiffusionProtocol().measurementFrame[0][0], 0, 'f', 6)
-    .arg(this->GetProtocol().GetDiffusionProtocol().measurementFrame[1][0], 0, 'f', 6)
-    .arg(this->GetProtocol().GetDiffusionProtocol().measurementFrame[2][0], 0, 'f', 6)
     .arg(this->GetProtocol().GetDiffusionProtocol().measurementFrame[0][1], 0, 'f', 6)
-    .arg(this->GetProtocol().GetDiffusionProtocol().measurementFrame[1][1], 0, 'f', 6)
-    .arg(this->GetProtocol().GetDiffusionProtocol().measurementFrame[2][1], 0, 'f', 6)
     .arg(this->GetProtocol().GetDiffusionProtocol().measurementFrame[0][2], 0, 'f', 6)
+    .arg(this->GetProtocol().GetDiffusionProtocol().measurementFrame[1][0], 0, 'f', 6)
+    .arg(this->GetProtocol().GetDiffusionProtocol().measurementFrame[1][1], 0, 'f', 6)
     .arg(this->GetProtocol().GetDiffusionProtocol().measurementFrame[1][2], 0, 'f', 6)
+    .arg(this->GetProtocol().GetDiffusionProtocol().measurementFrame[2][0], 0, 'f', 6)
+    .arg(this->GetProtocol().GetDiffusionProtocol().measurementFrame[2][1], 0, 'f', 6)
     .arg(this->GetProtocol().GetDiffusionProtocol().measurementFrame[2][2], 0, 'f', 6)
     );
 
@@ -2744,13 +2730,6 @@ void IntensityMotionCheckPanel::GenerateCheckOutputImage( const std::string file
   //  measurement frame
   if ( imgMetaDictionary.HasKey("NRRD_measurement frame") )
   {
-    // imaging frame
-    vnl_matrix_fixed<double, 3, 3> imgf;
-    imgf = m_DwiOriginalImage->GetDirection().GetVnlMatrix();
-
-    // Image frame
-    // std::cout << "Image frame: " << std::endl;
-    // std::cout << imgf << std::endl;
 
     std::vector<std::vector<double> > nrrdmf;
     itk::ExposeMetaData<std::vector<std::vector<double> > >(
@@ -2758,28 +2737,17 @@ void IntensityMotionCheckPanel::GenerateCheckOutputImage( const std::string file
       "NRRD_measurement frame",
       nrrdmf);
 
-    // measurement frame
-    vnl_matrix_fixed<double, 3, 3> mf;
-    for ( unsigned int i = 0; i < 3; ++i )
-    {
-      for ( unsigned int j = 0; j < 3; ++j )
-      {
-        mf(i, j) = nrrdmf[j][i];
-        nrrdmf[j][i] = imgf(i, j);
-      }
-    }
-
     // Meausurement frame
     header  << "measurement frame: ("
-      << mf(0, 0) << ","
-      << mf(1, 0) << ","
-      << mf(2, 0) << ") ("
-      << mf(0, 1) << ","
-      << mf(1, 1) << ","
-      << mf(2, 1) << ") ("
-      << mf(0, 2) << ","
-      << mf(1, 2) << ","
-      << mf(2, 2) << ")"
+      << nrrdmf[0][0] << ","
+      << nrrdmf[0][1] << ","
+      << nrrdmf[0][2] << ") ("
+      << nrrdmf[1][0] << ","
+      << nrrdmf[1][1] << ","
+      << nrrdmf[1][2] << ") ("
+      << nrrdmf[2][0] << ","
+      << nrrdmf[2][1] << ","
+      << nrrdmf[2][2] << ")"
       << std::endl;
   }
 

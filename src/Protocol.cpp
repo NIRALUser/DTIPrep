@@ -1096,19 +1096,21 @@ void Protocol::Save( std::string xml)
     outfile << "            <value>right-posterior-superior</value>" << std::endl;
     break;
   }  
+  // JTM - Space directions were being saved in xml file as
+  // transpose of space directions in NRRD file. Not transpose now.
   outfile << "        </entry>" << std::endl;
   outfile << "        <entry parameter=\"IMAGE_directions\">" << std::endl;
   outfile << "            <value>" 
     << GetImageProtocol().spacedirection[0][0] << " " 
-    << GetImageProtocol().spacedirection[1][0] << " " 
-    << GetImageProtocol().spacedirection[2][0] << "</value>" << std::endl;
-  outfile << "            <value>"
     << GetImageProtocol().spacedirection[0][1] << " " 
-    << GetImageProtocol().spacedirection[1][1] << " " 
-    << GetImageProtocol().spacedirection[2][1] << "</value>" << std::endl;
+    << GetImageProtocol().spacedirection[0][2] << "</value>" << std::endl;
   outfile << "            <value>"
-    << GetImageProtocol().spacedirection[0][2] << " " 
-    << GetImageProtocol().spacedirection[1][2] << " " 
+    << GetImageProtocol().spacedirection[1][0] << " " 
+    << GetImageProtocol().spacedirection[1][1] << " " 
+    << GetImageProtocol().spacedirection[1][2] << "</value>" << std::endl;
+  outfile << "            <value>"
+    << GetImageProtocol().spacedirection[2][0] << " " 
+    << GetImageProtocol().spacedirection[2][1] << " " 
     << GetImageProtocol().spacedirection[2][2] << "</value>" << std::endl;
   outfile << "        </entry>" << std::endl;
   outfile << "        <entry parameter=\"IMAGE_size\">" << std::endl;
@@ -1163,18 +1165,20 @@ void Protocol::Save( std::string xml)
   else
     outfile << "        <value>No</value>" << std::endl;
 
+  // JTM - Measurement frame were being saved in xml file as 
+  // transpose of measurement frame in NRRD file. Not transpose now.
   outfile << "        <entry parameter=\"DIFFUSION_measurementFrame\">" << std::endl;
   outfile << "            <value>" 
     << GetDiffusionProtocol().measurementFrame[0][0] << " " 
-    << GetDiffusionProtocol().measurementFrame[1][0] << " " 
-    << GetDiffusionProtocol().measurementFrame[2][0] << "</value>" << std::endl;
-  outfile << "            <value>"
     << GetDiffusionProtocol().measurementFrame[0][1] << " " 
-    << GetDiffusionProtocol().measurementFrame[1][1] << " " 
-    << GetDiffusionProtocol().measurementFrame[2][1] << "</value>" << std::endl;
+    << GetDiffusionProtocol().measurementFrame[0][2] << "</value>" << std::endl;
   outfile << "            <value>"
-    << GetDiffusionProtocol().measurementFrame[0][2] << " " 
-    << GetDiffusionProtocol().measurementFrame[1][2] << " " 
+    << GetDiffusionProtocol().measurementFrame[1][0] << " " 
+    << GetDiffusionProtocol().measurementFrame[1][1] << " " 
+    << GetDiffusionProtocol().measurementFrame[1][2] << "</value>" << std::endl;
+  outfile << "            <value>"
+    << GetDiffusionProtocol().measurementFrame[2][0] << " " 
+    << GetDiffusionProtocol().measurementFrame[2][1] << " " 
     << GetDiffusionProtocol().measurementFrame[2][2] << "</value>" << std::endl;
 
   outfile << "        </entry>" << std::endl;

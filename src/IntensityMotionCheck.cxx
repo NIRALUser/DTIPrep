@@ -19,26 +19,19 @@
 #include <vcl_algorithm.h>
 
 //The version of DTI prep should be incremented with each algorithm changes
-static const std::string DTIPREP_VERSION("1.1");
+static const std::string DTIPREP_VERSION("1.5");
 
 vnl_matrix_fixed<double, 3, 3>
 CIntensityMotionCheck::GetMeasurementFrame(
   DwiImageType::Pointer DwiImageExtractMF)
 {
   vnl_matrix_fixed<double, 3, 3> imageMeasurementFrame;
-  for ( unsigned int i = 0; i < 3; i++ ) // Default is an indentity matrix;
-  {
-    imageMeasurementFrame[i][i] = 1;
-  }
+  imageMeasurementFrame.set_identity(); // Default is an indentity matrix;
 
   //  measurement frame
   if ( DwiImageExtractMF->GetMetaDataDictionary().HasKey(
     "NRRD_measurement frame") )
   {
-    // imaging frame
-    vnl_matrix_fixed<double, 3, 3> imgf;
-    imgf = DwiImageExtractMF->GetDirection().GetVnlMatrix();
-
     std::vector<std::vector<double> > nrrdmf;
     itk::ExposeMetaData<std::vector<std::vector<double> > >(
       DwiImageExtractMF->GetMetaDataDictionary(),
@@ -46,15 +39,21 @@ CIntensityMotionCheck::GetMeasurementFrame(
       nrrdmf);
 
     // Image frame
-    for ( unsigned int i = 0; i < 3; ++i )
+    for ( unsigned int row = 0; row < 3; ++row )
     {
-      for ( unsigned int j = 0; j < 3; ++j )
+      for ( unsigned int col = 0; col < 3; ++col )
       {
-        imageMeasurementFrame(i, j) = nrrdmf[j][i];
-        nrrdmf[j][i] = imgf(i, j);
+        //nrrdmf is a vector of vectors where the
+        //left most index is for row, and rightmost is for col
+        imageMeasurementFrame(row, col) = nrrdmf[row][col];
       }
     }
   }
+  
+  // JTM - START DEBUG: delete later
+  std::cout << __LINE__ << "DEBUG: image measurement frame (scanner space) \n" <<  imageMeasurementFrame << std::endl;
+  // JTM - END DEBUG: delete later
+
   return imageMeasurementFrame;
 }
 
@@ -3293,9 +3292,109 @@ bool CIntensityMotionCheck::DiffusionCheck( DwiImageType::Pointer dwi)
     // measurement frame
     const vnl_matrix_fixed<double, 3, 3> imageMeasurementFrame 
       = GetMeasurementFrame(this->m_DwiForcedConformanceImage);
+    
     // It is not required that the measurement frames are the same for all images.
     // Images collected at different oblique angles will likely have different measurement frames.
-
+	  
+    // JTM - START DEBUG: delete later
+    std::cout << __LINE__ << "DEBUG: image measurement frame (scanner space) \n" <<  imageMeasurementFrame << std::endl;
+    // JTM - END DEBUG: delete later
+    
+    // JTM - START DEBUG: delete later
+    vnl_matrix_fixed<double, 3, 3> protocolMeasurementFrame
+    = protocol->GetDiffusionProtocol().measurementFrame;
+    std::cout << __LINE__ << "DEBUG: protocol measurement frame (scanner space) \n" <<  protocolMeasurementFrame << std::endl;
+    // JTM - END DEBUG: delete later
+    
+    // JTM - Normalize protocol measurement frame
+    vnl_vector_fixed<double, 3> tempMeasurementFrameFromProtocol1;
+    tempMeasurementFrameFromProtocol1[0] = protocol->GetDiffusionProtocol().measurementFrame[0][0];
+    tempMeasurementFrameFromProtocol1[1] = protocol->GetDiffusionProtocol().measurementFrame[0][1];
+    tempMeasurementFrameFromProtocol1[2] = protocol->GetDiffusionProtocol().measurementFrame[0][2];
+    vnl_vector_fixed<double, 3> tempMeasurementFrameFromProtocol2;
+    tempMeasurementFrameFromProtocol2[0] = protocol->GetDiffusionProtocol().measurementFrame[1][0];
+    tempMeasurementFrameFromProtocol2[1] = protocol->GetDiffusionProtocol().measurementFrame[1][1];
+    tempMeasurementFrameFromProtocol2[2] = protocol->GetDiffusionProtocol().measurementFrame[1][2];
+    vnl_vector_fixed<double, 3> tempMeasurementFrameFromProtocol3;
+    tempMeasurementFrameFromProtocol3[0] = protocol->GetDiffusionProtocol().measurementFrame[2][0];
+    tempMeasurementFrameFromProtocol3[1] = protocol->GetDiffusionProtocol().measurementFrame[2][1];
+    tempMeasurementFrameFromProtocol3[2] = protocol->GetDiffusionProtocol().measurementFrame[2][2];  
+    
+    vnl_vector_fixed<double, 3> normMeasurementFrameFromProtocol1
+    = tempMeasurementFrameFromProtocol1.normalize();
+    vnl_vector_fixed<double, 3> normMeasurementFrameFromProtocol2
+    =	tempMeasurementFrameFromProtocol2.normalize();
+    vnl_vector_fixed<double, 3> normMeasurementFrameFromProtocol3
+    = tempMeasurementFrameFromProtocol3.normalize();
+    
+    vnl_matrix_fixed<double, 3, 3> normMeasurementFrameFromProtocol;
+    normMeasurementFrameFromProtocol[0][0] = normMeasurementFrameFromProtocol1[0];
+    normMeasurementFrameFromProtocol[0][1] = normMeasurementFrameFromProtocol1[1];
+    normMeasurementFrameFromProtocol[0][2] = normMeasurementFrameFromProtocol1[2];
+    normMeasurementFrameFromProtocol[1][0] = normMeasurementFrameFromProtocol2[0];
+    normMeasurementFrameFromProtocol[1][1] = normMeasurementFrameFromProtocol2[1];
+    normMeasurementFrameFromProtocol[1][2] = normMeasurementFrameFromProtocol2[2];
+    normMeasurementFrameFromProtocol[2][0] = normMeasurementFrameFromProtocol3[0];
+    normMeasurementFrameFromProtocol[2][1] = normMeasurementFrameFromProtocol3[1];
+    normMeasurementFrameFromProtocol[2][2] = normMeasurementFrameFromProtocol3[2];
+    
+    // JTM - START DEBUG: delete later
+    std::cout << __LINE__ << "DEBUG: protocol measurement frame (normalized) \n" <<  normMeasurementFrameFromProtocol << std::endl;
+    // JTM - END DEBUG: delete later
+    
+    // JTM - Take inverse of normalized protocol measurement frame
+    const vnl_matrix_fixed<double, 3, 3> mfInverseFromProtocol
+    = vnl_inverse(normMeasurementFrameFromProtocol);
+    
+    // JTM - START DEBUG: delete later
+    std::cout << __LINE__ << "DEBUG: protocol measurement frame (normalized inverse) \n" <<  mfInverseFromProtocol << std::endl;
+    // JTM - END DEBUG: delete later
+    
+    // JTM - Normalize image measurement frame
+    vnl_vector_fixed<double, 3> tempMeasurementFrameFromImage1;
+    tempMeasurementFrameFromImage1[0] = imageMeasurementFrame[0][0];
+    tempMeasurementFrameFromImage1[1] = imageMeasurementFrame[0][1];
+    tempMeasurementFrameFromImage1[2] = imageMeasurementFrame[0][2];
+    vnl_vector_fixed<double, 3> tempMeasurementFrameFromImage2;
+    tempMeasurementFrameFromImage2[0] = imageMeasurementFrame[1][0];
+    tempMeasurementFrameFromImage2[1] = imageMeasurementFrame[1][1];
+    tempMeasurementFrameFromImage2[2] = imageMeasurementFrame[1][2];
+    vnl_vector_fixed<double, 3> tempMeasurementFrameFromImage3;
+    tempMeasurementFrameFromImage3[0] = imageMeasurementFrame[2][0];
+    tempMeasurementFrameFromImage3[1] = imageMeasurementFrame[2][1];
+    tempMeasurementFrameFromImage3[2] = imageMeasurementFrame[2][2];
+    
+    vnl_vector_fixed<double, 3> normMeasurementFrameFromImage1
+    = tempMeasurementFrameFromImage1.normalize();
+    vnl_vector_fixed<double, 3> normMeasurementFrameFromImage2
+    =	tempMeasurementFrameFromImage2.normalize();
+    vnl_vector_fixed<double, 3> normMeasurementFrameFromImage3
+    = tempMeasurementFrameFromImage3.normalize();
+    
+    vnl_matrix_fixed<double, 3, 3> normMeasurementFrameFromImage;
+    normMeasurementFrameFromImage[0][0] = normMeasurementFrameFromImage1[0];
+    normMeasurementFrameFromImage[0][1] = normMeasurementFrameFromImage1[1];
+    normMeasurementFrameFromImage[0][2] = normMeasurementFrameFromImage1[2];
+    normMeasurementFrameFromImage[1][0] = normMeasurementFrameFromImage2[0];
+    normMeasurementFrameFromImage[1][1] = normMeasurementFrameFromImage2[1];
+    normMeasurementFrameFromImage[1][2] = normMeasurementFrameFromImage2[2];
+    normMeasurementFrameFromImage[2][0] = normMeasurementFrameFromImage3[0];
+    normMeasurementFrameFromImage[2][1] = normMeasurementFrameFromImage3[1];
+    normMeasurementFrameFromImage[2][2] = normMeasurementFrameFromImage3[2];
+    
+    // JTM - START DEBUG: delete later
+    std::cout << __LINE__ << "DEBUG: image measurement frame (normalized) \n" <<  normMeasurementFrameFromImage << std::endl;
+    // JTM - END DEBUG: delete later
+    
+    // JTM - Take inverse of normalized image measurement frame
+    const vnl_matrix_fixed<double, 3, 3> mfInverseFromImage
+    = vnl_inverse(normMeasurementFrameFromImage);
+    
+    // JTM - START DEBUG: delete later
+    std::cout << __LINE__ << "DEBUG: image measurement frame (normalized inverse) \n" <<  mfInverseFromImage << std::endl;
+    std::cout << "===================================================================" << std::endl;
+    // JTM - END DEBUG: delete later
+	  
     bool result = true;
     if ( GradContainer->size() !=
       protocol->GetDiffusionProtocol().gradients.size() )
@@ -3331,20 +3430,24 @@ bool CIntensityMotionCheck::DiffusionCheck( DwiImageType::Pointer dwi)
         //(180.0/static_cast<float>(protocol->GetDiffusionProtocol().gradients.size()))
         //*gradientTolerancePercentOfSmallestAngle;
 
-        const vnl_matrix_fixed<double, 3, 3> mfInverseFromProtocol
-          = vnl_inverse(protocol->GetDiffusionProtocol().measurementFrame);
-
+        // JTM - Gradient from protocol
         vnl_vector_fixed<double, 3> tempGradientFromProtocol;
         tempGradientFromProtocol[0] = protocol->GetDiffusionProtocol().gradients[i][0];
         tempGradientFromProtocol[1] = protocol->GetDiffusionProtocol().gradients[i][1];
         tempGradientFromProtocol[2] = protocol->GetDiffusionProtocol().gradients[i][2];
         
-        const vnl_vector_fixed<double,3> gradientFromProtocol
-          = mfInverseFromProtocol * tempGradientFromProtocol;
-        const vnl_matrix_fixed<double, 3, 3> mfInverseFromImage
-          = vnl_inverse(imageMeasurementFrame);
+        // JTM - START DEBUG: delete later
+        std::cout << "===================================================" << std::endl;
+        std::cout << "Gradient " << i << std::endl;
+        std::cout << __LINE__ << "DEBUG: gradient from protocol (scanner space) \n" <<  tempGradientFromProtocol << std::endl;
+        // JTM - END DEBUG: delete later
+		  
         vnl_vector_fixed<double, 3> tempGradientFromImage
-          = GradContainer->ElementAt(i);        
+          = GradContainer->ElementAt(i);
+        
+        // JTM - START DEBUG: delete later
+        std::cout << __LINE__ << "DEBUG: gradient from image (scanner space) \n" <<  tempGradientFromImage << std::endl;
+        // JTM - END DEBUG: delete later
         
         bool bColinear = false;
         double gradientMinAngle = 90.0;
@@ -3372,24 +3475,37 @@ bool CIntensityMotionCheck::DiffusionCheck( DwiImageType::Pointer dwi)
             bColinear = false;  // image: non-baseline  protocol: baseline
           else   
           {
-            tempGradientFromProtocol.normalize(); 
-            tempGradientFromImage.normalize();
+            // JTM - Already normalized
+            //tempGradientFromProtocol.normalize(); 
+            //tempGradientFromImage.normalize();
             // Sometimes this is not
             // normalized due to numerical precision problems.
           
             const vnl_vector_fixed<double, 3> gradientFromImage
               = mfInverseFromImage * tempGradientFromImage;
-	    //Compute the dor product out of the normalize vectors ! Otherwise, if the bvalue of the current vector is not the max bvalue, the angle is wrong
-	    //double gradientDot = dot_product(gradientFromProtocol, gradientFromImage);
-	    //changed to:
-            double gradientDot = dot_product(tempGradientFromProtocol, gradientFromImage);
+            
+            const vnl_vector_fixed<double, 3> gradientFromProtocol
+              = mfInverseFromProtocol * tempGradientFromProtocol;
+			  
+            // JTM - START DEBUG: delete later
+            std::cout << __LINE__ << "DEBUG: gradient from image (anatomical space) \n" <<  gradientFromImage << std::endl;
+            std::cout << __LINE__ << "DEBUG: gradient from protocol (anatomical space) \n" <<  gradientFromProtocol << std::endl;
+            // JTM - END DEBUG: delete later
+			  
+            //Compute the dot product out of the normalize vectors ! Otherwise, if the bvalue of the current vector is not the max bvalue, the angle is wrong
+            //double gradientDot = dot_product(gradientFromProtocol, gradientFromImage);
+            //changed to:
+            //	  double gradientDot = dot_product(tempGradientFromProtocol, gradientFromImage);
+            // JTM - changed above to:
+            double gradientDot = dot_product(gradientFromImage, gradientFromProtocol);
 
+			  
             gradientDot = ( gradientDot > 1 ) ? 1 : gradientDot;
             // Avoid numerical precision problems
             gradientDot = ( gradientDot < -1 ) ? -1 : gradientDot; 
             // Avoid numerical precision problems
 	   
-	    const double gradientAngle = vcl_abs( vcl_acos(gradientDot) * 180.0 * vnl_math::one_over_pi);
+            const double gradientAngle = vcl_abs( vcl_acos(gradientDot) * 180.0 * vnl_math::one_over_pi);
 
             gradientMinAngle
               = vcl_min( gradientAngle, vcl_abs(180.0 - gradientAngle) );
@@ -3405,6 +3521,11 @@ bool CIntensityMotionCheck::DiffusionCheck( DwiImageType::Pointer dwi)
             else
               bColinear = false;   
               // image: non-baseline  protocol: non-baseline --non-colinear
+            
+            // JTM - START DEBUG: delete later
+            std::cout << __LINE__ << "DEBUG: dot product: " <<  gradientDot << std::endl;
+            std::cout << __LINE__ << "DEBUG: minimum angle: " <<  gradientMinAngle << std::endl;
+            // JTM - END DEBUG: delete later
           }
         }
 
@@ -3450,41 +3571,41 @@ bool CIntensityMotionCheck::DiffusionCheck( DwiImageType::Pointer dwi)
               //<< gradProtocolMagnitude 
               << std::endl;
 
-              std::cout << "DWMRI_gradient_" << std::setw(4)
-              << std::setfill('0') << i << " mismatch! DWI: [ "
-              << std::setw(9) << std::setiosflags(std::ios::fixed)
-              << std::setprecision(6) << std::setiosflags(
-              std::ios::right)
-              << GradContainer->ElementAt(i)[0] << " "
-              << std::setw(9) << std::setiosflags(std::ios::fixed)
-              << std::setprecision(6) << std::setiosflags(
-              std::ios::right)
-              << GradContainer->ElementAt(i)[1] << " "
-              << std::setw(9) << std::setiosflags(std::ios::fixed)
-              << std::setprecision(6) << std::setiosflags(
-              std::ios::right)
-              << GradContainer->ElementAt(i)[2] << " ] protocol: [ "
-              << std::setw(9) << std::setiosflags(std::ios::fixed)
-              << std::setprecision(6) << std::setiosflags(
-              std::ios::right)
-              << protocol->GetDiffusionProtocol().gradients[i][0]
-              << " "
-              << std::setw(9) << std::setiosflags(std::ios::fixed)
-              << std::setprecision(6) << std::setiosflags(
-              std::ios::right)
-              << protocol->GetDiffusionProtocol().gradients[i][1]
-              << " "
-              << std::setw(9) << std::setiosflags(std::ios::fixed)
-              << std::setprecision(6) << std::setiosflags(
-              std::ios::right)
-              << protocol->GetDiffusionProtocol().gradients[i][2]
-              << " ]"
-              << "  Colinearity angle (degrees): "
-              <<  gradientMinAngle << " > "
-              << gradientToleranceForSameness
-              //<< " : "<< gradMagnitude << " - "
-              //<< gradProtocolMagnitude 
-              << std::endl;
+              //std::cout << "DWMRI_gradient_" << std::setw(4)
+//              << std::setfill('0') << i << " mismatch! DWI: [ "
+//              << std::setw(9) << std::setiosflags(std::ios::fixed)
+//              << std::setprecision(6) << std::setiosflags(
+//              std::ios::right)
+//              << GradContainer->ElementAt(i)[0] << " "
+//              << std::setw(9) << std::setiosflags(std::ios::fixed)
+//              << std::setprecision(6) << std::setiosflags(
+//              std::ios::right)
+//              << GradContainer->ElementAt(i)[1] << " "
+//              << std::setw(9) << std::setiosflags(std::ios::fixed)
+//              << std::setprecision(6) << std::setiosflags(
+//              std::ios::right)
+//              << GradContainer->ElementAt(i)[2] << " ] protocol: [ "
+//              << std::setw(9) << std::setiosflags(std::ios::fixed)
+//              << std::setprecision(6) << std::setiosflags(
+//              std::ios::right)
+//              << protocol->GetDiffusionProtocol().gradients[i][0]
+//              << " "
+//              << std::setw(9) << std::setiosflags(std::ios::fixed)
+//              << std::setprecision(6) << std::setiosflags(
+//              std::ios::right)
+//              << protocol->GetDiffusionProtocol().gradients[i][1]
+//              << " "
+//              << std::setw(9) << std::setiosflags(std::ios::fixed)
+//              << std::setprecision(6) << std::setiosflags(
+//              std::ios::right)
+//              << protocol->GetDiffusionProtocol().gradients[i][2]
+//              << " ]"
+//              << "  Colinearity angle (degrees): "
+//              <<  gradientMinAngle << " > "
+//              << gradientToleranceForSameness
+//              //<< " : "<< gradMagnitude << " - "
+//              //<< gradProtocolMagnitude 
+//              << std::endl;
           }
 
           if ( protocol->GetDiffusionProtocol().bUseDiffusionProtocol )
@@ -3798,7 +3919,7 @@ bool CIntensityMotionCheck::MakeDefaultProtocol( Protocol *protocol )
   {
     for ( unsigned int j = 0; j < 3; ++j )
     {
-      mf(i, j) = nrrdmf[j][i];
+      mf(i, j) = nrrdmf[i][j];
     }
   }
 

@@ -120,7 +120,7 @@ int main ( int argc, char **argv )
         if( !bCreateDefaultProtocol && ! bcheckByProtocol )
         {
           std::cout<< "Create default protocol or check by protocol, at least one of them should be set." << std::endl;
-          std::cout<< "Niether of them was set. Check by default." << std::endl;
+          std::cout<< "Neither of them was set. Check by default." << std::endl;
         }
 
         const unsigned char result = IntensityMotionCheck.RunPipelineByProtocol();

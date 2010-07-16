@@ -465,11 +465,12 @@ void XmlStreamReader::parseXMLParametersToProtocol()
           subvalues = value.split(" ");
           foreach (QString subvalue, subvalues)
           {
-            protocol->GetImageProtocol(). spacedirection[temp % 3][temp / 3] // column dominant
+            protocol->GetImageProtocol(). spacedirection[temp / 3][temp % 3] // row dominant
             = subvalue.toDouble();
             temp++;
           }
         }
+          std::cout << protocol->GetImageProtocol(). spacedirection << std::endl;
         break;
       case IMAGE_dimension:
         protocol->GetImageProtocol().dimension = paremeters[i].value.toInt();
@@ -563,11 +564,13 @@ void XmlStreamReader::parseXMLParametersToProtocol()
           subvalues = value.split(" ");
           foreach (QString subvalue, subvalues)
           {
-            protocol->GetDiffusionProtocol(). measurementFrame[temp % 3][temp / 3] // column dominant
+            // JTM - Second wrong 
+            protocol->GetDiffusionProtocol(). measurementFrame[temp / 3][temp % 3] // row dominant
             = subvalue.toDouble();
             temp++;
           }
         }
+          std::cout << protocol->GetDiffusionProtocol(). measurementFrame << std::endl;
         break;
       case DIFFUSION_DWMRI_bValue:
         protocol->GetDiffusionProtocol().bValue
