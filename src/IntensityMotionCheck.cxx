@@ -3445,7 +3445,8 @@ bool CIntensityMotionCheck::DiffusionCheck( DwiImageType::Pointer dwi)
         // JTM - END DEBUG: delete later
         
         bool bColinear = false;
-        double gradientMinAngle = 90.0;
+        //double gradientMinAngle = 90.0;
+        double gradientMinAngle = 0.0;
         double gradMagnitude = 0.0;
         double gradProtocolMagnitude = 0.0;
         //if ( vcl_abs(protocol->GetDiffusionProtocol().gradients[i][0]
@@ -3492,22 +3493,23 @@ bool CIntensityMotionCheck::DiffusionCheck( DwiImageType::Pointer dwi)
             //changed to:
             //	  double gradientDot = dot_product(tempGradientFromProtocol, gradientFromImage);
             // JTM - changed above to:
-            double gradientDot = dot_product(gradientFromImage, gradientFromProtocol);
-
-			  
-            gradientDot = ( gradientDot > 1 ) ? 1 : gradientDot;
-            // Avoid numerical precision problems
-            gradientDot = ( gradientDot < -1 ) ? -1 : gradientDot; 
+            double gradientDot = dot_product(gradientFromImage, gradientFromProtocol);            
+            double magnitudesProduct = gradientFromProtocol.magnitude() * gradientFromImage.magnitude();
+            double sendToArcCos = gradientDot / magnitudesProduct;
+            
+            sendToArcCos = ( sendToArcCos > 1 ) ? 1 : sendToArcCos;
+            //Avoid numerical precision problems
+            sendToArcCos = ( sendToArcCos < -1 ) ? -1 : sendToArcCos; 
             // Avoid numerical precision problems
 	   
-            const double gradientAngle = vcl_abs( vcl_acos(gradientDot) * 180.0 * vnl_math::one_over_pi);
+            const double gradientAngle = vcl_abs( vcl_acos(sendToArcCos) * 180.0 * vnl_math::one_over_pi);
 
             gradientMinAngle
               = vcl_min( gradientAngle, vcl_abs(180.0 - gradientAngle) );
 
             // Now see if the gradients are colinear in opposite directions;
             gradMagnitude = gradientFromImage.magnitude();
-            gradProtocolMagnitude = tempGradientFromProtocol.magnitude();
+            gradProtocolMagnitude = gradientFromProtocol.magnitude();
             //std::cout << "gradProtocolMagnitude: " 
             //<< gradProtocolMagnitude << std::endl;
             if ( gradientMinAngle < gradientToleranceForSameness )
@@ -3518,7 +3520,10 @@ bool CIntensityMotionCheck::DiffusionCheck( DwiImageType::Pointer dwi)
               // image: non-baseline  protocol: non-baseline --non-colinear
             
             // JTM - START DEBUG: delete later
-            std::cout << "Dot product: " <<  gradientDot << std::endl;
+            std::cout << "Dot product of 2 vectors: " <<  gradientDot << std::endl;
+            std::cout << "Product of vector magnitudes: " << magnitudesProduct << std::endl;
+            std::cout << "Dot product of 2 vectors / Product of vector magnitudes: " << sendToArcCos << std::endl;
+            std::cout << "Angle between vectors (raw): " <<  gradientAngle << std::endl;
             std::cout << "Minimum angle between vectors: " <<  gradientMinAngle << std::endl;
             // JTM - END DEBUG: delete later
           }
@@ -3566,41 +3571,41 @@ bool CIntensityMotionCheck::DiffusionCheck( DwiImageType::Pointer dwi)
               //<< gradProtocolMagnitude 
               << std::endl;
 
-              //std::cout << "DWMRI_gradient_" << std::setw(4)
-//              << std::setfill('0') << i << " mismatch! DWI: [ "
-//              << std::setw(9) << std::setiosflags(std::ios::fixed)
-//              << std::setprecision(6) << std::setiosflags(
-//              std::ios::right)
-//              << GradContainer->ElementAt(i)[0] << " "
-//              << std::setw(9) << std::setiosflags(std::ios::fixed)
-//              << std::setprecision(6) << std::setiosflags(
-//              std::ios::right)
-//              << GradContainer->ElementAt(i)[1] << " "
-//              << std::setw(9) << std::setiosflags(std::ios::fixed)
-//              << std::setprecision(6) << std::setiosflags(
-//              std::ios::right)
-//              << GradContainer->ElementAt(i)[2] << " ] protocol: [ "
-//              << std::setw(9) << std::setiosflags(std::ios::fixed)
-//              << std::setprecision(6) << std::setiosflags(
-//              std::ios::right)
-//              << protocol->GetDiffusionProtocol().gradients[i][0]
-//              << " "
-//              << std::setw(9) << std::setiosflags(std::ios::fixed)
-//              << std::setprecision(6) << std::setiosflags(
-//              std::ios::right)
-//              << protocol->GetDiffusionProtocol().gradients[i][1]
-//              << " "
-//              << std::setw(9) << std::setiosflags(std::ios::fixed)
-//              << std::setprecision(6) << std::setiosflags(
-//              std::ios::right)
-//              << protocol->GetDiffusionProtocol().gradients[i][2]
-//              << " ]"
-//              << "  Colinearity angle (degrees): "
-//              <<  gradientMinAngle << " > "
-//              << gradientToleranceForSameness
-//              //<< " : "<< gradMagnitude << " - "
-//              //<< gradProtocolMagnitude 
-//              << std::endl;
+              std::cout << "DWMRI_gradient_" << std::setw(4)
+              << std::setfill('0') << i << " mismatch! DWI: [ "
+              << std::setw(9) << std::setiosflags(std::ios::fixed)
+              << std::setprecision(6) << std::setiosflags(
+              std::ios::right)
+              << GradContainer->ElementAt(i)[0] << " "
+              << std::setw(9) << std::setiosflags(std::ios::fixed)
+              << std::setprecision(6) << std::setiosflags(
+              std::ios::right)
+              << GradContainer->ElementAt(i)[1] << " "
+              << std::setw(9) << std::setiosflags(std::ios::fixed)
+              << std::setprecision(6) << std::setiosflags(
+              std::ios::right)
+              << GradContainer->ElementAt(i)[2] << " ] protocol: [ "
+              << std::setw(9) << std::setiosflags(std::ios::fixed)
+              << std::setprecision(6) << std::setiosflags(
+              std::ios::right)
+              << protocol->GetDiffusionProtocol().gradients[i][0]
+              << " "
+              << std::setw(9) << std::setiosflags(std::ios::fixed)
+              << std::setprecision(6) << std::setiosflags(
+              std::ios::right)
+              << protocol->GetDiffusionProtocol().gradients[i][1]
+              << " "
+              << std::setw(9) << std::setiosflags(std::ios::fixed)
+              << std::setprecision(6) << std::setiosflags(
+              std::ios::right)
+              << protocol->GetDiffusionProtocol().gradients[i][2]
+              << " ]"
+              << "  Colinearity angle (degrees): "
+              <<  gradientMinAngle << " > "
+              << gradientToleranceForSameness
+              //<< " : "<< gradMagnitude << " - "
+              //<< gradProtocolMagnitude 
+              << std::endl;
           }
 
           if ( protocol->GetDiffusionProtocol().bUseDiffusionProtocol )
