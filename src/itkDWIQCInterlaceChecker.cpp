@@ -537,8 +537,8 @@ namespace itk
     rigidRegistration(InterlaceOdd, InterlaceEven, 25, 0.1, 1, result );
     result.Correlation = computeCorrelation(InterlaceOdd, InterlaceEven);
     
-    std::cout << __LINE__ << " DEBUG: result.Correlation " << j << " " << result.Correlation << std::endl;
-    
+    std::cout << "Interlace correlation for gradient " << j << ": " << result.Correlation << std::endl;
+        
     this->ResultsContainer.push_back(result);
     
     std::cout << ".";
@@ -574,7 +574,6 @@ namespace itk
   std::cout << "Interlace checking ...";
   // calculate the mean and stdev of baseline and gradients
   int DWICount, BaselineCount;
-  double subtracted, second_corr;
   BaselineCount  = getBaselineNumber();
   DWICount    = getGradientNumber();
   
@@ -604,9 +603,6 @@ namespace itk
     normalizedMetric.push_back(-1.0);
     }
     
-  std::cout << __LINE__ << " DEBUG: getBValueNumber(): " << getBValueNumber() << std::endl;
-  std::cout << __LINE__ << " DEBUG: getBaselineNumber(): " << getBaselineNumber() << std::endl;
-  
   if ( getBValueNumber() >= 3 || ( getBValueNumber() == 2 && getBaselineNumber() > 0 ) )   
     // ensure a quardratic fit
     {
@@ -623,13 +619,8 @@ namespace itk
       bMatrix[i][0] = this->bValues[i] * this->bValues[i];
       bMatrix[i][1] = this->bValues[i];
       bMatrix[i][2] = 1.0;
-        
-      std::cout << __LINE__ << " DEBUG: Correlation " << i << " " << this->ResultsContainer[i].Correlation << std::endl;
       correlationVector[i][0] = this->ResultsContainer[i].Correlation;
       }
-    
-    std::cout << __LINE__ << " DEBUG: bMatrix \n" << bMatrix << std::endl;
-    std::cout << __LINE__ << " DEBUG: correlationVector \n" << std::setprecision(12) << correlationVector << std::endl;
     
     //
     vnl_matrix_fixed<double, 3, 1> coefficients;
@@ -642,9 +633,6 @@ namespace itk
     coefficients = coefficientsTemp * bMatrix.transpose() * correlationVector;
     //       std::cout<<"coefficients2: \n"<<coefficients<<std::endl;
     
-    std::cout << __LINE__ << " DEBUG: coefficientsTemp \n" << coefficientsTemp << std::endl;
-    std::cout << __LINE__ << " DEBUG: coefficients \n" << coefficients << std::endl;
-    
     std::vector<double> normalizedMetric(this->ResultsContainer.size(),-1.0);    
     for ( unsigned int i = 0; i < this->ResultsContainer.size(); i++ ) // for
       // each
@@ -652,22 +640,12 @@ namespace itk
       // gradient
       {
       //std::cout<<"grad[i]: "<<i<<std::endl;
-      std::cout << "\n" << __LINE__ << " DEBUG: normalizedMetric (before) " << i << " " << normalizedMetric[i] << std::endl;
-      std::cout << __LINE__ << " DEBUG: correlation " << i << " " << this->ResultsContainer[i].Correlation << std::endl;
-      std::cout << __LINE__ << " DEBUG: bValue " << this->bValues[i] << std::endl;
-      std::cout << __LINE__ << " DEBUG: coefficients " << std::setprecision(12) << coefficients << std::endl;
-      
-      subtracted = this->bValues[i] * this->bValues[i] * coefficients[0][0] + this->bValues[i] * coefficients[1][0] + coefficients[2][0];
-      std::cout << __LINE__ << " DEBUG: subtracted: " << i << " " << subtracted << std::endl; 
-      
       normalizedMetric[i] = this->ResultsContainer[i].Correlation
       - ( this->bValues[i] * this->bValues[i]
          * coefficients[0][0]
          + this->bValues[i] * coefficients[1][0]
          + coefficients[2][0] );
-      
-      std::cout << __LINE__ << " DEBUG: normalizedMetric (after) " << i << " " << normalizedMetric[i] << std::endl;
-      
+            
       //     std::cout<<"ResultsContainer[i].Correlation: "
       //    << ResultsContainer[i].Correlation <<std::endl;
       //    std::cout<<"normalizedMetric[i]: "
@@ -679,29 +657,21 @@ namespace itk
     // to compute the mean and stdev after quardratic fitting
     for ( unsigned int i = 0; i < this->ResultsContainer.size(); i++ )
       {
-      std::cout << __LINE__ << " DEBUG: quardraticFittedMeans (before) " << i << " " << this->quardraticFittedMeans << std::endl;
-      
       this->quardraticFittedMeans += normalizedMetric[i]
       / static_cast<double>( DWICount
                             + BaselineCount );
-      
-      std::cout << __LINE__ << " DEBUG: quardraticFittedMeans (after) " << i << " " << this->quardraticFittedMeans << std::endl;
       }
     
     for ( unsigned int i = 0; i < this->ResultsContainer.size(); i++ )
       {
       if ( DWICount > 1 )
-        {
-        std::cout << __LINE__ << " DEBUG: quardraticFittedDeviations (before) " << i << " " << this->quardraticFittedDeviations << std::endl;
-        
+        {        
         this->quardraticFittedDeviations
         += ( normalizedMetric[i]
             - quardraticFittedMeans )
         * ( normalizedMetric[i]
            - quardraticFittedMeans )
         / (double)(DWICount + BaselineCount - 1);
-        
-        std::cout << __LINE__ << " DEBUG: quardraticFittedDeviations (after) " << i << " " << this->quardraticFittedDeviations << std::endl;
         }
       
       else
@@ -710,8 +680,6 @@ namespace itk
         }
       }
     quardraticFittedDeviations = sqrt(quardraticFittedDeviations);
-    std::cout << __LINE__ << "DEBUG: quardraticFittedMeans (post-sqrt) " << quardraticFittedMeans << std::endl;
-    std::cout << __LINE__ << "DEBUG: quardraticFittedDeviations (post-sqrt) " << quardraticFittedDeviations << std::endl;
     
     //std::cout<<"quardraticFittedMeans: "<< quardraticFittedMeans
     // <<std::endl;
@@ -724,98 +692,30 @@ namespace itk
           && this->m_GradientDirectionContainer->at(i)[1] == 0.0
           && this->m_GradientDirectionContainer->at(i)[2] == 0.0    )
         {  // baseline
-        bool localsuccess = true;
-        if ( fabs(this->ResultsContainer[i].AngleX) > m_RotationThreshold )
-          {
-          localsuccess = false;
-          std::cout << __LINE__ << " X angle failed" << i << " " << this->ResultsContainer[i].AngleX << " > " << m_RotationThreshold << std::endl;
-          }  
-        if ( fabs(this->ResultsContainer[i].AngleY) > m_RotationThreshold )
-          {
-          localsuccess = false;
-          std::cout << __LINE__ << " Y angle failed" << i << " " << this->ResultsContainer[i].AngleY << " > " << m_RotationThreshold << std::endl;
-          }
-        if ( fabs(this->ResultsContainer[i].AngleZ) > m_RotationThreshold )
-          {
-          localsuccess = false;
-          std::cout << __LINE__ << " Z angle failed" << i << " " << this->ResultsContainer[i].AngleZ << " > " << m_RotationThreshold << std::endl;
-          }
-        if ( fabs(this->ResultsContainer[i].TranslationX) > m_TranslationThreshold )
-          {
-          localsuccess = false;
-          std::cout << __LINE__ << " X translation failed" << i << " " << this->ResultsContainer[i].TranslationX << " > " << m_TranslationThreshold << std::endl;
-          }
-        if ( fabs(this->ResultsContainer[i].TranslationY) > m_TranslationThreshold )
-          {
-          localsuccess = false;
-          std::cout << __LINE__ << " Y translation failed" << i << " " << this->ResultsContainer[i].TranslationY << " > " << m_TranslationThreshold << std::endl;
-          }
-        if ( fabs(this->ResultsContainer[i].TranslationZ - 0.5 * this->GetInput()->GetSpacing()[2]) > m_TranslationThreshold )
-          {
-          localsuccess = false;
-          std::cout << __LINE__ << " Z translation failed (" << i << " " << this->ResultsContainer[i].TranslationZ << " - 0.5 * " << this->GetInput()->GetSpacing()[2] << ") > " << m_TranslationThreshold << std::endl;
-          }
-        if ( this->ResultsContainer[i].Correlation < m_CorrelationThresholdGradient )
-          {
-          localsuccess = false;
-          std::cout << __LINE__ << " Correlation failed" << i << " " << this->ResultsContainer[i].Correlation << " < " << m_CorrelationThresholdGradient << std::endl;
-          }
-        if ( normalizedMetric[i] < quardraticFittedMeans - quardraticFittedDeviations * m_CorrelationStedvTimesBaseline )
-          {
-          second_corr = quardraticFittedMeans - quardraticFittedDeviations * m_CorrelationStedvTimesBaseline;
-          localsuccess = false;
-          std::cout << __LINE__ << " 2nd correlation failed " << i << " " << normalizedMetric[i] << " < (" << quardraticFittedMeans << " - " << quardraticFittedDeviations << " * " << m_CorrelationStedvTimesBaseline << ")"<< std::endl;
-          std::cout << __LINE__ << " 2nd correlation comparison stuff " << i << " " << second_corr << std::endl;
-          }
-        if ( localsuccess == false )
+        if ( fabs(this->ResultsContainer[i].AngleX) > m_RotationThreshold             
+          || fabs(this->ResultsContainer[i].AngleY) > m_RotationThreshold
+          || fabs(this->ResultsContainer[i].AngleZ) > m_RotationThreshold          
+          || fabs(this->ResultsContainer[i].TranslationX) > m_TranslationThreshold
+          || fabs(this->ResultsContainer[i].TranslationY) > m_TranslationThreshold
+          || fabs(this->ResultsContainer[i].TranslationZ - 0.5 
+          * this->GetInput()->GetSpacing()[2]) > m_TranslationThreshold
+          || this->ResultsContainer[i].Correlation < m_CorrelationThresholdGradient
+          || normalizedMetric[i] < quardraticFittedMeans - quardraticFittedDeviations * m_CorrelationStedvTimesBaseline )
           {
           this->qcResults[i] = 0;
           } 
         }
       else
         { // gradients
-        bool localsuccess4 = true;
-        if ( fabs(this->ResultsContainer[i].AngleX) > m_RotationThreshold )
-          {
-          localsuccess4 = false;
-          std::cout << __LINE__ << " X angle failed" << i << " " << this->ResultsContainer[i].AngleX << " > " << m_RotationThreshold << std::endl;
-          }  
-        if ( fabs(this->ResultsContainer[i].AngleY) > m_RotationThreshold )
-          {
-          localsuccess4 = false;
-          std::cout << __LINE__ << " Y angle failed" << i << " " << this->ResultsContainer[i].AngleY << " > " << m_RotationThreshold << std::endl;
-          }
-        if ( fabs(this->ResultsContainer[i].AngleZ) > m_RotationThreshold )
-          {
-          localsuccess4 = false;
-          std::cout << __LINE__ << " Z angle failed" << i << " " << this->ResultsContainer[i].AngleZ << " > " << m_RotationThreshold << std::endl;
-          }
-        if ( fabs(this->ResultsContainer[i].TranslationX) > m_TranslationThreshold )
-          {
-          localsuccess4 = false;
-          std::cout << __LINE__ << " X translation failed" << i << " " << this->ResultsContainer[i].TranslationX << " > " << m_TranslationThreshold << std::endl;
-          }
-        if ( fabs(this->ResultsContainer[i].TranslationY) > m_TranslationThreshold )
-          {
-          localsuccess4 = false;
-          std::cout << __LINE__ << " Y translation failed" << i << " " << this->ResultsContainer[i].TranslationY << " > " << m_TranslationThreshold << std::endl;
-          }
-        if ( fabs(this->ResultsContainer[i].TranslationZ - 0.5 * this->GetInput()->GetSpacing()[2]) > m_TranslationThreshold )
-          {
-          localsuccess4 = false;
-          std::cout << __LINE__ << " Z translation failed (" << i << " " << this->ResultsContainer[i].TranslationZ << " - 0.5 * " << this->GetInput()->GetSpacing()[2] << ") > " << m_TranslationThreshold << std::endl;
-          }
-        if ( this->ResultsContainer[i].Correlation < m_CorrelationThresholdGradient )
-          {
-          localsuccess4 = false;
-          std::cout << __LINE__ << " Correlation failed" << i << " " << this->ResultsContainer[i].Correlation << " < " << m_CorrelationThresholdGradient << std::endl;
-          }
-        if ( normalizedMetric[i] < quardraticFittedMeans - quardraticFittedDeviations * m_CorrelationStdevTimesGradient )
-          {
-          localsuccess4 = false;
-          std::cout << __LINE__ << " 2nd correlation failed " << i << " " << normalizedMetric[i] << " < (" << quardraticFittedMeans << " - " << quardraticFittedDeviations << " * " << m_CorrelationStdevTimesGradient << ")"<< std::endl;
-          }
-        if ( localsuccess4 == false )
+        if ( fabs(this->ResultsContainer[i].AngleX) > m_RotationThreshold
+          || fabs(this->ResultsContainer[i].AngleY) > m_RotationThreshold 
+          || fabs(this->ResultsContainer[i].AngleZ) > m_RotationThreshold 
+          || fabs(this->ResultsContainer[i].TranslationX) > m_TranslationThreshold 
+          || fabs(this->ResultsContainer[i].TranslationY) > m_TranslationThreshold
+          || fabs(this->ResultsContainer[i].TranslationZ - 0.5 
+          * this->GetInput()->GetSpacing()[2]) > m_TranslationThreshold
+          || this->ResultsContainer[i].Correlation < m_CorrelationThresholdGradient
+          || normalizedMetric[i] < quardraticFittedMeans - quardraticFittedDeviations * m_CorrelationStdevTimesGradient )
           {
           this->qcResults[i] = 0;
           } 
@@ -846,27 +746,17 @@ namespace itk
       if ( this->m_GradientDirectionContainer->at(i)[0] == 0.0
           && this->m_GradientDirectionContainer->at(i)[1] == 0.0
           && this->m_GradientDirectionContainer->at(i)[2] == 0.0    )
-        {  // for interlace baseline correlation
-          std::cout << __LINE__ << " DEBUG: interlaceBaselineMeans (before) " << i << " " << this->interlaceBaselineMeans << std::endl;
-          
+        {  // for interlace baseline correlation         
           this->interlaceBaselineMeans += this->ResultsContainer[i].Correlation
           / (double)BaselineCount;
-          
-          std::cout << __LINE__ << " DEBUG: interlaceBaselineMeans (after) " << i << " " << this->interlaceBaselineMeans << std::endl;
         }
       else   // for interlace gradient correlation
         {
-        std::cout << __LINE__ << " DEBUG: interlaceGradientMeans (before) " << i << " " << this->interlaceGradientMeans << std::endl;
-        
         this->interlaceGradientMeans += this->ResultsContainer[i].Correlation
         / (double)DWICount;
-        
-        std::cout << __LINE__ << " DEBUG: interlaceGradientMeans (after) " << i << " " << this->interlaceGradientMeans << std::endl;
         }
       }
-    
-    std::cout << __LINE__ << " DEBUG: bMatrix \n" << bMatrix << std::endl;
-    
+        
     for ( unsigned int i = 0; i < this->ResultsContainer.size(); i++ )
       {
       if ( this->m_GradientDirectionContainer->at(i)[0] == 0.0
@@ -874,16 +764,12 @@ namespace itk
           && this->m_GradientDirectionContainer->at(i)[2] == 0.0     )
         {
         if ( BaselineCount >= 1 )
-          {
-          std::cout << __LINE__ << " DEBUG: interlaceBaselineDeviations (before) " << i << " " << this->interlaceBaselineDeviations << std::endl;
-          
+          {          
           this->interlaceBaselineDeviations
           += ( this->ResultsContainer[i].Correlation
               - interlaceBaselineMeans )
           * ( this->ResultsContainer[i].Correlation
              - interlaceBaselineMeans ) / (double)(BaselineCount);
-          
-          std::cout << __LINE__ << " DEBUG: interlaceBaselineDeviations (after) " << i << " " << this->interlaceBaselineDeviations << std::endl;
           }
         else
           {
@@ -893,16 +779,12 @@ namespace itk
       else
         {
         if ( DWICount >= 1 )
-          {
-          std::cout << __LINE__ << " DEBUG: interlaceGradientDeviations (before) " << i << " " << interlaceGradientDeviations << std::endl;
-          
+          {          
           interlaceGradientDeviations
           += ( this->ResultsContainer[i].Correlation
               - interlaceGradientMeans )
           * ( this->ResultsContainer[i].Correlation
              - interlaceGradientMeans ) / (double)(DWICount);
-          
-          std::cout << __LINE__ << " DEBUG: interlaceGradientDeviations (after) " << i << " " << interlaceGradientDeviations << std::endl;
           }
         else
           {
@@ -913,10 +795,6 @@ namespace itk
     
     interlaceBaselineDeviations = sqrt(interlaceBaselineDeviations);
     interlaceGradientDeviations = sqrt(interlaceGradientDeviations);
-    
-    std::cout << __LINE__ << " DEBUG: interlaceBaselineDeviations " << interlaceBaselineDeviations << std::endl;
-    std::cout << __LINE__ << " DEBUG: interlaceGradientDeviations " << interlaceGradientDeviations << std::endl;
-    std::cout << __LINE__ << " DEBUG: CorrelationVector " << std::endl;
     for ( unsigned int i = 0; i < this->ResultsContainer.size(); i++ )
       {
       std::cout << this->ResultsContainer[i].Correlation << std::endl;
@@ -940,96 +818,30 @@ namespace itk
           && this->m_GradientDirectionContainer->at(i)[1] == 0.0
           && this->m_GradientDirectionContainer->at(i)[2] == 0.0    )
         {  // baseline
-          bool localsuccess2 = true;
-          if ( fabs(this->ResultsContainer[i].AngleX) > m_RotationThreshold )
-            {
-            localsuccess2 = false;
-            std::cout << __LINE__ << "X angle failed" << i << " " << this->ResultsContainer[i].AngleX << " > " << m_RotationThreshold << std::endl;
-            }
-          if ( fabs(this->ResultsContainer[i].AngleY) > m_RotationThreshold )
-            {
-            localsuccess2 = false;
-            std::cout << __LINE__ << "Y angle failed" << i << " " << this->ResultsContainer[i].AngleY << " > " << m_RotationThreshold << std::endl;
-            }
-          if ( fabs(this->ResultsContainer[i].AngleZ) > m_RotationThreshold )
-            {
-            localsuccess2 = false;
-            std::cout << __LINE__ << "Z angle failed" << i << " " << this->ResultsContainer[i].AngleZ << " > " << m_RotationThreshold << std::endl;
-            }
-          if ( fabs(this->ResultsContainer[i].TranslationX) > m_TranslationThreshold )
-            {
-            localsuccess2 = false;
-            std::cout << __LINE__ << "X translation failed" << i << " " << this->ResultsContainer[i].TranslationX << " > " << m_TranslationThreshold << std::endl;
-            }
-          if ( fabs(this->ResultsContainer[i].TranslationY) > m_TranslationThreshold )
-            {
-            localsuccess2 = false;
-            std::cout << __LINE__ << "Y translation failed" << i << " " << this->ResultsContainer[i].TranslationY << " > " << m_TranslationThreshold << std::endl;
-            }
-          if ( fabs(this->ResultsContainer[i].TranslationZ - 0.5 * this->GetInput()->GetSpacing()[2]) > m_TranslationThreshold )
-            {
-            localsuccess2 = false;
-            std::cout << __LINE__ << "Z translation failed (" << i << " " << this->ResultsContainer[i].TranslationZ << " - 0.5 * " << this->GetInput()->GetSpacing()[2] << ") > " << m_TranslationThreshold << std::endl;
-            }
-          if ( this->ResultsContainer[i].Correlation < m_CorrelationThresholdBaseline )
-            {
-            localsuccess2 = false;
-            std::cout << __LINE__ << "Correlation failed" << i << " " << this->ResultsContainer[i].Correlation << " < " << m_CorrelationThresholdGradient << std::endl;
-            }
-          if ( this->ResultsContainer[i].Correlation < interlaceBaselineMeans - interlaceBaselineDeviations * m_CorrelationStedvTimesBaseline )
-            {
-            localsuccess2 = false;
-            std::cout << __LINE__ << "2nd correlation failed " << i << " " << this->ResultsContainer[i].Correlation << " < (" << interlaceBaselineMeans << " - " << interlaceBaselineDeviations << " * " << m_CorrelationStedvTimesBaseline << ")" << std::endl;
-            }
-          if ( localsuccess2 == false )
+          if ( fabs(this->ResultsContainer[i].AngleX) > m_RotationThreshold
+            || fabs(this->ResultsContainer[i].AngleY) > m_RotationThreshold
+            || fabs(this->ResultsContainer[i].AngleZ) > m_RotationThreshold
+            || fabs(this->ResultsContainer[i].TranslationX) > m_TranslationThreshold
+            || fabs(this->ResultsContainer[i].TranslationY) > m_TranslationThreshold
+            || fabs(this->ResultsContainer[i].TranslationZ - 0.5 
+            * this->GetInput()->GetSpacing()[2]) > m_TranslationThreshold
+            || this->ResultsContainer[i].Correlation < m_CorrelationThresholdBaseline
+            || this->ResultsContainer[i].Correlation < interlaceBaselineMeans - interlaceBaselineDeviations * m_CorrelationStedvTimesBaseline )
             {
             this->qcResults[i] = 0;
             }
         }
       else   // gradients
         {
-        bool localsuccess3 = true;
-        if ( fabs(this->ResultsContainer[i].AngleX) > m_RotationThreshold )
-          {
-          localsuccess3 = false;
-          std::cout << __LINE__ << "X angle failed" << i << " " << this->ResultsContainer[i].AngleX << " > " << m_RotationThreshold << std::endl;
-          }
-        if ( fabs(this->ResultsContainer[i].AngleY) > m_RotationThreshold )
-          {
-          localsuccess3 = false;
-          std::cout << __LINE__ << "Y angle failed" << i << " " << this->ResultsContainer[i].AngleY << " > " << m_RotationThreshold << std::endl;
-          }
-        if ( fabs(this->ResultsContainer[i].AngleZ) > m_RotationThreshold )
-          {
-          localsuccess3 = false;
-          std::cout << __LINE__ << "Z angle failed" << i << " " << this->ResultsContainer[i].AngleZ << " > " << m_RotationThreshold << std::endl;
-          }
-        if ( fabs(this->ResultsContainer[i].TranslationX) > m_TranslationThreshold )
-          {
-          localsuccess3 = false;
-          std::cout << __LINE__ << "X translation failed" << i << " " << this->ResultsContainer[i].TranslationX << " > " << m_TranslationThreshold << std::endl;
-          }
-        if ( fabs(this->ResultsContainer[i].TranslationY) > m_TranslationThreshold )
-          {
-          localsuccess3 = false;
-          std::cout << __LINE__ << "Y translation failed" << i << " " << this->ResultsContainer[i].TranslationY << " > " << m_TranslationThreshold << std::endl;
-          }
-        if ( fabs(this->ResultsContainer[i].TranslationZ - 0.5 * this->GetInput()->GetSpacing()[2]) > m_TranslationThreshold )
-          {
-          localsuccess3 = false;
-          std::cout << __LINE__ << "Z translation failed" << i << " " << this->ResultsContainer[i].TranslationZ << " - 0.5 * " << this->GetInput()->GetSpacing()[2] << " > " << m_TranslationThreshold << std::endl;
-          }
-        if ( this->ResultsContainer[i].Correlation < m_CorrelationThresholdGradient )
-          {
-          localsuccess3 = false;
-          std::cout << __LINE__ << "Correlation failed" << i << " " << this->ResultsContainer[i].Correlation << " < " << m_CorrelationThresholdGradient << std::endl;
-          }
-        if ( this->ResultsContainer[i].Correlation < interlaceGradientMeans - interlaceGradientDeviations * m_CorrelationStdevTimesGradient )
-          {
-          localsuccess3 = false;
-          std::cout << __LINE__ << "2nd correlation failed " << i << " " << this->ResultsContainer[i].Correlation << " < (" << interlaceGradientMeans << " - " << interlaceGradientDeviations << " * " << m_CorrelationStdevTimesGradient << std::endl;
-          }
-        if ( localsuccess3 = false )
+        if ( fabs(this->ResultsContainer[i].AngleX) > m_RotationThreshold
+          || fabs(this->ResultsContainer[i].AngleY) > m_RotationThreshold
+          || fabs(this->ResultsContainer[i].AngleZ) > m_RotationThreshold
+          || fabs(this->ResultsContainer[i].TranslationX) > m_TranslationThreshold
+          || fabs(this->ResultsContainer[i].TranslationY) > m_TranslationThreshold
+          || fabs(this->ResultsContainer[i].TranslationZ - 0.5 
+          * this->GetInput()->GetSpacing()[2]) > m_TranslationThreshold
+          || this->ResultsContainer[i].Correlation < m_CorrelationThresholdGradient
+          || this->ResultsContainer[i].Correlation < interlaceGradientMeans - interlaceGradientDeviations * m_CorrelationStdevTimesGradient )
           {
           this->qcResults[i] = 0;
           }
