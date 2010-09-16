@@ -114,6 +114,8 @@ set(EXTERNAL_PACKAGES DTIProcess)
 foreach(proj ${EXTERNAL_PACKAGES})
   ExternalProject_Add(${proj}
     SVN_REPOSITORY "https://www.nitrc.org/svn/dtiprocess/trunk"
+    SVN_USERNAME "slicerbot"
+    SVN_PASSWORD "slicer"
     SOURCE_DIR ${proj}
     BINARY_DIR ${proj}-build
     DEPENDS  ${VTK_DEPEND} ${ITK_DEPEND} SlicerExecutionModel
@@ -135,6 +137,8 @@ set(EXTERNAL_PACKAGES GTRACTprog)
 foreach(proj ${EXTERNAL_PACKAGES})
   ExternalProject_Add(${proj}
     SVN_REPOSITORY "https://www.nitrc.org/svn/vmagnotta/GTRACT"
+    SVN_USERNAME "slicerbot"
+    SVN_PASSWORD "slicer"
     SOURCE_DIR ${proj}
     BINARY_DIR ${proj}-build
     DEPENDS  BRAINSCommonLib ${VTK_DEPEND} ${ITK_DEPEND} SlicerExecutionModel
@@ -157,6 +161,8 @@ set(EXTERNAL_PACKAGES BRAINSFit)
 foreach(proj ${EXTERNAL_PACKAGES})
   ExternalProject_Add(${proj}
     SVN_REPOSITORY "https://www.nitrc.org/svn/multimodereg/trunk"
+    SVN_USERNAME "slicerbot"
+    SVN_PASSWORD "slicer"
     SOURCE_DIR ${proj}
     BINARY_DIR ${proj}-build
     DEPENDS  BRAINSCommonLib ${VTK_DEPEND} ${ITK_DEPEND} SlicerExecutionModel
@@ -179,6 +185,8 @@ set(EXTERNAL_PACKAGES BRAINSResample)
 foreach(proj ${EXTERNAL_PACKAGES})
   ExternalProject_Add(${proj}
     SVN_REPOSITORY "https://www.nitrc.org/svn/brains/BRAINS/trunk/BRAINSTools/BRAINSResample"
+    SVN_USERNAME "slicerbot"
+    SVN_PASSWORD "slicer"
     SOURCE_DIR ${proj}
     BINARY_DIR ${proj}-build
     DEPENDS  BRAINSCommonLib ${VTK_DEPEND} ${ITK_DEPEND} SlicerExecutionModel
