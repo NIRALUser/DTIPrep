@@ -19,7 +19,7 @@ SETIFEMPTY(CMAKE_BUNDLE_OUTPUT_DIRECTORY  ${CMAKE_CURRENT_BINARY_DIR}/bin)
   set(CMAKE_INSTALL_PREFIX "/opt/NAMIC/DTIPrep" CACHE PATH "The place to install everything" FORCE)
 #endif()
 
-
+option(BUILD_SHARED_LIBS "Build shared libs or not" OFF)
 
 set(LOCAL_CMAKE_BUILD_OPTIONS
   -DMAKECOMMAND:STRING=${MAKECOMMAND}
@@ -88,6 +88,7 @@ foreach(proj ${EXTERNAL_PACKAGES})
   FORCE_BUILD_CHECK(${proj})
 endforeach()
 
+if(doesnt_work)
 ### Build DiffusionApplications   http://svn.slicer.org/Slicer3/trunk/Applications/CLI/DiffusionApplications
 set(EXTERNAL_PACKAGES DiffusionApplications)
 foreach(proj ${EXTERNAL_PACKAGES})
@@ -107,7 +108,7 @@ foreach(proj ${EXTERNAL_PACKAGES})
   )
   FORCE_BUILD_CHECK(${proj})
 endforeach()
-
+endif()
 
 ### Build DTIProcess             https://www.nitrc.org/svn/dtiprocess/trunk
 set(EXTERNAL_PACKAGES DTIProcess)
