@@ -1,13 +1,15 @@
 project(DTIPrep)
 set(LOCAL_PROJECT_NAME DTIPrep)
-cmake_minimum_required(VERSION 2.8)
-cmake_policy(VERSION 2.8)
+cmake_minimum_required(VERSION 2.8.2)
+cmake_policy(VERSION 2.8.2)
+
+set(BRAINS_CMAKE_HELPER_DIR ${CMAKE_CURRENT_SOURCE_DIR}/BuildScripts)
+include(${BRAINS_CMAKE_HELPER_DIR}/PreventInSourceBuilds.cmake)
 
 enable_testing()
 include(Dart)
 include(CPack)
 include(ExternalProject)
-set(BRAINS_CMAKE_HELPER_DIR ${CMAKE_CURRENT_SOURCE_DIR}/BuildScripts)
 include(${BRAINS_CMAKE_HELPER_DIR}/CMakeBuildMacros.cmake)
 
 ###
