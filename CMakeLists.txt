@@ -18,7 +18,7 @@ SETIFEMPTY(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/lib)
 SETIFEMPTY(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/bin)
 SETIFEMPTY(CMAKE_BUNDLE_OUTPUT_DIRECTORY  ${CMAKE_CURRENT_BINARY_DIR}/bin)
 #if(CMAKE_INSTALL_PREFIX EQUAL "/usr/local")
-  set(CMAKE_INSTALL_PREFIX "/opt/NAMIC/DTIPrep" CACHE PATH "The place to install everything" FORCE)
+  set(CMAKE_INSTALL_PREFIX "/opt/NAMIC/DTIPrep" CACHE PATH "The place to install everything")
 #endif()
 
 option(BUILD_SHARED_LIBS "Build shared libs or not" OFF)
@@ -84,8 +84,8 @@ foreach(proj ${EXTERNAL_PACKAGES})
       ${QT_ARGS}
       -DGenerateCLP_DIR:PATH=${GenerateCLP_DIR}
       -DITK_DIR:PATH=${ITK_DIR}
-  INSTALL_COMMAND ""
-  #  INSTALL_DIR "${CMAKE_INSTALL_PREFIX}"
+      #INSTALL_COMMAND ""
+      INSTALL_DIR "${CMAKE_INSTALL_PREFIX}"
   )
   FORCE_BUILD_CHECK(${proj})
 endforeach()
@@ -105,8 +105,8 @@ foreach(proj ${EXTERNAL_PACKAGES})
       ${QT_ARGS}
       -DGenerateCLP_DIR:PATH=${GenerateCLP_DIR}
       -DITK_DIR:PATH=${ITK_DIR}
-  INSTALL_COMMAND ""
-  #  INSTALL_DIR "${CMAKE_INSTALL_PREFIX}"
+      #INSTALL_COMMAND ""
+      INSTALL_DIR "${CMAKE_INSTALL_PREFIX}"
   )
   FORCE_BUILD_CHECK(${proj})
 endforeach()
@@ -129,8 +129,8 @@ foreach(proj ${EXTERNAL_PACKAGES})
       -DGenerateCLP_DIR:PATH=${GenerateCLP_DIR}
       -DITK_DIR:PATH=${ITK_DIR}
       -DVTK_DIR:PATH=${VTK_DIR}
-  INSTALL_COMMAND ""
-  #  INSTALL_DIR "${CMAKE_INSTALL_PREFIX}"
+      #INSTALL_COMMAND ""
+      INSTALL_DIR "${CMAKE_INSTALL_PREFIX}"
   )
   FORCE_BUILD_CHECK(${proj})
 endforeach()
@@ -153,8 +153,8 @@ foreach(proj ${EXTERNAL_PACKAGES})
       -DGenerateCLP_DIR:PATH=${GenerateCLP_DIR}
       -DITK_DIR:PATH=${ITK_DIR}
       -DVTK_DIR:PATH=${VTK_DIR}
-  INSTALL_COMMAND ""
-  #  INSTALL_DIR "${CMAKE_INSTALL_PREFIX}"
+      #INSTALL_COMMAND ""
+      INSTALL_DIR "${CMAKE_INSTALL_PREFIX}"
   )
   FORCE_BUILD_CHECK(${proj})
 endforeach()
@@ -177,8 +177,8 @@ foreach(proj ${EXTERNAL_PACKAGES})
       -DGenerateCLP_DIR:PATH=${GenerateCLP_DIR}
       -DITK_DIR:PATH=${ITK_DIR}
       -DVTK_DIR:PATH=${VTK_DIR}
-  INSTALL_COMMAND ""
-  #  INSTALL_DIR "${CMAKE_INSTALL_PREFIX}"
+      #INSTALL_COMMAND ""
+      INSTALL_DIR "${CMAKE_INSTALL_PREFIX}"
   )
   FORCE_BUILD_CHECK(${proj})
 endforeach()
@@ -201,8 +201,8 @@ foreach(proj ${EXTERNAL_PACKAGES})
       -DGenerateCLP_DIR:PATH=${GenerateCLP_DIR}
       -DITK_DIR:PATH=${ITK_DIR}
       -DVTK_DIR:PATH=${VTK_DIR}
-  INSTALL_COMMAND ""
-  #  INSTALL_DIR "${CMAKE_INSTALL_PREFIX}"
+      #INSTALL_COMMAND ""
+      INSTALL_DIR "${CMAKE_INSTALL_PREFIX}"
   )
   FORCE_BUILD_CHECK(${proj})
 endforeach()
@@ -223,8 +223,8 @@ foreach(proj ${EXTERNAL_PACKAGES})
       -DGenerateCLP_DIR:PATH=${GenerateCLP_DIR}
       -DITK_DIR:PATH=${ITK_DIR}
       -DVTK_DIR:PATH=${VTK_DIR}
-  INSTALL_COMMAND ""
-  #  INSTALL_DIR "${CMAKE_INSTALL_PREFIX}"
+      #INSTALL_COMMAND ""
+      INSTALL_DIR "${CMAKE_INSTALL_PREFIX}"
   )
   FORCE_BUILD_CHECK(${proj})
 endforeach()
@@ -247,8 +247,8 @@ foreach(proj ${EXTERNAL_PACKAGES})
       -DGenerateCLP_DIR:PATH=${GenerateCLP_DIR}
       -DITK_DIR:PATH=${ITK_DIR}
       -DVTK_DIR:PATH=${VTK_DIR}
-  INSTALL_COMMAND ""
-  #  INSTALL_DIR "${CMAKE_INSTALL_PREFIX}"
+      #INSTALL_COMMAND ""
+      INSTALL_DIR "${CMAKE_INSTALL_PREFIX}"
   )
   FORCE_BUILD_CHECK(${proj})
 
