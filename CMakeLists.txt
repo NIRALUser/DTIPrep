@@ -20,6 +20,7 @@ SETIFEMPTY(CMAKE_BUNDLE_OUTPUT_DIRECTORY  ${CMAKE_CURRENT_BINARY_DIR}/bin)
 
 set(CMAKE_INSTALL_PREFIX ${CMAKE_CURRENT_BINARY_DIR} CACHE PATH "Install path prefix, prepended onto install directories." FORCE)
 
+option(BUILD_dwiAtlas "Build dwiAtlas or not.  Requires boost." OFF)
 option(BUILD_SHARED_LIBS "Build shared libs or not" OFF)
 
 set(LOCAL_CMAKE_BUILD_OPTIONS
@@ -53,6 +54,7 @@ set(LOCAL_CMAKE_BUILD_OPTIONS
   -DSITE:STRING=${SITE}
   -DBUILDNAME:STRING=${BUILDNAME}
   -DBRAINS_CMAKE_HELPER_DIR:PATH=${BRAINS_CMAKE_HELPER_DIR}
+  -DBUILD_dwiAtlas:bool=${BUILD_dwiAtlas}
 )
 
 # Compute -G arg for configuring external projects with the same CMake generator:
@@ -128,6 +130,7 @@ foreach(proj ${EXTERNAL_PACKAGES})
       -DGenerateCLP_DIR:PATH=${GenerateCLP_DIR}
       -DITK_DIR:PATH=${ITK_DIR}
       -DVTK_DIR:PATH=${VTK_DIR}
+      -DBUILD_dwiAtlas:bool=${BUILD_dwiAtlas}
       #INSTALL_COMMAND ""
       INSTALL_DIR "${CMAKE_INSTALL_PREFIX}"
   )
