@@ -24,6 +24,8 @@
 using namespace std;
 int main ( int argc, char **argv )
 {
+// BUG: When loading the DTIPrep GUI, the following error would appear: "Qt internal error: qt_menu.nib could not be loaded. The .nib file should be placed in QtGui.framework/Versions/Current/Resources/ or in the resources directory of your applicaiton bundle." Qt is aware of this problem (http://bugreports.qt.nokia.com/browse/QTBUG-5952) and has provided the following fix that was pasted in main.cxx and got rid of the error.
+
 #if 0
 QT_MANGLE_NAMESPACE(QCocoaMenuLoader) *qtMenuLoader = [[QT_MANGLE_NAMESPACE(QCocoaMenuLoader) alloc] init];
 if ([NSBundle loadNibNamed:@"qt_menu" owner:qtMenuLoader] == false) { qFatal("Qt internal error: qt_menu.nib could not be loaded. The .nib file" " should be placed in QtGui.framework/Versions/Current/Resources/ " " or in the resources directory of your application bundle."); }
