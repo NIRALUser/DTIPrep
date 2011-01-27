@@ -3,6 +3,7 @@
 
 #include "qmainwindow.h"
 #include "ui_MainWindow.h"
+#include "IntensityMotionCheckPanel.h"
 
 // Forward class declarations
 class vtkCylinderSource;
@@ -13,10 +14,8 @@ class vtkActor;
 class vtkRenderer;
 
 class Dicom2NrrdPanel;
-class IntensityMotionCheckPanel;
 class ImageView2DPanelWithControls;
 
-class QProgressBar;
 class QActionGroup;
 class QAction;
 class QActionGroup;
@@ -53,11 +52,7 @@ class GMainWindow : public QMainWindow, private Ui_MainWindow
 public:
   GMainWindow();
   ~GMainWindow();
-  QProgressBar * GatProgressWidget()
-  {
-    return progressWidget;
-  }
-
+  
   void ChangeStyleTo(QString style);
 
 private slots:
@@ -78,6 +73,20 @@ private slots:
   void on_actionOpenDWINrrd_triggered();
 
   void on_actionOpen_XML_triggered();
+
+  void on_actionQCResult_triggered();
+
+  void on_actionDicom2NrrdPanel_triggered();
+
+  void on_actionIntensityMotionCheckPanel_triggered();
+
+  void on_actionImageView1_triggered();
+
+  void on_actionImageView2_triggered();
+
+  void on_actionImageView3_triggered();
+
+  //void on_actionOpenQCResult_triggered();
 
   // styles menu
   void on_actionWindows_triggered();
@@ -109,8 +118,7 @@ private slots:
 
   void on_actionExit_triggered();
 
-  void UpdateProgressbar(int pos);
-
+  
   // 2D sliderbar
   void ImageIndexChanged(int winID, int index);
 
@@ -186,6 +194,18 @@ private:
 
   void createDockPanels();
 
+  void createDockPanels_IntensityMotionCheckPanel();
+
+  void createDockPanels_Dicom2NrrdPanel();
+ 
+  void createDockPanels_imageView2DPanel1();
+
+  void createDockPanels_imageView2DPanel2();
+ 
+  void createDockPanels_imageView2DPanel3();
+
+  
+
   QToolBar *panelToolBar;
   QToolBar *cameraToolBar;
   QToolBar *View3DToolBar;
@@ -206,7 +226,6 @@ private:
 
   std::vector<vtkRenderer *> renders;
 
-  QProgressBar *progressWidget;
 public:
   // ////////////////// nrrd DWI reader
   // /////////////////////////////////////////////////////

@@ -12,7 +12,9 @@ public:
   ~Dicom2NrrdPanel();
 
   CThreadDicomToNrrd ThreadDicomToNrrd;
+
 protected:
+
 private slots:
   void on_dicomDirectoryBrowseButton_clicked();
 
@@ -20,13 +22,13 @@ private slots:
 
   void on_toolButton_DicomToNrrdConverterCommand_clicked();
 
-  //  void on_buttonBox_accepted();
-  //  void on_buttonBox_rejected();
   void on_pushButton_Convert_clicked();
 
-  void UpdateProgressBar(int pos );
+  
+public slots:
 
-private:
+    void StartProgressSlot_D2N();
+    void StopProgressSlot_D2N();
 
-  //  bool ShowDicomSeries(QString path);
-  };
+
+};

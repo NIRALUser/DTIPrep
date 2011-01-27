@@ -3,6 +3,7 @@
 
 #include <QtGui/QDockWidget>
 #include <QtGui/QMainWindow>
+
 #include "ui_IntensityMotionCheckPanel.h"
 
 #include "itkImage.h"
@@ -14,7 +15,8 @@
 #include "Protocol.h"
 #include "QCResult.h"
 
-class CThreadIntensityMotionCheck;
+
+#include "ThreadIntensityMotionCheck.h"
 
 class IntensityMotionCheckPanel : public QDockWidget,
   private Ui_IntensityMotionCheckPanel
@@ -24,11 +26,12 @@ public:
   IntensityMotionCheckPanel(QMainWindow *parent = 0);
   ~IntensityMotionCheckPanel(void);
 
+  CThreadIntensityMotionCheck myIntensityThread; // Object of ThreadIntensityMotionCheck class
+
   void SetFileName(QString nrrd );
 
 signals:
   void status(const QString &);
-
   // void loadProtocol();
   void ProtocolChanged();
 
@@ -70,6 +73,8 @@ signals:
 
     void on_toolButton_ProtocolFileOpen_clicked( );
 
+    void on_toolButton_ResultFileOpen_clicked( );
+
     void on_pushButton_RunPipeline_clicked( );
 
     void on_pushButton_SaveDWIAs_clicked( );
@@ -78,10 +83,17 @@ signals:
 
     void ResultUpdate();
 
-    void UpdateProgressBar(const int pos);
+    void SavingTreeWidgetResult_XmlFile();
 
-private:
-  CThreadIntensityMotionCheck *ThreadIntensityMotionCheck;
+    
+
+public slots:
+
+    void StartProgressSlot();
+    void StopProgressSlot();
+
+	
+
 public:
 
   bool GetSliceProtocolParameters(
@@ -100,11 +112,7 @@ public:
     double & correlationGradientDevTimes
     );
 
-  CThreadIntensityMotionCheck  * GetThreadIntensityMotionCheck()
-  {
-    return ThreadIntensityMotionCheck;
-  }
-
+  
   typedef unsigned short
     DwiPixelType;
   typedef itk::Image<DwiPixelType,2>
@@ -156,6 +164,8 @@ public:
   void OpenQCReport( );
 
   void OpenXML();
+
+  void OpenXML_ResultFile( );
 
   void DefaultProtocol();
 

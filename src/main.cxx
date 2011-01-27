@@ -42,8 +42,9 @@ if ([NSBundle loadNibNamed:@"qt_menu" owner:qtMenuLoader] == false) { qFatal("Qt
     return app.exec();
   }
   else
-  {
-    MetaCommand command;
+ {
+   
+   MetaCommand command;
     
     // DWI filename
     command.SetOption(

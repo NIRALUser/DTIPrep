@@ -5,7 +5,8 @@
 
 class Protocol;
 class QCResult;
-class CIntensityMotionCheck;
+
+#include "IntensityMotionCheck.h"
 
 class CThreadIntensityMotionCheck : public QThread
 {
@@ -13,6 +14,9 @@ class CThreadIntensityMotionCheck : public QThread
 public:
   CThreadIntensityMotionCheck(QObject *parent = 0);
   ~CThreadIntensityMotionCheck();
+
+  CIntensityMotionCheck * m_IntensityMotionCheck;    //pointer to the core function to show its long running for progressBar
+  
 
   void SetDwiFileName(std::string filename)
   {
@@ -43,17 +47,20 @@ signals:
 
   void kkk( int );
 
+  void StartProgressSignal();   // Signal for progressBar function
+  void StopProgressSignal();   // Signal for progressBar function
+
+
 protected:
   void run();
-
+  
 private:
   std::string DWINrrdFilename;
   std::string XmlFilename;
 
   Protocol    *protocol;
   QCResult    *qcResult;
-public:
-  // CIntensityMotionCheck* IntensityMotionCheck;
+
 };
 
 #endif

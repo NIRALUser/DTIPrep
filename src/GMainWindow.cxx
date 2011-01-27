@@ -83,7 +83,7 @@ GMainWindow::GMainWindow()
   setCorner ( Qt::TopLeftCorner, Qt::LeftDockWidgetArea );
 
   // QT/VTK interact
-  qvtkWidget->GetRenderWindow()->SetStereoTypeToRedBlue();
+  qvtkWidget->GetRenderWindow()->SetStereoTypeToRedBlue(); 
   qvtkWidget_3DView->GetRenderWindow()->SetStereoTypeToRedBlue();
 
   pvtkRenderer = vtkRenderer::New();
@@ -131,7 +131,7 @@ GMainWindow::GMainWindow()
   connect( popupLocal, SIGNAL( triggered(QAction *) ), this,
     SLOT( BackGroundColor(QAction *) ) );
 
-  createActions();
+  //createActions();
   createStatusBar();
   createDockPanels();
 
@@ -156,12 +156,14 @@ GMainWindow::GMainWindow()
   //    this,
   //    SLOT(on_actionOpen_XML_triggered()));
 
+  //connect( this->dicom2NrrdPanel,SIGNAL(Dicom2NrrdEnded()),this,
+
   connect( this->DTIPrepPanel,
     SIGNAL( ProtocolChanged() ),
     this,
     SLOT( UpdateProtocolDiffusionVectorActors() ) );
 
-  connect( this->DTIPrepPanel->GetThreadIntensityMotionCheck(),
+  connect( &this->DTIPrepPanel->myIntensityThread,
     SIGNAL( allDone(const QString &) ),
     statusBar(),
     SLOT( showMessage(const QString &) ) );
@@ -175,11 +177,6 @@ GMainWindow::GMainWindow()
     SIGNAL( allDone(const QString &) ),
     statusBar(),
     SLOT( showMessage(const QString &) ) );
-
-  connect( &( this->dicom2NrrdPanel->ThreadDicomToNrrd ),
-    SIGNAL( kkk( int ) ),
-    this,
-    SLOT( UpdateProgressbar( int ) ) );
 
   // for DTIPrep panel
   connect( this->DTIPrepPanel, SIGNAL( currentGradient(int, int ) ),
@@ -449,7 +446,7 @@ void GMainWindow::ImageIndexChanged(int winID, int index)
     default:
       break;
     }
-  qvtkWidget->GetRenderWindow()->Render();
+  qvtkWidget->GetRenderWindow()->GetInteractor()->Render();
 }
 
 void GMainWindow::ContentsChanged(int /* WinID */, int index)
@@ -465,7 +462,7 @@ void GMainWindow::ContentsChanged(int /* WinID */, int index)
     }
   else
         {}
-  // qvtkWidget->GetRenderWindow()->Render();
+  qvtkWidget->GetRenderWindow()->Render();
 }
 
 void GMainWindow::OrientationChanged(int winID, int newOrient)
@@ -601,18 +598,18 @@ void GMainWindow::on_actionCleanlooks_triggered()
   ChangeStyleTo( tr("Cleanlooks") );
 }
 
-void GMainWindow::UpdateProgressbar(int posLocal)
-{
-  if ( !progressWidget->isVisible() )
-    {
-    progressWidget->show();
-    }
-  GatProgressWidget()->setValue(posLocal);
-  if ( posLocal >= 100 )
-    {
-    progressWidget->hide();
-    }
-}
+//void GMainWindow::UpdateProgressbar(int posLocal)
+//{
+  //if ( !progressWidget->isVisible() )
+    //{
+    //progressWidget->show();
+    //}
+  //GatProgressWidget()->setValue(posLocal);
+  //if ( posLocal >= 100 )
+    //{
+    //progressWidget->hide();
+    //}
+//}
 
 void GMainWindow::print()
 {
@@ -723,14 +720,73 @@ void GMainWindow::createStatusBar()
 {
   statusBar()->showMessage( tr("Ready") );
 
-  progressWidget = new QProgressBar( statusBar() );
-  progressWidget->setRange(0, 100);
-  progressWidget->setValue(0);
-  progressWidget->setAlignment(Qt::AlignCenter);
-  progressWidget->setMaximumWidth(200); //
-  statusBar()->addPermanentWidget(progressWidget, 0);
+  //progressWidget = new QProgressBar( statusBar() );
+  //progressWidget->setRange(0, 100);
+  //progressWidget->setValue(0);
+  //progressWidget->setAlignment(Qt::AlignCenter);
+  //progressWidget->setMaximumWidth(200); //
+  //statusBar()->addPermanentWidget(progressWidget, 0);
 
-  progressWidget->hide();
+  //progressWidget->hide();
+}
+
+void GMainWindow::createDockPanels_IntensityMotionCheckPanel()
+{
+  DTIPrepPanel = new IntensityMotionCheckPanel(this);
+  DTIPrepPanel->setAllowedAreas(
+    Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea
+    |  Qt::BottomDockWidgetArea  );
+  addDockWidget(Qt::LeftDockWidgetArea, DTIPrepPanel);
+
+}
+
+void GMainWindow::createDockPanels_Dicom2NrrdPanel()
+{
+  dicom2NrrdPanel = new Dicom2NrrdPanel(this);
+  dicom2NrrdPanel->setAllowedAreas(
+    Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea | Qt::BottomDockWidgetArea    );
+  addDockWidget(Qt::LeftDockWidgetArea, dicom2NrrdPanel);
+
+}
+
+void GMainWindow::createDockPanels_imageView2DPanel1()
+{
+  imageView2DPanelWithControls1
+    = new ImageView2DPanelWithControls(tr("Image2DView 1"), this);
+  // imageView2DPanelWithControls1->Setup(connecter->GetOutput(), 0,0, -1,
+  // ImageView2DPanelWithControls::ORIENTATION_AXIAL, 0);
+  imageView2DPanelWithControls1->setAllowedAreas(
+    Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea | Qt::TopDockWidgetArea
+    | Qt::BottomDockWidgetArea    );
+  imageView2DPanelWithControls1->setStyleSheet("color: blue;");
+  addDockWidget(Qt::RightDockWidgetArea, imageView2DPanelWithControls1);
+
+}
+
+void GMainWindow::createDockPanels_imageView2DPanel2()
+{
+  imageView2DPanelWithControls2
+    = new ImageView2DPanelWithControls(tr("Image2DView 2"), this);
+  // imageView2DPanelWithControls2->Setup(connecter->GetOutput(), 0,0,
+  // -1,ImageView2DPanelWithControls::ORIENTATION_SAGITTAL, 1);
+  imageView2DPanelWithControls2->setAllowedAreas(
+    Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea | Qt::TopDockWidgetArea
+    | Qt::BottomDockWidgetArea    );
+  imageView2DPanelWithControls2->setStyleSheet("color: red;");
+  addDockWidget(Qt::RightDockWidgetArea, imageView2DPanelWithControls2);
+}
+
+void GMainWindow::createDockPanels_imageView2DPanel3()
+{
+  imageView2DPanelWithControls3
+    = new ImageView2DPanelWithControls(tr("Image2DView 3"), this);
+  // imageView2DPanelWithControls3->Setup(connecter->GetOutput(), 0,0,
+  // -1,ImageView2DPanelWithControls::ORIENTATION_CORONAL, 2);
+  imageView2DPanelWithControls3->setAllowedAreas(
+    Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea | Qt::TopDockWidgetArea
+    | Qt::BottomDockWidgetArea    );
+  imageView2DPanelWithControls3->setStyleSheet("color: green;");
+  addDockWidget(Qt::RightDockWidgetArea, imageView2DPanelWithControls3);
 }
 
 void GMainWindow::createDockPanels()
@@ -1160,6 +1216,41 @@ void GMainWindow::on_actionOpen_XML_triggered()
   DTIPrepPanel->SetProtocolTreeEditable( true );
   UpdateProtocolDiffusionVectorActors();
 }
+
+void GMainWindow::on_actionDicom2NrrdPanel_triggered()
+{
+  createDockPanels_Dicom2NrrdPanel();
+}
+
+void GMainWindow::on_actionIntensityMotionCheckPanel_triggered()
+{
+  createDockPanels_IntensityMotionCheckPanel();
+}
+
+void GMainWindow::on_actionImageView1_triggered()
+{
+  createDockPanels_imageView2DPanel1();
+}
+
+void GMainWindow::on_actionImageView2_triggered()
+{
+  createDockPanels_imageView2DPanel2();
+}
+
+void GMainWindow::on_actionImageView3_triggered()
+{
+  createDockPanels_imageView2DPanel3();
+}
+
+
+
+void GMainWindow::on_actionQCResult_triggered()
+{
+  DTIPrepPanel->OpenXML_ResultFile();
+}
+
+//void GMainWindow::on_actionOpen_QCResult_triggered(){}
+
 
 bool GMainWindow::CreateImagePlaneWidgets(vtkImageData *GradientImage)
 {

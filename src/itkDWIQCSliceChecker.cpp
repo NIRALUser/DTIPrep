@@ -2442,6 +2442,8 @@ namespace itk
 
     int DWICount, BaselineCount;
 
+    SliceWiseCheckResult m_SliceWiseCheckResult;
+
     switch( m_ReportType)
     {
     case DWIQCSliceChecker::REPORT_TYPE_SIMPLE:
@@ -2482,6 +2484,10 @@ namespace itk
               << std::setiosflags(std::ios::fixed) << std::setprecision(6)
               << std::setiosflags(std::ios::right)
               << -ResultsContainer[i][j] << std::endl;
+              m_SliceWiseCheckResult.GradientNum=i;
+              m_SliceWiseCheckResult.SliceNum=j+1;
+              m_SliceWiseCheckResult.Correlation=-ResultsContainer[i][j]; 
+              this->GetSliceWiseCheckResult().push_back(m_SliceWiseCheckResult);
           }
         }
       }

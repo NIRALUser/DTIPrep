@@ -1,5 +1,5 @@
 #include "ThreadIntensityMotionCheck.h"
-#include "IntensityMotionCheck.h"
+
 
 #include <string>
 #include <math.h>
@@ -12,6 +12,7 @@ QThread(parentLocal)
   XmlFilename = "";
   protocol = NULL;
   qcResult = NULL;
+  m_IntensityMotionCheck = new CIntensityMotionCheck;
 }
 
 CThreadIntensityMotionCheck::~CThreadIntensityMotionCheck()
@@ -40,13 +41,14 @@ void CThreadIntensityMotionCheck::run()
 
   std::cout << "Checking Thread begins here " << std::endl;
   qcResult->Clear();
-  CIntensityMotionCheck IntensityMotionCheck;
-  IntensityMotionCheck.SetDwiFileName(DWINrrdFilename);
-  IntensityMotionCheck.SetXmlFileName(XmlFilename);
-  IntensityMotionCheck.SetProtocol( protocol);
-  IntensityMotionCheck.SetQCResult( qcResult);
-  IntensityMotionCheck.GetImagesInformation();
-  const unsigned char result = IntensityMotionCheck.RunPipelineByProtocol();
+  m_IntensityMotionCheck->SetDwiFileName(DWINrrdFilename);
+  m_IntensityMotionCheck->SetXmlFileName(XmlFilename);
+  m_IntensityMotionCheck->SetProtocol( protocol);
+  m_IntensityMotionCheck->SetQCResult( qcResult);
+  m_IntensityMotionCheck->GetImagesInformation();
+
+  emit StartProgressSignal();  // start showing progress bar
+  const unsigned char result = m_IntensityMotionCheck->RunPipelineByProtocol();
 
   unsigned char out = result;
   std::cout << "--------------------------------" << std::endl;
@@ -136,10 +138,12 @@ void CThreadIntensityMotionCheck::run()
     std::cout << "Gradient-wise check:\t\tPASS" << std::endl;
   }
 
-  // emit kkk(100);
-  // emit QQQ(10);
+  
+  emit StopProgressSignal();  // hiding progress bar
 
   emit allDone("Checking Thread ended");
   emit ResultUpdate();
 }
+
+
 

@@ -158,6 +158,8 @@ public:
 
   bool readFile(const QString & fileName, int mode);
 
+  bool readFile_QCResult(const QString & fileName, int mode);   //Reading QCResult in xml format
+
   struct ITEM {
     QString parameter;
     QString value;
@@ -166,10 +168,17 @@ public:
   std::vector<ITEM> paremeters;
 private:
   void readProtocolSettingsElement(int mode);
+  void readElement_QCResult(int mode);
 
   void readEntryElement(QTreeWidgetItem *parent);
+  void readEntryElement_QCResult(QTreeWidgetItem *parent);
+
 
   void readValueElement(QTreeWidgetItem *parent);
+  void readValueElement_QCResult(QTreeWidgetItem *parent);
+  void readProcessingElement_QCResult(QTreeWidgetItem *parent);
+  void readGreenElement_QCResult(QTreeWidgetItem * parent);
+  void readRedElement_QCResult(QTreeWidgetItem * parent);
 
   void readEntryElement();
 

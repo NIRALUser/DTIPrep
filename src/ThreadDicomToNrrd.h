@@ -13,17 +13,19 @@ public:
   QString DicomToNrrdCmd;
   QString DicomDir;
   QString NrrdFileName;
+
 signals:
   void kkk( int );
-
   void allDone(const QString &);
-
   void QQQ();
+
+  void StartProgressSignal_D2N();   // Signal for progressBar function
+  void StopProgressSignal_D2N();   // Signal for progressBar function
 
 protected:
   void run();
 
 private:
-  };
+};
 
 #endif

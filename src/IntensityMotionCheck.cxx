@@ -16,7 +16,12 @@
 #include <string>
 #include <math.h>
 
+//#include<QObject>
+//#include<QThread>
 #include <vcl_algorithm.h>
+
+
+
 
 //The version of DTI prep should be incremented with each algorithm changes
 static const std::string DTIPREP_VERSION("1.5");
@@ -53,7 +58,7 @@ CIntensityMotionCheck::GetMeasurementFrame(
   return imageMeasurementFrame;
 }
 
-CIntensityMotionCheck::CIntensityMotionCheck(void)
+CIntensityMotionCheck::CIntensityMotionCheck()
 {
   m_baselineNumber    = 0;
   m_bValueNumber    = 1;
@@ -69,8 +74,8 @@ CIntensityMotionCheck::CIntensityMotionCheck(void)
   m_XmlFileName = "";
 }
 
-CIntensityMotionCheck::~CIntensityMotionCheck(void)
-{}
+
+CIntensityMotionCheck::~CIntensityMotionCheck(){}
 
 bool CIntensityMotionCheck::LoadDwiImage()
 {
@@ -825,6 +830,18 @@ bool CIntensityMotionCheck::SliceWiseCheck( DwiImageType::Pointer dwi )
 
     m_DwiForcedConformanceImage = SliceChecker->GetOutput();
 
+    SliceWiseCheckResult SliceWise;    //Updating qcresult for SliceWise cheking information
+    
+    for (int i=0; i < SliceChecker->GetSliceWiseCheckResult().size(); i++)
+    {
+    SliceWise.GradientNum=SliceChecker->GetSliceWiseCheckResult()[i].GradientNum;
+    SliceWise.SliceNum=SliceChecker->GetSliceWiseCheckResult()[i].SliceNum;
+    SliceWise.Correlation=SliceChecker->GetSliceWiseCheckResult()[i].Correlation;
+
+    qcResult->GetSliceWiseCheckResult().push_back(SliceWise);
+    
+    }
+    
     // update the QCResults
     for ( unsigned int i = 0;
       i < SliceChecker->GetGradientDirectionContainer()->size();
@@ -1090,6 +1107,24 @@ bool CIntensityMotionCheck::InterlaceWiseCheck( DwiImageType::Pointer dwi )
     }
 
     m_DwiForcedConformanceImage = InterlaceChecker->GetOutput();
+    
+    InterlaceWiseCheckResult InterlaceResult;
+    
+
+    for (int i=0; i < InterlaceChecker->GetResultsContainer().size(); i++)
+    {
+    InterlaceResult.AngleX=InterlaceChecker->GetResultsContainer()[i].AngleX;
+    InterlaceResult.AngleY=InterlaceChecker->GetResultsContainer()[i].AngleY;
+    InterlaceResult.AngleZ=InterlaceChecker->GetResultsContainer()[i].AngleZ;
+    InterlaceResult.TranslationX=InterlaceChecker->GetResultsContainer()[i].TranslationX;
+    InterlaceResult.TranslationY=InterlaceChecker->GetResultsContainer()[i].TranslationY;
+    InterlaceResult.TranslationZ=InterlaceChecker->GetResultsContainer()[i].TranslationZ;
+    InterlaceResult.Metric=InterlaceChecker->GetResultsContainer()[i].Metric;
+    InterlaceResult.Correlation=InterlaceChecker->GetResultsContainer()[i].Correlation;
+
+    qcResult->GetInterlaceWiseCheckResult().push_back(InterlaceResult);
+    
+    }
 
     // update the QCResults
     for ( unsigned int i = 0;
@@ -2054,6 +2089,24 @@ bool CIntensityMotionCheck::GradientWiseCheck( DwiImageType::Pointer dwi )
     }
 
     m_DwiForcedConformanceImage = GradientChecker->GetOutput();
+
+    GradientWiseCheckResult GradientWiseResult;
+
+    for (int i=0; i < GradientChecker->GetResultsContainer().size(); i++)
+    {
+    GradientWiseResult.AngleX=GradientChecker->GetResultsContainer()[i].AngleX;
+    GradientWiseResult.AngleY=GradientChecker->GetResultsContainer()[i].AngleY;
+    GradientWiseResult.AngleZ=GradientChecker->GetResultsContainer()[i].AngleZ;
+    GradientWiseResult.TranslationX=GradientChecker->GetResultsContainer()[i].TranslationX;
+    GradientWiseResult.TranslationY=GradientChecker->GetResultsContainer()[i].TranslationY;
+    GradientWiseResult.TranslationZ=GradientChecker->GetResultsContainer()[i].TranslationZ;
+    GradientWiseResult.MutualInformation=GradientChecker->GetResultsContainer()[i].MutualInformation;
+    
+    qcResult->GetGradientWiseCheckResult().push_back(GradientWiseResult);
+    
+    }    
+
+
     // update the QCResults
     for ( unsigned int i = 0;
       i < GradientChecker->GetGradientDirectionContainer()->size();
@@ -2432,6 +2485,7 @@ unsigned char CIntensityMotionCheck::RunPipelineByProtocol()
   }
   std::cout << "ImageCheck DONE " << std::endl;
 
+  
   // diffusion information check
   std::cout << "=====================" << std::endl;
   std::cout << "DiffusionCheck ... " << std::endl;
@@ -2446,6 +2500,8 @@ unsigned char CIntensityMotionCheck::RunPipelineByProtocol()
     }
   }
   std::cout << "DiffusionCheck DONE " << std::endl;
+
+  
 
   // SliceChecker
   std::cout << "=====================" << std::endl;
@@ -2462,6 +2518,8 @@ unsigned char CIntensityMotionCheck::RunPipelineByProtocol()
   }
   std::cout << "SliceWiseCheck DONE " << std::endl;
 
+  
+
   // InterlaceChecker
   std::cout << "=====================" << std::endl;
   std::cout << "InterlaceWiseCheck ... " << std::endl;
@@ -2477,12 +2535,15 @@ unsigned char CIntensityMotionCheck::RunPipelineByProtocol()
   }
   std::cout << "InterlaceWiseCheck DONE " << std::endl;
 
+  
+
   // baseline average
   std::cout << "=====================" << std::endl;
   std::cout << "BaselineAverage ... " << std::endl;
   BaselineAverage( m_DwiForcedConformanceImage );
   std::cout << "BaselineAverage DONE " << std::endl;
 
+  
   // EddyMotionCorrect
   std::cout << "=====================" << std::endl;
   std::cout << "EddyCurrentHeadMotionCorrect ... " << std::endl;
@@ -2490,6 +2551,8 @@ unsigned char CIntensityMotionCheck::RunPipelineByProtocol()
   std::cout << "EddyCurrentHeadMotionCorrectIowa ... " << std::endl;
   EddyMotionCorrectIowa(m_DwiForcedConformanceImage);
   std::cout << "EddyCurrentHeadMotionCorrect DONE " << std::endl;
+
+  
 
   // GradientChecker
   std::cout << "=====================" << std::endl;
@@ -2505,6 +2568,8 @@ unsigned char CIntensityMotionCheck::RunPipelineByProtocol()
     }
   }
   std::cout << "GradientCheck DONE " << std::endl;
+
+  
 
   // Save QC'ed DWI
   std::cout << "=====================" << std::endl;
@@ -2530,6 +2595,8 @@ unsigned char CIntensityMotionCheck::RunPipelineByProtocol()
   ValidateResult = validateLeftDiffusionStatistics();
 
   result = ( ValidateResult << 5 ) + result;
+
+  
 
   return result;
 }
@@ -4048,4 +4115,6 @@ bool CIntensityMotionCheck::MakeDefaultProtocol( Protocol *protocol )
 
   return true;
 }
+
+
 

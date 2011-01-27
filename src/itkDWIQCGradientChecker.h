@@ -248,6 +248,11 @@ namespace itk
   public:
     OutputImagePointer GetExcludedGradients();
 
+   inline std::vector<struGradientResult> GetResultsContainer()
+   {
+     return ResultsContainer;
+   }
+
     inline std::vector<bool> getQCResults()
     {
       return qcResults;

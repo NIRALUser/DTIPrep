@@ -1,3 +1,7 @@
+#ifndef IntensityMotionCheck_H
+#define IntensityMotionCheck_H
+
+
 #include "itkImage.h"
 #include "itkVectorImage.h"
 #include "itkImageFileReader.h"
@@ -6,6 +10,8 @@
 
 #include "Protocol.h"
 #include "QCResult.h"
+
+//#include "SignalClass.h"
 
 #include <iostream>
 #include <string>
@@ -18,15 +24,23 @@
 #include "itkDWIBaselineAverager.h"
 #include "itkDWIQCGradientChecker.h"
 
+
 #include "itkDWIEddyCurrentHeadMotionCorrector.h" // eddy-motion Utah
 #include "itkVectorImageRegisterAffineFilter.h"   // eddy-motion IOWA
 
-class CIntensityMotionCheck // : public QObject
+#include <QObject>
+
+
+
+class CIntensityMotionCheck //: public QObject
 {
-  // Q_OBJECT
+ 
+//Q_OBJECT
+  	
 public:
-  CIntensityMotionCheck(void);
-  ~CIntensityMotionCheck(void);
+  CIntensityMotionCheck();
+
+  ~CIntensityMotionCheck();
 
   struct DiffusionDir {
     std::vector<double> gradientDir;
@@ -161,7 +175,6 @@ public:
     return m_repetitionLeftNumber;
   }
 
-
   // A: Gradient direction # is less than 6!
   // B: Single b-value DWI without a b0/baseline!
   // C: Too many bad gradient directions found!
@@ -220,6 +233,10 @@ public:
   bool LoadDwiImage();
 
   bool MakeDefaultProtocol( Protocol *protocol);
+
+  //CSignalClass * Signal;
+//signals:
+  //void kkk( int );
 
 private:
   void collectDiffusionStatistics();
@@ -281,4 +298,8 @@ private:
 
   bool   m_readb0;
   double m_b0;
+
 };
+
+#endif
+

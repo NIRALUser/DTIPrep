@@ -1,8 +1,10 @@
 #include <QtGui>
+#include <QThread>
+#include <QFont>
 
 #include "IntensityMotionCheckPanel.h"
-#include "IntensityMotionCheck.h"
-#include "ThreadIntensityMotionCheck.h"
+//#include "IntensityMotionCheck.h"
+//#include "ThreadIntensityMotionCheck.h"
 
 #include "itkMetaDataDictionary.h"
 #include "itkNrrdImageIO.h"
@@ -32,7 +34,14 @@ QDockWidget(parentNew)
 {
   setupUi(this);
   verticalLayout->setContentsMargins(0, 0, 0, 0);
-  progressBar->setValue(0);
+
+  //Setting max and min to zero to behave as a busy indicator
+  this->progressBar2->setMinimum(0);  
+  this->progressBar2->setMaximum(0);
+  this->progressBar2->hide(); // because we only want to show the progressBar when a connection is activated
+  connect(&myIntensityThread,SIGNAL(StartProgressSignal()),this,SLOT(StartProgressSlot()),Qt::QueuedConnection);
+  connect(&myIntensityThread,SIGNAL(StopProgressSignal()),this,SLOT(StopProgressSlot()),Qt::QueuedConnection);
+
 
   m_DwiOriginalImage = NULL;
   protocol.clear();
@@ -61,30 +70,30 @@ QDockWidget(parentNew)
   // treeWidget->header()->setResizeMode(QHeaderView::Stretch);
   treeWidget->setHeaderLabels(labels);
 
-  ThreadIntensityMotionCheck = new CThreadIntensityMotionCheck;
+  //QStringList labels_Result;
+  //labels_Result << tr("Type") << tr("Result") << tr("Processing");  //Lables of Widget of QCResults tab
+  //treeWidget_Results->setHeaderlables(labels_Results);
 
   bGetGradientDirections = false;
 
   GradientDirectionContainer = GradientDirectionContainerType::New();
 
-  // ThreadIntensityMotionCheck->SetProtocol( &protocol);
-  // ThreadIntensityMotionCheck->SetQCResult(&qcResult);
-
-  // connect(ThreadIntensityMotionCheck, SIGNAL(QQQ(int )), this,
-  // SLOT(UpdateProgressBar(const int )) );
-
-  connect( ThreadIntensityMotionCheck, SIGNAL( kkk(int ) ), this,
-    SLOT( UpdateProgressBar(const int ) ) );
-
-  connect( this->ThreadIntensityMotionCheck,
+  connect( &myIntensityThread,
     SIGNAL( ResultUpdate() ),
     this,
     SLOT( ResultUpdate() ) );
+}
 
-  // connect( this->ThreadIntensityMotionCheck->IntensityMotionCheck,
-  //  SIGNAL(Progress(int )),
-  //  this,
-  //  SLOT(UpdateProgressBar(const int ))  );
+IntensityMotionCheckPanel::~IntensityMotionCheckPanel(){}
+
+void IntensityMotionCheckPanel::StartProgressSlot()
+{
+    this->progressBar2->show();    //To show progressBar when StartProgressSignal emitted
+}
+
+void IntensityMotionCheckPanel::StopProgressSlot()
+{
+    this->progressBar2->hide();    //To show progressBar when StartProgressSignal emitted
 }
 
 void IntensityMotionCheckPanel::on_treeWidget_DiffusionInformation_itemClicked(
@@ -120,14 +129,16 @@ void IntensityMotionCheckPanel::on_treeWidget_Results_itemClicked(
   QTreeWidgetItem *item,
   int /* column */)
 {
+  if (item == NULL) return;
+
   std::string str = item->text(0).toStdString();
 
-  if ( str.find("gradient") != std::string::npos )
-  {
-    emit currentGradient( 0, atoi( str.substr(str.length() - 4, 4).c_str() ) );
-    emit currentGradient( 1, atoi( str.substr(str.length() - 4, 4).c_str() ) );
-    emit currentGradient( 2, atoi( str.substr(str.length() - 4, 4).c_str() ) );
-  }
+  //if ( str.find("gradient") != std::string::npos )
+  //{
+  //  emit currentGradient( 0, atoi( str.substr(str.length() - 4, 4).c_str() ) );
+  //  emit currentGradient( 1, atoi( str.substr(str.length() - 4, 4).c_str() ) );
+  //  emit currentGradient( 2, atoi( str.substr(str.length() - 4, 4).c_str() ) );
+  //}
 }
 
 void IntensityMotionCheckPanel::on_treeWidget_Results_currentItemChanged(
@@ -136,14 +147,15 @@ void IntensityMotionCheckPanel::on_treeWidget_Results_currentItemChanged(
 {
   treeWidget_Results->closePersistentEditor(previous, 2); // does nothing if
   // none open
+  if (current == NULL) return;
 
   std::string str = current->text(0).toStdString();
-  if ( str.find("gradient") != std::string::npos )
-  {
-    emit currentGradient( 0, atoi( str.substr(str.length() - 4, 4).c_str() ) );
-    emit currentGradient( 1, atoi( str.substr(str.length() - 4, 4).c_str() ) );
-    emit currentGradient( 2, atoi( str.substr(str.length() - 4, 4).c_str() ) );
-  }
+ // if ( str.find("gradient") != std::string::npos )
+ // {
+ //   emit currentGradient( 0, atoi( str.substr(str.length() - 4, 4).c_str() ) );
+ //   emit currentGradient( 1, atoi( str.substr(str.length() - 4, 4).c_str() ) );
+ //   emit currentGradient( 2, atoi( str.substr(str.length() - 4, 4).c_str() ) );
+ // }
 }
 
 void IntensityMotionCheckPanel::on_treeWidget_itemDoubleClicked(
@@ -201,16 +213,11 @@ void IntensityMotionCheckPanel::on_treeWidget_currentItemChanged(
   treeWidget->closePersistentEditor(previous, 1); // does nothing if none open
 }
 
-IntensityMotionCheckPanel::~IntensityMotionCheckPanel(void)
-{
-  delete ThreadIntensityMotionCheck;
-}
 
 void IntensityMotionCheckPanel::on_pushButton_RunPipeline_clicked( )
 {
   // CIntensityMotionCheck
-  //
-  // IntensityMotionCheck(lineEdit_DWIFileName->text().toStdString());
+  // IntensityMotionCheck(lineEdit_->text().toStdString());
   // IntensityMotionCheck.SetProtocol(&protocol);
   // IntensityMotionCheck.SetQCResult(&qcResult);
   // IntensityMotionCheck.GetImagesInformation();
@@ -241,20 +248,17 @@ void IntensityMotionCheckPanel::on_pushButton_RunPipeline_clicked( )
   qcResult.Clear();
   // std::cout <<
   // "ThreadIntensityMotionCheck->SetFileName(lineEdit_DWIFileName->text().toStdString());"<<std::endl;
-  ThreadIntensityMotionCheck->SetDwiFileName(DwiFileName); 
-  ThreadIntensityMotionCheck->SetXmlFileName(lineEdit_Protocol->text().toStdString());
-  ThreadIntensityMotionCheck->SetProtocol( &protocol);
-  ThreadIntensityMotionCheck->SetQCResult(&qcResult);
-  ThreadIntensityMotionCheck->start();
+  myIntensityThread.SetDwiFileName(DwiFileName); 
+  myIntensityThread.SetXmlFileName(lineEdit_Protocol->text().toStdString());
+  myIntensityThread.SetProtocol( &protocol);
+  myIntensityThread.SetQCResult(&qcResult);
+  myIntensityThread.start();
+
 
   bResultTreeEditable = false;
   pushButton_SaveDWIAs->setEnabled( 0 );
 }
 
-void IntensityMotionCheckPanel::UpdateProgressBar(int posNew )
-{
-  progressBar->setValue(posNew);
-}
 
 void IntensityMotionCheckPanel::SetFileName(QString nrrd )
 {
@@ -267,6 +271,32 @@ void IntensityMotionCheckPanel::on_toolButton_ProtocolFileOpen_clicked( )
   OpenXML();
   bProtocolTreeEditable = true;
   emit ProtocolChanged();
+}
+
+void IntensityMotionCheckPanel::on_toolButton_ResultFileOpen_clicked( )
+{
+  OpenXML_ResultFile();
+  //bProtocolTreeEditable = true;
+  //emit ProtocolChanged();
+}
+
+
+
+void IntensityMotionCheckPanel::OpenXML_ResultFile()
+{
+  QString xmlResultFile=QFileDialog::getOpenFileName (this, tr("Select Report Result"), lineEdit_Result->text(),tr("xml Files (*.xml)"));
+
+  if (xmlResultFile.length()>0)
+  {
+    lineEdit_Result->setText(xmlResultFile);
+  }
+  else 
+    return;
+
+  treeWidget_Results->clear();
+  XmlStreamReader XmlReader(treeWidget_Results);
+  XmlReader.readFile_QCResult(xmlResultFile, XmlStreamReader::TreeWise);
+
 }
 
 void IntensityMotionCheckPanel::OpenXML( )
@@ -368,7 +398,7 @@ bool IntensityMotionCheckPanel::GetGradientDirections( bool bDisplay)
   }
 
   itk::MetaDataDictionary imgMetaDictionary
-    = this->m_DwiOriginalImage->GetMetaDataDictionary();                                            //
+    = this->m_DwiOriginalImage->GetMetaDataDictionary();                                            
   std::vector<std::string> imgMetaKeys
     = imgMetaDictionary.GetKeys();
   std::vector<std::string>::const_iterator itKey = imgMetaKeys.begin();
@@ -1370,7 +1400,7 @@ bool IntensityMotionCheckPanel::GetInterlaceProtocolParameters(
       gradientCorrelation.push_back(Correlation);
     }
 
-    //     std::cout<<"Correlation: " << Correlation<< std::endl;:837: error: expected `;' before ¡®this¡¯
+    //     std::cout<<"Correlation: " << Correlation<< std::endl;:837: error: expected `;' before ï¿½ï¿½thisï¿½ï¿½
 
   }
 
@@ -2383,8 +2413,10 @@ void IntensityMotionCheckPanel::UpdateProtocolToTreeWidget( )
     10) );
 }
 
-void IntensityMotionCheckPanel::ResultUpdate()
+void IntensityMotionCheckPanel::ResultUpdate()   
 {
+  QBrush redText (Qt::red);
+  QBrush greenText (Qt::green);
   bResultTreeEditable = false;
   // std::cout <<"ResultUpdate()"<<std::endl;
   QStringList labels;
@@ -2393,8 +2425,8 @@ void IntensityMotionCheckPanel::ResultUpdate()
   treeWidget_Results->setHeaderLabels(labels);
   treeWidget_Results->clear();
 
-  if ( protocol.GetImageProtocol().bCheck )
-  {
+  //if ( protocol.GetImageProtocol().bCheck )
+  //{
     // ImageInformationCheckResult
     QTreeWidgetItem *itemImageInformation = new QTreeWidgetItem(
       treeWidget_Results);
@@ -2454,10 +2486,10 @@ void IntensityMotionCheckPanel::ResultUpdate()
     {
       spacing->setText( 1, tr("Failed") );
     }
-  }
+  //}
 
-  if ( protocol.GetDiffusionProtocol().bCheck )
-  {
+  //if ( protocol.GetDiffusionProtocol().bCheck )
+  //{
     // DiffusionInformationCheckResult
     QTreeWidgetItem *itemDiffusionInformation = new QTreeWidgetItem(
       treeWidget_Results);
@@ -2496,18 +2528,23 @@ void IntensityMotionCheckPanel::ResultUpdate()
     {
       measurementFrame->setText( 1, tr("Failed") );
     }
-  }
+  //}
 
   // itemIntensityMotionInformation
   QTreeWidgetItem *itemIntensityMotionInformation = new QTreeWidgetItem(
     treeWidget_Results);
   itemIntensityMotionInformation->setText( 0, tr("IntensityMotion") );
+  
 
   for ( unsigned int i = 0;
     i < qcResult.GetIntensityMotionCheckResult().size();
     i++ )
   {
     // gradient
+    bool EXCLUDE_SliceWiseCheck = false;
+    bool EXCLUDE_InterlaceWiseCheck = false;
+    bool EXCLUDE_GreadientWiseCheck= false;
+
     QTreeWidgetItem *gradient = new QTreeWidgetItem(
       itemIntensityMotionInformation);
 
@@ -2522,13 +2559,22 @@ void IntensityMotionCheckPanel::ResultUpdate()
       gradient->setText( 2, tr("BASELINE_AVERAGED") );
       break;
     case QCResult::GRADIENT_EXCLUDE_SLICECHECK:
+      {
       gradient->setText( 2, tr("EXCLUDE_SLICECHECK") );
+      EXCLUDE_SliceWiseCheck=true;
+      }
       break;
     case QCResult::GRADIENT_EXCLUDE_INTERLACECHECK:
+      {
       gradient->setText( 2, tr("EXCLUDE_INTERLACECHECK") );
+      EXCLUDE_InterlaceWiseCheck=true;
+      }
       break;
     case QCResult::GRADIENT_EXCLUDE_GRADIENTCHECK:
+      {
       gradient->setText( 2, tr("EXCLUDE_GRADIENTCHECK") );
+      EXCLUDE_GreadientWiseCheck=true;
+      }
       break;
     case QCResult::GRADIENT_EXCLUDE_MANUALLY:
       gradient->setText( 2, tr("EXCLUDE") );
@@ -2574,14 +2620,155 @@ void IntensityMotionCheckPanel::ResultUpdate()
       .arg(qcResult.GetIntensityMotionCheckResult()[i].CorrectedDir[2], 0,
       'f', 6)
       );
-  }
 
+   QTreeWidgetItem * itemSliceWiseCheck = new QTreeWidgetItem(gradient);
+   itemSliceWiseCheck->setText( 0 ,tr("SliceWiseCheck"));
+   if (EXCLUDE_SliceWiseCheck==true)
+   {
+     itemSliceWiseCheck->setText( 2, tr("EXCLUDE"));
+     for (int S_index=0; S_index<qcResult.GetSliceWiseCheckResult().size(); S_index++)
+     {
+     if (i==qcResult.GetSliceWiseCheckResult()[S_index].GradientNum)
+     {
+       QTreeWidgetItem * itemSliceNum = new QTreeWidgetItem(itemSliceWiseCheck);
+       itemSliceNum->setText(0, tr("Slice#"));
+       itemSliceNum->setText(1,QString("%1").arg(qcResult.GetSliceWiseCheckResult()[S_index].SliceNum));
+       QTreeWidgetItem * itemCorrelation = new QTreeWidgetItem(itemSliceWiseCheck);
+       itemCorrelation->setText(0, tr("Correlation"));
+       itemCorrelation->setText(1,QString("%1").arg(qcResult.GetSliceWiseCheckResult()[S_index].Correlation));
+     }
+   
+     }
+   }
+   if (EXCLUDE_SliceWiseCheck==false){
+     itemSliceWiseCheck->setText( 2, tr("INCLUDE"));
+   }
+   
+   QTreeWidgetItem * itemInterlaceWiseCheck = new QTreeWidgetItem(gradient);
+   itemInterlaceWiseCheck->setText( 0, tr("InterlaceWiseCheck"));
+
+   if (EXCLUDE_InterlaceWiseCheck==true )
+     itemInterlaceWiseCheck->setText( 2, tr ("EXCLUDE"));
+   else 
+      if (EXCLUDE_SliceWiseCheck==true)
+         itemInterlaceWiseCheck->setText( 2, tr ("NA"));
+     else 
+         itemInterlaceWiseCheck->setText( 2, tr ("INCLUDE"));
+
+   
+   QTreeWidgetItem * itemInterlaceAngleX=new QTreeWidgetItem(itemInterlaceWiseCheck);
+   itemInterlaceAngleX->setText( 0, tr("InterlaceAngleX"));
+   itemInterlaceAngleX->setText(1,QString("%1").arg(qcResult.GetInterlaceWiseCheckResult()[i].AngleX));
+   if (qcResult.GetInterlaceWiseCheckResult()[i].AngleX>1.9)
+      itemInterlaceAngleX->setForeground(1,redText);
+   else 
+      itemInterlaceAngleX->setForeground(1,greenText);
+   
+   QTreeWidgetItem * itemInterlaceAngleY=new QTreeWidgetItem(itemInterlaceWiseCheck);
+   itemInterlaceAngleY->setText( 0, tr("InterlaceAngleY"));
+   itemInterlaceAngleY->setText(1,QString("%1").arg(qcResult.GetInterlaceWiseCheckResult()[i].AngleY));
+   QTreeWidgetItem * itemInterlaceAngleZ=new QTreeWidgetItem(itemInterlaceWiseCheck);
+   itemInterlaceAngleZ->setText( 0, tr("InterlaceAngleZ"));
+   itemInterlaceAngleZ->setText(1,QString("%1").arg(qcResult.GetInterlaceWiseCheckResult()[i].AngleZ));
+   QTreeWidgetItem * itemInterlaceTranslationX=new QTreeWidgetItem(itemInterlaceWiseCheck);
+   itemInterlaceTranslationX->setText( 0, tr("InterlaceTranslationX"));
+   itemInterlaceTranslationX->setText(1,QString("%1").arg(qcResult.GetInterlaceWiseCheckResult()[i].TranslationX));
+   QTreeWidgetItem * itemInterlaceTranslationY=new QTreeWidgetItem(itemInterlaceWiseCheck);
+   itemInterlaceTranslationY->setText( 0, tr("InterlaceTranslationY"));
+   itemInterlaceTranslationY->setText(1,QString("%1").arg(qcResult.GetInterlaceWiseCheckResult()[i].TranslationY)); 
+   QTreeWidgetItem * itemInterlaceTranslationZ=new QTreeWidgetItem(itemInterlaceWiseCheck);
+   itemInterlaceTranslationZ->setText( 0, tr("InterlaceTranslationZ"));
+   itemInterlaceTranslationZ->setText(1,QString("%1").arg(qcResult.GetInterlaceWiseCheckResult()[i].TranslationZ));
+   QTreeWidgetItem * itemInterlaceMetric=new QTreeWidgetItem(itemInterlaceWiseCheck);
+   itemInterlaceMetric->setText( 0, tr("InterlaceMetric(MI)"));
+   itemInterlaceMetric->setText(1,QString("%1").arg(qcResult.GetInterlaceWiseCheckResult()[i].Metric));
+   QTreeWidgetItem * itemInterlaceCorrelation=new QTreeWidgetItem(itemInterlaceWiseCheck);
+
+   if (i==0) //baseline
+      itemInterlaceCorrelation->setText( 0, tr("InterlaceCorrelation_Baseline"));
+   else
+      itemInterlaceCorrelation->setText( 0, tr("InterlaceCorrelation"));
+
+  itemInterlaceCorrelation->setText(1,QString("%1").arg(qcResult.GetInterlaceWiseCheckResult()[i].Correlation));
+
+   QTreeWidgetItem * itemGradientWiseCheck = new QTreeWidgetItem(gradient);
+   itemGradientWiseCheck->setText( 0, tr("GradientWiseCheck"));
+
+   if (EXCLUDE_GreadientWiseCheck==true )
+     itemGradientWiseCheck->setText( 2, tr ("EXCLUDE"));
+   else 
+      if (EXCLUDE_SliceWiseCheck==true)
+         itemGradientWiseCheck->setText( 2, tr ("NA"));
+     else 
+         itemGradientWiseCheck->setText( 2, tr ("INCLUDE"));
+
+   QTreeWidgetItem * itemGradientAngleX=new QTreeWidgetItem(itemGradientWiseCheck);
+   itemGradientAngleX->setText( 0, tr("GradientAngleX"));
+   itemGradientAngleX->setText(1,QString("%1").arg(qcResult.GetGradientWiseCheckResult()[i].AngleX));
+   QTreeWidgetItem * itemGradientAngleY=new QTreeWidgetItem(itemGradientWiseCheck);
+   itemGradientAngleY->setText( 0, tr("GradientAngleY"));
+   itemGradientAngleY->setText(1,QString("%1").arg(qcResult.GetGradientWiseCheckResult()[i].AngleY));
+   QTreeWidgetItem * itemGradientAngleZ=new QTreeWidgetItem(itemGradientWiseCheck);
+   itemGradientAngleZ->setText( 0, tr("GradientAngleZ"));
+   itemGradientAngleZ->setText(1,QString("%1").arg(qcResult.GetGradientWiseCheckResult()[i].AngleZ));
+   QTreeWidgetItem * itemGradientTranslationX=new QTreeWidgetItem(itemGradientWiseCheck);
+   itemGradientTranslationX->setText( 0, tr("GradientTranslationX"));
+   itemGradientTranslationX->setText(1,QString("%1").arg(qcResult.GetGradientWiseCheckResult()[i].TranslationX));
+   QTreeWidgetItem * itemGradientTranslationY=new QTreeWidgetItem(itemGradientWiseCheck);
+   itemGradientTranslationY->setText( 0, tr("GradientTranslationY"));
+   itemGradientTranslationY->setText(1,QString("%1").arg(qcResult.GetGradientWiseCheckResult()[i].TranslationY)); 
+   QTreeWidgetItem * itemGradientTranslationZ=new QTreeWidgetItem(itemGradientWiseCheck);
+   itemGradientTranslationZ->setText( 0, tr("GradientTranslationZ"));
+   itemGradientTranslationZ->setText(1,QString("%1").arg(qcResult.GetGradientWiseCheckResult()[i].TranslationZ));
+   QTreeWidgetItem * itemGradientMetric=new QTreeWidgetItem(itemGradientWiseCheck);
+   itemGradientMetric->setText( 0, tr("GradientMetric(MI)"));
+   itemGradientMetric->setText(1,QString("%1").arg(qcResult.GetGradientWiseCheckResult()[i].MutualInformation));
+      
+ }
+
+  //QTreeWidgetItem * itemSliceWiseCheck = new QTreeWidgetItem(treeWidget_Results);
+  //itemSliceWiseCheck->setText( 0, tr("SLiceWiseCheck"));
+
+  //for (int index=0; index< qcResult.GetSliceWiseCheckResult().size(); index ++)
+  //{
+  //QTreeWidgetItem * itemGradientNum = new QTreeWidgetItem(itemSliceWiseCheck);
+  //itemGradientNum->setText(0, tr("Gradien#"));
+  //itemGradientNum->setForeground(1,greenText);
+  //itemGradientNum->setText(1,QString("%1").arg(qcResult.GetSliceWiseCheckResult()[index].GradientNum));
+  //QTreeWidgetItem * itemSliceNum = new QTreeWidgetItem(itemSliceWiseCheck);
+  //itemSliceNum->setText(0, tr("Slice#"));
+  //itemSliceNum->setText(1,QString("%1").arg(qcResult.GetSliceWiseCheckResult()[index].SliceNum));
+  //QTreeWidgetItem * itemCorrelation = new QTreeWidgetItem(itemSliceWiseCheck);
+  //itemCorrelation->setText(0, tr("Correlation"));
+  //itemCorrelation->setText(1,QString("%1").arg(qcResult.GetSliceWiseCheckResult()[index].Correlation));
+  //}
+  
   bResultTreeEditable = false; // no edit to automatically generated results
   pushButton_SaveDWIAs->setEnabled( 0 );
 
   emit UpdateOutputDWIDiffusionVectorActors();
+  SavingTreeWidgetResult_XmlFile();  
 
   return;
+}
+
+void IntensityMotionCheckPanel::SavingTreeWidgetResult_XmlFile( )    // Saving the treeWidget_Results in the xml file format
+{
+  //QString Result_xmlFile = QFileDialog::getSaveFileName( this, tr(
+    //"Save Result As"), lineEdit_Result->text(),  tr("xml Files (*.xml)") );
+  QString Result_xmlFile;
+  Result_xmlFile.append(DwiFileName.c_str());
+  Result_xmlFile.append(QString(tr("_XMLQCResult.xml")));
+
+  if ( Result_xmlFile.length() > 0 )
+  {
+    lineEdit_Result->setText(Result_xmlFile);
+    XmlStreamWriter XmlWriter(treeWidget_Results);
+    XmlWriter.setProtocol(&protocol);
+    XmlWriter.writeXml(Result_xmlFile);
+
+  }
+
 }
 
 void IntensityMotionCheckPanel::GenerateCheckOutputImage( const std::string filename)

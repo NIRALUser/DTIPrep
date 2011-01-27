@@ -1,5 +1,6 @@
 <RCC>
-  <qresource prefix="icon" >
+  <qresource prefix="icon">
+    <file>images/QCResult.png</file>
     <file>images/planes.png</file>
     <file>images/print.png</file>
     <file>images/protocol.png</file>

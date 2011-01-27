@@ -22,6 +22,36 @@ struct GradientIntensityMotionCheckResult {
   double CorrectedDir[3];
   };
 
+
+struct  InterlaceWiseCheckResult{
+   
+  double AngleX;      // in degrees
+  double AngleY;      // in degrees
+  double AngleZ;      // in degrees
+  double TranslationX;
+  double TranslationY;
+  double TranslationZ;
+  double Metric;                // MutualInformation;
+  double Correlation;           // graylevel correlation
+};
+
+struct  GradientWiseCheckResult {
+  double AngleX;      // in degrees
+  double AngleY;      // in degrees
+  double AngleZ;      // in degrees
+  double TranslationX;
+  double TranslationY;
+  double TranslationZ;
+  double MutualInformation;      // -Metrix
+};
+
+struct SliceWiseCheckResult{
+  int GradientNum;
+  int SliceNum;
+  double Correlation;
+};
+
+
 class QCResult
   {
 public:
@@ -54,6 +84,21 @@ public:
     return intensityMotionCheckResult;
   }
 
+  std::vector<InterlaceWiseCheckResult> & GetInterlaceWiseCheckResult()
+  {
+    return interlaceWiseCheckResult;
+  }
+
+  std::vector<GradientWiseCheckResult> & GetGradientWiseCheckResult()
+  {
+    return gradientWiseCheckResult;
+  }
+  
+  std::vector<SliceWiseCheckResult> & GetSliceWiseCheckResult()
+  {
+    return sliceWiseCheckResult;
+  }
+
   void Clear()
   {
     intensityMotionCheckResult.clear();
@@ -74,4 +119,12 @@ private:
   DiffusionInformationCheckResult
                                                   diffusionInformationCheckResult;
   std::vector<GradientIntensityMotionCheckResult> intensityMotionCheckResult;
-  };
+
+  std::vector<InterlaceWiseCheckResult> interlaceWiseCheckResult;
+
+  std::vector<GradientWiseCheckResult> gradientWiseCheckResult;
+  
+  std::vector<SliceWiseCheckResult> sliceWiseCheckResult;
+
+};
+  

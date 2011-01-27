@@ -290,6 +290,56 @@ bool XmlStreamReader::readFile(const QString & fileName, int mode)
   return true;
 }
 
+bool XmlStreamReader::readFile_QCResult(const QString & fileName, int mode)
+{
+  QFile file(fileName);
+  if ( !file.open(QFile::ReadOnly | QFile::Text) )
+  {
+    std::cerr << "Error: Cannot read file " << qPrintable(fileName)
+      << ": " << qPrintable( file.errorString() )
+      << std::endl;
+    return false;
+  }
+  reader.setDevice(&file);
+
+  reader.readNext();
+  while ( !reader.atEnd() )
+  {
+    if ( reader.isStartElement() )
+    {
+      if ( reader.name() == "QCResultSettings" )
+      {
+        readElement_QCResult( mode );
+      }
+      else
+      {
+        reader.raiseError( QObject::tr("Not a ProtocolSettings file") );
+      }
+    }
+    else
+    {
+      reader.readNext();
+    }
+  }
+
+  file.close();
+  if ( reader.hasError() )
+  {
+    std::cerr << "Error: Failed to parse file "
+      << qPrintable(fileName) << ": "
+      << qPrintable( reader.errorString() ) << std::endl;
+    return false;
+  }
+  else if ( file.error() != QFile::NoError )
+  {
+    std::cerr << "Error: Cannot read file " << qPrintable(fileName)
+      << ": " << qPrintable( file.errorString() )
+      << std::endl;
+    return false;
+  }
+  return true;
+}
+
 void XmlStreamReader::readProtocolSettingsElement(int mode)
 {
   reader.readNext();
@@ -308,6 +358,53 @@ void XmlStreamReader::readProtocolSettingsElement(int mode)
         if ( mode == XmlStreamReader::TreeWise )
         {
           readEntryElement( treeWidget->invisibleRootItem() );
+        }
+        else if ( mode == XmlStreamReader::ProtocolWise )
+        {
+          readEntryElement();
+        }
+        else
+        {
+          std::cout << "invalid setting reading mode" << std::endl;
+          return;
+        }
+      }
+      else
+      {
+        skipUnknownElement();
+      }
+    }
+    else
+    {
+      reader.readNext();
+    }
+  }
+
+  if ( mode == XmlStreamReader::ProtocolWise )
+  {
+    InitializeProtocolStringValues();
+    parseXMLParametersToProtocol();
+  }
+}
+
+void XmlStreamReader::readElement_QCResult(int mode)
+{
+  reader.readNext();
+  while ( !reader.atEnd() )
+  {
+    if ( reader.isEndElement() )
+    {
+      reader.readNext();
+      break;
+    }
+
+    if ( reader.isStartElement() )
+    {
+      if ( reader.name() == "entry" )
+      {
+        if ( mode == XmlStreamReader::TreeWise )
+        {
+          readEntryElement_QCResult( treeWidget->invisibleRootItem() );
         }
         else if ( mode == XmlStreamReader::ProtocolWise )
         {
@@ -1080,6 +1177,114 @@ void XmlStreamReader::readEntryElement(QTreeWidgetItem *parent)
   }
 }
 
+void XmlStreamReader::readEntryElement_QCResult(QTreeWidgetItem *parent)
+{
+  QTreeWidgetItem *item = new QTreeWidgetItem(parent);
+
+  item->setText( 0, reader.attributes().value("parameter").toString() );
+
+  reader.readNext();
+  while ( !reader.atEnd() )
+  {
+    if ( reader.isEndElement() )
+    {
+      reader.readNext();
+      break;
+    }
+
+    if ( reader.isStartElement() )
+    {
+      if ( reader.name() == "entry" )
+      {
+        readEntryElement_QCResult(item);
+      }
+      else if ( reader.name() == "value" )
+      {
+        readValueElement_QCResult(item);
+      }
+      else if ( reader.name()=="processing")
+      {
+        readProcessingElement_QCResult(item);
+      }
+      else if (reader.name() == "red" )
+     {
+       readRedElement_QCResult(item);
+     }
+     else if (reader.name() == "green" )
+     {
+       readGreenElement_QCResult(item);
+     }
+     else
+      {
+        skipUnknownElement();
+      }
+    }
+    else
+    {
+      reader.readNext();
+    }
+  }
+}
+
+void XmlStreamReader::readValueElement_QCResult(QTreeWidgetItem *parent)
+{
+  QString page = reader.readElementText();
+
+  if ( reader.isEndElement() )
+  {
+    reader.readNext();
+  }
+
+  QString allPages = parent->text(1);
+  if ( !allPages.isEmpty() )
+  {
+    allPages += ", ";
+  }
+  allPages += page;
+
+  parent->setText(1, allPages);
+}
+
+void XmlStreamReader::readProcessingElement_QCResult(QTreeWidgetItem *parent)
+{
+  QString page = reader.readElementText();
+
+  if ( reader.isEndElement() )
+  {
+    reader.readNext();
+  }
+
+  parent->setText(2, page);
+}
+
+void XmlStreamReader::readRedElement_QCResult(QTreeWidgetItem *parent)
+{
+  QBrush redText (Qt::red);
+  QString page = reader.readElementText();
+
+  if ( reader.isEndElement() )
+  {
+    reader.readNext();
+  }
+
+  parent->setText(1, page);
+  parent->setForeground(1,redText);
+}
+
+void XmlStreamReader::readGreenElement_QCResult(QTreeWidgetItem *parent)
+{
+  QBrush greenText (Qt::green);
+  QString page = reader.readElementText();
+
+  if ( reader.isEndElement() )
+  {
+    reader.readNext();
+  }
+
+  parent->setText(1, page);
+  parent->setForeground(1,greenText);
+}
+
 void XmlStreamReader::readEntryElement()
 {
   ITEM item;
@@ -1177,3 +1382,5 @@ void XmlStreamReader::skipUnknownElement()
     }
   }
 }
+
+

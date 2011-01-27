@@ -1,6 +1,7 @@
 #include "Dicom2NrrdPanel.h"
 #include <QtGui>
 #include <iostream>
+//#include <libgen.h>
 
 #include "itkGDCMSeriesFileNames.h"
 
@@ -8,18 +9,27 @@ Dicom2NrrdPanel::Dicom2NrrdPanel(QMainWindow *parentLocal) : QDockWidget(parentL
   {
   setupUi(this);
   verticalLayout->setContentsMargins(0, 0, 0, 0);
-  progressBar->setValue(0);
+  
+  //Progress Bar
+  //Setting max and min to zero to behave as a busy indicator
+  this->progressBar->setMinimum(0);  
+  this->progressBar->setMaximum(0);
+  this->progressBar->hide(); // because we only want to show the progressBar when a connection is activated
+  connect(&ThreadDicomToNrrd,SIGNAL(StartProgressSignal_D2N()),this,SLOT(StartProgressSlot_D2N()),Qt::QueuedConnection);
+  connect(&ThreadDicomToNrrd,SIGNAL(StopProgressSignal_D2N()),this,SLOT(StopProgressSlot_D2N()),Qt::QueuedConnection);
 
-  connect( &ThreadDicomToNrrd, SIGNAL( kkk( int ) ), this,
-    SLOT( UpdateProgressBar( int ) ) );
-  }
+}
 
-Dicom2NrrdPanel::~Dicom2NrrdPanel()
-     {}
+Dicom2NrrdPanel::~Dicom2NrrdPanel(){}
 
-void Dicom2NrrdPanel::UpdateProgressBar(int posLocal )
+void Dicom2NrrdPanel::StartProgressSlot_D2N()
 {
-  progressBar->setValue(posLocal);
+    this->progressBar->show();    //To show progressBar when StartProgressSignal_D2N emitted
+}
+
+void Dicom2NrrdPanel::StopProgressSlot_D2N()
+{
+    this->progressBar->hide();    //To show progressBar when StartProgressSignal_D2N emitted
 }
 
 void Dicom2NrrdPanel::on_dicomDirectoryBrowseButton_clicked( )
@@ -116,19 +126,29 @@ void Dicom2NrrdPanel::on_pushButton_Convert_clicked()
   //
   // QString(tr("/tools/devel/linux/Slicer3_linux/Slicer3-build/lib/Slicer3/Plugins/DicomToNrrdConverter
   // "));
+  
+
   ThreadDicomToNrrd.DicomToNrrdCmd = lineEdit_DicomToNrrdConverterCommand->text();
   ThreadDicomToNrrd.DicomDir = dicomDirectoryEdit->text();
   ThreadDicomToNrrd.NrrdFileName = nrrdFileName->text();
 
-  QString str;
-  str.append( lineEdit_DicomToNrrdConverterCommand->text() );
-  str.append( QString( tr(" ") ) );
-  str.append( dicomDirectoryEdit->text() );
-  str.append( QString( tr(" ") ) );
-  str.append( nrrdFileName->text() );
-  std::cout << str.toStdString() << std::endl;
+  //QString str;
+  //std::string outputVolumeFullName = std::string(nrrdFileName->text().toStdString() );
+  //std::string outputVolumeName =  basename(const_cast<char *>(outputVolumeFullName.c_str()));
+  //std::string outputDirName =  dirname(const_cast<char *>(outputVolumeFullName.c_str())) ;
 
+  //str.append( lineEdit_DicomToNrrdConverterCommand->text() );
+
+  //str.append( QString( tr(" --inputDicomDirectory ") ) );
+  //str.append( dicomDirectoryEdit->text() );
+  //str.append( QString( tr(" --outputVolume ") ) );
+  //str.append( outputVolumeName.c_str() );
+  //str.append( QString( tr("  --outputDirectory ") ) );
+  //str.append( outputDirName.c_str() );
+  //std::cout << str.toStdString() << std::endl;
+  
   ThreadDicomToNrrd.start(QThread::LowPriority);
+   
 }
 
 /*
@@ -176,7 +196,7 @@ void Dicom2NrrdPanel::on_buttonBox_rejected()
 {
   //this->hide();
 
-   ThreadDicomToNrrd.start();
+    .start();
 
   //if (ThreadIntensityMotionCheck.isRunning()) {
     //   ThreadIntensityMotionCheck.stop();

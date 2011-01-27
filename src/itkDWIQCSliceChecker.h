@@ -59,6 +59,12 @@ namespace itk
       int repetitionNumber;
     };
 
+    struct SliceWiseCheckResult{
+     int GradientNum;
+     int SliceNum;
+     double Correlation;
+    };
+
     /** Standard class typedefs. */
     typedef DWIQCSliceChecker                          Self;
     typedef ImageToImageFilter<TImageType, TImageType> Superclass;
@@ -178,6 +184,9 @@ namespace itk
     /** Gaussian smoothing parameters */
     double m_GaussianVariance;
     double m_MaxKernelWidth;
+
+    /** SliceWiseCheckingResult parameters */
+    std::vector<SliceWiseCheckResult> sliceWiseCheckResult;
 
     /** check parameters */
     float m_HeadSkipRatio;
@@ -339,6 +348,16 @@ namespace itk
 
   public:
     OutputImagePointer GetExcludedGradients();
+
+    std::vector<SliceWiseCheckResult> & GetSliceWiseCheckResult()
+    {
+      return sliceWiseCheckResult;
+    }
+
+    std::vector<std::vector<double> > GetResultsContainer()
+    {
+      return ResultsContainer;
+    }
 
     inline std::vector<bool> getQCResults()
     {
