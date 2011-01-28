@@ -458,7 +458,7 @@ namespace itk
   DWIQCInterlaceChecker<TImageType>
   ::calculateCorrelationsAndMotions()
   {
-  std::cout << "Interlace calculating .";
+  std::cout << "Interlace calculating " << std::endl;
   InputImageConstPointer inputPtr = this->GetInput();
   
   typedef itk::VectorIndexSelectionCastImageFilter<TImageType,
@@ -541,7 +541,6 @@ namespace itk
         
     this->ResultsContainer.push_back(result);
     
-    std::cout << ".";
     
     //       std::cout<<"===="<<std::endl;
     //       std::cout<<std::endl<<"  Gradient "<<j;
@@ -795,10 +794,6 @@ namespace itk
     
     interlaceBaselineDeviations = sqrt(interlaceBaselineDeviations);
     interlaceGradientDeviations = sqrt(interlaceGradientDeviations);
-    for ( unsigned int i = 0; i < this->ResultsContainer.size(); i++ )
-      {
-      std::cout << this->ResultsContainer[i].Correlation << std::endl;
-      }
     
     
     //     std::cout<<"interlaceBaselineDeviations: "<<interlaceBaselineDeviations<<std::endl;

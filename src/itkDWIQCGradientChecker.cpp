@@ -283,7 +283,7 @@ namespace itk
     DWIQCGradientChecker<TImageType>
     ::calculate()
   {
-    std::cout << "Gradient calculating .";
+    std::cout << "Gradient calculating " << std::endl;
     InputImageConstPointer inputPtr = this->GetInput();
 
     typedef itk::VectorIndexSelectionCastImageFilter<TImageType,
@@ -332,24 +332,13 @@ namespace itk
       componentExtractor1->SetIndex( j );
       componentExtractor1->Update();
 
-      //       std::cout<<std::endl<<"Register Gradient "<<j<<" to Baseline or
-      // first Image ..."<<std::endl;
+      std::cout << "Register Gradient " << j << " to Baseline or first Image ..." <<std::endl;
 
       rigidRegistration(
         componentExtractor->GetOutput(),
         componentExtractor1->GetOutput(), 25, 0.1, 1, result );
       this->ResultsContainer.push_back(result);
 
-      std::cout << ".";
-
-      //       std::cout<<"Angles: "<<this->ResultsContainer[j-1].AngleX<<"
-      // "<<this->ResultsContainer[j-1].AngleY<<"
-      // "<<this->ResultsContainer[j-1].AngleZ<<std::endl;
-      //       std::cout<<"Trans : "<<this->ResultsContainer[j-1].TranslationX<<"
-      // "<<this->ResultsContainer[j-1].TranslationY<<"
-      // "<<this->ResultsContainer[j-1].TranslationZ<<std::endl;
-      //       std::cout<<"MI    :
-      // "<<this->ResultsContainer[j-1].MutualInformation<<std::endl;
     }
 
     std::cout << " DONE" << std::endl;
@@ -554,7 +543,8 @@ namespace itk
 
     for ( unsigned int i = 0; i < this->ResultsContainer.size(); i++ )
     {
-      if ( fabs(this->ResultsContainer[i].AngleX) > m_RotationThreshold
+
+     if ( fabs(this->ResultsContainer[i].AngleX) > m_RotationThreshold
         || fabs(this->ResultsContainer[i].AngleY) > m_RotationThreshold
         || fabs(this->ResultsContainer[i].AngleZ) > m_RotationThreshold
         || fabs(this->ResultsContainer[i].TranslationX) > m_TranslationThreshold
