@@ -478,7 +478,8 @@ void IntensityMotionCheckPanel::on_pushButton_SaveProtocolAs_clicked( )
   {
     lineEdit_Protocol->setText(xmlFile);
     XmlStreamWriter XmlWriter(treeWidget);
-    XmlWriter.writeXml(xmlFile);
+    XmlWriter.setProtocol(&protocol);
+    XmlWriter.writeXml_Protocol(xmlFile);
 
     // treeWidget->clear();
     protocol.clear();
@@ -497,7 +498,8 @@ void IntensityMotionCheckPanel::on_pushButton_Save_clicked( )
   if ( lineEdit_Protocol->text().length() > 0 )
   {
     XmlStreamWriter XmlWriter(treeWidget);
-    XmlWriter.writeXml( lineEdit_Protocol->text() );
+    XmlWriter.setProtocol(&protocol);
+    XmlWriter.writeXml_Protocol( lineEdit_Protocol->text() );
 
     // treeWidget->clear();
     protocol.clear();
@@ -515,7 +517,7 @@ void IntensityMotionCheckPanel::on_pushButton_Save_clicked( )
     {
       lineEdit_Protocol->setText(xmlFile);
       XmlStreamWriter XmlWriter(treeWidget);
-      XmlWriter.writeXml(xmlFile);
+      XmlWriter.writeXml_Protocol(xmlFile);
 
       // treeWidget->clear();
       protocol.clear();
