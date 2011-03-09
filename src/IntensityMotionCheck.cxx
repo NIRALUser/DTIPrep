@@ -3308,7 +3308,8 @@ bool CIntensityMotionCheck::DiffusionCheck( DwiImageType::Pointer dwi)
     double bValue;
     this->GetGradientDirections( dwi, bValue, GradContainer);
 
-    if ( vcl_abs(protocol->GetDiffusionProtocol().bValue - bValue) < 0.0000001 )
+    const double bValueAcceptablePercentageTolerance=0.005;
+    if ( vcl_abs( ( protocol->GetDiffusionProtocol().bValue - bValue )/ protocol->GetDiffusionProtocol().bValue ) < bValueAcceptablePercentageTolerance )
     {
       qcResult->GetDiffusionInformationCheckResult().b = true;
       if ( bReport )
