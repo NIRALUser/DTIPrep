@@ -696,8 +696,7 @@ namespace itk
           || fabs(this->ResultsContainer[i].AngleZ) > m_RotationThreshold          
           || fabs(this->ResultsContainer[i].TranslationX) > m_TranslationThreshold
           || fabs(this->ResultsContainer[i].TranslationY) > m_TranslationThreshold
-          || fabs(this->ResultsContainer[i].TranslationZ - 0.5 
-          * this->GetInput()->GetSpacing()[2]) > m_TranslationThreshold
+          || fabs(this->ResultsContainer[i].TranslationZ) > m_TranslationThreshold + (0.5 * this->GetInput()->GetSpacing()[2])
           || this->ResultsContainer[i].Correlation < m_CorrelationThresholdGradient
           || normalizedMetric[i] < quardraticFittedMeans - quardraticFittedDeviations * m_CorrelationStedvTimesBaseline )
           {
@@ -711,8 +710,7 @@ namespace itk
           || fabs(this->ResultsContainer[i].AngleZ) > m_RotationThreshold 
           || fabs(this->ResultsContainer[i].TranslationX) > m_TranslationThreshold 
           || fabs(this->ResultsContainer[i].TranslationY) > m_TranslationThreshold
-          || fabs(this->ResultsContainer[i].TranslationZ - 0.5 
-          * this->GetInput()->GetSpacing()[2]) > m_TranslationThreshold
+          || fabs(this->ResultsContainer[i].TranslationZ) > m_TranslationThreshold + (0.5 * this->GetInput()->GetSpacing()[2])
           || this->ResultsContainer[i].Correlation < m_CorrelationThresholdGradient
           || normalizedMetric[i] < quardraticFittedMeans - quardraticFittedDeviations * m_CorrelationStdevTimesGradient )
           {
@@ -818,8 +816,7 @@ namespace itk
             || fabs(this->ResultsContainer[i].AngleZ) > m_RotationThreshold
             || fabs(this->ResultsContainer[i].TranslationX) > m_TranslationThreshold
             || fabs(this->ResultsContainer[i].TranslationY) > m_TranslationThreshold
-            || fabs(this->ResultsContainer[i].TranslationZ - 0.5 
-            * this->GetInput()->GetSpacing()[2]) > m_TranslationThreshold
+            || fabs(this->ResultsContainer[i].TranslationZ) > m_TranslationThreshold + (0.5 * this->GetInput()->GetSpacing()[2])
             || this->ResultsContainer[i].Correlation < m_CorrelationThresholdBaseline
             || this->ResultsContainer[i].Correlation < interlaceBaselineMeans - interlaceBaselineDeviations * m_CorrelationStedvTimesBaseline )
             {
@@ -833,8 +830,7 @@ namespace itk
           || fabs(this->ResultsContainer[i].AngleZ) > m_RotationThreshold
           || fabs(this->ResultsContainer[i].TranslationX) > m_TranslationThreshold
           || fabs(this->ResultsContainer[i].TranslationY) > m_TranslationThreshold
-          || fabs(this->ResultsContainer[i].TranslationZ - 0.5 
-          * this->GetInput()->GetSpacing()[2]) > m_TranslationThreshold
+          || fabs(this->ResultsContainer[i].TranslationZ) > m_TranslationThreshold + (0.5 * this->GetInput()->GetSpacing()[2])
           || this->ResultsContainer[i].Correlation < m_CorrelationThresholdGradient
           || this->ResultsContainer[i].Correlation < interlaceGradientMeans - interlaceGradientDeviations * m_CorrelationStdevTimesGradient )
           {
