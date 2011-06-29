@@ -608,6 +608,8 @@ namespace itk
         << std::setw(10) << "TranslationZ\t" << std::setw(10)
         << "Metric(MI)" << std::endl;
 
+      std::cout<<"DWIGradientResultsContainer"<<ResultsContainer.size()<<std::endl;
+
       for ( unsigned int i = 0; i < this->ResultsContainer.size(); i++ )
       {
         if ( !this->qcResults[i] )

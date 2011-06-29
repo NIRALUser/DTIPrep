@@ -105,6 +105,11 @@ public:
     return horizontalSlider_Gradient;
   }
 
+  QLineEdit * GetLineEdit_Gradient()
+  {  
+    return lineEdit_Gradient;
+  }
+
 signals:
   void visible(int which, bool vis);
 

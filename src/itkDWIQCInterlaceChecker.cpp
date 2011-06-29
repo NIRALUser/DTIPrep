@@ -221,6 +221,7 @@ namespace itk
     {
     if ( this->qcResults[i] )
       {
+      //std::cout << "qcResult_InterlaceWise: "<< this->qcResults[i] << std::endl;
       std::ostringstream ossKey;
       ossKey << "DWMRI_gradient_" << std::setw(4) << std::setfill('0') << temp;
       

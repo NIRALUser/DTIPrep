@@ -1,7 +1,9 @@
 #pragma once
 
 #include <vector>
+#include <QString>
 struct ImageInformationCheckResult {
+  QString info;
   bool space;
   bool size;
   bool origin;
@@ -20,11 +22,11 @@ struct GradientIntensityMotionCheckResult {
   double OriginalDir[3];
   double ReplacedDir[3];
   double CorrectedDir[3];
+  int VisualChecking;
   };
 
 
 struct  InterlaceWiseCheckResult{
-   
   double AngleX;      // in degrees
   double AngleY;      // in degrees
   double AngleZ;      // in degrees
@@ -33,9 +35,11 @@ struct  InterlaceWiseCheckResult{
   double TranslationZ;
   double Metric;                // MutualInformation;
   double Correlation;           // graylevel correlation
+  int InterlaceWiseCheckProcessing;  // the result of the InterlaceWiseCheck processing
 };
 
 struct  GradientWiseCheckResult {
+  int GradientWiseCheckProcessing; // the result of the GradientWiseCheck processing
   double AngleX;      // in degrees
   double AngleY;      // in degrees
   double AngleZ;      // in degrees
@@ -51,6 +55,12 @@ struct SliceWiseCheckResult{
   double Correlation;
 };
 
+struct OverallQCResult{
+  bool SWCk; //SliceWiseCheck 
+  bool IWCk; //InterlaceWiseCheck
+  bool GWCk; //GradientWiseCheck
+
+};
 
 class QCResult
   {
@@ -68,10 +78,21 @@ public:
     GRADIENT_EXCLUDE_MANUALLY,
     };
 
+  
   struct ImageInformationCheckResult & GetImageInformationCheckResult()
   {
     return imageInformationCheckResult;
   }
+
+  struct OverallQCResult & GetOverallQCResult()
+  {
+    return overallQCResult;
+  } 
+
+  int & getProcessing(int index)
+  {
+    return GetIntensityMotionCheckResult()[index].processing;
+  }  
 
   struct DiffusionInformationCheckResult & GetDiffusionInformationCheckResult()
   {
@@ -99,9 +120,18 @@ public:
     return sliceWiseCheckResult;
   }
 
+  std::vector<int> & GetSliceWiseCheckProcessing()
+  {
+    return sliceWiseCheckProcessing;
+  }
+
   void Clear()
   {
     intensityMotionCheckResult.clear();
+    interlaceWiseCheckResult.clear();
+    gradientWiseCheckResult.clear();
+    sliceWiseCheckResult.clear();
+    sliceWiseCheckProcessing.clear();
 
     imageInformationCheckResult.origin = true;
     imageInformationCheckResult.size = true;
@@ -112,12 +142,27 @@ public:
     diffusionInformationCheckResult.b = true;
     diffusionInformationCheckResult.gradient = true;
     diffusionInformationCheckResult.measurementFrame = true;
+
+    result = 0;
+  }
+
+  void Set_result( unsigned char r )
+  {
+    result = r;
+  }
+
+  unsigned char & Get_result()
+  {
+    return result;
   }
 
 private:
   ImageInformationCheckResult imageInformationCheckResult;
-  DiffusionInformationCheckResult
-                                                  diffusionInformationCheckResult;
+
+  DiffusionInformationCheckResult  diffusionInformationCheckResult;
+
+  OverallQCResult  overallQCResult;
+
   std::vector<GradientIntensityMotionCheckResult> intensityMotionCheckResult;
 
   std::vector<InterlaceWiseCheckResult> interlaceWiseCheckResult;
@@ -125,6 +170,12 @@ private:
   std::vector<GradientWiseCheckResult> gradientWiseCheckResult;
   
   std::vector<SliceWiseCheckResult> sliceWiseCheckResult;
+
+  std::vector< int > sliceWiseCheckProcessing;  // the result of the SliceWiseCheck processing
+
+  unsigned char result;
+
+  
 
 };
   

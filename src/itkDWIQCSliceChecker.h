@@ -168,6 +168,8 @@ namespace itk
     * \sa ProcessObject::GenerateOutputInformaton() */
     virtual void GenerateOutputInformation();
 
+  
+  
   protected:
     DWIQCSliceChecker();
     ~DWIQCSliceChecker();

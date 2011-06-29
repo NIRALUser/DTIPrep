@@ -17,6 +17,7 @@
 
 
 #include "ThreadIntensityMotionCheck.h"
+#include "FurtherQCThread.h"
 
 class IntensityMotionCheckPanel : public QDockWidget,
   private Ui_IntensityMotionCheckPanel
@@ -27,8 +28,12 @@ public:
   ~IntensityMotionCheckPanel(void);
 
   CThreadIntensityMotionCheck myIntensityThread; // Object of ThreadIntensityMotionCheck class
+  CFurtherQCThread myFurtherQCThread;	// object of FurtherQCThread class
+  
 
   void SetFileName(QString nrrd );
+
+  void SetName(QString nrrd_path );
 
 signals:
   void status(const QString &);
@@ -37,7 +42,15 @@ signals:
 
   void currentGradient(int winID, int gradient );
 
+  void currentGradientChanged_VC( int gradient );
+
   void UpdateOutputDWIDiffusionVectorActors();
+
+  void LoadQCResult(bool);
+
+  void SignalLoadDwiFile();
+
+  void SignalActivateSphere();
 
   private slots:
     // void on_comboBox_Protocol_currentIndexChanged(QString protocolName);
@@ -63,7 +76,7 @@ signals:
 
     void on_treeWidget_Results_itemChanged(QTreeWidgetItem *item, int column);
 
-    void on_treeWidget_Results_itemClicked( QTreeWidgetItem *item,  int column);
+    //void on_treeWidget_Results_itemClicked( QTreeWidgetItem *item,  int column);
 
     void on_pushButton_Save_clicked( );
 
@@ -77,7 +90,7 @@ signals:
 
     void on_pushButton_RunPipeline_clicked( );
 
-    void on_pushButton_SaveDWIAs_clicked( );
+    //void on_pushButton_SaveDWIAs_clicked( );
 
     void on_pushButton_DefaultQCResult_clicked( );
 
@@ -85,12 +98,20 @@ signals:
 
     void SavingTreeWidgetResult_XmlFile();
 
+    void SavingTreeWidgetResult_XmlFile_Default();
+
+    void on_pushButton_SaveVisualChecking_clicked();
+
     
 
 public slots:
 
     void StartProgressSlot();
     void StopProgressSlot();
+    void f_StartProgressSlot();
+    void f_StopProgressSlot();
+    void SetVisualCheckingStatus( int index, int status, int pro);
+    
 
 	
 
@@ -148,6 +169,18 @@ public:
     return protocol;
   }
 
+  void SetProcessingQCResult(int & pro, int status)
+  {
+      pro = status;
+  }
+
+  QTreeWidget * & GetQTreeWidgetResult()
+  {
+    return treeWidget_Results;
+  }  
+ 
+  void SaveVisualCheckingResult();
+
   void UpdatePanelDWI( );
 
   void UpdateProtocolToTreeWidget( );
@@ -157,7 +190,23 @@ public:
     m_DwiOriginalImage = DWIImage; bDwiLoaded = true;
   }
 
+  void SetDwiOutputImage(DwiImageType::Pointer DWIImage)
+  {
+    m_DwiOutputImage = DWIImage;
+  }
+
+  DwiImageType::Pointer GetDwiOutputImage()
+  {
+    return m_DwiOutputImage;
+  }
+
   void GenerateCheckOutputImage( const std::string filename);
+
+  void GenerateCheckOutputImage( DwiImageType::Pointer dwi, const std::string filename);
+
+  void GenerateOutput_VisualCheckingResult( std::vector<int> list_index, std::string filename);
+
+  bool Search_index( int index, std::vector<int> list_index );
 
   void DefaultProcess( );
 
@@ -174,6 +223,36 @@ public:
     bProtocolTreeEditable = editable;
   }
 
+  void f_overallSliceWiseCheck();
+
+  void f_overallInterlaceWiseCheck();
+
+  void f_overallGradientWiseCheck();
+
+ 
+  void Match_NameDwiQC();
+  void Match_DwiQC();
+struct VC_STATUS
+{
+int index;
+int VC_status;
+
+};
+std::vector<VC_STATUS> VC_Status;
+
+struct m_Original_ForcedConformance_Mapping
+  {
+     std::vector<int> index_original;
+     int index_ForcedConformance;
+     
+  };
+
+std::vector<m_Original_ForcedConformance_Mapping> t_Original_ForcedConformance_Mapping;
+void set_Original_ForcedConformance_Mapping( std::vector<m_Original_ForcedConformance_Mapping> m_t )
+{
+   t_Original_ForcedConformance_Mapping = m_t;
+}
+
 private:
 
   bool     bProtocol;
@@ -181,7 +260,10 @@ private:
   QCResult qcResult;
 
   std::string            DwiFileName;
+  QString                DwiName; // Dwi file name only with no path string
+  QString                DwiFilePath;  // Dwi file name with full path
   DwiImageType::Pointer  m_DwiOriginalImage;
+  DwiImageType::Pointer  m_DwiOutputImage;   // QCed Dwi image
 
   bool                                    bDwiLoaded;
   bool                                    bGetGradientDirections;
@@ -191,6 +273,23 @@ private:
 
   bool bResultTreeEditable;
   bool bProtocolTreeEditable;
+
+  bool bMatchNameQCResult_DwiFile; // This variable is checked when the name of Dwi file and QCResult informatiom are the same
+
+  bool bLoadDefaultQC;  // Set by default false ans set true when the "Default Result" pushed
+  bool bCancel_QC; 
+  bool bMatch_DwiQC;
+
+  int r_SliceWiseCkeck; // the overall SliceWiseChecking result
+  int r_InterlaceWiseCheck; // the overall InterlaceWiseChecking result
+  int r_GradWiseCheck; // the overall GradientWiseChecking result
+
+  unsigned char result; // the result of RunPipleline
+
+  std::vector< int > index_listVCExcluded;		// contains the excluded gradients id
+  
+
+  
 };
 
 #endif // INTENSITYMOTIONCHECKPANEL_H

@@ -263,6 +263,8 @@ namespace itk
     void DirectAverage();
 
     void computeIDWI();
+    /** container to hold status of gradient, 1 if is baseline and 0 if is not */
+    std::vector< bool > Gradient_indx_Baselines;
 
   public:
 
@@ -300,7 +302,11 @@ namespace itk
         && vcl_abs(currentGradient[2]) < NearZeroSmallNumber
       );
       }
-
+    
+    inline std::vector<bool> getGradient_indx_Baselines()
+    {
+       return Gradient_indx_Baselines;
+    }
 
   };
 } // end namespace itk

@@ -175,6 +175,7 @@ public:
     return m_repetitionLeftNumber;
   }
 
+  
   // A: Gradient direction # is less than 6!
   // B: Single b-value DWI without a b0/baseline!
   // C: Too many bad gradient directions found!
@@ -190,6 +191,11 @@ public:
   // E: InterCheck()
   unsigned char  RunPipelineByProtocol();
 
+  unsigned char  RunPipelineByProtocol_FurtherQC1();	// In Further QC step: Runing Image Info and Diffusion procedures 
+
+  unsigned char  RunPipelineByProtocol_FurtherQC2();	// In Further QC step: Runing Baseline Avg, Eddy motion correction, Gradient-wise checking, DTI computing and DTI saving
+
+
   inline DwiImageType::Pointer GetDwiImage() const
   {
     return m_DwiOriginalImage;
@@ -199,6 +205,11 @@ public:
   {
     return m_DwiForcedConformanceImage;
   }
+
+  inline void Setm_DwiForcedConformanceImage( const DwiImageType::Pointer dwi)
+  {
+    this->m_DwiForcedConformanceImage = dwi;
+  } 
 
   inline GradientDirectionContainerType::Pointer GetGradientDirectionContainer() const
   {
@@ -238,6 +249,21 @@ public:
 //signals:
   //void kkk( int );
 
+
+  struct Original_ForcedConformance_Mapping
+  {
+     std::vector<int> index_original;
+     int index_ForcedConformance;
+     
+  };
+  
+  std::vector<Original_ForcedConformance_Mapping> m_Original_ForcedConformance_Mapping;
+
+  inline std::vector<Original_ForcedConformance_Mapping> get_Original_ForcedConformance_Mapping()
+  {
+    return m_Original_ForcedConformance_Mapping;
+  }
+  
 private:
   void collectDiffusionStatistics();
   void collectLeftDiffusionStatistics( DwiImageType::Pointer dwi, std::string reportfilename );
@@ -298,6 +324,7 @@ private:
 
   bool   m_readb0;
   double m_b0;
+
 
 };
 

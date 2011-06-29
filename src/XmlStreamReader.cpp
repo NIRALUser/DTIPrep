@@ -2,10 +2,12 @@
 #include <QtGui>
 #include <iostream>
 
+
 XmlStreamReader::XmlStreamReader(QTreeWidget *tree)
 {
   treeWidget = tree;
   protocol = NULL;
+  QCRESULT = NULL;
 }
 
 XmlStreamReader::~XmlStreamReader(void)
@@ -235,6 +237,141 @@ void XmlStreamReader::InitializeProtocolStringValues()
   //      << " entries." << std::endl;
 }
 
+void XmlStreamReader::InitializeQCRESULTStringValue()
+{
+ 
+ //ImageInfo
+ s_mapQCRESULTStringValue[ "ImageInformation" ]
+ = IMG_INFO;
+ s_mapQCRESULTStringValue[ "origin" ]
+ = IMG_ORIGIN;
+ s_mapQCRESULTStringValue[ "size" ]
+ = IMG_SIZE; 
+ s_mapQCRESULTStringValue[ "space" ]
+ = IMG_SPACE;
+ s_mapQCRESULTStringValue[ "spacedirection" ]
+ = IMG_SPACEDIRECTION;
+ 
+ //DiffusionInformationCheckResult
+ s_mapQCRESULTStringValue[ "b value" ]
+ = DIFF_B;
+ s_mapQCRESULTStringValue[ "gradient" ]
+ = DIFF_GRADIENT;
+ s_mapQCRESULTStringValue[ "measurementframe" ]
+ = DIFF_MEASUREMENTFRAME;
+
+ //DWICheck
+ s_mapQCRESULTStringValue[ "SliceWiseCheck" ]
+ = DWI_SWCk;
+ s_mapQCRESULTStringValue[ "InterlaceWiseCheck" ]
+ = DWI_IWCk;
+ s_mapQCRESULTStringValue[ "GWCk" ]
+ = DWI_GWCk;
+ s_mapQCRESULTStringValue[ "SWCk" ]
+ = DWI_SWCk;
+
+ s_mapQCRESULTStringValue[ "Slice#" ]
+ = DWI_SLICE;
+ s_mapQCRESULTStringValue[ "Correlation" ]
+ = DWI_CORRELATION;
+ s_mapQCRESULTStringValue[ "Slice#" ]
+ = DWI_SLICE;
+
+ s_mapQCRESULTStringValue[ "InterlaceWiseCheckProcessing" ]
+ = DWI_INTERLACEWISECHECK;
+ s_mapQCRESULTStringValue[ "InterlaceAngleX" ]
+ = DWI_INTERLACEX;
+ s_mapQCRESULTStringValue[ "InterlaceAngleY" ]
+ = DWI_INTERLACEY;
+ s_mapQCRESULTStringValue[ "InterlaceAngleZ" ]
+ = DWI_INTERLACEZ;
+ s_mapQCRESULTStringValue[ "InterlaceTranslationX" ]
+ = DWI_INTERLACE_TRX;
+ s_mapQCRESULTStringValue[ "InterlaceTranslationY" ]
+ = DWI_INTERLACE_TRY;
+ s_mapQCRESULTStringValue[ "InterlaceTranslationZ" ]
+ = DWI_INTERLACE_TRZ;
+ s_mapQCRESULTStringValue[ "InterlaceMetric(MI)" ]
+ = DWI_INTERLACE_MI;
+ s_mapQCRESULTStringValue[ "InterlaceCorrelation_Baseline" ]
+ = DWI_INTERLACE_CORRELATION;
+
+s_mapQCRESULTStringValue[ "GradientWiseCheckProcessing" ]
+ = DWI_GRADIENTWISECHECK;
+s_mapQCRESULTStringValue[ "GradientAngleX" ]
+ = DWI_GRADIENTX;
+ s_mapQCRESULTStringValue[ "GradientAngleY" ]
+ = DWI_GRADIENTY;
+ s_mapQCRESULTStringValue[ "GradientAngleZ" ]
+ = DWI_GRADIENTZ;
+ s_mapQCRESULTStringValue[ "GradientTranslationX" ]
+ = DWI_GRADIENT_TRX;
+ s_mapQCRESULTStringValue[ "GradientTranslationY" ]
+ = DWI_GRADIENT_TRY;
+ s_mapQCRESULTStringValue[ "GradientTranslationZ" ]
+ = DWI_GRADIENT_TRZ;
+ s_mapQCRESULTStringValue[ "GradientMetric(MI)" ]
+ = DWI_GRADIENT_MI;
+
+
+/*
+ s_mapQCResultStringValues[ "IntensityMotion" ]
+ = IntensityMotion;
+ s_mapQCResultStringValues[ "gradient_0000" ]
+ = gradient_0000;
+ s_mapQCResultStringValues[ "OriginalDir" ]
+ = OriginalDir;
+ s_mapQCResultStringValues[ "ReplacedDir" ]
+ = ReplacedDir;
+ s_mapQCResultStringValues[ "CorrectedDir" ]
+ = CorrectedDir;
+ s_mapQCResultStringValues[ "SliceWiseCheck" ]
+ = SliceWiseCheck;
+ s_mapQCResultStringValues[ "InterlaceWiseCheck" ]
+ = InterlaceWiseCheck;
+ s_mapQCResultStringValues[ "InterlaceAngleX" ]
+ = InterlaceAngleX;
+ s_mapQCResultStringValues[ "InterlaceAngleY" ]
+ = InterlaceAngleY;
+ s_mapQCResultStringValues[ "InterlaceAngleZ" ]
+ = InterlaceAngleZ;
+ s_mapQCResultStringValues[ "InterlaceTranslationX" ]
+ = InterlaceTranslationX;
+ s_mapQCResultStringValues[ "InterlaceTranslationY" ]
+ = InterlaceTranslationY;
+ s_mapQCResultStringValues[ "InterlaceTranslationZ" ]
+ = InterlaceTranslationZ;
+ s_mapQCResultStringValues[ "InterlaceMetric(MI)" ]
+ = InterlaceMetric(MI);
+ s_mapQCResultStringValues[ "InterlaceCorrelation_Baseline" ]
+ = InterlaceCorrelation_Baseline;
+ s_mapQCResultStringValues[ "GradientWiseCheck" ]
+ = GradientWiseCheck;
+ s_mapQCResultStringValues[ "GradientAngleX" ]
+ = GradientWiseCheck;
+ s_mapQCResultStringValues[ "GradientAngleY" ]
+ = GradientWiseCheck;
+ s_mapQCResultStringValues[ "GradientAngleZ" ]
+ = GradientWiseCheck;
+ s_mapQCResultStringValues[ "GradientTranslationX" ]
+ = GradientWiseCheck;
+ s_mapQCResultStringValues[ "GradientTranslationY" ]
+ = GradientWiseCheck;
+ s_mapQCResultStringValues[ "GradientTranslationZ" ]
+ = GradientWiseCheck;
+ s_mapQCResultStringValues[ "GradientMetric(MI)" ]
+ = GradientWiseCheck;*/
+
+ s_mapQCRESULTStringValue[ "INCLUDE" ] = INCLUDE ;
+ s_mapQCRESULTStringValue[ "BASELINE_AVERAGED" ] = BASELINE_AVERAGED ;
+ s_mapQCRESULTStringValue[ "EDDY_MOTION_CORRECTED" ] = EDDY_MOTION_CORRECTED ;
+ s_mapQCRESULTStringValue[ "EXCLUDE_SLICECHECK" ] = EXCLUDE_SLICECHECK ;
+ s_mapQCRESULTStringValue[ "EXCLUDE_INTERLACECHECK" ] = EXCLUDE_INTERLACECHECK ;
+ s_mapQCRESULTStringValue[ "EXCLUDE_GRADIENTCHECK" ] = EXCLUDE_GRADIENTCHECK ;
+ s_mapQCRESULTStringValue[ "EXCLUDE_MANUALLY" ] = EXCLUDE_MANUALLY ;
+ 
+}
+
 bool XmlStreamReader::readFile(const QString & fileName, int mode)
 {
   if ( protocol )
@@ -300,7 +437,31 @@ bool XmlStreamReader::readFile_QCResult(const QString & fileName, int mode)
       << std::endl;
     return false;
   }
-  reader.setDevice(&file);
+
+  QString errorStr;
+  int errorLine;
+  int errorColumn;
+
+  QDomDocument doc;
+  if ( !doc.setContent( &file, false, &errorStr, 
+                  &errorLine, &errorColumn)){
+     std::cerr<<"Error: Parse error at line" <<errorLine<<","
+              <<"Column"<<errorColumn<<":"
+              <<qPrintable(errorStr)<<std::endl;
+     return false;
+  }
+
+  QDomElement root = doc.documentElement();
+  if (root.tagName() != "QCResultSettings") {
+     std::cerr<<"Error: Not a QCResult file"<<std::endl;
+     return false;
+  }
+  
+  InitializeQCRESULTStringValue();
+  parseQCResultElement(root);
+  return true;
+
+  /*reader.setDevice(&file);
 
   reader.readNext();
   while ( !reader.atEnd() )
@@ -338,6 +499,494 @@ bool XmlStreamReader::readFile_QCResult(const QString & fileName, int mode)
     return false;
   }
   return true;
+  */
+}
+
+void XmlStreamReader::parseQCResultElement( const QDomElement &element)
+{
+  
+  QDomNode child = element.firstChild();
+  GetImgInfoParsing(child.toElement());  //ImageInfo
+  LoadQCResultFromImgInfoParsing();
+  parametersQCResult.clear();
+  
+
+  child = child.nextSibling();
+  if (child.isNull()){
+      std::cerr<<"Improper xml QCResult file"<<std::endl;
+  }
+  GetDiffInfoParsing(child.toElement());   // DiffusionInformation
+  LoadQCResultFromDiffInfoParsing();
+  parametersQCResult.clear();
+
+
+  child = child.nextSibling();
+  if (child.isNull()){
+      std::cerr<<"Inproper xml QCResult file"<<std::endl;
+  }
+  
+  GetDWICheckParsing(child);   // DWI Check
+  LoadQCResultFromDWICheckParsing();
+ 
+
+}
+
+void XmlStreamReader::GetImgInfoParsing(const QDomElement &element)
+{
+
+  // Image Information
+  
+  if(element.tagName()=="entry"){
+         parseEntryElement_QCResult_ImgInfo( element, treeWidget->invisibleRootItem());
+  }
+  
+  else {
+        std::cerr<<"Error: Inproper xml QCResult file"<<std::endl;
+        return;
+  }
+
+}
+
+void XmlStreamReader::parseEntryElement_QCResult_ImgInfo( const QDomElement &element, QTreeWidgetItem *parent)
+{
+
+  QTreeWidgetItem * tree_item = new QTreeWidgetItem(parent);
+  tree_item->setText(0, element.attribute("parameter"));
+
+  ITEM item;
+  item.parameter = element.attribute("parameter");
+  parametersQCResult.push_back(item);
+
+
+  QDomNode child = element.firstChild();
+  while (!child.isNull()){
+      if(child.toElement().tagName()=="entry"){
+            parseEntryElement_QCResult_ImgInfo( child.toElement(), tree_item);
+  }
+  else if(child.toElement().tagName()=="value"){
+            parseValueElement_QCResult_ImgInfo( child.toElement(),tree_item);
+  }
+  child = child.nextSibling();
+  }
+
+}
+
+void XmlStreamReader::parseValueElement_QCResult_ImgInfo(const QDomElement &element, QTreeWidgetItem *parent)
+{
+  QBrush greenText (Qt::green);
+  QBrush redText (Qt::red);
+
+  QString page = element.text();
+  QString allPages = parent->text(1);
+  if (!allPages.isEmpty())
+     allPages +=",";
+  allPages +=page;
+  parent->setText(1, allPages);
+  parametersQCResult[ parametersQCResult.size() -1].value = allPages;
+  if (element.tagName()=="green") 
+     parent->setForeground(1,greenText);
+  if (element.tagName()=="red")
+     parent->setForeground(1,redText);
+}
+
+
+void XmlStreamReader::LoadQCResultFromImgInfoParsing()
+{
+
+
+  for ( int i=0; i<parametersQCResult.size(); i++)
+  {
+     
+     switch (s_mapQCRESULTStringValue[parametersQCResult[i].parameter.toStdString()])
+     {
+     case IMG_INFO:
+     QCRESULT->GetImageInformationCheckResult().info = parametersQCResult[i].value;
+     break;
+     case IMG_ORIGIN:
+     {
+     if(parametersQCResult[i].value == "Pass")
+         QCRESULT->GetImageInformationCheckResult().origin = true;
+     else
+         QCRESULT->GetImageInformationCheckResult().origin = false;
+
+     break;}
+     case IMG_SIZE:
+     {
+     if(parametersQCResult[i].value == "Pass")
+         QCRESULT->GetImageInformationCheckResult().size = true;
+     else
+         QCRESULT->GetImageInformationCheckResult().size = false;
+
+     break;}
+     case IMG_SPACE:
+     {
+     if(parametersQCResult[i].value == "Pass")
+         QCRESULT->GetImageInformationCheckResult().space = true;
+     else
+         QCRESULT->GetImageInformationCheckResult().space = false;
+
+     break;}
+     case IMG_SPACEDIRECTION:
+     {
+     if(parametersQCResult[i].value == "Pass")
+         QCRESULT->GetImageInformationCheckResult().spacedirection = true;
+     else
+         QCRESULT->GetImageInformationCheckResult().spacedirection = false;
+
+     break;}
+     default:
+     break;
+     }
+  }
+}
+
+void XmlStreamReader::GetDiffInfoParsing(const QDomElement &element)
+{
+
+  // DiffusionInformation
+  if(element.tagName()=="entry"){
+         parseEntryElement_QCResult_ImgInfo( element, treeWidget->invisibleRootItem());     // Since the process is same as ImageInfo part we call parseEntryElement_QCResult_ImgInfo
+  }
+  
+  else {
+        std::cerr<<"Error: Inproper xml QCResult file"<<std::endl;
+        return;
+  }
+
+}
+
+void XmlStreamReader::LoadQCResultFromDiffInfoParsing()
+{
+
+for ( int i=0; i<parametersQCResult.size(); i++)
+  {
+     switch (s_mapQCRESULTStringValue[parametersQCResult[i].parameter.toStdString()])
+     {
+     case DIFF_B:
+     {
+     if(parametersQCResult[i].value == "Pass")
+         QCRESULT->GetDiffusionInformationCheckResult().b = true;
+     else
+         QCRESULT->GetDiffusionInformationCheckResult().b = false;
+
+     break;}
+     case DIFF_GRADIENT:
+     {
+     if(parametersQCResult[i].value == "Pass")
+         QCRESULT->GetDiffusionInformationCheckResult().gradient = true;
+     else
+         QCRESULT->GetDiffusionInformationCheckResult().gradient = false;
+
+     break;}
+     case DIFF_MEASUREMENTFRAME:
+     {
+     if(parametersQCResult[i].value == "Pass")
+         QCRESULT->GetDiffusionInformationCheckResult().measurementFrame = true;
+     else
+         QCRESULT->GetDiffusionInformationCheckResult().measurementFrame = false;
+
+     break;}
+     default:
+     break;
+     }
+  }
+}
+
+QDomNodeList XmlStreamReader::GetDWICheckParsing(const QDomNode &element)
+{
+
+  // DWI Check
+  QTreeWidgetItem * tree_item_DWICheck = new QTreeWidgetItem(treeWidget->invisibleRootItem());
+  tree_item_DWICheck->setText(0, element.toElement().attribute("parameter"));
+
+  ITEM item;
+  item.parameter = element.toElement().attribute("parameter");
+  parametersQCResult.push_back(item);
+
+  
+  QDomNodeList childList = element.childNodes();   // gets all direct childs of DWICheck element
+  if (element.toElement().tagName()=="entry")
+  {
+       parseEntryElement_QCResult_DWICheck( childList, tree_item_DWICheck);
+  }
+  else{
+        std::cerr<<"Error: Inproper xml QCResult file"<<std::endl;
+        
+  }
+  return childList;
+
+}
+
+
+void XmlStreamReader::parseEntryElement_QCResult_DWICheck(const QDomNodeList &childList,QTreeWidgetItem *parent)
+{
+  int Grd_num = 0;
+
+  for ( int i=0; i< childList.size(); i++)
+  {
+   
+   QDomNode child_d = childList.item( i );
+  
+   if ( child_d.toElement().attribute("parameter").left(9) == QObject::tr("gradient_"))
+   {
+      parametersQCResult_Gradient.clear();
+      parseEntryElement_QCResult_GradientDWICheck( child_d.toElement(), parent );
+      LoadQCResultFromDWICheckGradientParsing(Grd_num);
+
+      Grd_num++;
+   }
+   else{
+      QTreeWidgetItem * tree_item = new QTreeWidgetItem(parent);
+      tree_item->setText(0, child_d.toElement().attribute("parameter"));
+
+      ITEM item;
+      item.parameter = child_d.toElement().attribute("parameter");
+      parametersQCResult.push_back(item);
+
+      QDomNode child = child_d.toElement().firstChild();
+      
+      if(child.toElement().tagName()=="value"){
+                 parseValueElement_QCResult_ImgInfo( child.toElement(),tree_item);
+      }
+      else
+         std::cerr<<"Error:Improper xml QCResult"<<std::endl;
+      
+      }
+
+  
+  } 
+}
+
+void XmlStreamReader::parseEntryElement_QCResult_GradientDWICheck(const QDomElement & element, QTreeWidgetItem *parent)
+{
+      QTreeWidgetItem * tree_item = new QTreeWidgetItem(parent);
+      tree_item->setText(0, element.attribute("parameter"));
+      
+      ITEM item;
+      item.parameter = element.attribute("parameter");
+      parametersQCResult_Gradient.push_back(item);
+   
+      QDomNode child = element.firstChild();
+      while (!child.isNull()){
+          if(child.toElement().tagName()=="entry"){
+                 parseEntryElement_QCResult_GradientDWICheck( child.toElement(), tree_item);
+          }
+          else if(child.toElement().tagName()=="value"|| child.toElement().tagName()=="processing" ||child.toElement().tagName()=="green"||child.toElement().tagName()=="red"){
+                 parseValueElement_QCResult_GradientDWICheck( child.toElement(),tree_item);
+          }
+          child = child.nextSibling();
+      }
+
+}
+
+void XmlStreamReader::parseValueElement_QCResult_GradientDWICheck(const QDomElement &element, QTreeWidgetItem *parent)
+{
+  QBrush greenText (Qt::green);
+  QBrush redText (Qt::red);
+
+  QString page = element.text();
+  QString allPages = parent->text(1);
+  if (!allPages.isEmpty())
+     allPages +=",";
+  allPages +=page;
+  if (parametersQCResult_Gradient[parametersQCResult_Gradient.size() -1].parameter.left(9) ==
+      QObject::tr("gradient_") && element.tagName()=="processing"){
+       parent->setText(2, allPages);
+       parametersQCResult_Gradient[ parametersQCResult_Gradient.size() -1].value = allPages;
+  }
+  if (parametersQCResult_Gradient[parametersQCResult_Gradient.size() -1].parameter.left(9) ==
+      QObject::tr("gradient_") && element.tagName()=="value")
+       parent->setText(3, allPages);
+
+  else if (parametersQCResult_Gradient[parametersQCResult_Gradient.size() -1].parameter.left(9)!= QObject::tr("gradient_")){
+       parent->setText(1, allPages);
+       parametersQCResult_Gradient[ parametersQCResult_Gradient.size() -1].value = allPages;
+  }
+  if (element.tagName()=="green") 
+     parent->setForeground(1,greenText);
+  if (element.tagName()=="red")
+     parent->setForeground(1,redText);
+}
+
+void XmlStreamReader::LoadQCResultFromDWICheckParsing()
+{
+
+for ( int i=0; i<parametersQCResult.size(); i++)
+  {
+     switch (s_mapQCRESULTStringValue[parametersQCResult[i].parameter.toStdString()])
+     {
+     case DWI_SWCk:
+     {
+     if(parametersQCResult[i].value == "Pass")
+         QCRESULT->GetOverallQCResult().SWCk = true;
+     else
+         QCRESULT->GetOverallQCResult().SWCk = false;
+
+     break;}
+     case DWI_IWCk:
+     {
+     if(parametersQCResult[i].value == "Pass")
+         QCRESULT->GetOverallQCResult().IWCk = true;
+     else
+         QCRESULT->GetOverallQCResult().IWCk = false;
+
+     break;}
+     case DWI_GWCk:
+     {
+     if(parametersQCResult[i].value == "Pass")
+         QCRESULT->GetOverallQCResult().GWCk = true;
+     else
+         QCRESULT->GetOverallQCResult().GWCk = false;
+
+     break;}
+     default:
+     break;
+     }
+  }
+}
+
+void XmlStreamReader::LoadQCResultFromDWICheckGradientParsing(int Grd_num)
+{
+
+  GradientIntensityMotionCheckResult GrdIntMotionChk;
+  SliceWiseCheckResult SlcWiseCk;
+  InterlaceWiseCheckResult IntWiseCk;
+  GradientWiseCheckResult GrdWiseCheck;
+
+  //status of the gradient
+  GrdIntMotionChk.processing = s_mapQCRESULTStringValue[parametersQCResult_Gradient[0].value.toStdString()];
+  //std::cout<<"gradient"<<Grd_num<<parametersQCResult_Gradient[0].value.toStdString().c_str()<<std::endl;
+  //std::cout<<"gradient"<<Grd_num<<parametersQCResult_Gradient[1].value.toStdString().c_str()<<std::endl;
+  //std::cout<<"gradient"<<Grd_num<<parametersQCResult_Gradient[parametersQCResult_Gradient.size()-1].value.toStdString().c_str()<<std::endl;
+  //status of the Visual Checking
+  if (parametersQCResult_Gradient[parametersQCResult_Gradient.size()-1].value == "Include")
+     GrdIntMotionChk.VisualChecking = 0;
+  if (parametersQCResult_Gradient[parametersQCResult_Gradient.size()-1].value == "Exclude")
+     GrdIntMotionChk.VisualChecking = 6;
+  if (parametersQCResult_Gradient[parametersQCResult_Gradient.size()-1].value == "NoChange")
+     GrdIntMotionChk.VisualChecking = -1;
+
+  QStringList values;
+  for ( int i=1; i< parametersQCResult_Gradient.size(); i++)
+  {
+    if ( parametersQCResult_Gradient[i].parameter.left(11) ==
+      QObject::tr("OriginalDir"))
+      
+    {
+      values = parametersQCResult_Gradient[i].value.split(" ");
+      int ii = 0;
+      foreach (QString value, values)
+      {
+        GrdIntMotionChk.OriginalDir[ii] = ( value.toDouble() );
+        ii++;
+      }
+      
+    }
+    if ( parametersQCResult_Gradient[i].parameter.left(11) ==
+      QObject::tr("ReplacedDir"))
+      
+    {
+      values = parametersQCResult_Gradient[i].value.split(" ");
+      int ii = 0;
+      foreach (QString value, values)
+      {
+        GrdIntMotionChk.ReplacedDir[ii] = ( value.toDouble() );
+        ii++;
+      }
+    }
+    if ( parametersQCResult_Gradient[i].parameter.left(12) ==
+      QObject::tr("CorrectedDir"))
+      
+    {
+      values = parametersQCResult_Gradient[i].value.split(" ");
+      int ii = 0;
+      foreach (QString value, values)
+      {
+        GrdIntMotionChk.CorrectedDir[ii] = ( value.toDouble() );
+        //std::cout<<"CorrectedDir"<<ii<<" "<<GrdIntMotionChk.OriginalDir[ii]<<std::endl;
+        ii++;
+      }
+    }
+    
+    switch (s_mapQCRESULTStringValue[parametersQCResult_Gradient[i].parameter.toStdString()])
+    {
+    case DWI_SLICE:
+    {
+       SlcWiseCk.GradientNum = Grd_num;
+       SlcWiseCk.SliceNum = parametersQCResult_Gradient[i].value.toInt();
+       SlcWiseCk.Correlation = parametersQCResult_Gradient[i+1].value.toDouble();
+       QCRESULT->GetSliceWiseCheckResult().push_back(SlcWiseCk);
+       break;
+    }
+    case DWI_SLICEWISECHECK:
+    {
+       QCRESULT->GetSliceWiseCheckProcessing().push_back(s_mapQCRESULTStringValue[parametersQCResult_Gradient[i].value.toStdString()]);
+       break;
+    }
+    case DWI_INTERLACEWISECHECK:
+    {
+       IntWiseCk.InterlaceWiseCheckProcessing = s_mapQCRESULTStringValue[parametersQCResult_Gradient[i].value.toStdString()];
+       break;
+    }
+    case DWI_INTERLACEX:
+    {
+       IntWiseCk.AngleX = parametersQCResult_Gradient[i].value.toDouble();
+       break;
+    }
+    case DWI_INTERLACEY:
+       IntWiseCk.AngleY = parametersQCResult_Gradient[i].value.toDouble();
+       break;
+    case DWI_INTERLACEZ:
+       IntWiseCk.AngleZ = parametersQCResult_Gradient[i].value.toDouble();
+       break;
+    case DWI_INTERLACE_TRX:
+       IntWiseCk.TranslationX = parametersQCResult_Gradient[i].value.toDouble();
+       break;
+    case DWI_INTERLACE_TRY:
+       IntWiseCk.TranslationY = parametersQCResult_Gradient[i].value.toDouble();
+       break;
+    case DWI_INTERLACE_TRZ:
+       IntWiseCk.TranslationZ = parametersQCResult_Gradient[i].value.toDouble();
+       break;
+    case DWI_INTERLACE_MI:
+       IntWiseCk.Metric = parametersQCResult_Gradient[i].value.toDouble();
+       break;
+    case DWI_INTERLACE_CORRELATION:
+       IntWiseCk.Correlation = parametersQCResult_Gradient[i].value.toDouble();
+       break;
+    case DWI_GRADIENTWISECHECK:
+       GrdWiseCheck.GradientWiseCheckProcessing = s_mapQCRESULTStringValue[parametersQCResult_Gradient[i].value.toStdString()];
+       break;
+    case DWI_GRADIENTX:
+       GrdWiseCheck.AngleX = parametersQCResult_Gradient[i].value.toDouble();
+       break;
+    case DWI_GRADIENTY:
+       GrdWiseCheck.AngleY = parametersQCResult_Gradient[i].value.toDouble();
+       break;
+    case DWI_GRADIENTZ:
+       GrdWiseCheck.AngleZ = parametersQCResult_Gradient[i].value.toDouble();
+       break;
+    case DWI_GRADIENT_TRX:
+       GrdWiseCheck.TranslationX = parametersQCResult_Gradient[i].value.toDouble();
+       break;
+    case DWI_GRADIENT_TRY:
+       GrdWiseCheck.TranslationY = parametersQCResult_Gradient[i].value.toDouble();
+       break;
+    case DWI_GRADIENT_TRZ:
+       GrdWiseCheck.TranslationZ = parametersQCResult_Gradient[i].value.toDouble();
+       break;
+    case DWI_GRADIENT_MI:
+       GrdWiseCheck.MutualInformation = parametersQCResult_Gradient[i].value.toDouble();
+       break;  
+    default:
+       break;
+  }
+}
+  QCRESULT->GetIntensityMotionCheckResult().push_back(GrdIntMotionChk);
+  QCRESULT->GetInterlaceWiseCheckResult().push_back(IntWiseCk);
+  QCRESULT->GetGradientWiseCheckResult().push_back(GrdWiseCheck);
+  parametersQCResult_Gradient.clear();
+
 }
 
 void XmlStreamReader::readProtocolSettingsElement(int mode)
@@ -406,9 +1055,9 @@ void XmlStreamReader::readElement_QCResult(int mode)
         {
           readEntryElement_QCResult( treeWidget->invisibleRootItem() );
         }
-        else if ( mode == XmlStreamReader::ProtocolWise )
+        else if ( mode == XmlStreamReader::QCResultlWise )
         {
-          readEntryElement();
+          readEntryElement_QCResult();
         }
         else
         {
@@ -427,10 +1076,33 @@ void XmlStreamReader::readElement_QCResult(int mode)
     }
   }
 
-  if ( mode == XmlStreamReader::ProtocolWise )
+  if ( mode == XmlStreamReader::QCResultlWise )
   {
-    InitializeProtocolStringValues();
-    parseXMLParametersToProtocol();
+    InitializeQCRESULTStringValue();
+    parseXMLParametersToQCResult();
+  }
+}
+
+void XmlStreamReader::parseXMLParametersToQCResult()
+{
+
+  for ( unsigned int i = 0; i < parametersQCResult.size(); i++ )
+  {
+   
+   if ( parametersQCResult[i].parameter.left(9) ==
+      QObject::tr("gradient_") )
+   {
+    
+    GradientIntensityMotionCheckResult Grd;
+   // Grd.processing = paremeters[i].value.toInt();
+
+   Grd.processing = s_mapQCRESULTStringValue[parametersQCResult[i].value.toStdString()]; 
+
+   QCRESULT->GetIntensityMotionCheckResult().push_back( Grd );
+      
+        
+   }
+
   }
 }
 
@@ -1188,6 +1860,10 @@ void XmlStreamReader::readEntryElement_QCResult(QTreeWidgetItem *parent)
   {
     if ( reader.isEndElement() )
     {
+      if ( reader.name() == "entry" )
+      {
+	//stack->poplast();
+	}
       reader.readNext();
       break;
     }
@@ -1196,6 +1872,7 @@ void XmlStreamReader::readEntryElement_QCResult(QTreeWidgetItem *parent)
     {
       if ( reader.name() == "entry" )
       {
+  	//stack->push(reader.attributes().value("parameter").toString());
         readEntryElement_QCResult(item);
       }
       else if ( reader.name() == "value" )
@@ -1323,6 +2000,63 @@ void XmlStreamReader::readEntryElement()
   }
 }
 
+void XmlStreamReader::readEntryElement_QCResult()
+{
+  ITEM item;
+  item.parameter = reader.attributes().value("parameter").toString();
+  parametersQCResult.push_back( item );
+
+  reader.readNext();
+  while ( !reader.atEnd() )
+  {
+    if ( reader.isEndElement() )
+    {
+      reader.readNext();
+      break;
+    }
+
+    if ( reader.isStartElement() )
+    {
+      if ( reader.name() == "entry" )
+      {
+        readEntryElement_QCResult();
+      }
+      else if ( reader.name() == "value" || reader.name() == "processing" || reader.name() == "green" || reader.name() == "red")
+      {
+        readValueElement_QCResult();
+      }
+      else
+      {
+        skipUnknownElement();
+      }
+    }
+    else
+    {
+      reader.readNext();
+    }
+  }
+
+}
+
+void XmlStreamReader::readValueElement_QCResult()
+{
+  QString page = reader.readElementText();
+
+  if ( reader.isEndElement() )
+  {
+    reader.readNext();
+  }
+
+  QString allPages = parametersQCResult[parametersQCResult.size() - 1].value;
+  if ( !allPages.isEmpty() )
+  {
+    allPages += ", ";
+  }
+  allPages += page;
+
+  parametersQCResult[parametersQCResult.size() - 1].value = allPages;
+}
+
 void XmlStreamReader::readValueElement()
 {
   QString page = reader.readElementText();
@@ -1381,6 +2115,6 @@ void XmlStreamReader::skipUnknownElement()
       reader.readNext();
     }
   }
-}
+ }
 
 

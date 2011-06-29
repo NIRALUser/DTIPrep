@@ -2,15 +2,25 @@
 
 #include <QIcon>
 #include <QXmlStreamReader>
+
+#include <QtXml/QDomElement>
+#include <QtXml/QDomNode>
+#include <QtXml/QDomDocument>
+#include <QtXml>
+
 #include "Protocol.h"
+#include "QCResult.h"
 
 class QTreeWidget;
 class QString;
 class QTreeWidgetItem;
 
+
+
 #include <map>
 #include <string>
 #include <iostream>
+
 
 enum ProtocolStringValue {
   // QC overal
@@ -136,29 +146,112 @@ enum ProtocolStringValue {
   DTI_reportFileMode,
 };
 
+enum QCRESULTStringValue {
+
+ INCLUDE = 0,
+ BASELINE_AVERAGED,
+ EDDY_MOTION_CORRECTED,
+ EXCLUDE_SLICECHECK,
+ EXCLUDE_INTERLACECHECK,
+ EXCLUDE_GRADIENTCHECK,
+ EXCLUDE_MANUALLY,
+
+ IMG_INFO,
+ IMG_ORIGIN,
+ IMG_SIZE,
+ IMG_SPACE,
+ IMG_SPACEDIRECTION,
+
+ DIFF_B,
+ DIFF_GRADIENT,
+ DIFF_MEASUREMENTFRAME,
+
+ DWI_SWCk,
+ DWI_IWCk,
+ DWI_GWCk,
+
+ DWI_SLICEWISECHECK,
+ DWI_SLICE,
+ DWI_CORRELATION,
+
+ DWI_INTERLACEWISECHECK,
+ DWI_INTERLACEX,
+ DWI_INTERLACEY,
+ DWI_INTERLACEZ,
+ DWI_INTERLACE_TRX,
+ DWI_INTERLACE_TRY,
+ DWI_INTERLACE_TRZ,
+ DWI_INTERLACE_MI,
+ DWI_INTERLACE_CORRELATION,
+
+ DWI_GRADIENTWISECHECK,
+ DWI_GRADIENTX,
+ DWI_GRADIENTY,
+ DWI_GRADIENTZ,
+ DWI_GRADIENT_TRX,
+ DWI_GRADIENT_TRY,
+ DWI_GRADIENT_TRz,
+ DWI_GRADIENT_TRZ,
+ DWI_GRADIENT_MI
+};
+
 class XmlStreamReader
 {
 public:
   XmlStreamReader(QTreeWidget *tree);
   ~XmlStreamReader(void);
 
-  enum { TreeWise = 0, ProtocolWise};
+  enum { TreeWise = 0, ProtocolWise, QCResultlWise };
 
   enum { IMAGE = 0, DIFFUSION, QC, CORRECTION, DTICOMPUTING, };
 
   // Map to associate the strings with the enum values
   std::map<std::string, int> s_mapProtocolStringValues;
+  std::map<std::string, int> s_mapQCRESULTStringValue;
 
   void InitializeProtocolStringValues();
+
+  void InitializeQCRESULTStringValue();
 
   void setProtocol( Protocol  *p )
   {
     protocol = p;
   }
 
+  void setQCRESULT( QCResult * q )
+  {
+    QCRESULT = q;
+  }
+
   bool readFile(const QString & fileName, int mode);
 
   bool readFile_QCResult(const QString & fileName, int mode);   //Reading QCResult in xml format
+
+  void parseQCResultElement( const QDomElement &element);
+  
+  void GetImgInfoParsing(const QDomElement &element);
+ 
+  void parseEntryElement_QCResult_ImgInfo( const QDomElement &element, QTreeWidgetItem *parent);
+
+  void parseValueElement_QCResult_ImgInfo(const QDomElement &element, QTreeWidgetItem *parent);
+
+  void LoadQCResultFromImgInfoParsing();
+
+  void GetDiffInfoParsing(const QDomElement &element);
+
+  void LoadQCResultFromDiffInfoParsing();
+
+  void LoadQCResultFromDWICheckParsing();
+
+  void parseValueElement_QCResult_GradientDWICheck(const QDomElement &element, QTreeWidgetItem *parent);
+
+  void parseEntryElement_QCResult_DWICheck(const QDomNodeList &childList,QTreeWidgetItem *parent);
+
+  void parseEntryElement_QCResult_GradientDWICheck(const QDomElement & element, QTreeWidgetItem *parent);
+
+  void LoadQCResultFromDWICheckGradientParsing(int grd_num);
+
+  QDomNodeList GetDWICheckParsing(const QDomNode &element);
 
   struct ITEM {
     QString parameter;
@@ -166,6 +259,9 @@ public:
   };
 
   std::vector<ITEM> paremeters;
+  std::vector<ITEM> parametersQCResult;
+  std::vector<ITEM> parametersQCResult_Gradient;  //Contains all information about each the gradient 
+
 private:
   void readProtocolSettingsElement(int mode);
   void readElement_QCResult(int mode);
@@ -181,14 +277,22 @@ private:
   void readRedElement_QCResult(QTreeWidgetItem * parent);
 
   void readEntryElement();
+ 
+  void readEntryElement_QCResult();
 
   void readValueElement();
+
+  void readValueElement_QCResult();
 
   void skipUnknownElement();
 
   void parseXMLParametersToProtocol();
 
+  void parseXMLParametersToQCResult();
+
   QTreeWidget      *treeWidget;
+  QTreeWidgetItem *tree_item_DWICheck;
   Protocol         *protocol;
+  QCResult          * QCRESULT;
   QXmlStreamReader reader;
 };

@@ -27,9 +27,14 @@ void XmlStreamWriter::writeIndexEntry(QXmlStreamWriter *xmlWriter,
   xmlWriter->writeAttribute( "parameter", item->text(0) );
   
   QString pageString_processing =item->text(2);
+  QString pageString_visualChecking = item->text(3);
   if ( !pageString_processing.isEmpty())
     {
     xmlWriter->writeTextElement("processing",pageString_processing);
+    }
+  if ( !pageString_visualChecking.isEmpty())
+    {
+    xmlWriter->writeTextElement("value",pageString_visualChecking);
     }
 
   bool m_setThreshold=false;
@@ -126,9 +131,14 @@ void XmlStreamWriter::writeIndexEntry_Protocol(QXmlStreamWriter *xmlWriter,
   xmlWriter->writeAttribute( "parameter", item->text(0) );
   
   QString pageString_processing =item->text(2);
+  QString pageString_visualChecking =item->text(3);
   if ( !pageString_processing.isEmpty())
     {
     xmlWriter->writeTextElement("processing",pageString_processing);
+    }
+  if ( !pageString_visualChecking.isEmpty())
+    {
+    xmlWriter->writeTextElement("value",pageString_visualChecking);
     }
 
   bool m_setThreshold=false;
@@ -156,7 +166,7 @@ void XmlStreamWriter::writeIndexEntry_Protocol(QXmlStreamWriter *xmlWriter,
         if (item->text(1).toFloat() > protocol->GetInterlaceCheckProtocol().correlationThresholdBaseline)   //correlation threshold for baseline in protocol
         {
             xmlWriter->writeTextElement("green",item->text(1));
-            std::cout<<"InterlaceCorrelation_Baseline"<<protocol->GetInterlaceCheckProtocol().correlationThresholdBaseline<<std::endl;
+            //std::cout<<"InterlaceCorrelation_Baseline"<<protocol->GetInterlaceCheckProtocol().correlationThresholdBaseline<<std::endl;
         }
         else 
             xmlWriter->writeTextElement("red",item->text(1));

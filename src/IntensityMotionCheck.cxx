@@ -16,8 +16,7 @@
 #include <string>
 #include <math.h>
 
-//#include<QObject>
-//#include<QThread>
+
 #include <vcl_algorithm.h>
 
 
@@ -72,6 +71,9 @@ CIntensityMotionCheck::CIntensityMotionCheck()
 
   m_DwiFileName = "";
   m_XmlFileName = "";
+
+
+
 }
 
 
@@ -146,6 +148,7 @@ bool CIntensityMotionCheck::LoadDwiImage()
     // Create result
     GradientIntensityMotionCheckResult result;
     result.processing = QCResult::GRADIENT_INCLUDE;
+    result.VisualChecking = -1;
 
     qcResult->Clear();
     for ( unsigned int j = 0; j < m_DwiOriginalImage->GetVectorLength(); j++ )
@@ -442,6 +445,10 @@ unsigned char CIntensityMotionCheck::ImageCheck( DwiImageType::Pointer localDWII
       << std::endl;
   }
 
+  QString DWIFileName_n = QString::fromStdString(m_DwiFileName);
+  DWIFileName_n = DWIFileName_n.section('/',-1); // set only dwi file name to DwiName
+  qcResult->GetImageInformationCheckResult().info = DWIFileName_n;
+  
   if ( !protocol->GetImageProtocol().bCheck )
   {
     std::cout << "Image information check NOT set." << std::endl;
@@ -487,6 +494,7 @@ unsigned char CIntensityMotionCheck::ImageCheck( DwiImageType::Pointer localDWII
       std::cout << "Image size Check: " << "\t\tFAILED" << std::endl;
       returnValue |= 0x00000001;
     }
+
     // It does not make sense to fail based on image origins
     // Diffent scan session will have different origins.
     // we still need to report this mismatch for atlas building without terminating the pipeline
@@ -830,6 +838,46 @@ bool CIntensityMotionCheck::SliceWiseCheck( DwiImageType::Pointer dwi )
 
     m_DwiForcedConformanceImage = SliceChecker->GetOutput();
 
+    // .......Mapping between input gradeints and DWIForcedComformance gradeints
+    // New : 16 Jun 2011: 
+    /*Original_ForcedConformance_Mapping t_ForcedMapping;
+    int id_Forced = 0;
+    for ( int id = 0 ; id < SliceChecker->getQCResults().size() ; id++ )
+    {
+      if ( SliceChecker->getQCResults()[id] )
+      {
+	std::cout << "id included SliceWise: " << id << std::endl;
+        std::vector <int> m_id;
+	m_id.push_back( id );
+	t_ForcedMapping.index_original = m_id;
+	t_ForcedMapping.index_ForcedConformance = id_Forced;
+        m_Original_ForcedConformance_Mapping.push_back( t_ForcedMapping );
+	id_Forced++;
+      }
+    }*/
+    std::vector<bool>	tem_vector = SliceChecker->getQCResults();
+
+    //std::cout << "SliceChecker_qcResult Size:" << SliceChecker->getQCResults().size() << std::endl;
+    //for ( int jj=0 ; jj< SliceChecker->getQCResults().size() ; jj++ )
+    //{
+    //std::cout << "SliceChecker_qcResult:" << SliceChecker->getQCResults()[jj] << std::endl;
+    //}
+
+    int id = 0;
+    while (  id < tem_vector.size()  )
+    {
+      if ( tem_vector[id] == 0 )
+      {
+	this->qcResult->GetIntensityMotionCheckResult()[(m_Original_ForcedConformance_Mapping[id].index_original)[0]].processing
+                = QCResult::GRADIENT_EXCLUDE_SLICECHECK;
+	tem_vector.erase( tem_vector.begin()+id );
+        m_Original_ForcedConformance_Mapping.erase( m_Original_ForcedConformance_Mapping.begin()+id );
+	id = -1;
+      }
+      id++;
+    }
+    //........
+
     SliceWiseCheckResult SliceWise;    //Updating qcresult for SliceWise cheking information
     
     for (int i=0; i < SliceChecker->GetSliceWiseCheckResult().size(); i++)
@@ -843,7 +891,9 @@ bool CIntensityMotionCheck::SliceWiseCheck( DwiImageType::Pointer dwi )
     }
     
     // update the QCResults
-    for ( unsigned int i = 0;
+    //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    //Wrong: This parts must be changed since the results of Interlace QC are not matched with this->qcResult --> Look at the New: June 2011
+    /*for ( unsigned int i = 0;
       i < SliceChecker->GetGradientDirectionContainer()->size();
       i++ )
     {
@@ -866,15 +916,16 @@ bool CIntensityMotionCheck::SliceWiseCheck( DwiImageType::Pointer dwi )
           }
           else
           {
-            if (  !SliceChecker->getQCResults()[i] )
+            if (  !SliceChecker->getQCResults()[i] )      
             {
-              this->qcResult->GetIntensityMotionCheckResult()[i].processing
+              this->qcResult->GetIntensityMotionCheckResult()[j].processing
                 = QCResult::GRADIENT_EXCLUDE_SLICECHECK;
             }
           }
+	  
         }
       }
-    }
+    }*/
 
     // save slicechecked DWI
     if ( protocol->GetSliceCheckProtocol().outputDWIFileNameSuffix.length() > 0 )
@@ -1107,9 +1158,35 @@ bool CIntensityMotionCheck::InterlaceWiseCheck( DwiImageType::Pointer dwi )
     }
 
     m_DwiForcedConformanceImage = InterlaceChecker->GetOutput();
-    
-    InterlaceWiseCheckResult InterlaceResult;
-    
+
+    // .......Mapping between input gradeints and DWIForcedComformance gradeints
+    // New : 16 Jun 2011
+    std::vector<bool>	tem_vector = InterlaceChecker->getQCResults();
+
+    //std::cout << "InterlaceWise_qcResult Size:" << InterlaceChecker->getQCResults().size() << std::endl;
+    //for ( int jj=0 ; jj< InterlaceChecker->getQCResults().size() ; jj++ )
+    //{
+    //std::cout << "InterlaceWise_qcResult:" << InterlaceChecker->getQCResults()[jj] << std::endl;
+    //}
+
+    int id = 0;
+    while ( id < tem_vector.size() )
+    {
+      if ( tem_vector[id] == 0 )
+      {
+	this->qcResult->GetIntensityMotionCheckResult()[(m_Original_ForcedConformance_Mapping[id].index_original)[0]].processing
+                = QCResult::GRADIENT_EXCLUDE_INTERLACECHECK;
+	std::cout << "Original Excluded id: " << (m_Original_ForcedConformance_Mapping[id].index_original)[0] << "id: " << id << std::endl;
+	tem_vector.erase( tem_vector.begin()+id );
+        m_Original_ForcedConformance_Mapping.erase( m_Original_ForcedConformance_Mapping.begin()+id );
+	id = -1;
+      }
+      id ++;
+    }
+    //........
+
+    InterlaceWiseCheckResult InterlaceResult;	////Updating qcresult for Interlace cheking information
+
 
     for (int i=0; i < InterlaceChecker->GetResultsContainer().size(); i++)
     {
@@ -1127,7 +1204,9 @@ bool CIntensityMotionCheck::InterlaceWiseCheck( DwiImageType::Pointer dwi )
     }
 
     // update the QCResults
-    for ( unsigned int i = 0;
+    //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%/
+    //Wrong: This parts must be changed since the results of Interlace QC are not matched with this->qcResult look at New jun 2011
+    /*for ( unsigned int i = 0;
       i < InterlaceChecker->GetGradientDirectionContainer()->size();
       i++ )
     {
@@ -1152,13 +1231,14 @@ bool CIntensityMotionCheck::InterlaceWiseCheck( DwiImageType::Pointer dwi )
           {
             if (  !InterlaceChecker->getQCResults()[i] )
             {
-              this->qcResult->GetIntensityMotionCheckResult()[i].processing
+              this->qcResult->GetIntensityMotionCheckResult()[j].processing     //??????????????????????/
                 = QCResult::GRADIENT_EXCLUDE_INTERLACECHECK;
             }
           }
         }
       }
-    }
+    } */
+    
 
     //     for( unsigned int i=0;
     // i<this->qcResult->GetIntensityMotionCheckResult().size(); i++)
@@ -1391,16 +1471,49 @@ bool CIntensityMotionCheck::BaselineAverage( DwiImageType::Pointer dwi )
     try
     {
       BaselineAverager->Update();
-    }
+    } 
     catch ( itk::ExceptionObject & e )
     {
       std::cout << e.GetDescription() << std::endl;
       return -1;
     }
 
-    m_DwiForcedConformanceImage = BaselineAverager->GetOutput();
+    Setm_DwiForcedConformanceImage(BaselineAverager->GetOutput());
 
-    for ( unsigned int j = 0;
+    // .......Mapping between input gradeints and DWIForcedComformance gradeints
+    //New : jun 2011
+    if ( BaselineAverager->getBaselineNumber()>1 )	// multiple baselines
+    {
+	std::vector<bool>	tem_vector = BaselineAverager->getGradient_indx_Baselines();
+	std::vector<int>	B0_indices;
+	Original_ForcedConformance_Mapping  m_B0s;
+	int id = 0;
+    	while ( id < tem_vector.size() )
+    	{
+      		if ( tem_vector[id] == 1 )
+      		{
+		if ( this->qcResult->GetIntensityMotionCheckResult()[(m_Original_ForcedConformance_Mapping[id].index_original)[0]].processing == 		     QCResult::GRADIENT_INCLUDE )
+		{
+			this->qcResult->GetIntensityMotionCheckResult()[(m_Original_ForcedConformance_Mapping[id].index_original)[0]].processing
+			= QCResult::GRADIENT_BASELINE_AVERAGED;		
+		}
+		tem_vector.erase( tem_vector.begin()+id );
+		B0_indices.push_back(m_Original_ForcedConformance_Mapping[ id ].index_original[0]);
+        	m_Original_ForcedConformance_Mapping.erase( m_Original_ForcedConformance_Mapping.begin()+id );
+		id = -1;
+      		}
+	id++;
+    	}
+	m_B0s.index_original = B0_indices;
+	m_B0s.index_ForcedConformance = -1;
+	m_Original_ForcedConformance_Mapping.insert( m_Original_ForcedConformance_Mapping.begin(), m_B0s );
+    }
+    // .....
+
+    //Updating qcResult
+    //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%/
+    //Wrong: This parts must be changed since the results of BaselibeAvg QC are not matched with this->qcResult (Report) look at New jun 2011
+    /*for ( unsigned int j = 0;
       j < this->qcResult->GetIntensityMotionCheckResult().size();
       j++ )
     {
@@ -1418,7 +1531,7 @@ bool CIntensityMotionCheck::BaselineAverage( DwiImageType::Pointer dwi )
             = QCResult::GRADIENT_BASELINE_AVERAGED;
         }
       }
-    }
+    }*/
 
     if ( protocol->GetBaselineAverageProtocol().outputDWIFileNameSuffix.length()
       > 0 )
@@ -1714,9 +1827,7 @@ bool CIntensityMotionCheck::EddyMotionCorrectIowa( DwiImageType::Pointer dwi )
       return false;
     }
 
-    for ( unsigned int i = 0; i < inputGradDirContainer->size(); i++ )
-    {
-      for ( unsigned int j = 0;
+     for ( unsigned int j = 0;
         j < this->qcResult->GetIntensityMotionCheckResult().size();
         j++ )
       {
@@ -1731,7 +1842,27 @@ bool CIntensityMotionCheck::EddyMotionCorrectIowa( DwiImageType::Pointer dwi )
             = QCResult::GRADIENT_BASELINE_AVERAGED;
           continue;
         }
+    }
 
+    for ( unsigned int i = 0; i < inputGradDirContainer->size(); i++ )
+    {
+	//std::cout << "Gradient Input Iowa No " << i << " : " << inputGradDirContainer->at(i)[0] << "," << inputGradDirContainer->at(i)[1] << "," << inputGradDirContainer->at(i)[2] << std:: endl;
+	}	
+
+    for ( unsigned int j = 0;
+        j < this->qcResult->GetIntensityMotionCheckResult().size();
+        j++ )
+      {
+	//std::cout << "Gradient QC replaced dir " << j << " : " << this->qcResult->GetIntensityMotionCheckResult()[j].ReplacedDir[0] << "," << this->qcResult->GetIntensityMotionCheckResult()[j].ReplacedDir[1] << "," << this->qcResult->GetIntensityMotionCheckResult()[j].ReplacedDir[2] << std:: endl;
+	}
+
+    for ( unsigned int i = 0; i < inputGradDirContainer->size(); i++ )
+    {
+      bool gradientFound = false;
+      for ( unsigned int j = 0;
+        j < this->qcResult->GetIntensityMotionCheckResult().size() && !gradientFound;
+        j++ )
+      {
         if ( inputGradDirContainer->at(i)[0] ==
           this->qcResult->GetIntensityMotionCheckResult()[j].ReplacedDir[0]
         && inputGradDirContainer->at(i)[1] ==
@@ -1739,18 +1870,8 @@ bool CIntensityMotionCheck::EddyMotionCorrectIowa( DwiImageType::Pointer dwi )
         && inputGradDirContainer->at(i)[2] ==
           this->qcResult->GetIntensityMotionCheckResult()[j].ReplacedDir[2]  )
         {
-          if ( this->qcResult->GetIntensityMotionCheckResult()[j].processing >
-            QCResult::GRADIENT_EDDY_MOTION_CORRECTED )                                                               //
-            //
-            // GRADIENT_EXCLUDE_SLICECHECK,
-            // GRADIENT_EXCLUDE_INTERLACECHECK,
-            // GRADIENT_EXCLUDE_GRADIENTCHECK,
-            // GRADIENT_EXCLUDE_MANUALLY,
-          {
-            // std::cout<< "gradient " << i << " has been excluded!"
-            // <<std::endl;
-          }
-          else
+          if ( this->qcResult->GetIntensityMotionCheckResult()[j].processing !=
+            QCResult::GRADIENT_EDDY_MOTION_CORRECTED )
           {
             this->qcResult->GetIntensityMotionCheckResult()[j].processing
               = QCResult::GRADIENT_EDDY_MOTION_CORRECTED;
@@ -1760,7 +1881,9 @@ bool CIntensityMotionCheck::EddyMotionCorrectIowa( DwiImageType::Pointer dwi )
             = outputGradDirContainer->at(i)[1];
             this->qcResult->GetIntensityMotionCheckResult()[j].CorrectedDir[2]
             = outputGradDirContainer->at(i)[2];
-          }
+	    gradientFound = true;
+	    //std::cout << "Matching " << i <<" th Iowa gradient to " << j << " th original gradient" << std:: endl;
+	  }
         }
       }
     }
@@ -2090,6 +2213,29 @@ bool CIntensityMotionCheck::GradientWiseCheck( DwiImageType::Pointer dwi )
 
     m_DwiForcedConformanceImage = GradientChecker->GetOutput();
 
+    // .......Mapping between input gradeints and DWIForcedComformance gradeints
+    //New : jun 2011
+    std::vector<bool>	tem_vector = GradientChecker->GetQCResults();
+    int id = 0;
+    while ( id < tem_vector.size() )
+    {
+      if ( tem_vector[id] == 0 )
+      {
+	if ( this->qcResult->GetIntensityMotionCheckResult()[(m_Original_ForcedConformance_Mapping[id].index_original)[0]].processing == QCResult::GRADIENT_INCLUDE || this->qcResult->GetIntensityMotionCheckResult()[(m_Original_ForcedConformance_Mapping[id].index_original)[0]].processing == QCResult::GRADIENT_BASELINE_AVERAGED || this->qcResult->GetIntensityMotionCheckResult()[(m_Original_ForcedConformance_Mapping[id].index_original)[0]].processing == QCResult::GRADIENT_EDDY_MOTION_CORRECTED ) 
+	{
+	this->qcResult->GetIntensityMotionCheckResult()[(m_Original_ForcedConformance_Mapping[id].index_original)[0]].processing
+                = QCResult::GRADIENT_EXCLUDE_GRADIENTCHECK;
+	}
+	tem_vector.erase( tem_vector.begin()+id );
+        m_Original_ForcedConformance_Mapping.erase( m_Original_ForcedConformance_Mapping.begin()+id );
+	id = -1;
+      }
+      id++;
+    }
+    //........
+
+
+    //updating qcResult
     GradientWiseCheckResult GradientWiseResult;
 
     for (int i=0; i < GradientChecker->GetResultsContainer().size(); i++)
@@ -2108,7 +2254,10 @@ bool CIntensityMotionCheck::GradientWiseCheck( DwiImageType::Pointer dwi )
 
 
     // update the QCResults
-    for ( unsigned int i = 0;
+    //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    //Wrong: This parts must be changed since the results of GradientWiseChecking QC are not matched with this->qcResult (Report) look at New jun 2011
+    
+    /*for ( unsigned int i = 0;
       i < GradientChecker->GetGradientDirectionContainer()->size();
       i++ )
     {
@@ -2144,7 +2293,7 @@ bool CIntensityMotionCheck::GradientWiseCheck( DwiImageType::Pointer dwi )
           }
         }
       }
-    }
+    }*/
  
     // save the output of gradient check
     if ( protocol->GetGradientCheckProtocol().outputDWIFileNameSuffix.length() > 0 )
@@ -2355,8 +2504,134 @@ bool CIntensityMotionCheck::SaveDwiForcedConformanceImage(void) const
   return true;
 }
 
+unsigned char CIntensityMotionCheck::RunPipelineByProtocol_FurtherQC1()
+{
+
+  if ( !protocol )
+  {
+    std::cout << "Protocol NOT set." << std::endl;
+    return -1;
+  }
+  if ( m_DwiOriginalImage->GetVectorLength() != m_GradientDirectionContainer->size() )
+  {
+    std::cout << "Bad DWI: mismatch between gradient image # and gradient vector #"
+      << std::endl;
+    return -1;
+  }
+
+  if ( !m_bDwiLoaded  )
+  {
+    LoadDwiImage();
+  }
+  
+  Setm_DwiForcedConformanceImage( m_DwiOriginalImage );    //??????????? WRONG
+
+  // image information check
+  std::cout << "=====================" << std::endl;
+  std::cout << "ImageCheck ... " << std::endl;
+  unsigned char imageCheckResult = ImageCheck( m_DwiForcedConformanceImage );
+  printf("result of ImageCheck = %d",imageCheckResult);
+  if ( imageCheckResult )
+  {
+    this-> qcResult->Set_result( this-> qcResult->Get_result() | 1 );
+    printf("result of ImageCheck = %d",this-> qcResult->Get_result());
+    if( protocol->GetImageProtocol().bQuitOnCheckSizeFailure && (imageCheckResult & 0x00000001 ))
+    {
+      std::cout << "Image size check failed, pipeline terminated. " << std::endl;
+      std::cout << "ImageCheck DONE " << std::endl;
+      return this-> qcResult->Get_result(); 
+    }
+
+    if( protocol->GetImageProtocol().bQuitOnCheckSpacingFailure && (imageCheckResult & 0x00000010 ))
+    {
+      std::cout << "Image spacing check failed, pipeline terminated. " << std::endl;
+      std::cout << "ImageCheck DONE " << std::endl;
+      return this-> qcResult->Get_result(); 
+    }
+  }
+  std::cout << "ImageCheck DONE " << std::endl;
+  
+  
+  
+  // diffusion information check
+  std::cout << "=====================" << std::endl;
+  std::cout << "DiffusionCheck ... " << std::endl;
+  if ( !DiffusionCheck( m_DwiForcedConformanceImage ) )
+  {
+    this-> qcResult->Set_result( this-> qcResult->Get_result() | 2 );
+    printf("result of DiffusionCheck = %d",this-> qcResult->Get_result());
+    if( protocol->GetDiffusionProtocol().bQuitOnCheckFailure )
+    {
+      std::cout << "Diffusion Check failed, pipeline terminated. " << std::endl;
+      std::cout << "DiffusionCheck DONE " << std::endl;
+      return this-> qcResult->Get_result(); 
+    }
+  }
+  std::cout << "DiffusionCheck DONE " << std::endl;
+    
+  return this-> qcResult->Get_result();
+}
+
+unsigned char CIntensityMotionCheck::RunPipelineByProtocol_FurtherQC2(){
+  
+  
+  // baseline average
+  std::cout << "=====================" << std::endl;
+  std::cout << "BaselineAverage ... " << std::endl;
+  
+  BaselineAverage( m_DwiForcedConformanceImage );
+  std::cout << "BaselineAverage DONE " << std::endl;
+ 
+
+  
+  // EddyMotionCorrect
+  std::cout << "=====================" << std::endl;
+  std::cout << "EddyCurrentHeadMotionCorrect ... " << std::endl;
+  // EddyMotionCorrect( m_DwiForcedConformanceImage );
+  std::cout << "EddyCurrentHeadMotionCorrectIowa ... " << std::endl;
+  
+  EddyMotionCorrectIowa(m_DwiForcedConformanceImage);
+  std::cout << "EddyCurrentHeadMotionCorrect DONE " << std::endl;
+  
+  
+
+  // GradientChecker
+  std::cout << "=====================" << std::endl;
+  std::cout << "GradientCheck ... " << std::endl;
+  
+  if ( !GradientWiseCheck( m_DwiForcedConformanceImage ) )
+  {
+    this-> qcResult->Set_result( this-> qcResult->Get_result() | 16 );
+    printf("result of GradientCheck = %d",this-> qcResult->Get_result());
+    if( protocol->GetGradientCheckProtocol().bQuitOnCheckFailure)
+    {
+      std::cout << "GradientWise Check failed, pipeline terminated. " << std::endl;
+      std::cout << "GradientCheck DONE " << std::endl;
+      return this-> qcResult->Get_result(); 
+    }
+  }
+  std::cout << "GradientCheck DONE " << std::endl;
+  
+  // Save QC'ed DWI
+  std::cout << "=====================" << std::endl;
+  std::cout << "Save QC'ed DWI ... ";
+  SaveDwiForcedConformanceImage();
+
+  std::cout << "DONE" << std::endl;
+  
+  // DTIComputing
+  std::cout << "=====================" << std::endl;
+  std::cout << "DTIComputing ... " << std::endl;
+  DTIComputing();
+  std::cout << "DTIComputing DONE" << std::endl;
+
+  return this-> qcResult->Get_result();
+  
+}
+
 unsigned char CIntensityMotionCheck::RunPipelineByProtocol()
 {
+ 
   if ( !protocol )
   {
     std::cout << "Protocol NOT set." << std::endl;
@@ -2442,7 +2717,18 @@ unsigned char CIntensityMotionCheck::RunPipelineByProtocol()
     outfile.close();
   }
 
-  unsigned char result = 0;
+  Original_ForcedConformance_Mapping m_map;
+  for ( int jj = 0; jj< m_DwiOriginalImage->GetVectorLength(); jj++ )
+  {	
+	std::vector<int> Bing;
+	Bing.push_back( jj );
+	m_map.index_original = Bing;
+	m_map.index_ForcedConformance = jj;
+	m_Original_ForcedConformance_Mapping.push_back( m_map );
+  }
+
+  this-> qcResult->Set_result(0);	//unsigned char result = 0;	
+
   // ZYXEDCBA:
   // X  QC; Too many bad gradient directions found!
   // Y  QC; Single b-value DWI without a b0/baseline!
@@ -2468,80 +2754,87 @@ unsigned char CIntensityMotionCheck::RunPipelineByProtocol()
   unsigned char imageCheckResult = ImageCheck( m_DwiForcedConformanceImage );
   if ( imageCheckResult )
   {
-    result = result | 1;
+    this-> qcResult->Set_result( this-> qcResult->Get_result() | 1 );
+    printf("result of ImageCheck = %d",this-> qcResult->Get_result());
     if( protocol->GetImageProtocol().bQuitOnCheckSizeFailure && (imageCheckResult & 0x00000001 ))
     {
       std::cout << "Image size check failed, pipeline terminated. " << std::endl;
       std::cout << "ImageCheck DONE " << std::endl;
-      return result; 
+      return this-> qcResult->Get_result(); 
     }
 
     if( protocol->GetImageProtocol().bQuitOnCheckSpacingFailure && (imageCheckResult & 0x00000010 ))
     {
       std::cout << "Image spacing check failed, pipeline terminated. " << std::endl;
       std::cout << "ImageCheck DONE " << std::endl;
-      return result; 
+      return this-> qcResult->Get_result(); 
     }
   }
   std::cout << "ImageCheck DONE " << std::endl;
-
+  
+  
   
   // diffusion information check
   std::cout << "=====================" << std::endl;
   std::cout << "DiffusionCheck ... " << std::endl;
   if ( !DiffusionCheck( m_DwiForcedConformanceImage ) )
   {
-    result = result | 2;
+    this-> qcResult->Set_result( this-> qcResult->Get_result() | 2 );
+    printf("result of DiffusionCheck = %d",this-> qcResult->Get_result());
     if( protocol->GetDiffusionProtocol().bQuitOnCheckFailure )
     {
       std::cout << "Diffusion Check failed, pipeline terminated. " << std::endl;
       std::cout << "DiffusionCheck DONE " << std::endl;
-      return result; 
+      return this-> qcResult->Get_result(); 
     }
   }
   std::cout << "DiffusionCheck DONE " << std::endl;
-
   
 
   // SliceChecker
   std::cout << "=====================" << std::endl;
   std::cout << "SliceWiseCheck ... " << std::endl;
+  
   if ( !SliceWiseCheck( m_DwiForcedConformanceImage ) )
   {
-    result = result | 4;
+    this-> qcResult->Set_result( this-> qcResult->Get_result() | 4 );
     if( protocol->GetSliceCheckProtocol().bQuitOnCheckFailure)
     {
       std::cout << "SliceWise Check failed, pipeline terminated. " << std::endl;
       std::cout << "SliceWiseCheck DONE " << std::endl;
-      return result; 
+      return this-> qcResult->Get_result(); 
     }
   }
   std::cout << "SliceWiseCheck DONE " << std::endl;
 
   
-
   // InterlaceChecker
   std::cout << "=====================" << std::endl;
   std::cout << "InterlaceWiseCheck ... " << std::endl;
+  
   if ( !InterlaceWiseCheck( m_DwiForcedConformanceImage ) )
   {
-    result = result | 8;
+    this-> qcResult->Set_result( this-> qcResult->Get_result() | 8 );
+    printf("result of InterlaceWiseCheck = %d",this-> qcResult->Get_result());
     if( protocol->GetInterlaceCheckProtocol().bQuitOnCheckFailure)
     {
       std::cout << "InterlaceWise Check failed, pipeline terminated. " << std::endl;
       std::cout << "InterlaceWiseCheck DONE " << std::endl;
-      return result; 
+      return this-> qcResult->Get_result(); 
     }
   }
   std::cout << "InterlaceWiseCheck DONE " << std::endl;
-
+  
+  std::cout << "Mapping Original and Comforce image: " << "length of Map: " << m_Original_ForcedConformance_Mapping.size() << std::endl;
   
 
   // baseline average
   std::cout << "=====================" << std::endl;
   std::cout << "BaselineAverage ... " << std::endl;
+  
   BaselineAverage( m_DwiForcedConformanceImage );
   std::cout << "BaselineAverage DONE " << std::endl;
+ 
 
   
   // EddyMotionCorrect
@@ -2549,26 +2842,28 @@ unsigned char CIntensityMotionCheck::RunPipelineByProtocol()
   std::cout << "EddyCurrentHeadMotionCorrect ... " << std::endl;
   // EddyMotionCorrect( m_DwiForcedConformanceImage );
   std::cout << "EddyCurrentHeadMotionCorrectIowa ... " << std::endl;
+  
   EddyMotionCorrectIowa(m_DwiForcedConformanceImage);
   std::cout << "EddyCurrentHeadMotionCorrect DONE " << std::endl;
-
+  
   
 
   // GradientChecker
   std::cout << "=====================" << std::endl;
   std::cout << "GradientCheck ... " << std::endl;
+  
   if ( !GradientWiseCheck( m_DwiForcedConformanceImage ) )
   {
-    result = result | 16;
+    this-> qcResult->Set_result( this-> qcResult->Get_result() | 16 );
+    printf("result of GradientCheck = %d",this-> qcResult->Get_result());
     if( protocol->GetGradientCheckProtocol().bQuitOnCheckFailure)
     {
       std::cout << "GradientWise Check failed, pipeline terminated. " << std::endl;
       std::cout << "GradientCheck DONE " << std::endl;
-      return result; 
+      return this-> qcResult->Get_result(); 
     }
   }
   std::cout << "GradientCheck DONE " << std::endl;
-
   
 
   // Save QC'ed DWI
@@ -2594,11 +2889,10 @@ unsigned char CIntensityMotionCheck::RunPipelineByProtocol()
   collectLeftDiffusionStatistics( m_DwiForcedConformanceImage, ReportFileName );
   ValidateResult = validateLeftDiffusionStatistics();
 
-  result = ( ValidateResult << 5 ) + result;
+  this->qcResult-> Set_result( ( ValidateResult << 5 ) + this->qcResult->Get_result() );
 
   
-
-  return result;
+  return this->qcResult->Get_result();
 }
 
 
@@ -4116,6 +4410,7 @@ bool CIntensityMotionCheck::MakeDefaultProtocol( Protocol *protocol )
 
   return true;
 }
+
 
 
 

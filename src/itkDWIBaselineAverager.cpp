@@ -364,6 +364,7 @@ namespace itk
 
                 if ( this->GradientDirectionIsB0Image(i) == true )
                   {
+		    Gradient_indx_Baselines.push_back( true );
                   //TODO:  This should use the extract vector element filter.
                     {
                     std::cout << "Extracting element " << i << std::endl;
@@ -385,6 +386,10 @@ namespace itk
                     }
                   FoundBaselines++;
                   }
+		 else if ( this->GradientDirectionIsB0Image(i) == false )
+		  {
+		      Gradient_indx_Baselines.push_back( false );
+		  }
                 }
                 if(FoundBaselines != this->getBaselineNumber() )
                 {
@@ -425,6 +430,7 @@ namespace itk
 
                 if ( this->GradientDirectionIsB0Image(i) == true )
                   {
+		    Gradient_indx_Baselines.push_back( true );
                   //TODO:  This should use the extract vector element filter.
                     {
                     std::cout << "Extracting element " << i << std::endl;
@@ -446,6 +452,10 @@ namespace itk
                     }
                   FoundBaselines++;
                   }
+		  else if (  this->GradientDirectionIsB0Image(i) == false )
+		   {
+		      Gradient_indx_Baselines.push_back( false );
+		   }
                 }
               if(FoundBaselines != this->getBaselineNumber() )
                 {

@@ -39,7 +39,6 @@ void CThreadIntensityMotionCheck::run()
   }
   emit allDone("checking ...");
 
-  std::cout << "Checking Thread begins here " << std::endl;
   qcResult->Clear();
   m_IntensityMotionCheck->SetDwiFileName(DWINrrdFilename);
   m_IntensityMotionCheck->SetXmlFileName(XmlFilename);
@@ -50,6 +49,10 @@ void CThreadIntensityMotionCheck::run()
   emit StartProgressSignal();  // start showing progress bar
   const unsigned char result = m_IntensityMotionCheck->RunPipelineByProtocol();
 
+  //std::cout <<"qcResult_TESTTHREAD " << qcResult.GetIntensityMotionCheckResult()[0].processing << std::endl;
+  //std::cout <<"qcResult_TESTTHREAD " << qcResult.GetIntensityMotionCheckResult()[46].processing << std::endl;
+  //Set_result( m_IntensityMotionCheck->RunPipelineByProtocol() );
+  
   unsigned char out = result;
   std::cout << "--------------------------------" << std::endl;
 

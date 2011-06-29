@@ -1,5 +1,6 @@
 #include <QtGui>
 
+
 #include "GMainWindow.h"
 
 #include <vtkActor.h>
@@ -13,6 +14,7 @@
 #include "Dicom2NrrdPanel.h"
 #include "ImageView2DPanelWithControls.h"
 #include "IntensityMotionCheckPanel.h"
+//#include "VisualCheckingStatus.h"
 
 #include "vtkXYPlotWidget.h"
 
@@ -62,6 +64,8 @@ GMainWindow::GMainWindow()
   bContentSyn  = true;
   bInterpolationSyn = true;
   bOrientationSyn  = false;
+
+  bWindowLevelSyn = false;
 
   DTIPrepPanel = NULL;
 
@@ -145,6 +149,9 @@ GMainWindow::GMainWindow()
   actionIncluded->setCheckable(0);
   actionExcluded->setCheckable(0);
 
+  
+
+  
   // ProbeWithSplineWidget();
   //  connect( this->DTIPrepPanel->GetThreadIntensityMotionCheck(),
   //    SIGNAL(ResultUpdate()),
@@ -182,8 +189,28 @@ GMainWindow::GMainWindow()
   connect( this->DTIPrepPanel, SIGNAL( currentGradient(int, int ) ),
     this, SLOT( GradientChanged( int, int ) ) );
 
+  connect( this, SIGNAL( currentGradient_VC_Include(int, int ) ),
+    this, SLOT( GradientChanged_VC_Include( int, int ) ) );
+
+  connect( this, SIGNAL( currentGradient_VC_Exclude(int, int ) ),
+    this, SLOT( GradientChanged_VC_Exclude( int, int ) ) );
+
+  connect( this->DTIPrepPanel, SIGNAL( currentGradientChanged_VC(int) ),
+    this, SLOT( GradientUpdate( int ) ) );
+ 
+  connect( this, SIGNAL( VisualCheckingStatus(int, int ,int) ), 
+    this->DTIPrepPanel, SLOT( SetVisualCheckingStatus ( int, int,int )) );
+
   connect( this->DTIPrepPanel, SIGNAL( UpdateOutputDWIDiffusionVectorActors() ),
     this, SLOT( UpdateOutputDWIDiffusionVectorActors() ) );
+
+  
+
+  //
+
+  connect( this->DTIPrepPanel, SIGNAL( LoadQCResult(bool) ), this, SLOT ( LoadQCResult(bool) ) );
+
+  connect( this->DTIPrepPanel, SIGNAL(SignalLoadDwiFile()), this, SLOT( on_actionOpenDWINrrd_triggered() ) );
 
   //
 
@@ -325,9 +352,20 @@ GMainWindow::GMainWindow()
   connect( this->imageView2DPanelWithControls3,
     SIGNAL( WindowLevel(double, double) ),
     this, SLOT( SetAllWindowLevel(double, double ) ) );
+ 
+   // setWindowTitle(tr("Grace DTI(Qt4)"));
 
-  // setWindowTitle(tr("Grace DTI(Qt4)"));
+  connect( this->DTIPrepPanel,
+    SIGNAL( SignalActivateSphere ()),
+    this, SLOT( SetactionIncluded() ));
+
   }
+
+void GMainWindow::LoadQCResult(bool b)
+{
+   bQCResultLoad = b;
+   std::cout << "TestLoadingQCXml" << b << std::endl;
+}
 
 void GMainWindow::ProbeWithSplineWidget()
 {
@@ -547,6 +585,7 @@ void GMainWindow::OrientationChanged(int winID, int newOrient)
   qvtkWidget->GetRenderWindow()->Render();
 }
 
+
 GMainWindow::~GMainWindow()
   {
   if ( this->planeWidgetX )
@@ -730,6 +769,7 @@ void GMainWindow::createStatusBar()
   //progressWidget->hide();
 }
 
+
 void GMainWindow::createDockPanels_IntensityMotionCheckPanel()
 {
   DTIPrepPanel = new IntensityMotionCheckPanel(this);
@@ -772,7 +812,7 @@ void GMainWindow::createDockPanels_imageView2DPanel2()
   imageView2DPanelWithControls2->setAllowedAreas(
     Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea | Qt::TopDockWidgetArea
     | Qt::BottomDockWidgetArea    );
-  imageView2DPanelWithControls2->setStyleSheet("color: red;");
+  imageView2DPanelWithControls2->setStyleSheet("color: cyan;");
   addDockWidget(Qt::RightDockWidgetArea, imageView2DPanelWithControls2);
 }
 
@@ -785,7 +825,7 @@ void GMainWindow::createDockPanels_imageView2DPanel3()
   imageView2DPanelWithControls3->setAllowedAreas(
     Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea | Qt::TopDockWidgetArea
     | Qt::BottomDockWidgetArea    );
-  imageView2DPanelWithControls3->setStyleSheet("color: green;");
+  imageView2DPanelWithControls3->setStyleSheet("color: balck;");
   addDockWidget(Qt::RightDockWidgetArea, imageView2DPanelWithControls3);
 }
 
@@ -840,7 +880,7 @@ void GMainWindow::createDockPanels()
   imageView2DPanelWithControls2->setAllowedAreas(
     Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea | Qt::TopDockWidgetArea
     | Qt::BottomDockWidgetArea    );
-  imageView2DPanelWithControls2->setStyleSheet("color: red;");
+  imageView2DPanelWithControls2->setStyleSheet("color: cyan;");
   addDockWidget(Qt::RightDockWidgetArea, imageView2DPanelWithControls2);
 
   imageView2DPanelWithControls3
@@ -850,7 +890,7 @@ void GMainWindow::createDockPanels()
   imageView2DPanelWithControls3->setAllowedAreas(
     Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea | Qt::TopDockWidgetArea
     | Qt::BottomDockWidgetArea    );
-  imageView2DPanelWithControls3->setStyleSheet("color: green;");
+  imageView2DPanelWithControls3->setStyleSheet("color: black;");
   addDockWidget(Qt::RightDockWidgetArea, imageView2DPanelWithControls3);
 }
 
@@ -912,6 +952,7 @@ void GMainWindow::on_actionOpenDWINrrd_triggered()
 
   // update DTIPrepPanel
   DTIPrepPanel->SetFileName(DWINrrdFile);
+  DTIPrepPanel->SetName(DWINrrdFile);
   DTIPrepPanel->SetDWIImage(DWIImage);
   DTIPrepPanel->UpdatePanelDWI();
 
@@ -979,6 +1020,9 @@ void GMainWindow::on_actionOpenDWINrrd_triggered()
     &whichWindow[0], 1.0);
 
   UpdateDWIDiffusionVectorActors();
+
+  bQCResultLoad = false;  
+  DTIPrepPanel->GetQCResult().Clear();
 }
 
 void GMainWindow::UpdateDWIDiffusionVectorActors()
@@ -994,6 +1038,7 @@ void GMainWindow::UpdateDWIDiffusionVectorActors()
 
   actorDirFile->GetParts()->RemoveAllItems();
   float vect3d[3];
+  
   for (; itKey != imgMetaKeys.end(); itKey++ )
     {
     // double x,y,z;
@@ -1071,6 +1116,11 @@ void GMainWindow::on_actionIncluded_toggled( bool check)
     }
 }
 
+void GMainWindow::SetactionIncluded()
+{
+    actionIncluded->setDisabled(0);
+}
+
 void GMainWindow::on_actionSphere_toggled( bool check)
 {
   if ( actorSphere )
@@ -1090,10 +1140,11 @@ void GMainWindow::UpdateOutputDWIDiffusionVectorActors()
         i < DTIPrepPanel->GetQCResult().GetIntensityMotionCheckResult().size();
         i++ )
     {
-    if ( DTIPrepPanel->GetQCResult().GetIntensityMotionCheckResult()[i].
-           processing == QCResult::GRADIENT_INCLUDE
-         || DTIPrepPanel->GetQCResult().GetIntensityMotionCheckResult()[i].
-           processing == QCResult::GRADIENT_EDDY_MOTION_CORRECTED )
+    if ( (DTIPrepPanel->GetQCResult().GetIntensityMotionCheckResult()[i].VisualChecking == -1 && DTIPrepPanel->GetQCResult().GetIntensityMotionCheckResult()[i].
+           processing == QCResult::GRADIENT_INCLUDE)
+         || (DTIPrepPanel->GetQCResult().GetIntensityMotionCheckResult()[i].VisualChecking == -1 && DTIPrepPanel->GetQCResult().GetIntensityMotionCheckResult()[i].
+           processing == QCResult::GRADIENT_EDDY_MOTION_CORRECTED) || (DTIPrepPanel->GetQCResult().GetIntensityMotionCheckResult()[i].
+           VisualChecking == QCResult::GRADIENT_INCLUDE) )
       {
       if ( DTIPrepPanel->GetQCResult().GetIntensityMotionCheckResult()[i].
              CorrectedDir[0] == 0.0
@@ -1105,6 +1156,7 @@ void GMainWindow::UpdateOutputDWIDiffusionVectorActors()
         continue;
         }
 
+      //std::cout<<"IncludeDirTest"<<std::endl;
       vtkLineSource *LineSource    =  vtkLineSource::New();
 
       LineSource->SetPoint1(
@@ -1129,7 +1181,78 @@ void GMainWindow::UpdateOutputDWIDiffusionVectorActors()
       TubeFilter->SetNumberOfSides(10);
       TubeFilter->SetVaryRadiusToVaryRadiusOff();
       TubeFilter->SetCapping(1);
-      TubeFilter->Update(); // /
+      TubeFilter->Update();
+
+      vtkPolyDataMapper *mapperLocal = vtkPolyDataMapper::New();
+      mapperLocal->SetInput( TubeFilter->GetOutput() );
+
+      vtkActor *actorLocal = vtkActor::New();
+      actorLocal->SetMapper(mapperLocal);
+
+      actorLocal->GetProperty()->SetColor(0.30, 0.90, 0.30);
+      actorDirInclude->AddPart(actorLocal);
+      }
+    }
+  pvtkRenderer_3DView->AddActor( actorDirInclude );
+  actorDirInclude->SetVisibility( actionIncluded->isChecked() );
+  // pvtkRenderer_3DView->ResetCamera();
+  qvtkWidget_3DView->GetRenderWindow()->Render();
+
+  actionIncluded->setEnabled(1);
+  actionIncluded->setCheckable(1);
+}
+
+void GMainWindow::UpdateOutputDWIDiffusionVectorActors_VC()
+{
+  pvtkRenderer_3DView->RemoveActor(actorDirInclude);
+  actorDirInclude->GetParts()->RemoveAllItems();
+
+  for ( unsigned int i = 0;
+        i < DTIPrepPanel->GetQCResult().GetIntensityMotionCheckResult().size();
+        i++ )
+    {
+    if ( (DTIPrepPanel->GetQCResult().GetIntensityMotionCheckResult()[i].VisualChecking == -1 && DTIPrepPanel->GetQCResult().GetIntensityMotionCheckResult()[i].
+           processing == QCResult::GRADIENT_INCLUDE)
+         || (DTIPrepPanel->GetQCResult().GetIntensityMotionCheckResult()[i].VisualChecking == -1 && DTIPrepPanel->GetQCResult().GetIntensityMotionCheckResult()[i].
+           processing == QCResult::GRADIENT_EDDY_MOTION_CORRECTED) || (DTIPrepPanel->GetQCResult().GetIntensityMotionCheckResult()[i].
+           VisualChecking == QCResult::GRADIENT_INCLUDE) )
+      {
+      if ( DTIPrepPanel->GetQCResult().GetIntensityMotionCheckResult()[i].
+             CorrectedDir[0] == 0.0
+           && DTIPrepPanel->GetQCResult().GetIntensityMotionCheckResult()[i].
+             CorrectedDir[1] == 0.0
+           && DTIPrepPanel->GetQCResult().GetIntensityMotionCheckResult()[i].
+             CorrectedDir[2] == 0.0    )
+        {
+        continue;
+        }
+
+      
+      vtkLineSource *LineSource    =  vtkLineSource::New();
+
+      LineSource->SetPoint1(
+        DTIPrepPanel->GetQCResult().GetIntensityMotionCheckResult()[i].
+          CorrectedDir[0],
+        DTIPrepPanel->GetQCResult().GetIntensityMotionCheckResult()[i].
+          CorrectedDir[1],
+        DTIPrepPanel->GetQCResult().GetIntensityMotionCheckResult()[i].
+          CorrectedDir[2]  );
+
+      LineSource->SetPoint2(
+        -DTIPrepPanel->GetQCResult().GetIntensityMotionCheckResult()[i].
+          CorrectedDir[0],
+        -DTIPrepPanel->GetQCResult().GetIntensityMotionCheckResult()[i].
+          CorrectedDir[1],
+        -DTIPrepPanel->GetQCResult().GetIntensityMotionCheckResult()[i].
+          CorrectedDir[2] );
+
+      vtkTubeFilter *TubeFilter = vtkTubeFilter::New();
+      TubeFilter->SetInput( LineSource->GetOutput() );
+      TubeFilter->SetRadius(0.01);
+      TubeFilter->SetNumberOfSides(10);
+      TubeFilter->SetVaryRadiusToVaryRadiusOff();
+      TubeFilter->SetCapping(1);
+      TubeFilter->Update();
 
       vtkPolyDataMapper *mapperLocal = vtkPolyDataMapper::New();
       mapperLocal->SetInput( TubeFilter->GetOutput() );
@@ -1242,14 +1365,12 @@ void GMainWindow::on_actionImageView3_triggered()
   createDockPanels_imageView2DPanel3();
 }
 
-
-
 void GMainWindow::on_actionQCResult_triggered()
 {
   DTIPrepPanel->OpenXML_ResultFile();
 }
 
-//void GMainWindow::on_actionOpen_QCResult_triggered(){}
+
 
 
 bool GMainWindow::CreateImagePlaneWidgets(vtkImageData *GradientImage)
@@ -1649,8 +1770,283 @@ void GMainWindow::VisibleChanged(int WinID, bool visible)
   qvtkWidget->GetRenderWindow()->Render();
 }
 
+
 void GMainWindow::GradientChanged(int WinID, int index)
 {
+  if ( bDwiLoaded == false )
+  {
+     std::cout << " No DWINrrd image file is open " <<std::endl;
+     return;
+  }
+
+  if ( bContentSyn )
+    {
+    componentExtractor1->SetIndex( index );
+    componentExtractor2->SetIndex( index );
+    componentExtractor3->SetIndex( index );
+  
+    gradientConnecter1->Update();
+    gradientConnecter2->Update();
+    gradientConnecter3->Update();
+
+    imageView2DPanelWithControls1->GetHorizontalSlider_Gradient()->
+      setSliderPosition(index);
+    imageView2DPanelWithControls2->GetHorizontalSlider_Gradient()->
+      setSliderPosition(index);
+    imageView2DPanelWithControls3->GetHorizontalSlider_Gradient()->
+      setSliderPosition(index);
+
+
+    //std::cout<<"bQCResultLoad"<<bQCResultLoad<<std::endl;
+    if ( bQCResultLoad == true) 
+    {
+
+        
+    if ( DTIPrepPanel->GetQCResult().GetIntensityMotionCheckResult()[ index ].VisualChecking == 0 || ( DTIPrepPanel->GetQCResult().GetIntensityMotionCheckResult()[ index ].VisualChecking == -1 && DTIPrepPanel->GetQCResult().GetIntensityMotionCheckResult()[ index ].processing <= 2))
+    {
+      //std::cout << "WinID " << WinID << "indexID " << index <<" " <<  "Processing" << DTIPrepPanel->GetQCResult().GetIntensityMotionCheckResult()[ index ].processing << std::endl;
+      imageView2DPanelWithControls1->GetLineEdit_Gradient()->setStyleSheet( "background-color: Green" ); 
+      imageView2DPanelWithControls2->GetLineEdit_Gradient()->setStyleSheet( "background-color: Green" ); 
+      imageView2DPanelWithControls3->GetLineEdit_Gradient()->setStyleSheet( "background-color: Green" ); 
+    }
+
+    else if (DTIPrepPanel->GetQCResult().GetIntensityMotionCheckResult()[ index ].VisualChecking == 6 || ( DTIPrepPanel->GetQCResult().GetIntensityMotionCheckResult()[ index ].VisualChecking == -1 && DTIPrepPanel->GetQCResult().GetIntensityMotionCheckResult()[ index ].processing > 2))
+    {
+      imageView2DPanelWithControls1->GetLineEdit_Gradient()->setStyleSheet( "background-color: red" ); 
+      imageView2DPanelWithControls2->GetLineEdit_Gradient()->setStyleSheet( "background-color: red" ); 
+      imageView2DPanelWithControls3->GetLineEdit_Gradient()->setStyleSheet( "background-color: red" ); 
+    }
+    }
+    if (bQCResultLoad == false)
+    {
+      imageView2DPanelWithControls1->GetLineEdit_Gradient()->setStyleSheet( "background-color: white" ); 
+      imageView2DPanelWithControls2->GetLineEdit_Gradient()->setStyleSheet( "background-color: white" ); 
+      imageView2DPanelWithControls3->GetLineEdit_Gradient()->setStyleSheet( "background-color: white" ); 
+    }
+    
+    imageView2DPanelWithControls1->GetImageViewer2()->Render();
+    imageView2DPanelWithControls2->GetImageViewer2()->Render();
+    imageView2DPanelWithControls3->GetImageViewer2()->Render();
+    }
+  else
+    {
+    
+    switch ( WinID )
+      {
+      case 0:
+        componentExtractor1->SetIndex( index );
+        // componentExtractor3->Update();
+        gradientConnecter1->Update();
+        imageView2DPanelWithControls1->GetHorizontalSlider_Gradient()->setSliderPosition(index);
+
+	if ( bQCResultLoad == true) 
+	{
+        
+	if ( DTIPrepPanel->GetQCResult().GetIntensityMotionCheckResult()[ index ].VisualChecking == 0 || ( DTIPrepPanel->GetQCResult().GetIntensityMotionCheckResult()[ index ].VisualChecking == -1 && DTIPrepPanel->GetQCResult().GetIntensityMotionCheckResult()[ index ].processing <= 2))
+	{
+	imageView2DPanelWithControls1->GetLineEdit_Gradient()->setStyleSheet( "background-color: Green" ); 
+	}
+	
+	else if (DTIPrepPanel->GetQCResult().GetIntensityMotionCheckResult()[ index ].VisualChecking == 6 || ( DTIPrepPanel->GetQCResult().GetIntensityMotionCheckResult()[ index ].VisualChecking == -1 && DTIPrepPanel->GetQCResult().GetIntensityMotionCheckResult()[ index ].processing > 2))
+	{
+	imageView2DPanelWithControls1->GetLineEdit_Gradient()->setStyleSheet( "background-color: red" ); 
+	}
+	}
+	if (bQCResultLoad == false)
+	{
+	imageView2DPanelWithControls1->GetLineEdit_Gradient()->setStyleSheet( "background-color: white" ); 
+	}
+
+        imageView2DPanelWithControls1->GetImageViewer2()->Render();
+        break;
+
+      case 1:
+        componentExtractor2->SetIndex( index);
+        // componentExtractor1->Update();
+        gradientConnecter2->Update();
+	imageView2DPanelWithControls2->GetHorizontalSlider_Gradient()->setSliderPosition(index);
+	if ( bQCResultLoad == true) 
+	{
+	if ( DTIPrepPanel->GetQCResult().GetIntensityMotionCheckResult()[ index ].VisualChecking == 0 || ( DTIPrepPanel->GetQCResult().GetIntensityMotionCheckResult()[ index ].VisualChecking == -1 && DTIPrepPanel->GetQCResult().GetIntensityMotionCheckResult()[ index ].processing <= 2))
+	{
+	imageView2DPanelWithControls2->GetLineEdit_Gradient()->setStyleSheet( "background-color: Green" ); 
+	}
+	
+	else if (DTIPrepPanel->GetQCResult().GetIntensityMotionCheckResult()[ index ].VisualChecking == 6 || ( DTIPrepPanel->GetQCResult().GetIntensityMotionCheckResult()[ index ].VisualChecking == -1 && DTIPrepPanel->GetQCResult().GetIntensityMotionCheckResult()[ index ].processing > 2))
+	{
+	imageView2DPanelWithControls2->GetLineEdit_Gradient()->setStyleSheet( "background-color: red" ); 
+	}
+	}
+	if (bQCResultLoad == false)
+	{
+	imageView2DPanelWithControls2->GetLineEdit_Gradient()->setStyleSheet( "background-color: white" ); 
+	}
+        imageView2DPanelWithControls2->GetImageViewer2()->Render();
+        break;
+
+      case 2:
+        componentExtractor3->SetIndex( index );
+        // componentExtractor2->Update();
+        gradientConnecter3->Update();
+	imageView2DPanelWithControls3->GetHorizontalSlider_Gradient()->setSliderPosition(index);
+	if ( bQCResultLoad == true) 
+	{
+	if ( DTIPrepPanel->GetQCResult().GetIntensityMotionCheckResult()[ index ].VisualChecking == 0 || ( DTIPrepPanel->GetQCResult().GetIntensityMotionCheckResult()[ index ].VisualChecking == -1 && DTIPrepPanel->GetQCResult().GetIntensityMotionCheckResult()[ index ].processing <= 2))
+	{
+	imageView2DPanelWithControls3->GetLineEdit_Gradient()->setStyleSheet( "background-color: Green" ); 
+	}
+	
+	else if (DTIPrepPanel->GetQCResult().GetIntensityMotionCheckResult()[ index ].VisualChecking == 6 || ( DTIPrepPanel->GetQCResult().GetIntensityMotionCheckResult()[ index ].VisualChecking == -1 && DTIPrepPanel->GetQCResult().GetIntensityMotionCheckResult()[ index ].processing > 2))
+	{
+	imageView2DPanelWithControls3->GetLineEdit_Gradient()->setStyleSheet( "background-color: red" ); 
+	}
+	}
+	if (bQCResultLoad == false)
+	{
+	imageView2DPanelWithControls3->GetLineEdit_Gradient()->setStyleSheet( "background-color: white" ); 
+	}
+        imageView2DPanelWithControls3->GetImageViewer2()->Render();
+        break;
+      default:
+        break;
+      }
+    }
+
+  qvtkWidget->GetRenderWindow()->Render();
+}
+
+void GMainWindow::GradientUpdate( int index )
+{
+  QString Grad1 = QString( "Saving Gradient Change" );
+  QString Grad2 = QString( "Status of gradient %1 based on Visual Checking" ).arg( index);
+  
+  QMessageBox msgBox;
+  msgBox.setText( Grad2 );
+  QPushButton * Include= msgBox.addButton( tr("Include"), QMessageBox::ActionRole);
+  QPushButton * Exclude= msgBox.addButton( tr("Exclude"), QMessageBox::ActionRole);
+  QPushButton * Nochange= msgBox.addButton( tr("NoChange"), QMessageBox::ActionRole);
+  msgBox.exec();
+
+  if ( msgBox.clickedButton() == Include )
+  {
+    emit currentGradient_VC_Include( 0, index);
+    emit currentGradient_VC_Include( 1, index);
+    emit currentGradient_VC_Include( 2, index);
+    
+    
+    std::cout<<DTIPrepPanel->GetQCResult().GetIntensityMotionCheckResult()[index].processing<<"processingTest"<<std::endl;
+    int pro = DTIPrepPanel->GetQCResult().GetIntensityMotionCheckResult()[index].processing;
+    emit VisualCheckingStatus ( index,  QCResult::GRADIENT_INCLUDE, pro );
+    std::cout<<DTIPrepPanel->GetQCResult().GetIntensityMotionCheckResult()[index].VisualChecking<<"VisualCheckingTest"<<std::endl;
+  }
+  if ( msgBox.clickedButton() == Exclude )
+  {
+    
+    emit currentGradient_VC_Exclude( 0, index);
+    emit currentGradient_VC_Exclude( 1, index);
+    emit currentGradient_VC_Exclude( 2, index);
+    
+    //std::cout<<DTIPrepPanel->GetQCResult().GetIntensityMotionCheckResult()[index].processing<<"processingTest2"<<std::endl;
+    int pro = DTIPrepPanel->GetQCResult().GetIntensityMotionCheckResult()[index].processing;
+    emit VisualCheckingStatus ( index,  QCResult::GRADIENT_EXCLUDE_MANUALLY, pro );
+    //std::cout<<DTIPrepPanel->GetQCResult().GetIntensityMotionCheckResult()[index].VisualChecking<<"VisualCheckingTest2"<<std::endl;
+  }
+  if ( msgBox.clickedButton() == Nochange )
+  {
+
+    int pro = DTIPrepPanel->GetQCResult().GetIntensityMotionCheckResult()[index].processing;
+    if (pro <=2){
+       emit currentGradient_VC_Include( 0, index);
+       emit currentGradient_VC_Include( 1, index);
+       emit currentGradient_VC_Include( 2, index);
+    }
+    if ( pro >2){
+       emit currentGradient_VC_Exclude( 0, index);
+       emit currentGradient_VC_Exclude( 1, index);
+       emit currentGradient_VC_Exclude( 2, index);
+    }
+   emit VisualCheckingStatus ( index, -1, pro );
+  }
+  //std::cout<< DTIPrepPanel->GetQCResult().GetIntensityMotionCheckResult()[ index ].processing<<"processing_N"<<std::endl;
+  UpdateOutputDWIDiffusionVectorActors_VC();
+}
+
+
+
+void GMainWindow::GradientChanged_VC_Include(int WinID, int index)
+{
+  //std::cout<<"VC2"<<std::endl;
+
+  if ( bDwiLoaded == false )
+  {
+     std::cout << " No DWINrrd image file is open " <<std::endl;
+     return;
+  }
+  if ( bContentSyn )
+    {
+    componentExtractor1->SetIndex( index );
+    componentExtractor2->SetIndex( index );
+    componentExtractor3->SetIndex( index );
+    
+
+    gradientConnecter1->Update();
+    gradientConnecter2->Update();
+    gradientConnecter3->Update();
+
+    imageView2DPanelWithControls1->GetHorizontalSlider_Gradient()->
+      setSliderPosition(index);
+    imageView2DPanelWithControls2->GetHorizontalSlider_Gradient()->
+      setSliderPosition(index);
+    imageView2DPanelWithControls3->GetHorizontalSlider_Gradient()->
+      setSliderPosition(index);
+
+    imageView2DPanelWithControls1->GetLineEdit_Gradient()->setStyleSheet( "background-color: Green" ); 
+    imageView2DPanelWithControls2->GetLineEdit_Gradient()->setStyleSheet( "background-color: Green" ); 
+    imageView2DPanelWithControls3->GetLineEdit_Gradient()->setStyleSheet( "background-color: Green" ); 
+
+    imageView2DPanelWithControls1->GetImageViewer2()->Render();
+    imageView2DPanelWithControls2->GetImageViewer2()->Render();
+    imageView2DPanelWithControls3->GetImageViewer2()->Render();
+ 
+    }
+  else
+    {
+
+    switch ( WinID )
+      {
+      case 0:
+        componentExtractor3->SetIndex( index );
+        // componentExtractor3->Update();
+        gradientConnecter3->Update();
+        imageView2DPanelWithControls1->GetImageViewer2()->Render();
+        break;
+      case 1:
+        componentExtractor1->SetIndex( index);
+        // componentExtractor1->Update();
+        gradientConnecter1->Update();
+        imageView2DPanelWithControls2->GetImageViewer2()->Render();
+        break;
+      case 2:
+        componentExtractor2->SetIndex( index );
+        // componentExtractor2->Update();
+        gradientConnecter2->Update();
+        imageView2DPanelWithControls3->GetImageViewer2()->Render();
+        break;
+      default:
+        break;
+      }
+    }
+
+  qvtkWidget->GetRenderWindow()->Render();
+}
+
+void GMainWindow::GradientChanged_VC_Exclude(int WinID, int index)
+{
+  if ( bDwiLoaded == false )
+  {
+     std::cout << " No DWINrrd image file is open " <<std::endl;
+     return;
+  }
   if ( bContentSyn )
     {
     componentExtractor1->SetIndex( index );
@@ -1668,12 +2064,18 @@ void GMainWindow::GradientChanged(int WinID, int index)
     imageView2DPanelWithControls3->GetHorizontalSlider_Gradient()->
       setSliderPosition(index);
 
+    imageView2DPanelWithControls1->GetLineEdit_Gradient()->setStyleSheet( "background-color: red" ); 
+    imageView2DPanelWithControls2->GetLineEdit_Gradient()->setStyleSheet( "background-color: red" ); 
+    imageView2DPanelWithControls3->GetLineEdit_Gradient()->setStyleSheet( "background-color: red" ); 
+
+
     imageView2DPanelWithControls1->GetImageViewer2()->Render();
     imageView2DPanelWithControls2->GetImageViewer2()->Render();
     imageView2DPanelWithControls3->GetImageViewer2()->Render();
     }
   else
     {
+    
     switch ( WinID )
       {
       case 0:

@@ -39,7 +39,7 @@ namespace itk
   template <class TImageType>
   class ITK_EXPORT DWIQCGradientChecker :
     public ImageToImageFilter<TImageType, TImageType>
-  {
+  { 
   public:
     typedef enum {
       REPORT_FILE_NEW = 0,
@@ -162,7 +162,7 @@ namespace itk
     float m_TranslationThreshold;
     float m_RotationThreshold;
 
-    /** indicate whether chech is done */
+    /** indicate whether check is done */
     bool m_CheckDone;
 
     /** excluded gradients filename */

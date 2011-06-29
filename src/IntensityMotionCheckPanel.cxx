@@ -2,6 +2,7 @@
 #include <QThread>
 #include <QFont>
 
+
 #include "IntensityMotionCheckPanel.h"
 //#include "IntensityMotionCheck.h"
 //#include "ThreadIntensityMotionCheck.h"
@@ -29,6 +30,13 @@
 #include <string>
 #include <math.h>
 
+// Defining Checking bits
+#define ImageCheckBit 1
+#define DiffusionCheckBit 2
+#define SliceWiseCheckBit 4
+#define InterlaceWiseCheckBit 8
+#define GradientWiseCheckBit 16
+
 IntensityMotionCheckPanel::IntensityMotionCheckPanel(QMainWindow *parentNew) :
 QDockWidget(parentNew)
 {
@@ -42,11 +50,21 @@ QDockWidget(parentNew)
   connect(&myIntensityThread,SIGNAL(StartProgressSignal()),this,SLOT(StartProgressSlot()),Qt::QueuedConnection);
   connect(&myIntensityThread,SIGNAL(StopProgressSignal()),this,SLOT(StopProgressSlot()),Qt::QueuedConnection);
 
+  //Setting max and min to zero to behave as a busy indicator
+  this->f_progressBar->setMinimum(0);  
+  this->f_progressBar->setMaximum(0);
+  this->f_progressBar->hide(); // because we only want to show the progressBar when a connection is activated
+  connect(&myFurtherQCThread,SIGNAL(f_StartProgressSignal()),this,SLOT(f_StartProgressSlot()),Qt::QueuedConnection);
+  connect(&myFurtherQCThread,SIGNAL(f_StopProgressSignal()),this,SLOT(f_StopProgressSlot()),Qt::QueuedConnection);
 
   m_DwiOriginalImage = NULL;
   protocol.clear();
   bDwiLoaded = false;
   bProtocol = false;
+
+  bCancel_QC = false;
+
+  bLoadDefaultQC = false;
 
   bProtocolTreeEditable = false;
   pushButton_DefaultProtocol->setEnabled( 0 );
@@ -57,7 +75,9 @@ QDockWidget(parentNew)
   //   pushButton_SaveDWI->setEnabled( 0 );
   //   pushButton_SaveQCReport->setEnabled( 0 );
   //   pushButton_SaveQCReportAs->setEnabled( 0 );
-  pushButton_SaveDWIAs->setEnabled( 0 );
+ 
+  pushButton_SaveVisualChecking->setEnabled( 0 );
+  //pushButton_SaveDWIAs->setEnabled( 0 );
   // pushButton_CreateDefaultProtocol->setEnabled( 0 );
 
   pushButton_RunPipeline->setEnabled( 0 );
@@ -82,6 +102,13 @@ QDockWidget(parentNew)
     SIGNAL( ResultUpdate() ),
     this,
     SLOT( ResultUpdate() ) );
+
+  connect( &myFurtherQCThread,
+    SIGNAL( ResultUpdate() ),
+    this,
+    SLOT( ResultUpdate() ) );
+
+  
 }
 
 IntensityMotionCheckPanel::~IntensityMotionCheckPanel(){}
@@ -93,7 +120,17 @@ void IntensityMotionCheckPanel::StartProgressSlot()
 
 void IntensityMotionCheckPanel::StopProgressSlot()
 {
-    this->progressBar2->hide();    //To show progressBar when StartProgressSignal emitted
+    this->progressBar2->hide();    //To hide progressBar when StopProgressSignal emitted
+}
+
+void IntensityMotionCheckPanel::f_StartProgressSlot()
+{
+    this->f_progressBar->show();    //To show progressBar when f_StartProgressSignal emitted
+}
+
+void IntensityMotionCheckPanel::f_StopProgressSlot()
+{
+    this->f_progressBar->hide();    //To hide progressBar when f_StopProgressSignal emitted
 }
 
 void IntensityMotionCheckPanel::on_treeWidget_DiffusionInformation_itemClicked(
@@ -125,20 +162,26 @@ on_treeWidget_DiffusionInformation_currentItemChanged(
   }
 }
 
-void IntensityMotionCheckPanel::on_treeWidget_Results_itemClicked(
+void IntensityMotionCheckPanel::on_treeWidget_Results_itemDoubleClicked(
   QTreeWidgetItem *item,
   int /* column */)
 {
   if (item == NULL) return;
+  
+  if ( item->text(0).left(9) == tr("gradient_") )
+  {
+    std::string str = item->text(0).toStdString();
+    emit currentGradient( 0, atoi( str.substr(str.length() - 4, 4).c_str() ) );
+    emit currentGradient( 1, atoi( str.substr(str.length() - 4, 4).c_str() ) );
+    emit currentGradient( 2, atoi( str.substr(str.length() - 4, 4).c_str() ) );
+  }
 
-  std::string str = item->text(0).toStdString();
-
-  //if ( str.find("gradient") != std::string::npos )
-  //{
-  //  emit currentGradient( 0, atoi( str.substr(str.length() - 4, 4).c_str() ) );
-  //  emit currentGradient( 1, atoi( str.substr(str.length() - 4, 4).c_str() ) );
-  //  emit currentGradient( 2, atoi( str.substr(str.length() - 4, 4).c_str() ) );
-  //}
+  if ( item->text(0).left(10) == tr("VC_Status_") )
+  {
+    std::string str = item->text(0).toStdString();
+    emit currentGradientChanged_VC( atoi( str.substr(str.length() - 4, 4).c_str() ) );
+  }
+  
 }
 
 void IntensityMotionCheckPanel::on_treeWidget_Results_currentItemChanged(
@@ -168,7 +211,7 @@ void IntensityMotionCheckPanel::on_treeWidget_itemDoubleClicked(
   }
 }
 
-void IntensityMotionCheckPanel::on_treeWidget_Results_itemDoubleClicked(
+/*void IntensityMotionCheckPanel::on_treeWidget_Results_itemDoubleClicked(
   QTreeWidgetItem *item,
   int column)
 {
@@ -177,7 +220,7 @@ void IntensityMotionCheckPanel::on_treeWidget_Results_itemDoubleClicked(
   {
     treeWidget_Results->openPersistentEditor(item, column);
   }
-}
+}*/
 
 void IntensityMotionCheckPanel::on_treeWidget_Results_itemChanged(
   QTreeWidgetItem *item,
@@ -222,6 +265,8 @@ void IntensityMotionCheckPanel::on_pushButton_RunPipeline_clicked( )
   // IntensityMotionCheck.SetQCResult(&qcResult);
   // IntensityMotionCheck.GetImagesInformation();
   // IntensityMotionCheck.CheckByProtocol();
+
+  bLoadDefaultQC = false;
   if ( m_DwiOriginalImage->GetVectorLength() != GradientDirectionContainer->size() )
   {
     std::cout
@@ -245,6 +290,7 @@ void IntensityMotionCheckPanel::on_pushButton_RunPipeline_clicked( )
     return;
   }
 
+  treeWidget_Results->clear();
   qcResult.Clear();
   // std::cout <<
   // "ThreadIntensityMotionCheck->SetFileName(lineEdit_DWIFileName->text().toStdString());"<<std::endl;
@@ -253,10 +299,15 @@ void IntensityMotionCheckPanel::on_pushButton_RunPipeline_clicked( )
   myIntensityThread.SetProtocol( &protocol);
   myIntensityThread.SetQCResult(&qcResult);
   myIntensityThread.start();
-
-
+  result = qcResult.Get_result();
+  //ResultUpdate();
+  printf( "result from Runpipeline bottom = %d", result);
+  
   bResultTreeEditable = false;
-  pushButton_SaveDWIAs->setEnabled( 0 );
+  //pushButton_SaveDWIAs->setEnabled( 0 );
+  
+  
+
 }
 
 
@@ -264,6 +315,13 @@ void IntensityMotionCheckPanel::SetFileName(QString nrrd )
 {
   // lineEdit_DWIFileName->setText(nrrd);
   DwiFileName = nrrd.toStdString();
+}
+
+void IntensityMotionCheckPanel::SetName( QString nrrd_path )
+{
+ DwiFilePath = nrrd_path;
+ DwiName = nrrd_path.section('/',-1); // set only dwi file name to DwiName
+ std::cout<<DwiName.toStdString().c_str()<<"DwiName"<<std::endl;
 }
 
 void IntensityMotionCheckPanel::on_toolButton_ProtocolFileOpen_clicked( )
@@ -275,9 +333,139 @@ void IntensityMotionCheckPanel::on_toolButton_ProtocolFileOpen_clicked( )
 
 void IntensityMotionCheckPanel::on_toolButton_ResultFileOpen_clicked( )
 {
+  pushButton_SaveVisualChecking->setEnabled( 0 );
+  bMatchNameQCResult_DwiFile = false;
   OpenXML_ResultFile();
+  emit SignalActivateSphere(); // Activate the "actionIncluded" bottom
   //bProtocolTreeEditable = true;
   //emit ProtocolChanged();
+}
+
+void IntensityMotionCheckPanel::SetVisualCheckingStatus( int index, int status, int pro )
+{
+   VC_STATUS vc;
+   vc.index = index ;
+   vc.VC_status = status; 
+
+   VC_Status.push_back( vc );
+
+   if ( status == 0 ){
+       this->GetQTreeWidgetResult()->topLevelItem(2)->child(index+3)->setText( 3, tr ("INCLUDE_MANUALLY") );
+       this->GetQTreeWidgetResult()->topLevelItem(2)->child( index+3)->child( 6 )-> child( 0 )->setText( 1, tr ("Include") );
+       this->GetQCResult().GetIntensityMotionCheckResult()[ index ].VisualChecking = 0;
+   }
+   if ( status == 6 ){
+       this->GetQTreeWidgetResult()->topLevelItem(2)->child(index+3)->setText(3, tr ("EXCLUDE_MANUALLY") );
+       this->GetQTreeWidgetResult()->topLevelItem(2)->child( index+3 )->child( 6 )-> child( 0 )->setText( 1, tr ("Exclude") );
+       this->GetQCResult().GetIntensityMotionCheckResult()[ index ].VisualChecking = 6;
+   }
+   if ( status == -1 ){
+       this->GetQTreeWidgetResult()->topLevelItem(2)->child( index+3 )->child( 6 )-> child( 0 )->setText( 1, tr ("NoChange") );   
+       this->GetQTreeWidgetResult()->topLevelItem(2)->child(index+3)->setText(3, tr ("") );
+       this->GetQCResult().GetIntensityMotionCheckResult()[ index ].VisualChecking = -1;
+   }
+
+   /*if ( status==-1 )
+  {
+    switch ( this->GetQCResult().GetIntensityMotionCheckResult()[ index ].processing )
+   {
+   case QCResult::GRADIENT_BASELINE_AVERAGED:
+   this->GetQTreeWidgetResult()->topLevelItem(2)->child(index+2)->setText( 1, tr ("BASELINE_AVERAGED") );
+   break;
+   case QCResult::GRADIENT_EXCLUDE_SLICECHECK:
+   this->GetQTreeWidgetResult()->topLevelItem(2)->child(index+2)->setText( 1, tr ("EXCLUDE_SLICECHECK") );
+   break;
+   case QCResult::GRADIENT_EXCLUDE_INTERLACECHECK:
+   this->GetQTreeWidgetResult()->topLevelItem(2)->child(index+2)->setText( 1, tr ("EXCLUDE_INTERLACECHECK") );
+   break;
+   case QCResult::GRADIENT_EXCLUDE_GRADIENTCHECK:
+   this->GetQTreeWidgetResult()->topLevelItem(2)->child(index+2)->setText( 2, tr ("EXCLUDE_GRADIENTCHECK") );
+   break;
+   case QCResult::GRADIENT_EXCLUDE_MANUALLY:
+   this->GetQTreeWidgetResult()->topLevelItem(2)->child(index+2)->setText( 2, tr ("EXCLUDE_MANUALLY") );
+   break;
+   case QCResult::GRADIENT_EDDY_MOTION_CORRECTED:
+   this->GetQTreeWidgetResult()->topLevelItem(2)->child(index+2)->setText( 2, tr ("EDDY_MOTION_CORRECTED") );
+   break;
+   case QCResult::GRADIENT_INCLUDE:
+   {
+   this->GetQTreeWidgetResult()->topLevelItem(2)->child(index+2)->setText( 2, tr ("INCLUDE") );
+   }
+   }
+  }  */ 
+
+  if ( pro <= 2 && status >= 3 )
+  {
+   /*
+   switch ( status )
+   {
+   case QCResult::GRADIENT_BASELINE_AVERAGED:
+   this->GetQTreeWidgetResult()->topLevelItem(2)->child(index+2)->setText( 1, tr ("BASELINE_AVERAGED") );
+   break;
+   case QCResult::GRADIENT_EXCLUDE_SLICECHECK:
+   this->GetQTreeWidgetResult()->topLevelItem(2)->child(index+2)->setText( 1, tr ("EXCLUDE_SLICECHECK") );
+   break;
+   case QCResult::GRADIENT_EXCLUDE_INTERLACECHECK:
+   this->GetQTreeWidgetResult()->topLevelItem(2)->child(index+2)->setText( 1, tr ("EXCLUDE_INTERLACECHECK") );
+   break;
+   case QCResult::GRADIENT_EXCLUDE_GRADIENTCHECK:
+   this->GetQTreeWidgetResult()->topLevelItem(2)->child(index+2)->setText( 2, tr ("EXCLUDE_GRADIENTCHECK") );
+   break;
+   case QCResult::GRADIENT_EXCLUDE_MANUALLY:
+   this->GetQTreeWidgetResult()->topLevelItem(2)->child(index+2)->setText( 2, tr ("EXCLUDE_MANUALLY") );
+   break;
+   case QCResult::GRADIENT_EDDY_MOTION_CORRECTED:
+   this->GetQTreeWidgetResult()->topLevelItem(2)->child(index+2)->setText( 2, tr ("EDDY_MOTION_CORRECTED") );
+   break;
+   case QCResult::GRADIENT_INCLUDE:
+   {
+   this->GetQTreeWidgetResult()->topLevelItem(2)->child(index+2)->setText( 2, tr ("INCLUDE") );
+   }
+   }
+   std::cout<<"Processing Include"<< this->GetQCResult().GetIntensityMotionCheckResult()[ index ].processing <<"status Exclude"<<std::endl;
+   //SetProcessingQCResult(this->GetQCResult().GetIntensityMotionCheckResult()[ index ].processing, status);  
+   //this->GetQCResult().setProcessing(index) = status ;
+   */
+   pushButton_SaveVisualChecking->setEnabled( 1 );
+  }
+  
+   if( pro >= 3 && status <= 2 && status >-1)
+  {
+   /*
+    switch ( status )
+   {
+   case QCResult::GRADIENT_BASELINE_AVERAGED:
+   this->GetQTreeWidgetResult()->topLevelItem(2)->child(index+2)->setText( 2, tr ("BASELINE_AVERAGED") );
+   break;
+   case QCResult::GRADIENT_EXCLUDE_SLICECHECK:
+   this->GetQTreeWidgetResult()->topLevelItem(2)->child(index+2)->setText( 2, tr ("EXCLUDE_SLICECHECK") );
+   break;
+   case QCResult::GRADIENT_EXCLUDE_INTERLACECHECK:
+   this->GetQTreeWidgetResult()->topLevelItem(2)->child(index+2)->setText( 2, tr ("EXCLUDE_INTERLACECHECK") );
+   break;
+   case QCResult::GRADIENT_EXCLUDE_GRADIENTCHECK:
+   this->GetQTreeWidgetResult()->topLevelItem(2)->child(index+2)->setText( 2, tr ("EXCLUDE_GRADIENTCHECK") );
+   break;
+   case QCResult::GRADIENT_EXCLUDE_MANUALLY:
+   this->GetQTreeWidgetResult()->topLevelItem(2)->child(index+2)->setText( 2, tr ("EXCLUDE_MANUALLY") );
+   break;
+   case QCResult::GRADIENT_EDDY_MOTION_CORRECTED:
+   this->GetQTreeWidgetResult()->topLevelItem(2)->child(index+2)->setText( 2, tr ("EDDY_MOTION_CORRECTED") );
+   break;
+   case QCResult::GRADIENT_INCLUDE:
+   {
+   this->GetQTreeWidgetResult()->topLevelItem(2)->child(index+2)->setText( 2, tr ("INCLUDE_MANUALLY") );
+   }
+   }
+   //SetProcessingQCResult(this->GetQCResult().GetIntensityMotionCheckResult()[ index ].processing, status); 
+ 
+   //this->GetQCResult().setProcessing(index) = status ;
+   //this->GetQCResult().GetIntensityMotionCheckResult()[ index ].processing = status ;
+   */
+   pushButton_SaveVisualChecking->setEnabled( 1 );
+  }
+  //std::cout<< this->GetQCResult().GetIntensityMotionCheckResult()[ index ].processing<<"processing_A"<<std::endl;
+
 }
 
 
@@ -294,8 +482,97 @@ void IntensityMotionCheckPanel::OpenXML_ResultFile()
     return;
 
   treeWidget_Results->clear();
+  qcResult.Clear();
+
   XmlStreamReader XmlReader(treeWidget_Results);
-  XmlReader.readFile_QCResult(xmlResultFile, XmlStreamReader::TreeWise);
+  XmlReader.setQCRESULT( &qcResult);
+  //XmlReader.readFile_QCResult(xmlResultFile, XmlStreamReader::TreeWise);
+  XmlReader.readFile_QCResult(xmlResultFile, XmlStreamReader::QCResultlWise);
+  //std::cout<<qcResult.GetSliceWiseCheckResult()[1].GradientNum<<"GradientNum"<<std::endl;
+  //std::cout<<qcResult.GetSliceWiseCheckResult()[1].SliceNum<<"SliceNum"<<std::endl;
+  //std::cout<<qcResult.GetSliceWiseCheckResult()[1].Correlation<<"Correlation"<<std::endl;
+  //std::cout<<qcResult.GetSliceWiseCheckProcessing()[50]<<"GradientWiseCheck"<<std::endl;
+  emit UpdateOutputDWIDiffusionVectorActors();
+
+  emit LoadQCResult(true);
+  
+
+  if (bDwiLoaded)
+  {
+    Match_DwiQC();   // Checking matching between Dwi file and proper QCResult file
+  if (bMatch_DwiQC == false)
+  { 
+    Match_NameDwiQC(); // Checking matching names between Dwi file and QCResult information
+  }
+  bMatchNameQCResult_DwiFile = true;
+  }
+
+}
+
+void IntensityMotionCheckPanel::Match_DwiQC ()
+{
+  // Checking whether the number of gradients of Dwi file and QCResult are same
+    bMatch_DwiQC = false;
+    if ( this->GetQCResult().GetIntensityMotionCheckResult().size() != GradientDirectionContainer->size() )
+  {
+     bMatch_DwiQC = true;
+     QString Grad1 = QString( "IMPORTANT ERROR" );
+     QString Grad2 = QString( "The dwi file and QCResult have different number of gradients" );
+     QMessageBox msgBox;
+     msgBox.setWindowTitle( Grad1 );
+     msgBox.setText( Grad2 );
+     QPushButton * Cancel = msgBox.addButton( tr("Cancel"), QMessageBox::ActionRole);
+     QPushButton * LoadNewQC= msgBox.addButton( tr("Specify of New QCResult"), QMessageBox::ActionRole);
+     
+     msgBox.exec();
+
+     if ( msgBox.clickedButton() == Cancel )
+     {
+       treeWidget_Results->clear();
+       qcResult.Clear();
+       emit LoadQCResult(false);
+       bCancel_QC = true;
+       return;
+     }
+     if ( msgBox.clickedButton() == LoadNewQC )
+     {
+       OpenXML_ResultFile();
+     } 
+  }
+
+}
+
+void IntensityMotionCheckPanel::Match_NameDwiQC( )
+{
+  //checking whether name loaded dwi file is matched with QCReport 
+  if ( bMatchNameQCResult_DwiFile == false && DwiName.toStdString() !=  this->GetQTreeWidgetResult()->topLevelItem(0)->child(0)->text( 1 ).toStdString() )
+  {
+     QString Grad1 = QString( "WARNING" );
+     QString Grad2 = QString( "The Dwi file name is not matched with the QCResult information" );
+     QMessageBox msgBox;
+     msgBox.setWindowTitle( Grad1 );
+     msgBox.setText( Grad2 );
+     QPushButton * Ok = msgBox.addButton( tr("Ok"), QMessageBox::ActionRole);
+     QPushButton * LoadNewQC= msgBox.addButton( tr("Specify of New QCResult"), QMessageBox::ActionRole);
+     QPushButton * LoadDwi= msgBox.addButton( tr("Load New Dwi"), QMessageBox::ActionRole);
+     
+     msgBox.exec();
+
+     if ( msgBox.clickedButton() == Ok )
+     {
+       emit LoadQCResult(true);
+       return;
+     }
+     if ( msgBox.clickedButton() == LoadNewQC )
+     {
+       on_toolButton_ResultFileOpen_clicked();
+       //emit SignalRemoveDwiFile();
+     } 
+     if ( msgBox.clickedButton() == LoadDwi )
+     {
+       emit SignalLoadDwiFile();
+     }
+  }
 
 }
 
@@ -500,6 +777,7 @@ void IntensityMotionCheckPanel::on_pushButton_Save_clicked( )
     XmlStreamWriter XmlWriter(treeWidget);
     XmlWriter.setProtocol(&protocol);
     XmlWriter.writeXml_Protocol( lineEdit_Protocol->text() );
+    
 
     // treeWidget->clear();
     protocol.clear();
@@ -511,12 +789,14 @@ void IntensityMotionCheckPanel::on_pushButton_Save_clicked( )
   }
   else
   {
+    
     QString xmlFile = QFileDialog::getSaveFileName( this, tr(
       "Save Protocol As"), lineEdit_Protocol->text(),  tr("xml Files (*.xml)") );
     if ( xmlFile.length() > 0 )
     {
       lineEdit_Protocol->setText(xmlFile);
       XmlStreamWriter XmlWriter(treeWidget);
+      XmlWriter.setProtocol(&protocol);
       XmlWriter.writeXml_Protocol(xmlFile);
 
       // treeWidget->clear();
@@ -543,7 +823,7 @@ void IntensityMotionCheckPanel::UpdatePanelDWI()
   treeWidget_DiffusionInformation->clear();
   pushButton_DefaultProtocol->setEnabled( 1 );
   //   pushButton_SaveDWI->setEnabled( 0 );
-  pushButton_SaveDWIAs->setEnabled( 0 );
+  //pushButton_SaveDWIAs->setEnabled( 0 );
 
   lineEdit_SizeX->setText( QString::number(this->m_DwiOriginalImage->
     GetLargestPossibleRegion().GetSize()[0]) );
@@ -816,7 +1096,7 @@ void IntensityMotionCheckPanel::DefaultProtocol()
   }
 
   //HACK:  This breaks encapsulation of the function.  SetFunctions should be used!
-  this->GetProtocol().GetDiffusionProtocol().bUseDiffusionProtocol = true;
+  this->GetProtocol().GetDiffusionProtocol().bUseDiffusionProtocol = false;
   this->GetProtocol().GetDiffusionProtocol().diffusionReplacedDWIFileNameSuffix
     = "_DiffusionReplaced.nhdr";
 
@@ -2415,133 +2695,330 @@ void IntensityMotionCheckPanel::UpdateProtocolToTreeWidget( )
     10) );
 }
 
-void IntensityMotionCheckPanel::ResultUpdate()   
+void IntensityMotionCheckPanel::f_overallSliceWiseCheck()
 {
-  QBrush redText (Qt::red);
-  QBrush greenText (Qt::green);
-  bResultTreeEditable = false;
-  // std::cout <<"ResultUpdate()"<<std::endl;
-  QStringList labels;
-  labels << tr("type") << tr("result") << tr("processing");
-  // treeWidget->header()->setResizeMode(QHeaderView::Stretch);
-  treeWidget_Results->setHeaderLabels(labels);
-  treeWidget_Results->clear();
+  // computing the overall results of the SliceWise check
+  int num_SliceWiseCheckExc = 0;
+  int num_InterlaceWiseCheckExc = 0;
+  int num_GradientWiseCheckExc = 0;
+  for ( int i = 0; i<qcResult.GetIntensityMotionCheckResult().size();
+    i++ )
+  {
 
-  //if ( protocol.GetImageProtocol().bCheck )
-  //{
-    // ImageInformationCheckResult
-    QTreeWidgetItem *itemImageInformation = new QTreeWidgetItem(
-      treeWidget_Results);
-    itemImageInformation->setText( 0, tr("ImageInformation") );
+  if ( qcResult.GetIntensityMotionCheckResult()[i].processing == QCResult::GRADIENT_EXCLUDE_SLICECHECK )
+      num_SliceWiseCheckExc++;
+  if ( qcResult.GetIntensityMotionCheckResult()[i].processing == QCResult::GRADIENT_EXCLUDE_INTERLACECHECK )
+      num_InterlaceWiseCheckExc++;
+  if ( qcResult.GetIntensityMotionCheckResult()[i].processing == QCResult::GRADIENT_EXCLUDE_INTERLACECHECK )
+      num_GradientWiseCheckExc++;
+  }
+  
+  r_SliceWiseCkeck = num_SliceWiseCheckExc/qcResult.GetIntensityMotionCheckResult().size();
+}
 
-    QTreeWidgetItem *origin = new QTreeWidgetItem(itemImageInformation);
-    origin->setText( 0, tr("origin") );
-    if ( qcResult.GetImageInformationCheckResult().origin )
-    {
-      origin->setText( 1, tr("Pass") );
-    }
-    else
-    {
-      origin->setText( 1, tr("Failed") );
-    }
+void IntensityMotionCheckPanel::f_overallInterlaceWiseCheck()
+{
+  // computing the overall results of the InterlaceWise check 
+  int num_SliceWiseCheckExc = 0;
+  int num_InterlaceWiseCheckExc = 0;
+  int num_GradientWiseCheckExc = 0;
+  for ( int i = 0; i<qcResult.GetIntensityMotionCheckResult().size();
+    i++ )
+  {
 
-    QTreeWidgetItem *sizeLocal = new QTreeWidgetItem(itemImageInformation);
-    sizeLocal->setText( 0, tr("size") );
-    if ( qcResult.GetImageInformationCheckResult().size )
-    {
-      sizeLocal->setText( 1, tr("Pass") );
-    }
-    else
-    {
-      sizeLocal->setText( 1, tr("Failed") );
-    }
-
-    QTreeWidgetItem *space = new QTreeWidgetItem(itemImageInformation);
-    space->setText( 0, tr("space") );
-    if ( qcResult.GetImageInformationCheckResult().space )
-    {
-      space->setText( 1, tr("Pass") );
-    }
-    else
-    {
-      space->setText( 1, tr("Failed") );
-    }
-
-    QTreeWidgetItem *spacedirection = new QTreeWidgetItem(itemImageInformation);
-    spacedirection->setText( 0, tr("spacedirection") );
-    if ( qcResult.GetImageInformationCheckResult().spacedirection )
-    {
-      spacedirection->setText( 1, tr("Pass") );
-    }
-    else
-    {
-      spacedirection->setText( 1, tr("Failed") );
-    }
-
-    QTreeWidgetItem *spacing = new QTreeWidgetItem(itemImageInformation);
-    spacing->setText( 0, tr("spacing") );
-    if ( qcResult.GetImageInformationCheckResult().spacing )
-    {
-      spacing->setText( 1, tr("Pass") );
-    }
-    else
-    {
-      spacing->setText( 1, tr("Failed") );
-    }
-  //}
-
-  //if ( protocol.GetDiffusionProtocol().bCheck )
-  //{
-    // DiffusionInformationCheckResult
-    QTreeWidgetItem *itemDiffusionInformation = new QTreeWidgetItem(
-      treeWidget_Results);
-    itemDiffusionInformation->setText( 0, tr("DiffusionInformation") );
-
-    QTreeWidgetItem *b = new QTreeWidgetItem(itemDiffusionInformation);
-    b->setText( 0, tr("b value") );
-    if ( qcResult.GetDiffusionInformationCheckResult().b )
-    {
-      b->setText( 1, tr("Pass") );
-    }
-    else
-    {
-      b->setText( 1, tr("Failed") );
-    }
-
-    QTreeWidgetItem *gradient = new QTreeWidgetItem(itemDiffusionInformation);
-    gradient->setText( 0, tr("gradient") );
-    if ( qcResult.GetDiffusionInformationCheckResult().gradient )
-    {
-      gradient->setText( 1, tr("Pass") );
-    }
-    else
-    {
-      gradient->setText( 1, tr("Failed") );
-    }
-
-    QTreeWidgetItem *measurementFrame = new QTreeWidgetItem(
-      itemDiffusionInformation);
-    measurementFrame->setText( 0, tr("measurementFrame") );
-    if ( qcResult.GetDiffusionInformationCheckResult().measurementFrame )
-    {
-      measurementFrame->setText( 1, tr("Pass") );
-    }
-    else
-    {
-      measurementFrame->setText( 1, tr("Failed") );
-    }
-  //}
-
-  // itemIntensityMotionInformation
-  QTreeWidgetItem *itemIntensityMotionInformation = new QTreeWidgetItem(
-    treeWidget_Results);
-  itemIntensityMotionInformation->setText( 0, tr("IntensityMotion") );
+  if ( qcResult.GetIntensityMotionCheckResult()[i].processing == QCResult::GRADIENT_EXCLUDE_SLICECHECK )
+      num_SliceWiseCheckExc++;
+  if ( qcResult.GetIntensityMotionCheckResult()[i].processing == QCResult::GRADIENT_EXCLUDE_INTERLACECHECK )
+      num_InterlaceWiseCheckExc++;
+  if ( qcResult.GetIntensityMotionCheckResult()[i].processing == QCResult::GRADIENT_EXCLUDE_INTERLACECHECK )
+      num_GradientWiseCheckExc++;
+  }
+  r_InterlaceWiseCheck = num_InterlaceWiseCheckExc/(qcResult.GetIntensityMotionCheckResult().size()-num_SliceWiseCheckExc);
   
 
-  for ( unsigned int i = 0;
+}
+
+void IntensityMotionCheckPanel::f_overallGradientWiseCheck()
+{
+  // computing the overall results of the GradientWise check
+  int num_SliceWiseCheckExc = 0;
+  int num_InterlaceWiseCheckExc = 0;
+  int num_GradientWiseCheckExc = 0;
+  for ( int i = 0; i<qcResult.GetIntensityMotionCheckResult().size();
+    i++ )
+  {
+
+  if ( qcResult.GetIntensityMotionCheckResult()[i].processing == QCResult::GRADIENT_EXCLUDE_SLICECHECK )
+      num_SliceWiseCheckExc++;
+  if ( qcResult.GetIntensityMotionCheckResult()[i].processing == QCResult::GRADIENT_EXCLUDE_INTERLACECHECK )
+      num_InterlaceWiseCheckExc++;
+  if ( qcResult.GetIntensityMotionCheckResult()[i].processing == QCResult::GRADIENT_EXCLUDE_INTERLACECHECK )
+      num_GradientWiseCheckExc++;
+  }
+  
+  r_GradWiseCheck = num_GradientWiseCheckExc/(qcResult.GetIntensityMotionCheckResult().size()-num_SliceWiseCheckExc-num_InterlaceWiseCheckExc);
+
+
+}
+
+void IntensityMotionCheckPanel::ResultUpdate()   
+{
+  // creating the entire QCResult tree :)
+
+  bResultTreeEditable = false;
+  treeWidget_Results->clear();
+  QTreeWidgetItem *itemImageInformation = new QTreeWidgetItem(
+    treeWidget_Results);
+  itemImageInformation->setText( 0, tr("ImageInformation") );
+  QTreeWidgetItem *itemDiffusionInformation = new QTreeWidgetItem(
+    treeWidget_Results);
+  itemDiffusionInformation->setText( 0, tr("DiffusionInformation") );
+  QTreeWidgetItem *itemIntensityMotionInformation = new QTreeWidgetItem(
+    treeWidget_Results);
+  itemIntensityMotionInformation->setText( 0, tr("DWI Check") );
+
+
+  // ImageInformationCheckResult
+  QTreeWidgetItem *FileName = new QTreeWidgetItem( itemImageInformation );
+  FileName->setText( 0, tr("file name") );
+  FileName->setText( 1, DwiName );
+  qcResult.GetImageInformationCheckResult().info = DwiName;
+  if ( protocol.GetImageProtocol().bCheck )
+  {
+  if ( ( this->GetProtocol().GetImageProtocol().bQuitOnCheckSizeFailure && ( (qcResult.Get_result()  & ImageCheckBit) !=  0)) || (    this->GetProtocol().GetImageProtocol().bQuitOnCheckSpacingFailure && ( (qcResult.Get_result()  & ImageCheckBit) !=  0)) ){
+    itemImageInformation->setText( 1, tr("Fail Pipeline Terminated") );
+    itemImageInformation->setText( 2, tr("Finish QC Processing") );
+    return ;
+  }
+
+  QTreeWidgetItem *origin = new QTreeWidgetItem(itemImageInformation);
+  origin->setText( 0, tr("origin") );
+  if ( qcResult.GetImageInformationCheckResult().origin )
+  {
+    origin->setText( 1, tr("Pass") );
+  }
+  else
+  {
+    origin->setText( 1, tr("Failed") );
+  }
+
+  QTreeWidgetItem *sizeLocal = new QTreeWidgetItem(itemImageInformation);
+  sizeLocal->setText( 0, tr("size") );
+  if ( qcResult.GetImageInformationCheckResult().size )
+  {
+    sizeLocal->setText( 1, tr("Pass") );
+  }
+  else
+  {
+    sizeLocal->setText( 1, tr("Failed") );
+  }
+  QTreeWidgetItem *space = new QTreeWidgetItem(itemImageInformation);
+  space->setText( 0, tr("space") );
+  if ( qcResult.GetImageInformationCheckResult().space )
+  {
+    space->setText( 1, tr("Pass") );
+  }
+  else
+  {
+    space->setText( 1, tr("Failed") );
+  }
+  QTreeWidgetItem *spacedirection = new QTreeWidgetItem(itemImageInformation);
+  spacedirection->setText( 0, tr("spacedirection") );
+  if ( qcResult.GetImageInformationCheckResult().spacedirection )
+  {
+    spacedirection->setText( 1, tr("Pass") );
+  }
+  else
+  {
+    spacedirection->setText( 1, tr("Failed") );
+  }
+
+  QTreeWidgetItem *spacing = new QTreeWidgetItem(itemImageInformation);
+  spacing->setText( 0, tr("spacing") );
+  if ( qcResult.GetImageInformationCheckResult().spacing )
+  {
+    spacing->setText( 1, tr("Pass") );
+  }
+  else
+  {
+    spacing->setText( 1, tr("Failed") );
+  }
+
+  }
+
+  else if ( !this->GetProtocol().GetImageProtocol().bCheck )
+  {
+    itemImageInformation->setText( 1, tr("Info NOT check") );
+  } 
+
+  if ( protocol.GetDiffusionProtocol().bCheck )
+  {
+    // DiffusionInformationCheckResult
+  if( this->GetProtocol().GetDiffusionProtocol().bQuitOnCheckFailure && ( (qcResult.Get_result()  & DiffusionCheckBit) !=  0) ){
+    itemDiffusionInformation->setText( 1, tr("Fail Pipeline Terminated") );
+    itemDiffusionInformation->setText( 2, tr("Finish QC Processing") );
+    return;
+  }
+  
+
+  QTreeWidgetItem *b = new QTreeWidgetItem(itemDiffusionInformation);
+  b->setText( 0, tr("b value") );
+  if ( qcResult.GetDiffusionInformationCheckResult().b )
+  {
+    b->setText( 1, tr("Pass") );
+  }
+  else
+  {
+    b->setText( 1, tr("Failed") );
+  }
+
+  QTreeWidgetItem *gradient = new QTreeWidgetItem(itemDiffusionInformation);
+  gradient->setText( 0, tr("gradient") );
+  if ( qcResult.GetDiffusionInformationCheckResult().gradient )
+  {
+    gradient->setText( 1, tr("Pass") );
+  }
+  else
+  {
+    gradient->setText( 1, tr("Failed") );
+  }
+  QTreeWidgetItem *measurementFrame = new QTreeWidgetItem(
+      itemDiffusionInformation);
+  measurementFrame->setText( 0, tr("measurementFrame") );
+  if ( qcResult.GetDiffusionInformationCheckResult().measurementFrame )
+  {
+    measurementFrame->setText( 1, tr("Pass") );
+  }
+  else
+  {
+    measurementFrame->setText( 1, tr("Failed") );
+  }
+  
+  }
+  else if ( !this->GetProtocol().GetDiffusionProtocol().bCheck )
+    itemDiffusionInformation->setText( 1, tr("Info NOT check") ); 
+    
+  
+  // itemIntensityMotionInformation
+  QTreeWidgetItem *overallSliceWiseCheck = new QTreeWidgetItem(itemIntensityMotionInformation);
+  QTreeWidgetItem *overallInterlaceWiseCheck = new QTreeWidgetItem(itemIntensityMotionInformation);
+  QTreeWidgetItem *overallGradientWiseCheck = new QTreeWidgetItem(itemIntensityMotionInformation);
+  overallSliceWiseCheck->setText( 0, tr("SliceWiseCheck") );
+  overallInterlaceWiseCheck->setText( 0, tr("InterlaceWiseCheck") );
+  overallGradientWiseCheck->setText( 0, tr("GradientWiseCheck") );
+
+  
+  if ( this->GetProtocol().GetSliceCheckProtocol().bCheck )   // Check protocol whether run SliceWiseChecking
+  {
+	if ((qcResult.Get_result()  & SliceWiseCheckBit) == SliceWiseCheckBit )  
+	{
+		if (this->GetProtocol().GetSliceCheckProtocol().bQuitOnCheckFailure)
+		{
+			overallSliceWiseCheck->setText( 1, tr("Fail Pipeline Termination") );
+			overallInterlaceWiseCheck->setText( 1, tr("NA") );
+			overallGradientWiseCheck->setText( 1 , tr("NA") );
+		}
+		else
+		{
+			f_overallSliceWiseCheck();
+			
+			if ( r_SliceWiseCkeck > this->GetProtocol().GetInterlaceCheckProtocol().correlationThresholdGradient )
+				overallSliceWiseCheck->setText( 1, tr("Fail") );
+			else 
+				overallSliceWiseCheck->setText( 1, tr("Pass") );
+		}
+	}
+	else
+	{
+		f_overallSliceWiseCheck();
+		
+		if ( r_SliceWiseCkeck > this->GetProtocol().GetInterlaceCheckProtocol().correlationThresholdGradient )
+			overallSliceWiseCheck->setText( 1, tr("Fail") );
+		else 
+			overallSliceWiseCheck->setText( 1, tr("Pass") );
+	}
+	  
+  }
+  else if ( !this->GetProtocol().GetSliceCheckProtocol().bCheck )
+  {
+      overallSliceWiseCheck->setText( 1, tr("Not Set") );
+  }
+
+
+
+   if ( !((qcResult.Get_result()  & SliceWiseCheckBit) == SliceWiseCheckBit &&  this->GetProtocol().GetSliceCheckProtocol().bQuitOnCheckFailure) && this->GetProtocol().GetInterlaceCheckProtocol().bCheck)
+   {
+     
+     if ( (qcResult.Get_result() & InterlaceWiseCheckBit) == 0 )
+     {
+	f_overallInterlaceWiseCheck();
+	if ( r_InterlaceWiseCheck > this->GetProtocol().GetInterlaceCheckProtocol().correlationThresholdGradient)
+		overallInterlaceWiseCheck->setText( 1, tr("Fail") );
+	else 
+		overallInterlaceWiseCheck->setText( 1, tr("Pass") );
+     }
+     else 
+     {
+         if (this->GetProtocol().GetInterlaceCheckProtocol().bQuitOnCheckFailure)
+         {
+            overallInterlaceWiseCheck->setText( 1, tr("Fail Pipeline Termination") );
+	    overallGradientWiseCheck->setText( 1, tr("NA") );
+         }
+         else 
+         {
+            f_overallInterlaceWiseCheck();
+            if ( r_InterlaceWiseCheck > this->GetProtocol().GetInterlaceCheckProtocol().correlationThresholdGradient)
+                  overallInterlaceWiseCheck->setText( 1, tr("Fail") );
+            else 
+                  overallInterlaceWiseCheck->setText( 1, tr("Pass") );
+         }
+     }
+    }
+    else if (!this->GetProtocol().GetInterlaceCheckProtocol().bCheck)
+    {
+       overallInterlaceWiseCheck->setText( 1, tr("Not Set") );
+    }
+
+
+
+   if (!this->GetProtocol().GetSliceCheckProtocol().bQuitOnCheckFailure && !this->GetProtocol().GetInterlaceCheckProtocol().bQuitOnCheckFailure && this->GetProtocol().GetGradientCheckProtocol().bCheck)
+   {
+      if ((qcResult.Get_result() & GradientWiseCheckBit) == 0)
+      {
+        f_overallGradientWiseCheck();
+        if ( r_GradWiseCheck > this->GetProtocol().GetInterlaceCheckProtocol().correlationThresholdGradient)
+          overallGradientWiseCheck->setText( 1, tr("Fail") );
+        else 
+          overallGradientWiseCheck->setText( 1, tr("Pass") );
+      }
+      else
+      {
+        if (this->GetProtocol().GetGradientCheckProtocol().bQuitOnCheckFailure)
+        {
+            overallGradientWiseCheck->setText( 1, tr("Fail Pipeline Termination") );
+        }
+        else 
+        {
+            f_overallGradientWiseCheck();
+            if ( r_GradWiseCheck > this->GetProtocol().GetInterlaceCheckProtocol().correlationThresholdGradient)
+                overallGradientWiseCheck->setText( 1, tr("Fail") );
+            else 
+                overallGradientWiseCheck->setText( 1, tr("Pass") );
+         }
+      }
+    }
+    else if ( !this->GetProtocol().GetGradientCheckProtocol().bCheck )
+    {
+           overallGradientWiseCheck->setText( 1, tr("Not Set") );
+    }
+    
+    
+
+   for ( unsigned int i = 0;
     i < qcResult.GetIntensityMotionCheckResult().size();
     i++ )
   {
+    
     // gradient
     bool EXCLUDE_SliceWiseCheck = false;
     bool EXCLUDE_InterlaceWiseCheck = false;
@@ -2623,10 +3100,22 @@ void IntensityMotionCheckPanel::ResultUpdate()
       'f', 6)
       );
 
-   QTreeWidgetItem * itemSliceWiseCheck = new QTreeWidgetItem(gradient);
+  QTreeWidgetItem * itemSliceWiseCheck = new QTreeWidgetItem(gradient);
    itemSliceWiseCheck->setText( 0 ,tr("SliceWiseCheck"));
-   if (EXCLUDE_SliceWiseCheck==true)
+
+  QTreeWidgetItem * itemInterlaceWiseCheck = new QTreeWidgetItem(gradient);
+   itemInterlaceWiseCheck->setText( 0, tr("InterlaceWiseCheck"));
+
+  QTreeWidgetItem * itemGradientWiseCheck = new QTreeWidgetItem(gradient);
+   itemGradientWiseCheck->setText( 0, tr("GradientWiseCheck"));
+  
+  if (bLoadDefaultQC == false)
+  {
+   //if ( (myIntensityThread.Get_result() & 4) == 0 ){
+   if ( this->GetProtocol().GetSliceCheckProtocol().bCheck )
    {
+    if (EXCLUDE_SliceWiseCheck==true)
+    {
      itemSliceWiseCheck->setText( 2, tr("EXCLUDE"));
      for (int S_index=0; S_index<qcResult.GetSliceWiseCheckResult().size(); S_index++)
      {
@@ -2641,90 +3130,114 @@ void IntensityMotionCheckPanel::ResultUpdate()
      }
    
      }
+    }
+    else
+       itemSliceWiseCheck->setText( 2, tr("INCLUDE"));
    }
-   if (EXCLUDE_SliceWiseCheck==false){
-     itemSliceWiseCheck->setText( 2, tr("INCLUDE"));
-   }
-   
-   QTreeWidgetItem * itemInterlaceWiseCheck = new QTreeWidgetItem(gradient);
-   itemInterlaceWiseCheck->setText( 0, tr("InterlaceWiseCheck"));
+    if ( (qcResult.Get_result() & SliceWiseCheckBit) == 0 ){ 
+     if ( this->GetProtocol().GetInterlaceCheckProtocol().bCheck )
+     {
+       if (EXCLUDE_InterlaceWiseCheck==true)
+          itemInterlaceWiseCheck->setText( 2, tr ("EXCLUDE"));
+       else 
+          if (EXCLUDE_SliceWiseCheck==true)
+             itemInterlaceWiseCheck->setText( 2, tr ("NA"));
+          else 
+             itemInterlaceWiseCheck->setText( 2, tr ("INCLUDE"));
+       QTreeWidgetItem * itemInterlaceAngleX=new QTreeWidgetItem(itemInterlaceWiseCheck);
+       itemInterlaceAngleX->setText( 0, tr("InterlaceAngleX"));
+       itemInterlaceAngleX->setText(1,QString("%1").arg(qcResult.GetInterlaceWiseCheckResult()[i].AngleX));
+    
+       QTreeWidgetItem * itemInterlaceAngleY=new QTreeWidgetItem(itemInterlaceWiseCheck);
+       itemInterlaceAngleY->setText( 0, tr("InterlaceAngleY"));
+       itemInterlaceAngleY->setText(1,QString("%1").arg(qcResult.GetInterlaceWiseCheckResult()[i].AngleY));
+       QTreeWidgetItem * itemInterlaceAngleZ=new QTreeWidgetItem(itemInterlaceWiseCheck);
+       itemInterlaceAngleZ->setText( 0, tr("InterlaceAngleZ"));
+       itemInterlaceAngleZ->setText(1,QString("%1").arg(qcResult.GetInterlaceWiseCheckResult()[i].AngleZ));
+       QTreeWidgetItem * itemInterlaceTranslationX=new QTreeWidgetItem(itemInterlaceWiseCheck);
+       itemInterlaceTranslationX->setText( 0, tr("InterlaceTranslationX"));
+       itemInterlaceTranslationX->setText(1,QString("%1").arg(qcResult.GetInterlaceWiseCheckResult()[i].TranslationX));
+       QTreeWidgetItem * itemInterlaceTranslationY=new QTreeWidgetItem(itemInterlaceWiseCheck);
+       itemInterlaceTranslationY->setText( 0, tr("InterlaceTranslationY"));
+       itemInterlaceTranslationY->setText(1,QString("%1").arg(qcResult.GetInterlaceWiseCheckResult()[i].TranslationY)); 
+       QTreeWidgetItem * itemInterlaceTranslationZ=new QTreeWidgetItem(itemInterlaceWiseCheck);
+       itemInterlaceTranslationZ->setText( 0, tr("InterlaceTranslationZ"));
+       itemInterlaceTranslationZ->setText(1,QString("%1").arg(qcResult.GetInterlaceWiseCheckResult()[i].TranslationZ));
+       QTreeWidgetItem * itemInterlaceMetric=new QTreeWidgetItem(itemInterlaceWiseCheck);
+       itemInterlaceMetric->setText( 0, tr("InterlaceMetric(MI)"));
+       itemInterlaceMetric->setText(1,QString("%1").arg(qcResult.GetInterlaceWiseCheckResult()[i].Metric));
+       QTreeWidgetItem * itemInterlaceCorrelation=new QTreeWidgetItem(itemInterlaceWiseCheck);
 
-   if (EXCLUDE_InterlaceWiseCheck==true )
-     itemInterlaceWiseCheck->setText( 2, tr ("EXCLUDE"));
-   else 
-      if (EXCLUDE_SliceWiseCheck==true)
-         itemInterlaceWiseCheck->setText( 2, tr ("NA"));
-     else 
-         itemInterlaceWiseCheck->setText( 2, tr ("INCLUDE"));
+       if (i==0) //baseline
+           itemInterlaceCorrelation->setText( 0, tr("InterlaceCorrelation_Baseline"));
+       else
+           itemInterlaceCorrelation->setText( 0, tr("InterlaceCorrelation"));
 
-   
-   QTreeWidgetItem * itemInterlaceAngleX=new QTreeWidgetItem(itemInterlaceWiseCheck);
-   itemInterlaceAngleX->setText( 0, tr("InterlaceAngleX"));
-   itemInterlaceAngleX->setText(1,QString("%1").arg(qcResult.GetInterlaceWiseCheckResult()[i].AngleX));
-   if (qcResult.GetInterlaceWiseCheckResult()[i].AngleX>1.9)
-      itemInterlaceAngleX->setForeground(1,redText);
-   else 
-      itemInterlaceAngleX->setForeground(1,greenText);
-   
-   QTreeWidgetItem * itemInterlaceAngleY=new QTreeWidgetItem(itemInterlaceWiseCheck);
-   itemInterlaceAngleY->setText( 0, tr("InterlaceAngleY"));
-   itemInterlaceAngleY->setText(1,QString("%1").arg(qcResult.GetInterlaceWiseCheckResult()[i].AngleY));
-   QTreeWidgetItem * itemInterlaceAngleZ=new QTreeWidgetItem(itemInterlaceWiseCheck);
-   itemInterlaceAngleZ->setText( 0, tr("InterlaceAngleZ"));
-   itemInterlaceAngleZ->setText(1,QString("%1").arg(qcResult.GetInterlaceWiseCheckResult()[i].AngleZ));
-   QTreeWidgetItem * itemInterlaceTranslationX=new QTreeWidgetItem(itemInterlaceWiseCheck);
-   itemInterlaceTranslationX->setText( 0, tr("InterlaceTranslationX"));
-   itemInterlaceTranslationX->setText(1,QString("%1").arg(qcResult.GetInterlaceWiseCheckResult()[i].TranslationX));
-   QTreeWidgetItem * itemInterlaceTranslationY=new QTreeWidgetItem(itemInterlaceWiseCheck);
-   itemInterlaceTranslationY->setText( 0, tr("InterlaceTranslationY"));
-   itemInterlaceTranslationY->setText(1,QString("%1").arg(qcResult.GetInterlaceWiseCheckResult()[i].TranslationY)); 
-   QTreeWidgetItem * itemInterlaceTranslationZ=new QTreeWidgetItem(itemInterlaceWiseCheck);
-   itemInterlaceTranslationZ->setText( 0, tr("InterlaceTranslationZ"));
-   itemInterlaceTranslationZ->setText(1,QString("%1").arg(qcResult.GetInterlaceWiseCheckResult()[i].TranslationZ));
-   QTreeWidgetItem * itemInterlaceMetric=new QTreeWidgetItem(itemInterlaceWiseCheck);
-   itemInterlaceMetric->setText( 0, tr("InterlaceMetric(MI)"));
-   itemInterlaceMetric->setText(1,QString("%1").arg(qcResult.GetInterlaceWiseCheckResult()[i].Metric));
-   QTreeWidgetItem * itemInterlaceCorrelation=new QTreeWidgetItem(itemInterlaceWiseCheck);
-
-   if (i==0) //baseline
-      itemInterlaceCorrelation->setText( 0, tr("InterlaceCorrelation_Baseline"));
-   else
-      itemInterlaceCorrelation->setText( 0, tr("InterlaceCorrelation"));
-
-  itemInterlaceCorrelation->setText(1,QString("%1").arg(qcResult.GetInterlaceWiseCheckResult()[i].Correlation));
-
-   QTreeWidgetItem * itemGradientWiseCheck = new QTreeWidgetItem(gradient);
-   itemGradientWiseCheck->setText( 0, tr("GradientWiseCheck"));
-
-   if (EXCLUDE_GreadientWiseCheck==true )
-     itemGradientWiseCheck->setText( 2, tr ("EXCLUDE"));
-   else 
-      if (EXCLUDE_SliceWiseCheck==true)
+       itemInterlaceCorrelation->setText(1,QString("%1").arg(qcResult.GetInterlaceWiseCheckResult()[i].Correlation));
+      }
+       if ( (qcResult.Get_result() & InterlaceWiseCheckBit) == 0 )
+       {
+         if ( this->GetProtocol().GetGradientCheckProtocol().bCheck )
+         {
+          if (EXCLUDE_GreadientWiseCheck==true )
+             itemGradientWiseCheck->setText( 2, tr ("EXCLUDE"));
+          else 
+             if (EXCLUDE_SliceWiseCheck==true || EXCLUDE_InterlaceWiseCheck==true)
+                 itemGradientWiseCheck->setText( 2, tr ("NA"));
+             else 
+                 itemGradientWiseCheck->setText( 2, tr ("INCLUDE"));
+          QTreeWidgetItem * itemGradientAngleX=new QTreeWidgetItem(itemGradientWiseCheck);
+   	  itemGradientAngleX->setText( 0, tr("GradientAngleX"));
+   	  itemGradientAngleX->setText(1,QString("%1").arg(qcResult.GetGradientWiseCheckResult()[i].AngleX));
+   	  QTreeWidgetItem * itemGradientAngleY=new QTreeWidgetItem(itemGradientWiseCheck);
+   	  itemGradientAngleY->setText( 0, tr("GradientAngleY"));
+          itemGradientAngleY->setText(1,QString("%1").arg(qcResult.GetGradientWiseCheckResult()[i].AngleY));
+	  QTreeWidgetItem * itemGradientAngleZ=new QTreeWidgetItem(itemGradientWiseCheck);
+	  itemGradientAngleZ->setText( 0, tr("GradientAngleZ"));
+	  itemGradientAngleZ->setText(1,QString("%1").arg(qcResult.GetGradientWiseCheckResult()[i].AngleZ));
+	  QTreeWidgetItem * itemGradientTranslationX=new QTreeWidgetItem(itemGradientWiseCheck);
+	  itemGradientTranslationX->setText( 0, tr("GradientTranslationX"));
+	  itemGradientTranslationX->setText(1,QString("%1").arg(qcResult.GetGradientWiseCheckResult()[i].TranslationX));
+	  QTreeWidgetItem * itemGradientTranslationY=new QTreeWidgetItem(itemGradientWiseCheck);
+	  itemGradientTranslationY->setText( 0, tr("GradientTranslationY"));
+	  itemGradientTranslationY->setText(1,QString("%1").arg(qcResult.GetGradientWiseCheckResult()[i].TranslationY)); 
+	  QTreeWidgetItem * itemGradientTranslationZ=new QTreeWidgetItem(itemGradientWiseCheck);
+	  itemGradientTranslationZ->setText( 0, tr("GradientTranslationZ"));
+	  itemGradientTranslationZ->setText(1,QString("%1").arg(qcResult.GetGradientWiseCheckResult()[i].TranslationZ));
+	  QTreeWidgetItem * itemGradientMetric=new QTreeWidgetItem(itemGradientWiseCheck);
+	  itemGradientMetric->setText( 0, tr("GradientMetric(MI)"));
+	  itemGradientMetric->setText(1,QString("%1").arg(qcResult.GetGradientWiseCheckResult()[i].MutualInformation));
+        }
+       }
+       else{
          itemGradientWiseCheck->setText( 2, tr ("NA"));
-     else 
-         itemGradientWiseCheck->setText( 2, tr ("INCLUDE"));
+       }
+    }
+   //}
+   else{
+    itemInterlaceWiseCheck->setText( 2, tr("NA"));
+    itemGradientWiseCheck->setText( 2, tr ("NA"));
+   }
+   QTreeWidgetItem * itemVisualCheck = new QTreeWidgetItem(gradient);  // item for visual gradient checking
+   itemVisualCheck->setText(0, tr("Visual Check"));
+   QTreeWidgetItem * itemVisualCheck_Satus = new QTreeWidgetItem(itemVisualCheck);
+   itemVisualCheck_Satus->setText( 0,QString("VC_Status_%1").arg( i, 4, 10, QLatin1Char( '0' ) ) );
+   if ( qcResult.GetIntensityMotionCheckResult()[i].VisualChecking == 0 )
+    itemVisualCheck_Satus->setText( 1, tr("Include" ));
+   if ( qcResult.GetIntensityMotionCheckResult()[i].VisualChecking == 6 )
+    itemVisualCheck_Satus->setText( 1, tr("Exclude" ));
+   if ( qcResult.GetIntensityMotionCheckResult()[i].VisualChecking == -1 ) 
+    itemVisualCheck_Satus->setText( 1, tr("NoChange" ));
+  }
 
-   QTreeWidgetItem * itemGradientAngleX=new QTreeWidgetItem(itemGradientWiseCheck);
-   itemGradientAngleX->setText( 0, tr("GradientAngleX"));
-   itemGradientAngleX->setText(1,QString("%1").arg(qcResult.GetGradientWiseCheckResult()[i].AngleX));
-   QTreeWidgetItem * itemGradientAngleY=new QTreeWidgetItem(itemGradientWiseCheck);
-   itemGradientAngleY->setText( 0, tr("GradientAngleY"));
-   itemGradientAngleY->setText(1,QString("%1").arg(qcResult.GetGradientWiseCheckResult()[i].AngleY));
-   QTreeWidgetItem * itemGradientAngleZ=new QTreeWidgetItem(itemGradientWiseCheck);
-   itemGradientAngleZ->setText( 0, tr("GradientAngleZ"));
-   itemGradientAngleZ->setText(1,QString("%1").arg(qcResult.GetGradientWiseCheckResult()[i].AngleZ));
-   QTreeWidgetItem * itemGradientTranslationX=new QTreeWidgetItem(itemGradientWiseCheck);
-   itemGradientTranslationX->setText( 0, tr("GradientTranslationX"));
-   itemGradientTranslationX->setText(1,QString("%1").arg(qcResult.GetGradientWiseCheckResult()[i].TranslationX));
-   QTreeWidgetItem * itemGradientTranslationY=new QTreeWidgetItem(itemGradientWiseCheck);
-   itemGradientTranslationY->setText( 0, tr("GradientTranslationY"));
-   itemGradientTranslationY->setText(1,QString("%1").arg(qcResult.GetGradientWiseCheckResult()[i].TranslationY)); 
-   QTreeWidgetItem * itemGradientTranslationZ=new QTreeWidgetItem(itemGradientWiseCheck);
-   itemGradientTranslationZ->setText( 0, tr("GradientTranslationZ"));
-   itemGradientTranslationZ->setText(1,QString("%1").arg(qcResult.GetGradientWiseCheckResult()[i].TranslationZ));
-   QTreeWidgetItem * itemGradientMetric=new QTreeWidgetItem(itemGradientWiseCheck);
-   itemGradientMetric->setText( 0, tr("GradientMetric(MI)"));
-   itemGradientMetric->setText(1,QString("%1").arg(qcResult.GetGradientWiseCheckResult()[i].MutualInformation));
+  if (bLoadDefaultQC == true)
+  {
+   QTreeWidgetItem * itemVisualCheck = new QTreeWidgetItem(gradient);  // item for visual gradient checking
+   itemVisualCheck->setText(0, tr("Visual Check"));
+   QTreeWidgetItem * itemVisualCheck_Satus = new QTreeWidgetItem(itemVisualCheck);
+   itemVisualCheck_Satus->setText( 0,QString("VC_Status_%1").arg( i, 4, 10, QLatin1Char( '0' ) ) );
+   itemVisualCheck_Satus->setText( 1, tr("Include" ));   
+  }
       
  }
 
@@ -2746,12 +3259,40 @@ void IntensityMotionCheckPanel::ResultUpdate()
   //}
   
   bResultTreeEditable = false; // no edit to automatically generated results
-  pushButton_SaveDWIAs->setEnabled( 0 );
+  //pushButton_SaveDWIAs->setEnabled( 0 );
 
   emit UpdateOutputDWIDiffusionVectorActors();
-  SavingTreeWidgetResult_XmlFile();  
-
+  emit LoadQCResult(true);
+  if (bLoadDefaultQC)
+  {
+     SavingTreeWidgetResult_XmlFile_Default();
+  }
+  else 
+  {
+       SavingTreeWidgetResult_XmlFile();  
+  }
+  emit SignalActivateSphere(); // Activate "actionIncluded" bottom 
+  pushButton_SaveVisualChecking->setEnabled( 1 );
   return;
+}
+
+void IntensityMotionCheckPanel::SavingTreeWidgetResult_XmlFile_Default( )    // Saving the treeWidget_Results in the xml file format
+{
+  //QString Result_xmlFile = QFileDialog::getSaveFileName( this, tr(
+    //"Save Result As"), lineEdit_Result->text(),  tr("xml Files (*.xml)") );
+  QString Result_xmlFile;
+  Result_xmlFile.append(DwiFileName.c_str());
+  Result_xmlFile.append(QString(tr("_XMLQCResult_Default.xml")));
+
+  if ( Result_xmlFile.length() > 0 )
+  {
+    lineEdit_Result->setText(Result_xmlFile);
+    XmlStreamWriter XmlWriter(treeWidget_Results);
+    XmlWriter.setProtocol(&protocol);
+    XmlWriter.writeXml(Result_xmlFile);
+
+  }
+
 }
 
 void IntensityMotionCheckPanel::SavingTreeWidgetResult_XmlFile( )    // Saving the treeWidget_Results in the xml file format
@@ -2773,6 +3314,208 @@ void IntensityMotionCheckPanel::SavingTreeWidgetResult_XmlFile( )    // Saving t
 
 }
 
+void IntensityMotionCheckPanel::GenerateCheckOutputImage( DwiImageType::Pointer dwi, const std::string filename)
+{
+
+  if ( !bDwiLoaded  )
+  {
+    std::cout << "DWI load error, no Gradient Direction Loaded" << std::endl;
+    bGetGradientDirections = false;
+    return;
+  }
+
+  unsigned int gradientLeft = 0;
+  for ( unsigned int i = 0;
+    i < qcResult.GetIntensityMotionCheckResult().size();
+    i++ )
+  {
+    // Finding the included gradients after QC and Visual Checking
+    if ( ((qcResult.GetIntensityMotionCheckResult()[i].processing ==
+      QCResult::GRADIENT_INCLUDE || qcResult.GetIntensityMotionCheckResult()[i].processing ==
+      QCResult::GRADIENT_BASELINE_AVERAGED || qcResult.GetIntensityMotionCheckResult()[i].processing ==
+      QCResult::GRADIENT_EDDY_MOTION_CORRECTED) && qcResult.GetIntensityMotionCheckResult()[i].VisualChecking != QCResult::GRADIENT_EXCLUDE_MANUALLY ) || qcResult.GetIntensityMotionCheckResult()[i].VisualChecking == QCResult::GRADIENT_INCLUDE )
+    {
+      gradientLeft++;
+    }
+  }
+
+  std::cout << "gradientLeft: " << gradientLeft << std::endl;
+  
+  if ( bProtocol )
+  {
+    if ( 1.0
+      - (float)( (float)gradientLeft
+      / (float)qcResult.GetIntensityMotionCheckResult().size() ) >=
+      this->protocol.GetBadGradientPercentageTolerance() )
+    {
+      QMessageBox::StandardButton reply;
+      reply = QMessageBox::question(this, tr("Attention"),
+        tr(
+        "Bad gradients number is greater than that in protocol, save anyway?"),
+        QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
+      if ( reply == QMessageBox::No || reply == QMessageBox::Cancel )
+      {
+        return;
+      }
+    }
+  }
+
+  if ( gradientLeft == qcResult.GetIntensityMotionCheckResult().size() )
+  {
+    itk::NrrdImageIO::Pointer myNrrdImageIO = itk::NrrdImageIO::New();
+    try
+    {
+      DwiWriterType::Pointer DwiWriter = DwiWriterType::New();
+      DwiWriter->SetImageIO(myNrrdImageIO);
+      DwiWriter->SetFileName( filename );
+      DwiWriter->UseInputMetaDataDictionaryOn();
+      DwiWriter->SetInput( this->m_DwiOriginalImage );
+      DwiWriter->UseCompressionOn();
+      DwiWriter->Update();
+    }
+    catch ( itk::ExceptionObject & e )
+    {
+      std::cout << e.GetDescription() << std::endl;
+      return;
+    }
+    return;
+  }
+
+  DwiImageType::Pointer newDwiImage = DwiImageType::New();
+  newDwiImage->CopyInformation(dwi);
+  newDwiImage->SetRegions( dwi->GetLargestPossibleRegion() );
+  newDwiImage->Allocate();
+  newDwiImage->SetVectorLength( gradientLeft);
+
+  typedef itk::ImageRegionConstIteratorWithIndex<DwiImageType>
+    ConstIteratorType;
+  ConstIteratorType oit( dwi, dwi->GetLargestPossibleRegion() );
+  typedef itk::ImageRegionIteratorWithIndex<DwiImageType> IteratorType;
+  IteratorType nit( newDwiImage, newDwiImage->GetLargestPossibleRegion() );
+
+  oit.GoToBegin();
+  nit.GoToBegin();
+
+  DwiImageType::PixelType value;
+  value.SetSize( gradientLeft );
+
+  while ( !oit.IsAtEnd() )
+  {
+    int element = 0;
+    for ( unsigned int i = 0;
+      i < qcResult.GetIntensityMotionCheckResult().size();
+      i++ )
+    {
+      if ( ((qcResult.GetIntensityMotionCheckResult()[i].processing ==
+      QCResult::GRADIENT_INCLUDE || qcResult.GetIntensityMotionCheckResult()[i].processing ==
+      QCResult::GRADIENT_BASELINE_AVERAGED || qcResult.GetIntensityMotionCheckResult()[i].processing ==
+      QCResult::GRADIENT_EDDY_MOTION_CORRECTED) && qcResult.GetIntensityMotionCheckResult()[i].VisualChecking != QCResult::GRADIENT_EXCLUDE_MANUALLY ) || qcResult.GetIntensityMotionCheckResult()[i].VisualChecking == QCResult::GRADIENT_INCLUDE )
+      {
+        value.SetElement( element, oit.Get()[i] );
+        element++;
+      }
+    }
+    nit.Set(value);
+    ++oit;
+    ++nit;
+  }
+
+ // wrting MetaDataDictionary of the output dwi image from input metaDataDictionary information
+  itk::MetaDataDictionary output_imgMetaDictionary;  // output dwi image dictionary 
+
+  itk::MetaDataDictionary imgMetaDictionary = dwi->GetMetaDataDictionary();
+  std::vector< std::string > imgMetaKeys = imgMetaDictionary.GetKeys();
+  std::vector<std::string>::const_iterator itKey = imgMetaKeys.begin();
+  std::string      metaString;
+ 
+  if ( imgMetaDictionary.HasKey("NRRD_measurement frame") )
+    {
+      // Meausurement frame
+      std::vector<std::vector<double> > nrrdmf;
+      itk::ExposeMetaData<std::vector<std::vector<double> > >(
+        imgMetaDictionary,
+        "NRRD_measurement frame",
+        nrrdmf);
+      itk::EncapsulateMetaData<std::vector<std::vector<double> > >(
+        output_imgMetaDictionary,
+        "NRRD_measurement frame",
+        nrrdmf);
+    }
+
+  // modality
+  if ( imgMetaDictionary.HasKey("modality") )
+  {
+      itk::ExposeMetaData(imgMetaDictionary, "modality", metaString);
+      itk::EncapsulateMetaData<std::string>( output_imgMetaDictionary,
+      "modality",
+       metaString);
+  } 
+
+  // b-value
+  if ( imgMetaDictionary.HasKey("DWMRI_b-value") )
+  {
+      itk::ExposeMetaData(imgMetaDictionary, "DWMRI_b-value", metaString);
+      itk::EncapsulateMetaData<std::string>( output_imgMetaDictionary,
+      "DWMRI_b-value",
+       metaString);
+  }
+
+  // gradient vectors
+  int temp = 0;
+  for ( unsigned int i = 0; i < GradientDirectionContainer->size(); i++ )
+  {
+
+   if ( ((qcResult.GetIntensityMotionCheckResult()[i].processing ==
+      QCResult::GRADIENT_INCLUDE || qcResult.GetIntensityMotionCheckResult()[i].processing ==
+      QCResult::GRADIENT_BASELINE_AVERAGED || qcResult.GetIntensityMotionCheckResult()[i].processing ==
+      QCResult::GRADIENT_EDDY_MOTION_CORRECTED) && qcResult.GetIntensityMotionCheckResult()[i].VisualChecking != QCResult::GRADIENT_EXCLUDE_MANUALLY ) || qcResult.GetIntensityMotionCheckResult()[i].VisualChecking == QCResult::GRADIENT_INCLUDE )
+   {
+      std::ostringstream ossKey;
+      ossKey << "DWMRI_gradient_" << std::setw(4) << std::setfill('0') << temp;
+
+      std::ostringstream ossMetaString;
+      ossMetaString << std::setw(9) << std::setiosflags(std::ios::fixed)
+        << std::setprecision(6) << std::setiosflags(std::ios::right)
+        << GradientDirectionContainer->ElementAt(i)[0]
+      << "    "
+        << std::setw(9) << std::setiosflags(std::ios::fixed)
+        << std::setprecision(6) << std::setiosflags(std::ios::right)
+        << GradientDirectionContainer->ElementAt(i)[1]
+      << "    "
+        << std::setw(9) << std::setiosflags(std::ios::fixed)
+        << std::setprecision(6) << std::setiosflags(std::ios::right)
+        << GradientDirectionContainer->ElementAt(i)[2];
+
+      // std::cout<<ossKey.str()<<ossMetaString.str()<<std::endl;
+      itk::EncapsulateMetaData<std::string>( output_imgMetaDictionary,
+        ossKey.str(), ossMetaString.str() );
+      ++temp;
+    }
+  }
+  
+  newDwiImage->SetMetaDataDictionary(output_imgMetaDictionary);
+
+  SetDwiOutputImage(newDwiImage);
+
+  itk::NrrdImageIO::Pointer myNrrdImageIO = itk::NrrdImageIO::New();
+  try
+  {
+    DwiWriterType::Pointer DwiWriter = DwiWriterType::New();
+    DwiWriter->SetImageIO(myNrrdImageIO);
+    DwiWriter->SetFileName( filename );
+    DwiWriter->UseInputMetaDataDictionaryOn();
+    DwiWriter->SetInput(newDwiImage);
+    DwiWriter->UseCompressionOn();
+    DwiWriter->Update();
+  }
+  catch ( itk::ExceptionObject & e )
+  {
+    std::cout << e.GetDescription() << std::endl;
+    return;
+  }
+  std::cout << "QC Savd" << std::endl;
+}
+
 void IntensityMotionCheckPanel::GenerateCheckOutputImage( const std::string filename)
 {
   if ( !bDwiLoaded  )
@@ -2787,8 +3530,11 @@ void IntensityMotionCheckPanel::GenerateCheckOutputImage( const std::string file
     i < qcResult.GetIntensityMotionCheckResult().size();
     i++ )
   {
-    if ( qcResult.GetIntensityMotionCheckResult()[i].processing ==
-      QCResult::GRADIENT_INCLUDE )
+    // Finding the included gradients after QC and Visual Checking
+    if ( ((qcResult.GetIntensityMotionCheckResult()[i].processing ==
+      QCResult::GRADIENT_INCLUDE || qcResult.GetIntensityMotionCheckResult()[i].processing ==
+      QCResult::GRADIENT_BASELINE_AVERAGED || qcResult.GetIntensityMotionCheckResult()[i].processing ==
+      QCResult::GRADIENT_EDDY_MOTION_CORRECTED) && qcResult.GetIntensityMotionCheckResult()[i].VisualChecking != QCResult::GRADIENT_EXCLUDE_MANUALLY ) || qcResult.GetIntensityMotionCheckResult()[i].VisualChecking == QCResult::GRADIENT_INCLUDE )
     {
       gradientLeft++;
     }
@@ -2835,6 +3581,7 @@ void IntensityMotionCheckPanel::GenerateCheckOutputImage( const std::string file
       DwiWriterType::Pointer DwiWriter = DwiWriterType::New();
       DwiWriter->SetImageIO(myNrrdImageIO);
       DwiWriter->SetFileName( filename );
+      DwiWriter->UseInputMetaDataDictionaryOn();
       DwiWriter->SetInput( this->m_DwiOriginalImage );
       DwiWriter->UseCompressionOn();
       DwiWriter->Update();
@@ -2872,8 +3619,10 @@ void IntensityMotionCheckPanel::GenerateCheckOutputImage( const std::string file
       i < qcResult.GetIntensityMotionCheckResult().size();
       i++ )
     {
-      if ( qcResult.GetIntensityMotionCheckResult()[i].processing ==
-        QCResult::GRADIENT_INCLUDE )
+      if ( ((qcResult.GetIntensityMotionCheckResult()[i].processing ==
+      QCResult::GRADIENT_INCLUDE || qcResult.GetIntensityMotionCheckResult()[i].processing ==
+      QCResult::GRADIENT_BASELINE_AVERAGED || qcResult.GetIntensityMotionCheckResult()[i].processing ==
+      QCResult::GRADIENT_EDDY_MOTION_CORRECTED) && qcResult.GetIntensityMotionCheckResult()[i].VisualChecking != QCResult::GRADIENT_EXCLUDE_MANUALLY ) || qcResult.GetIntensityMotionCheckResult()[i].VisualChecking == QCResult::GRADIENT_INCLUDE )
       {
         value.SetElement( element, oit.Get()[i] );
         element++;
@@ -2884,12 +3633,91 @@ void IntensityMotionCheckPanel::GenerateCheckOutputImage( const std::string file
     ++nit;
   }
 
+ // wrting MetaDataDictionary of the output dwi image from input metaDataDictionary information
+  itk::MetaDataDictionary output_imgMetaDictionary;  // output dwi image dictionary 
+
+  itk::MetaDataDictionary imgMetaDictionary = m_DwiOriginalImage->GetMetaDataDictionary();
+  std::vector< std::string > imgMetaKeys = imgMetaDictionary.GetKeys();
+  std::vector<std::string>::const_iterator itKey = imgMetaKeys.begin();
+  std::string      metaString;
+ 
+  if ( imgMetaDictionary.HasKey("NRRD_measurement frame") )
+    {
+      // Meausurement frame
+      std::vector<std::vector<double> > nrrdmf;
+      itk::ExposeMetaData<std::vector<std::vector<double> > >(
+        imgMetaDictionary,
+        "NRRD_measurement frame",
+        nrrdmf);
+      itk::EncapsulateMetaData<std::vector<std::vector<double> > >(
+        output_imgMetaDictionary,
+        "NRRD_measurement frame",
+        nrrdmf);
+    }
+
+  // modality
+  if ( imgMetaDictionary.HasKey("modality") )
+  {
+      itk::ExposeMetaData(imgMetaDictionary, "modality", metaString);
+      itk::EncapsulateMetaData<std::string>( output_imgMetaDictionary,
+      "modality",
+       metaString);
+  } 
+
+  // b-value
+  if ( imgMetaDictionary.HasKey("DWMRI_b-value") )
+  {
+      itk::ExposeMetaData(imgMetaDictionary, "DWMRI_b-value", metaString);
+      itk::EncapsulateMetaData<std::string>( output_imgMetaDictionary,
+      "DWMRI_b-value",
+       metaString);
+  }
+
+  // gradient vectors
+  int temp = 0;
+  for ( unsigned int i = 0; i < GradientDirectionContainer->size(); i++ )
+  {
+
+   if ( ((qcResult.GetIntensityMotionCheckResult()[i].processing ==
+      QCResult::GRADIENT_INCLUDE || qcResult.GetIntensityMotionCheckResult()[i].processing ==
+      QCResult::GRADIENT_BASELINE_AVERAGED || qcResult.GetIntensityMotionCheckResult()[i].processing ==
+      QCResult::GRADIENT_EDDY_MOTION_CORRECTED) && qcResult.GetIntensityMotionCheckResult()[i].VisualChecking != QCResult::GRADIENT_EXCLUDE_MANUALLY ) || qcResult.GetIntensityMotionCheckResult()[i].VisualChecking == QCResult::GRADIENT_INCLUDE )
+   {
+      std::ostringstream ossKey;
+      ossKey << "DWMRI_gradient_" << std::setw(4) << std::setfill('0') << temp;
+
+      std::ostringstream ossMetaString;
+      ossMetaString << std::setw(9) << std::setiosflags(std::ios::fixed)
+        << std::setprecision(6) << std::setiosflags(std::ios::right)
+        << GradientDirectionContainer->ElementAt(i)[0]
+      << "    "
+        << std::setw(9) << std::setiosflags(std::ios::fixed)
+        << std::setprecision(6) << std::setiosflags(std::ios::right)
+        << GradientDirectionContainer->ElementAt(i)[1]
+      << "    "
+        << std::setw(9) << std::setiosflags(std::ios::fixed)
+        << std::setprecision(6) << std::setiosflags(std::ios::right)
+        << GradientDirectionContainer->ElementAt(i)[2];
+
+      // std::cout<<ossKey.str()<<ossMetaString.str()<<std::endl;
+      itk::EncapsulateMetaData<std::string>( output_imgMetaDictionary,
+        ossKey.str(), ossMetaString.str() );
+      ++temp;
+    }
+  }
+  
+  newDwiImage->SetMetaDataDictionary(output_imgMetaDictionary);
+
+  SetDwiOutputImage(newDwiImage);
+
+
   itk::NrrdImageIO::Pointer myNrrdImageIO = itk::NrrdImageIO::New();
   try
   {
     DwiWriterType::Pointer DwiWriter = DwiWriterType::New();
     DwiWriter->SetImageIO(myNrrdImageIO);
     DwiWriter->SetFileName( filename );
+    DwiWriter->UseInputMetaDataDictionaryOn();
     DwiWriter->SetInput(newDwiImage);
     DwiWriter->UseCompressionOn();
     DwiWriter->Update();
@@ -2899,14 +3727,17 @@ void IntensityMotionCheckPanel::GenerateCheckOutputImage( const std::string file
     std::cout << e.GetDescription() << std::endl;
     return;
   }
-
+ 
+   
   // newDwiImage->Delete();
 
+  //--------------------------------------------- Generating Meta Data Dictionary of Output Image ------------
+  /*
   itk::MetaDataDictionary imgMetaDictionary
     = m_DwiOriginalImage->GetMetaDataDictionary();                                            //
   std::vector<std::string> imgMetaKeys
     = imgMetaDictionary.GetKeys();
-  std::vector<std::string>::const_iterator itKey = imgMetaKeys.begin();
+  std::vector<std::string>::const_iterator itKey;
   std::string                              metaString;
 
   char *aryOut = new char[filename.length() + 1];
@@ -2970,7 +3801,9 @@ void IntensityMotionCheckPanel::GenerateCheckOutputImage( const std::string file
   for ( unsigned int i = 0; i < GradientDirectionContainer->size(); i++ )
   {
     if ( qcResult.GetIntensityMotionCheckResult()[i].processing ==
-      QCResult::GRADIENT_INCLUDE )
+      QCResult::GRADIENT_INCLUDE || qcResult.GetIntensityMotionCheckResult()[i].processing ==
+      QCResult::GRADIENT_BASELINE_AVERAGED || qcResult.GetIntensityMotionCheckResult()[i].processing ==
+      QCResult::GRADIENT_EDDY_MOTION_CORRECTED )
     {
       header  << "DWMRI_gradient_" << std::setw(4) << std::setfill('0')
         << newGradientNumber << ":="
@@ -2983,8 +3816,10 @@ void IntensityMotionCheckPanel::GenerateCheckOutputImage( const std::string file
 
   header.flush();
   header.close();
-
+  //------------------------------------------------------------------------------------------------------------
+  */
   std::cout << " QC Image saved " << std::endl;
+
 }
 
 bool IntensityMotionCheckPanel::GetGradientDirections()
@@ -3061,7 +3896,365 @@ bool IntensityMotionCheckPanel::GetGradientDirections()
   return true;
 }
 
-void IntensityMotionCheckPanel::on_pushButton_SaveDWIAs_clicked( )
+ void IntensityMotionCheckPanel::on_pushButton_SaveVisualChecking_clicked()
+{
+ 
+  int num_Includegradient_VC = false;
+  for( int i=0; i< VC_Status.size(); i++)
+  {
+     if (VC_Status[i].VC_status == 0 && this->GetQCResult().GetIntensityMotionCheckResult()[ VC_Status[i].index ].processing >= 3 ) // check if the gradient (index th) changed to Include in Visual Checking step but its QCResult has been Exclude
+     {
+        num_Includegradient_VC = true;
+        break;
+     }
+  }
+  
+  if (num_Includegradient_VC)
+  {
+     QString Grad2 = QString("There are some gradients which have changed their status from Exclude to Include after Visual Checking. Do you want to rerun the automatic QC (recommended)?  If say No, it means that the gradients with changed status will not be saved.");
+     QMessageBox msgBox;
+     msgBox.setText( Grad2 );
+     QPushButton * YES = msgBox.addButton( tr("Yes"), QMessageBox::ActionRole);
+     QPushButton * NO = msgBox.addButton( tr("No"), QMessageBox::ActionRole);
+     QPushButton * Cancel = msgBox.addButton( tr("Cancel"), QMessageBox::ActionRole);    
+     msgBox.exec();
+
+  if ( msgBox.clickedButton() == YES )
+  {
+     if (!bProtocol) 
+     {
+       QString Grad3 = QString( "Please choose the protocol" );
+       QMessageBox msgBox3;
+       msgBox3.setText( Grad3 );
+       QPushButton * OK = msgBox3.addButton( tr("OK"), QMessageBox::ActionRole );
+       msgBox3.exec();
+       if ( msgBox3.clickedButton() == OK )
+       {
+	on_toolButton_ProtocolFileOpen_clicked();
+       }
+     }
+
+     if (bProtocol)  // Doing QC using current protocol
+     {
+
+       myFurtherQCThread.SetDwiFileName(DwiFileName); 
+       myFurtherQCThread.SetXmlFileName(lineEdit_Protocol->text().toStdString());
+       myFurtherQCThread.SetProtocol( &protocol);
+       myFurtherQCThread.SetQCResult(&qcResult);
+       //myFurtherQCThread.Set_result();		
+       myFurtherQCThread.start();
+       //result = myFurtherQCThread.Get_result();
+
+       /*//myIntensityThread.m_IntensityMotionCheck->Setm_DwiForcedConformanceImage( GetDwiOutputImage() );
+       myIntensityThread.m_IntensityMotionCheck->SetDwiFileName(DwiFileName);
+       myIntensityThread.m_IntensityMotionCheck->SetXmlFileName(lineEdit_Protocol->text().toStdString());
+
+       myIntensityThread.m_IntensityMotionCheck->SetProtocol( & protocol);
+       myIntensityThread.m_IntensityMotionCheck->SetQCResult( & qcResult);
+
+       myIntensityThread.m_IntensityMotionCheck->Setm_DwiForcedConformanceImage(m_DwiOriginalImage);
+
+       myIntensityThread.m_IntensityMotionCheck->ImageCheck(myIntensityThread.m_IntensityMotionCheck->Getm_DwiForcedConformanceImage());
+       myIntensityThread.m_IntensityMotionCheck->DiffusionCheck(myIntensityThread.m_IntensityMotionCheck->Getm_DwiForcedConformanceImage());
+       
+       GenerateCheckOutputImage(myIntensityThread.m_IntensityMotionCheck->Getm_DwiForcedConformanceImage());
+
+       // exclude the "excluded gradients" 
+       myIntensityThread.m_IntensityMotionCheck->Setm_DwiForcedConformanceImage(GetDwiOutputImage());
+       myIntensityThread.m_IntensityMotionCheck->BaselineAverage(myIntensityThread.m_IntensityMotionCheck->Getm_DwiForcedConformanceImage());
+       myIntensityThread.m_IntensityMotionCheck->EddyMotionCorrectIowa(myIntensityThread.m_IntensityMotionCheck->Getm_DwiForcedConformanceImage());
+       myIntensityThread.m_IntensityMotionCheck->GradientWiseCheck(myIntensityThread.m_IntensityMotionCheck->Getm_DwiForcedConformanceImage());
+       // SaveDwiForcedConformanceImage ???????
+       myIntensityThread.m_IntensityMotionCheck->DTIComputing();
+       ResultUpdate();
+       */
+     }
+   }
+   else  if ( msgBox.clickedButton() == NO )
+   {
+      SaveVisualCheckingResult();
+   
+   } 
+   else  if ( msgBox.clickedButton() == Cancel )
+   {
+	return;
+   }
+  }
+  else if (!num_Includegradient_VC)
+  {
+     SaveVisualCheckingResult();
+  }
+
+}
+
+void IntensityMotionCheckPanel::SaveVisualCheckingResult()
+{
+  
+  pushButton_SaveVisualChecking->setEnabled( 0 );
+  // Saving QC Result
+  if (bLoadDefaultQC)
+  {
+     SavingTreeWidgetResult_XmlFile_Default();
+  }
+  else 
+  {
+       SavingTreeWidgetResult_XmlFile();  
+  }
+  
+  // Saving Output
+  QString VisualChecking_DwiFileName = DwiFilePath.section('.',-2,0);
+  VisualChecking_DwiFileName.append(QString(tr("_VC.nhdr")));
+
+  QString DWIFile = QFileDialog::getSaveFileName( this, tr(
+    "Save New DWI File As"), VisualChecking_DwiFileName,
+    tr("nrrd Files (*.nhdr)") );
+
+  if ( DWIFile.length() > 0 )
+  {
+     std::cout << "Save DWI into file: " << DWIFile.toStdString() << std::endl;
+
+     for ( int i = 0; i< VC_Status.size() ; i++)
+     {
+     	if (VC_Status[i].VC_status == QCResult::GRADIENT_EXCLUDE_MANUALLY)
+     	{
+		index_listVCExcluded.push_back( VC_Status[i].index );
+     	}
+     }
+  }
+  else
+  {
+    std::cout << "DWI file name NOT set" << std::endl;
+  }
+  
+  GenerateOutput_VisualCheckingResult( index_listVCExcluded, DWIFile.toStdString() );
+
+  VC_Status.clear();
+  emit UpdateOutputDWIDiffusionVectorActors();
+
+}
+
+bool IntensityMotionCheckPanel::Search_index( int index, std::vector<int> list_index )
+{
+  for ( int i =0; i< list_index.size() ; i++ )
+  {
+	if ( index == list_index[i] )
+	{
+		return true;
+	}
+  }
+  return false;
+}
+
+void IntensityMotionCheckPanel::GenerateOutput_VisualCheckingResult( std::vector<int> list_index , std::string filename)
+{
+  if ( !bDwiLoaded  )
+  {
+    std::cout << "DWI load error, no Gradient Direction Loaded" << std::endl;
+    bGetGradientDirections = false;
+    return;
+  }
+
+  std::vector<int> list_index_original;  // list of original indices in dwi
+  for ( int j = 0; j< myIntensityThread.m_IntensityMotionCheck->get_Original_ForcedConformance_Mapping().size() ; j++ )
+  {
+    if (j == 0)
+    {
+       for ( int k = 0; k< (myIntensityThread.m_IntensityMotionCheck->get_Original_ForcedConformance_Mapping()[j].index_original).size() ; k++ )
+		list_index_original.push_back( (myIntensityThread.m_IntensityMotionCheck->get_Original_ForcedConformance_Mapping()[j].index_original)[k] ); // indices for Baseline
+    }
+    else
+       list_index_original.push_back( (myIntensityThread.m_IntensityMotionCheck->get_Original_ForcedConformance_Mapping()[j].index_original)[0] ); 
+  }
+
+  for ( int i =0 ; i < list_index_original.size() ; i++ )
+  {
+	std::cout << "list_index_original: " << list_index_original[i] << std::endl;
+  }
+  for ( int i =0 ; i < list_index.size() ; i++ )
+  {
+	std::cout << "list_index: " << list_index[i] << std::endl;
+  }
+
+  unsigned int gradientLeft = 0;
+  for ( unsigned int i = 0; i < qcResult.GetIntensityMotionCheckResult().size();  i++ )
+  {
+    // Finding the included gradients after QC and Visual Checking
+    if (  Search_index( i, list_index ) == false && Search_index( i, list_index_original ) == true )
+    {
+      gradientLeft++;
+    }
+  }
+
+  std::cout << "gradientLeft: " << gradientLeft << std::endl;
+  
+  if ( bProtocol )
+  {
+    if ( 1.0
+      - (float)( (float)gradientLeft
+      / (float)qcResult.GetIntensityMotionCheckResult().size() ) >=
+      this->protocol.GetBadGradientPercentageTolerance() )
+    {
+      QMessageBox::StandardButton reply;
+      reply = QMessageBox::question(this, tr("Attention"),
+        tr(
+        "Bad gradients number is greater than that in protocol, save anyway?"),
+        QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
+      if ( reply == QMessageBox::No || reply == QMessageBox::Cancel )
+      {
+        return;
+      }
+    }
+  }
+
+  if ( gradientLeft == qcResult.GetIntensityMotionCheckResult().size() )
+  {
+    itk::NrrdImageIO::Pointer myNrrdImageIO = itk::NrrdImageIO::New();
+    try
+    {
+      DwiWriterType::Pointer DwiWriter = DwiWriterType::New();
+      DwiWriter->SetImageIO(myNrrdImageIO);
+      DwiWriter->SetFileName( filename );
+      DwiWriter->UseInputMetaDataDictionaryOn();
+      DwiWriter->SetInput( this->m_DwiOriginalImage );
+      DwiWriter->UseCompressionOn();
+      DwiWriter->Update();
+    }
+    catch ( itk::ExceptionObject & e )
+    {
+      std::cout << e.GetDescription() << std::endl;
+      return;
+    }
+    return;
+  }
+
+  DwiImageType::Pointer newDwiImage = DwiImageType::New();
+  newDwiImage->CopyInformation(m_DwiOriginalImage);
+  newDwiImage->SetRegions( m_DwiOriginalImage->GetLargestPossibleRegion() );
+  newDwiImage->Allocate();
+  newDwiImage->SetVectorLength( gradientLeft);
+
+  typedef itk::ImageRegionConstIteratorWithIndex<DwiImageType>
+    ConstIteratorType;
+  ConstIteratorType oit( m_DwiOriginalImage, m_DwiOriginalImage->GetLargestPossibleRegion() );
+  typedef itk::ImageRegionIteratorWithIndex<DwiImageType> IteratorType;
+  IteratorType nit( newDwiImage, newDwiImage->GetLargestPossibleRegion() );
+
+  oit.GoToBegin();
+  nit.GoToBegin();
+
+  DwiImageType::PixelType value;
+  value.SetSize( gradientLeft );
+
+  while ( !oit.IsAtEnd() )
+  {
+    int element = 0;
+    for ( unsigned int i = 0; i < m_DwiOriginalImage->GetVectorLength();i++ )
+    {
+    if ( Search_index( i, list_index ) == false && Search_index( i, list_index_original ) == true)
+      {
+        value.SetElement( element, oit.Get()[i] );
+        element++;
+      }
+    }
+    nit.Set(value);
+    ++oit;
+    ++nit;
+  }
+
+ // wrting MetaDataDictionary of the output dwi image from input metaDataDictionary information
+  itk::MetaDataDictionary output_imgMetaDictionary;  // output dwi image dictionary 
+
+  itk::MetaDataDictionary imgMetaDictionary = m_DwiOriginalImage->GetMetaDataDictionary();
+  std::vector< std::string > imgMetaKeys = imgMetaDictionary.GetKeys();
+  std::vector<std::string>::const_iterator itKey = imgMetaKeys.begin();
+  std::string      metaString;
+ 
+  if ( imgMetaDictionary.HasKey("NRRD_measurement frame") )
+    {
+      // Meausurement frame
+      std::vector<std::vector<double> > nrrdmf;
+      itk::ExposeMetaData<std::vector<std::vector<double> > >(
+        imgMetaDictionary,
+        "NRRD_measurement frame",
+        nrrdmf);
+      itk::EncapsulateMetaData<std::vector<std::vector<double> > >(
+        output_imgMetaDictionary,
+        "NRRD_measurement frame",
+        nrrdmf);
+    }
+
+  // modality
+  if ( imgMetaDictionary.HasKey("modality") )
+  {
+      itk::ExposeMetaData(imgMetaDictionary, "modality", metaString);
+      itk::EncapsulateMetaData<std::string>( output_imgMetaDictionary,
+      "modality",
+       metaString);
+  } 
+
+  // b-value
+  if ( imgMetaDictionary.HasKey("DWMRI_b-value") )
+  {
+      itk::ExposeMetaData(imgMetaDictionary, "DWMRI_b-value", metaString);
+      itk::EncapsulateMetaData<std::string>( output_imgMetaDictionary,
+      "DWMRI_b-value",
+       metaString);
+  }
+
+  // gradient vectors
+  int temp = 0;
+  for ( unsigned int i = 0; i < GradientDirectionContainer->size(); i++ )
+  {
+
+   if ( Search_index( i, list_index ) == false && Search_index( i, list_index_original ) == true ) 
+   {
+      std::ostringstream ossKey;
+      ossKey << "DWMRI_gradient_" << std::setw(4) << std::setfill('0') << temp;
+
+      std::ostringstream ossMetaString;
+      ossMetaString << std::setw(9) << std::setiosflags(std::ios::fixed)
+        << std::setprecision(6) << std::setiosflags(std::ios::right)
+        << GradientDirectionContainer->ElementAt(i)[0]
+      << "    "
+        << std::setw(9) << std::setiosflags(std::ios::fixed)
+        << std::setprecision(6) << std::setiosflags(std::ios::right)
+        << GradientDirectionContainer->ElementAt(i)[1]
+      << "    "
+        << std::setw(9) << std::setiosflags(std::ios::fixed)
+        << std::setprecision(6) << std::setiosflags(std::ios::right)
+        << GradientDirectionContainer->ElementAt(i)[2];
+
+      // std::cout<<ossKey.str()<<ossMetaString.str()<<std::endl;
+      itk::EncapsulateMetaData<std::string>( output_imgMetaDictionary,
+        ossKey.str(), ossMetaString.str() );
+      ++temp;
+    }
+  }
+  
+  newDwiImage->SetMetaDataDictionary(output_imgMetaDictionary);
+
+  SetDwiOutputImage(newDwiImage);
+
+  itk::NrrdImageIO::Pointer myNrrdImageIO = itk::NrrdImageIO::New();
+  try
+  {
+    DwiWriterType::Pointer DwiWriter = DwiWriterType::New();
+    DwiWriter->SetImageIO(myNrrdImageIO);
+    DwiWriter->SetFileName( filename );
+    DwiWriter->UseInputMetaDataDictionaryOn();
+    DwiWriter->SetInput(newDwiImage);
+    DwiWriter->UseCompressionOn();
+    DwiWriter->Update();
+  }
+  catch ( itk::ExceptionObject & e )
+  {
+    std::cout << e.GetDescription() << std::endl;
+    return;
+  }
+  std::cout << "QC Savd" << std::endl;
+}
+
+/*void IntensityMotionCheckPanel::on_pushButton_SaveDWIAs_clicked( )
 {
   QString DWIFile = QFileDialog::getSaveFileName( this, tr(
     "Save Protocol As"), QString::fromStdString(DwiFileName),
@@ -3076,10 +4269,25 @@ void IntensityMotionCheckPanel::on_pushButton_SaveDWIAs_clicked( )
   {
     std::cout << "DWI file name NOT set" << std::endl;
   }
-}
+}*/
+
+/*void IntensityMotionCheckPanel::on_pushButton_DefaultQCResult_clicked()
+{
+  if ( m_DwiOriginalImage->GetVectorLength() != GradientDirectionContainer->size() )
+  {
+    std::cout
+      << "Bad DWI: mismatch between gradient image # and gradient vector #"
+      << std::endl;
+    QMessageBox::critical( this, tr("BAD DWI !"),
+      tr("Bad DWI: mismatch between gradient image # and gradient vector # !") );
+    return;
+  }
+
+}*/
 
 void IntensityMotionCheckPanel::on_pushButton_DefaultQCResult_clicked( )
 {
+  bLoadDefaultQC = true;
   if ( m_DwiOriginalImage->GetVectorLength() != GradientDirectionContainer->size() )
   {
     std::cout
@@ -3094,12 +4302,69 @@ void IntensityMotionCheckPanel::on_pushButton_DefaultQCResult_clicked( )
   ResultUpdate();
 
   bResultTreeEditable = true;
-  pushButton_SaveDWIAs->setEnabled( 1 );
+  pushButton_SaveVisualChecking->setEnabled( 0 );
 
   emit UpdateOutputDWIDiffusionVectorActors();
 }
 
 void IntensityMotionCheckPanel::DefaultProcess( )
+{
+  this->GetQCResult().Clear();
+
+  GradientIntensityMotionCheckResult IntensityMotionCR;
+  //IntensityMotionCR.processing = QCResult::GRADIENT_INCLUDE;
+
+  for ( unsigned int i = 0; i < this->m_DwiOriginalImage->GetVectorLength(); i++ )
+  {
+    IntensityMotionCR.OriginalDir[0]
+    = this->GradientDirectionContainer->ElementAt(i)[0];
+    IntensityMotionCR.OriginalDir[1]
+    = this->GradientDirectionContainer->ElementAt(i)[1];
+    IntensityMotionCR.OriginalDir[2]
+    = this->GradientDirectionContainer->ElementAt(i)[2];
+
+    IntensityMotionCR.ReplacedDir[0]
+    = this->GradientDirectionContainer->ElementAt(i)[0];
+    IntensityMotionCR.ReplacedDir[1]
+    = this->GradientDirectionContainer->ElementAt(i)[1];
+    IntensityMotionCR.ReplacedDir[2]
+    = this->GradientDirectionContainer->ElementAt(i)[2];
+
+    IntensityMotionCR.CorrectedDir[0]
+    = this->GradientDirectionContainer->ElementAt(i)[0];
+    IntensityMotionCR.CorrectedDir[1]
+    = this->GradientDirectionContainer->ElementAt(i)[1];
+    IntensityMotionCR.CorrectedDir[2]
+    = this->GradientDirectionContainer->ElementAt(i)[2];
+
+   this->GetQCResult().GetIntensityMotionCheckResult().push_back(
+      IntensityMotionCR);
+
+    SetProcessingQCResult(this->GetQCResult().GetIntensityMotionCheckResult()[ i ].processing, QCResult::GRADIENT_INCLUDE);  
+
+    
+  }
+
+  
+
+  ImageInformationCheckResult ImageInformationCR;
+  ImageInformationCR.origin = true;
+  ImageInformationCR.size = true;
+  ImageInformationCR.spacing = true;
+  ImageInformationCR.space = true;
+  ImageInformationCR.spacedirection = true;
+  qcResult.GetImageInformationCheckResult() = ImageInformationCR;
+
+  DiffusionInformationCheckResult DiffusionInformationCR;
+  DiffusionInformationCR.b = true;
+  DiffusionInformationCR.gradient = true;
+  DiffusionInformationCR.measurementFrame = true;
+  qcResult.GetDiffusionInformationCheckResult() = DiffusionInformationCR;
+
+}
+  
+  
+/*void IntensityMotionCheckPanel::DefaultProcess( )
 {
   this->qcResult.Clear();
 
@@ -3142,4 +4407,4 @@ void IntensityMotionCheckPanel::DefaultProcess( )
   protocol.GetGradientCheckProtocol().        bCheck = true;
   protocol.GetBaselineAverageProtocol().      bAverage = true;
   protocol.GetEddyMotionCorrectionProtocol(). bCorrect = true;
-}
+}*/

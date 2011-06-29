@@ -37,6 +37,16 @@ public:
   {
     qcResult = r;
   }
+ 
+  //void Set_result(unsigned char r)
+  //{
+  //  result = r;
+  //} 
+
+  //unsigned char & Get_result()
+  //{
+  //  return result;
+  //}
 
 signals:
   void allDone(const QString &);
@@ -60,6 +70,8 @@ private:
 
   Protocol    *protocol;
   QCResult    *qcResult;
+
+  //unsigned char result; // the result of RunPipelineByProtocol
 
 };
 

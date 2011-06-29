@@ -4,6 +4,7 @@
 #include <QMap>
 #include "Protocol.h"
 
+
 class QTreeWidget;
 class QTreeWidgetItem;
 
@@ -22,13 +23,13 @@ public:
     protocol = p;
   };
 
+  
 private:
   void writeIndexEntry(QXmlStreamWriter *xmlWriter, QTreeWidgetItem *item);
   void writeIndexEntry_Protocol(QXmlStreamWriter *xmlWriter, QTreeWidgetItem *item);
 
   QTreeWidget *treeWidget;
   Protocol *protocol;
-
   
 
  };

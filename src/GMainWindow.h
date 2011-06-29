@@ -5,6 +5,9 @@
 #include "ui_MainWindow.h"
 #include "IntensityMotionCheckPanel.h"
 
+#include <QWidget>
+
+
 // Forward class declarations
 class vtkCylinderSource;
 class vtkPolyDataMapper;
@@ -15,12 +18,15 @@ class vtkRenderer;
 
 class Dicom2NrrdPanel;
 class ImageView2DPanelWithControls;
+class VisualCheckingStatus;
 
 class QActionGroup;
 class QAction;
 class QActionGroup;
 class QLabel;
 class QMenu;
+class QPushButton;
+
 
 #include <itkImage.h>
 #include <itkImageFileReader.h>
@@ -54,6 +60,12 @@ public:
   ~GMainWindow();
   
   void ChangeStyleTo(QString style);
+
+signals:
+
+void currentGradient_VC_Include(int winID, int gradient );
+void currentGradient_VC_Exclude(int winID, int gradient );
+void VisualCheckingStatus(int index, int status, int pro );
 
 private slots:
   void save();
@@ -101,12 +113,18 @@ private slots:
 
   void on_actionCleanlooks_triggered();
 
+  // When loading QCResult
+
+  void LoadQCResult(bool);
+
   // vector view
   void UpdateProtocolDiffusionVectorActors();
 
   void UpdateDWIDiffusionVectorActors();
 
   void UpdateOutputDWIDiffusionVectorActors();
+  
+  void UpdateOutputDWIDiffusionVectorActors_VC();
 
   void on_actionFrom_Protocol_toggled( bool);
 
@@ -130,6 +148,12 @@ private slots:
 
   void GradientChanged(int WinID, int index);
 
+  void GradientChanged_VC_Include( int WinID, int index);
+
+  void GradientChanged_VC_Exclude( int WinID, int index);
+
+  void GradientUpdate( int index);
+  
   void InterpolationChanged(int WinID, int index);
 
   void ContentsChanged(int WinID, int index);
@@ -161,6 +185,11 @@ private slots:
   //
   void SetAllWindowLevel(double window, double level);
 
+ //
+  void SetactionIncluded();  // Activate the "actionIncluded" bottom
+
+     
+
 private:
   bool bDwiLoaded; // =false;
 
@@ -168,6 +197,7 @@ private:
   bool bContentSyn;        // =true;
   bool bInterpolationSyn;  // =true;
   bool bOrientationSyn;    // =false;
+  bool bQCResultLoad;     
 
   // 3D window
   vtkActor        *actorSphere;
@@ -178,6 +208,10 @@ private:
   // docking panels
   Dicom2NrrdPanel           *dicom2NrrdPanel;
   IntensityMotionCheckPanel *DTIPrepPanel;
+  
+
+  // Check Box panel
+  
 
   // docking 2D image planes
   //  ImageView2DPanel    *imageView2DPanel1;
@@ -203,6 +237,9 @@ private:
   void createDockPanels_imageView2DPanel2();
  
   void createDockPanels_imageView2DPanel3();
+
+  
+  
 
   
 
@@ -282,6 +319,8 @@ public:
     int gradient3,
     int numbGradients);
 
+
+
   vtkRenderer *        GetRenderer()
   {
     return pvtkRenderer;
@@ -301,6 +340,19 @@ public:
   {
     return planeWidgetZ;
   }
+
+  void RemoveDwiFile();
+
+
+  struct VC_STATUS
+  {
+
+  int index;
+  int VC_status;
+  };
+
+std::vector<VC_STATUS> VC_Status;
+
 
 private:
   vtkImageData *image1;

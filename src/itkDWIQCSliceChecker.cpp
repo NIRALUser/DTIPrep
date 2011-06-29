@@ -922,6 +922,7 @@ namespace itk
 
     int                    DWIBadcount = 0;
     int                    baselineBadcount = 0;
+    int			   Grad_id = 0;
     InputImageConstPointer inputPtr = this->GetInput();
     for ( unsigned int i = 0; i < ResultsContainer.size(); i++ )
     {

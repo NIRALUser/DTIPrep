@@ -32,7 +32,7 @@ include(${MultiImageRegistration_USE_FILE})
 if(NOT Qt_FOUND)
   find_package( Qt4 REQUIRED )
   if(QT_USE_FILE)
-#    set(QT_USE_QTXML TRUE)
+    set(QT_USE_QTXML TRUE)
 #    set(QT_USE_DBUS FALSE)
     include(${QT_USE_FILE})
   endif(QT_USE_FILE)
@@ -67,6 +67,7 @@ SET( DTIPrep_SRCS
   IntensityMotionCheckPanel.cxx
   ImageView2DPanelWithControls.cxx
   IntensityMotionCheck.cxx
+  VisualCheckingStatus.cxx
   IntraGradientRigidRegistration.cxx
   InterGradientRigidRegistration.cxx
   RigidRegistration.cxx
@@ -74,6 +75,7 @@ SET( DTIPrep_SRCS
   ThreadEddyMotionCorrect.cxx
   ThreadDicomToNrrd.cxx
   ThreadDicomSeriesRead.cxx
+  FurtherQCThread.cxx
   XmlStreamReader.cpp
   XmlStreamWriter.cpp
   Protocol.cpp
@@ -104,6 +106,8 @@ SET( DTIPrep_HRDS
   ThreadEddyMotionCorrect.h
   ThreadDicomToNrrd.h
   ThreadDicomSeriesRead.h
+  VisualCheckingStatus.h
+  FurtherQCThread.h
 )
 
 SET( DTIPrep_UIS
@@ -111,6 +115,7 @@ SET( DTIPrep_UIS
   gui/Dicom2NrrdPanel.ui
   gui/IntensityMotionCheckPanel.ui
   gui/ImageView2DPanelWithControls.ui
+  gui/VisualCheckingStatus.ui
 )
 
 SET(DTIPrep_RCCS gui/DTIPrep.qrc)
