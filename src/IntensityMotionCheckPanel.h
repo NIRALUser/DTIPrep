@@ -204,7 +204,9 @@ public:
 
   void GenerateCheckOutputImage( DwiImageType::Pointer dwi, const std::string filename);
 
-  void GenerateOutput_VisualCheckingResult( std::vector<int> list_index, std::string filename);
+  void GenerateOutput_VisualCheckingResult( std::string filename );
+
+  void GenerateOutput_VisualCheckingResult();
 
   bool Search_index( int index, std::vector<int> list_index );
 
@@ -241,11 +243,11 @@ int VC_status;
 std::vector<VC_STATUS> VC_Status;
 
 struct m_Original_ForcedConformance_Mapping
-  {
+{
      std::vector<int> index_original;
      int index_ForcedConformance;
      
-  };
+};
 
 std::vector<m_Original_ForcedConformance_Mapping> t_Original_ForcedConformance_Mapping;
 void set_Original_ForcedConformance_Mapping( std::vector<m_Original_ForcedConformance_Mapping> m_t )
@@ -266,6 +268,7 @@ private:
   DwiImageType::Pointer  m_DwiOutputImage;   // QCed Dwi image
 
   bool                                    bDwiLoaded;
+  bool					  bDwi_VisualCheckLoad;		// set true when the new updated dwi after visual checking is created sucessfully 
   bool                                    bGetGradientDirections;
   bool                                    readb0;
   double                                  b0;
@@ -286,10 +289,10 @@ private:
 
   unsigned char result; // the result of RunPipleline
 
-  std::vector< int > index_listVCExcluded;		// contains the excluded gradients id
+  std::vector< int > index_listVCExcluded;		// contains the VC-excluded gradients id
+  std::vector< int > index_listVCIncluded;		// contains the VC-included gradients id
   
-
-  
+ 
 };
 
 #endif // INTENSITYMOTIONCHECKPANEL_H

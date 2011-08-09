@@ -696,8 +696,8 @@ void GMainWindow::about()
 {
   QMessageBox::about( this, tr("About DTIPrep"),
     tr("A Tool to do QC/Prep work for DWI/DTI. "
-      "\nCopyright(c) NIRAL, UNC. All rights reserved. "
-      "\nSee http://www.niral.unc.edu for details.") );
+      "\nCopyright(c) UNC. All rights reserved. "
+      "\nSee http://www.nitrc.org/projects/dtiprep for details.") );
 }
 
 void GMainWindow::help()

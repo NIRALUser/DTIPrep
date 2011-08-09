@@ -79,6 +79,8 @@ public:
   }
 
   bool GetGradientDirections();
+ 
+  bool GetGradientDirections_FurtherQC();
 
   bool GetGradientDirections( 
     DwiImageType::Pointer dwi,
@@ -101,6 +103,7 @@ public:
   bool EddyMotionCorrectIowa( DwiImageType::Pointer dwi );
   bool GradientWiseCheck( DwiImageType::Pointer dwi );
   bool SaveDwiForcedConformanceImage(void) const;
+  bool SaveDwiForcedConformanceImage_FurtherQC(void) const;
 
   bool DTIComputing();
 
@@ -115,11 +118,18 @@ public:
     this->protocol = p;
   }
 
+  inline void SetProtocol_FurtherQC(Protocol *p)
+  {
+    this->protocol = p;
+    protocol_load = true;
+  }
+  
   inline void SetQCResult(QCResult *r)
   {
     qcResult = r;
   }
 
+  
   inline QCResult * GetQCResult()
   {
     return qcResult;
@@ -191,9 +201,7 @@ public:
   // E: InterCheck()
   unsigned char  RunPipelineByProtocol();
 
-  unsigned char  RunPipelineByProtocol_FurtherQC1();	// In Further QC step: Runing Image Info and Diffusion procedures 
-
-  unsigned char  RunPipelineByProtocol_FurtherQC2();	// In Further QC step: Runing Baseline Avg, Eddy motion correction, Gradient-wise checking, DTI computing and DTI saving
+  unsigned char  RunPipelineByProtocol_FurtherQC();	// In Further QC step: Runing Baseline Avg, Eddy motion correction, Gradient-wise checking, DWI saving
 
 
   inline DwiImageType::Pointer GetDwiImage() const
@@ -242,6 +250,8 @@ public:
   }
 
   bool LoadDwiImage();
+ 
+  bool LoadDwiImage_FurtherQC( DwiImageType::Pointer  new_dwi );
 
   bool MakeDefaultProtocol( Protocol *protocol);
 
@@ -277,6 +287,7 @@ private:
   //distinguish them from local variables in the member functions.
   //All these variables need to have m_ in front of them.
   bool m_bDwiLoaded;
+  bool m_bDwiLoaded_FurtherQC;
 
   int m_baselineNumber;
   int m_bValueNumber;
@@ -291,6 +302,7 @@ private:
   std::vector<int> m_repetitionLeftNumber;
 
   bool m_bGetGradientDirections;
+  bool m_bGetGradientDirections_FurtherQC;
 
   std::string m_DwiFileName;
   std::string m_XmlFileName;
@@ -321,10 +333,15 @@ private:
 
   Protocol *protocol;
   QCResult *qcResult;
+  
 
   bool   m_readb0;
   double m_b0;
 
+  bool   m_readb0_FurtherQC;
+  double m_b0_FurtherQC;
+
+  bool protocol_load;
 
 };
 
