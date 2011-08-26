@@ -537,17 +537,17 @@ void IntensityMotionCheckPanel::Match_DwiQC ()
      QMessageBox msgBox;
      msgBox.setWindowTitle( Grad1 );
      msgBox.setText( Grad2 );
-     QPushButton * Cancel = msgBox.addButton( tr("Cancel"), QMessageBox::ActionRole);
+     QPushButton * Ok = msgBox.addButton( tr("Ok"), QMessageBox::ActionRole);
      QPushButton * LoadNewQC= msgBox.addButton( tr("Specify of New QCResult"), QMessageBox::ActionRole);
      
      msgBox.exec();
 
-     if ( msgBox.clickedButton() == Cancel )
+     if ( msgBox.clickedButton() == Ok )
      {
-       treeWidget_Results->clear();
-       qcResult.Clear();
-       emit LoadQCResult(false);
-       bCancel_QC = true;
+       //treeWidget_Results->clear();
+       //qcResult.Clear();
+       emit LoadQCResult(true);
+       //bCancel_QC = true;
        return;
      }
      if ( msgBox.clickedButton() == LoadNewQC )
