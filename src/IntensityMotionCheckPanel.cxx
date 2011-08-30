@@ -4082,16 +4082,16 @@ bool IntensityMotionCheckPanel::Search_index( int index, std::vector<int> list_i
 void IntensityMotionCheckPanel::GenerateOutput_VisualCheckingResult( std::string filename )
 {
   
-  std::vector<int> list_index_original;  // list of original indices in dwi
-  for ( unsigned int j = 0; j< myIntensityThread.m_IntensityMotionCheck->get_Original_ForcedConformance_Mapping().size() ; j++ )
+  std::vector<int> list_index_original;  // list of original indices in dwi ???? ( Problem )
+  for ( unsigned int j = 0; j< qcResult.GetOriginal_ForcedConformance_Map().size() ; j++ )
   {
     if (j == 0)
     {
-       for ( int k = 0; k< (myIntensityThread.m_IntensityMotionCheck->get_Original_ForcedConformance_Mapping()[j].index_original).size() ; k++ )
-		list_index_original.push_back( (myIntensityThread.m_IntensityMotionCheck->get_Original_ForcedConformance_Mapping()[j].index_original)[k] ); // indices for Baseline
+       for ( int k = 0; k< (qcResult.GetOriginal_ForcedConformance_Map()[j].index_original).size() ; k++ )
+		list_index_original.push_back( (qcResult.GetOriginal_ForcedConformance_Map()[j].index_original)[k] ); // indices for Baseline
     }
     else
-       list_index_original.push_back( (myIntensityThread.m_IntensityMotionCheck->get_Original_ForcedConformance_Mapping()[j].index_original)[0] ); 
+       list_index_original.push_back( (qcResult.GetOriginal_ForcedConformance_Map()[j].index_original)[0] ); 
   }
 
   for ( unsigned int i =0 ; i < list_index_original.size() ; i++ )
@@ -4108,10 +4108,20 @@ void IntensityMotionCheckPanel::GenerateOutput_VisualCheckingResult( std::string
   }
 
   unsigned int gradientLeft = 0;
-  for ( unsigned int i = 0; i < qcResult.GetIntensityMotionCheckResult().size();  i++ )
+  /*for ( unsigned int i = 0; i < qcResult.GetIntensityMotionCheckResult().size();  i++ )
   {
     // Finding the included gradients after QC and Visual Checking
     if (  Search_index( i, index_listVCExcluded ) == false && ( Search_index( i, list_index_original ) == true ||  Search_index( i, index_listVCIncluded ) == true ) )
+    {
+      std::cout << "Leftgradient : " << i << std::endl; 
+      gradientLeft++;
+    }
+  }*/
+
+  for ( unsigned int i = 0; i < qcResult.GetIntensityMotionCheckResult().size();  i++ )
+  {
+    // Finding the included gradients after QC and Visual Checking
+    if (  Search_index( i, index_listVCExcluded ) == false && ( (qcResult.GetIntensityMotionCheckResult()[i].processing == 0 || qcResult.GetIntensityMotionCheckResult()[i].processing == 1 || qcResult.GetIntensityMotionCheckResult()[i].processing == 2) ||  Search_index( i, index_listVCIncluded ) == true ) )
     {
       std::cout << "Leftgradient : " << i << std::endl; 
       gradientLeft++;
@@ -4186,7 +4196,7 @@ void IntensityMotionCheckPanel::GenerateOutput_VisualCheckingResult( std::string
     int element = 0;
     for ( unsigned int i = 0; i < m_DwiOriginalImage->GetVectorLength();i++ )
     {
-    if ( Search_index( i, index_listVCExcluded ) == false && ( Search_index( i, list_index_original ) == true || Search_index( i, index_listVCIncluded ) == true ) )
+    if ( Search_index( i, index_listVCExcluded ) == false && ( (qcResult.GetIntensityMotionCheckResult()[i].processing == 0 || qcResult.GetIntensityMotionCheckResult()[i].processing == 1 || qcResult.GetIntensityMotionCheckResult()[i].processing == 2) || Search_index( i, index_listVCIncluded ) == true ) )
       {
         value.SetElement( element, oit.Get()[i] );
         element++;
@@ -4242,7 +4252,7 @@ void IntensityMotionCheckPanel::GenerateOutput_VisualCheckingResult( std::string
   for ( unsigned int i = 0; i < GradientDirectionContainer->size(); i++ )
   {
 
-   if ( Search_index( i, index_listVCExcluded ) == false && ( Search_index( i, list_index_original ) == true ||  Search_index( i, index_listVCIncluded ) == true ) ) 
+   if ( Search_index( i, index_listVCExcluded ) == false && ( (qcResult.GetIntensityMotionCheckResult()[i].processing == 0 || qcResult.GetIntensityMotionCheckResult()[i].processing == 1 || qcResult.GetIntensityMotionCheckResult()[i].processing == 2) ||  Search_index( i, index_listVCIncluded ) == true ) ) 
    {
       std::ostringstream ossKey;
       ossKey << "DWMRI_gradient_" << std::setw(4) << std::setfill('0') << temp;
@@ -4356,7 +4366,7 @@ void IntensityMotionCheckPanel::GenerateOutput_VisualCheckingResult( )
   for ( unsigned int i = 0; i < qcResult.GetIntensityMotionCheckResult().size();  i++ )
   {
     // Finding the included gradients after QC and Visual Checking
-    if (  Search_index( i, index_listVCExcluded ) == false && ( Search_index( i, list_index_original ) == true ||  Search_index( i, index_listVCIncluded ) == true ) )
+    if (  Search_index( i, index_listVCExcluded ) == false && ( (qcResult.GetIntensityMotionCheckResult()[i].processing == 0 || qcResult.GetIntensityMotionCheckResult()[i].processing == 1 || qcResult.GetIntensityMotionCheckResult()[i].processing == 2) ||  Search_index( i, index_listVCIncluded ) == true ) )
     {
       std::cout << "Leftgradient : " << i << std::endl; 
       gradientLeft++;
@@ -4409,7 +4419,7 @@ void IntensityMotionCheckPanel::GenerateOutput_VisualCheckingResult( )
     int element = 0;
     for ( unsigned int i = 0; i < m_DwiOriginalImage->GetVectorLength();i++ )
     {
-    if ( Search_index( i, index_listVCExcluded ) == false && ( Search_index( i, list_index_original ) == true || Search_index( i, index_listVCIncluded ) == true ) )
+    if ( Search_index( i, index_listVCExcluded ) == false && ( (qcResult.GetIntensityMotionCheckResult()[i].processing == 0 || qcResult.GetIntensityMotionCheckResult()[i].processing == 1 || qcResult.GetIntensityMotionCheckResult()[i].processing == 2) || Search_index( i, index_listVCIncluded ) == true ) )
       {
         value.SetElement( element, oit.Get()[i] );
         element++;
@@ -4465,7 +4475,7 @@ void IntensityMotionCheckPanel::GenerateOutput_VisualCheckingResult( )
   for ( unsigned int i = 0; i < GradientDirectionContainer->size(); i++ )
   {
 
-   if ( Search_index( i, index_listVCExcluded ) == false && ( Search_index( i, list_index_original ) == true ||  Search_index( i, index_listVCIncluded ) == true ) ) 
+   if ( Search_index( i, index_listVCExcluded ) == false && ( (qcResult.GetIntensityMotionCheckResult()[i].processing == 0 || qcResult.GetIntensityMotionCheckResult()[i].processing == 1 || qcResult.GetIntensityMotionCheckResult()[i].processing == 2) ||  Search_index( i, index_listVCIncluded ) == true ) ) 
    {
       std::ostringstream ossKey;
       ossKey << "DWMRI_gradient_" << std::setw(4) << std::setfill('0') << temp;

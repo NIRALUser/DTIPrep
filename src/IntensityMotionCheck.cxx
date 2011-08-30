@@ -2815,7 +2815,7 @@ unsigned char CIntensityMotionCheck::RunPipelineByProtocol_FurtherQC()
     }
   }
   std::cout << "GradientCheck DONE " << std::endl;
-  
+
   // Save QC'ed DWI
   std::cout << "=====================" << std::endl;
   std::cout << "Save QC'ed DWI in Further QC... ";
@@ -3068,7 +3068,18 @@ unsigned char CIntensityMotionCheck::RunPipelineByProtocol()
     }
   }
   std::cout << "GradientCheck DONE " << std::endl;
-  
+
+  // Saving m_Original_ForcedConformance_Mapping in the QCResult
+  Original_ForcedConformance_Map item_map;
+  for ( unsigned int ind_map = 0; ind_map < m_Original_ForcedConformance_Mapping.size() ; ind_map++ )
+  {
+      item_map.index_ForcedConformance = m_Original_ForcedConformance_Mapping[ ind_map ].index_ForcedConformance;
+      for ( unsigned int ind = 0; ind < (m_Original_ForcedConformance_Mapping[ ind_map ].index_original).size() ; ind ++ )
+		item_map.index_original[ ind ] = (m_Original_ForcedConformance_Mapping[ ind_map ].index_original )[ ind ];
+
+      this->qcResult->GetOriginal_ForcedConformance_Map().push_back( item_map );
+  }
+
 
   // Save QC'ed DWI
   std::cout << "=====================" << std::endl;
@@ -3094,9 +3105,11 @@ unsigned char CIntensityMotionCheck::RunPipelineByProtocol()
   ValidateResult = validateLeftDiffusionStatistics();
 
   this->qcResult-> Set_result( ( ValidateResult << 5 ) + this->qcResult->Get_result() );
-
+  
+  
   
   return this->qcResult->Get_result();
+
 }
 
 

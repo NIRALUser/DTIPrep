@@ -62,6 +62,13 @@ struct OverallQCResult{
 
 };
 
+struct Original_ForcedConformance_Map	
+  {
+     std::vector<int> index_original;
+     int index_ForcedConformance;
+     
+  };
+  
 class QCResult
   {
 public:
@@ -125,6 +132,11 @@ public:
     return sliceWiseCheckProcessing;
   }
 
+  std::vector<Original_ForcedConformance_Map> & GetOriginal_ForcedConformance_Map()
+  {
+    return m_Original_ForcedConformance_Map;
+  }
+
   void Clear()
   {
     intensityMotionCheckResult.clear();
@@ -172,6 +184,8 @@ private:
   std::vector<SliceWiseCheckResult> sliceWiseCheckResult;
 
   std::vector< int > sliceWiseCheckProcessing;  // the result of the SliceWiseCheck processing
+
+  std::vector<Original_ForcedConformance_Map> m_Original_ForcedConformance_Map; // showing gradients indices included in the conformance image along their correspondings in the original image. 
 
   unsigned char result;
 
