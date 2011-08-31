@@ -3070,7 +3070,7 @@ unsigned char CIntensityMotionCheck::RunPipelineByProtocol()
   std::cout << "GradientCheck DONE " << std::endl;
 
   // Saving m_Original_ForcedConformance_Mapping in the QCResult
-  Original_ForcedConformance_Map item_map;
+ /* Original_ForcedConformance_Map item_map;
   for ( unsigned int ind_map = 0; ind_map < m_Original_ForcedConformance_Mapping.size() ; ind_map++ )
   {
       item_map.index_ForcedConformance = m_Original_ForcedConformance_Mapping[ ind_map ].index_ForcedConformance;
@@ -3078,7 +3078,7 @@ unsigned char CIntensityMotionCheck::RunPipelineByProtocol()
 		item_map.index_original[ ind ] = (m_Original_ForcedConformance_Mapping[ ind_map ].index_original )[ ind ];
 
       this->qcResult->GetOriginal_ForcedConformance_Map().push_back( item_map );
-  }
+  }  */
 
 
   // Save QC'ed DWI

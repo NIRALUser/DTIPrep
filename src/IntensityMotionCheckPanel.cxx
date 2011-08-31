@@ -538,7 +538,7 @@ void IntensityMotionCheckPanel::Match_DwiQC ()
      msgBox.setWindowTitle( Grad1 );
      msgBox.setText( Grad2 );
      QPushButton * Ok = msgBox.addButton( tr("Ok"), QMessageBox::ActionRole);
-     QPushButton * LoadNewQC= msgBox.addButton( tr("Specify of New QCResult"), QMessageBox::ActionRole);
+     QPushButton * LoadNewQC= msgBox.addButton( tr("Load new QCResult"), QMessageBox::ActionRole);
      
      msgBox.exec();
 
@@ -569,8 +569,8 @@ void IntensityMotionCheckPanel::Match_NameDwiQC( )
      msgBox.setWindowTitle( Grad1 );
      msgBox.setText( Grad2 );
      QPushButton * Ok = msgBox.addButton( tr("Ok"), QMessageBox::ActionRole);
-     QPushButton * LoadNewQC= msgBox.addButton( tr("Specify of New QCResult"), QMessageBox::ActionRole);
-     QPushButton * LoadDwi= msgBox.addButton( tr("Load New Dwi"), QMessageBox::ActionRole);
+     QPushButton * LoadNewQC= msgBox.addButton( tr("Load new QCResult"), QMessageBox::ActionRole);
+     QPushButton * LoadDwi= msgBox.addButton( tr("Load new Dwi"), QMessageBox::ActionRole);
      
      msgBox.exec();
 
