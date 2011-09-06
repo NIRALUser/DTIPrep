@@ -6,7 +6,7 @@
 #include "itkGDCMSeriesFileNames.h"
 
 Dicom2NrrdPanel::Dicom2NrrdPanel(QMainWindow *parentLocal) : QDockWidget(parentLocal)
-  {
+{
   setupUi(this);
   verticalLayout->setContentsMargins(0, 0, 0, 0);
   

@@ -1943,6 +1943,58 @@ bool CIntensityMotionCheck::EddyMotionCorrectIowa( DwiImageType::Pointer dwi )
       return false;
     }
 
+/*for ( unsigned int i = 0; i < inputGradDirContainer->size(); i++ )
+    {
+      for ( unsigned int j = 0;
+        j < this->qcResult->GetIntensityMotionCheckResult().size();
+        j++ )
+      {
+        if ( 0.0 ==
+          this->qcResult->GetIntensityMotionCheckResult()[j].ReplacedDir[0]
+        && 0.0 ==
+          this->qcResult->GetIntensityMotionCheckResult()[j].ReplacedDir[1]
+        && 0.0 ==
+          this->qcResult->GetIntensityMotionCheckResult()[j].ReplacedDir[2]  )
+        {
+          this->qcResult->GetIntensityMotionCheckResult()[j].processing
+            = QCResult::GRADIENT_BASELINE_AVERAGED;
+          continue;
+        }
+
+        if ( inputGradDirContainer->at(i)[0] ==
+          this->qcResult->GetIntensityMotionCheckResult()[j].ReplacedDir[0]
+        && inputGradDirContainer->at(i)[1] ==
+          this->qcResult->GetIntensityMotionCheckResult()[j].ReplacedDir[1]
+        && inputGradDirContainer->at(i)[2] ==
+          this->qcResult->GetIntensityMotionCheckResult()[j].ReplacedDir[2]  )
+        {
+          if ( this->qcResult->GetIntensityMotionCheckResult()[j].processing >
+            QCResult::GRADIENT_EDDY_MOTION_CORRECTED )                                                               //
+            //
+            // GRADIENT_EXCLUDE_SLICECHECK,
+            // GRADIENT_EXCLUDE_INTERLACECHECK,
+            // GRADIENT_EXCLUDE_GRADIENTCHECK,
+            // GRADIENT_EXCLUDE_MANUALLY,
+          {
+            // std::cout<< "gradient " << i << " has been excluded!"
+            // <<std::endl;
+          }
+          else
+          {
+            this->qcResult->GetIntensityMotionCheckResult()[j].processing
+              = QCResult::GRADIENT_EDDY_MOTION_CORRECTED;
+            this->qcResult->GetIntensityMotionCheckResult()[j].CorrectedDir[0]
+            = outputGradDirContainer->at(i)[0];
+            this->qcResult->GetIntensityMotionCheckResult()[j].CorrectedDir[1]
+            = outputGradDirContainer->at(i)[1];
+            this->qcResult->GetIntensityMotionCheckResult()[j].CorrectedDir[2]
+            = outputGradDirContainer->at(i)[2];
+          }
+        }
+      }
+    }
+*/
+
      for ( unsigned int j = 0;
         j < this->qcResult->GetIntensityMotionCheckResult().size();
         j++ )
@@ -1987,7 +2039,8 @@ bool CIntensityMotionCheck::EddyMotionCorrectIowa( DwiImageType::Pointer dwi )
           this->qcResult->GetIntensityMotionCheckResult()[j].ReplacedDir[2]  )
         {
           if ( this->qcResult->GetIntensityMotionCheckResult()[j].processing !=
-            QCResult::GRADIENT_EDDY_MOTION_CORRECTED )
+            QCResult::GRADIENT_EDDY_MOTION_CORRECTED && this->qcResult->GetIntensityMotionCheckResult()[j].processing !=
+            QCResult::GRADIENT_BASELINE_AVERAGED)
           {
             this->qcResult->GetIntensityMotionCheckResult()[j].processing
               = QCResult::GRADIENT_EDDY_MOTION_CORRECTED;
@@ -2003,6 +2056,7 @@ bool CIntensityMotionCheck::EddyMotionCorrectIowa( DwiImageType::Pointer dwi )
         }
       }
     }
+
 
     if ( protocol->GetGradientCheckProtocol().outputDWIFileNameSuffix.length()
     > 0 )
@@ -3069,6 +3123,19 @@ unsigned char CIntensityMotionCheck::RunPipelineByProtocol()
   }
   std::cout << "GradientCheck DONE " << std::endl;
 
+  for ( unsigned int k_ind = 0; k_ind < m_Original_ForcedConformance_Mapping.size() ; k_ind ++ )
+  {
+	if ( k_ind == 0 )
+	{
+	for ( unsigned int kk_ind = 0; kk_ind < m_Original_ForcedConformance_Mapping[k_ind].index_original.size(); kk_ind ++ )
+ 	{
+	std::cout << "Baselines_indices:" << " " << m_Original_ForcedConformance_Mapping[k_ind].index_original[kk_ind] << std::endl;
+	}
+	}
+	else
+	std::cout << "Included Gradients_indices:" << " " << m_Original_ForcedConformance_Mapping[k_ind].index_original[0] << std::endl;
+	
+  }
   // Saving m_Original_ForcedConformance_Mapping in the QCResult
  /* Original_ForcedConformance_Map item_map;
   for ( unsigned int ind_map = 0; ind_map < m_Original_ForcedConformance_Mapping.size() ; ind_map++ )

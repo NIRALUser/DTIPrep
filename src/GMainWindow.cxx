@@ -1917,6 +1917,7 @@ void GMainWindow::GradientChanged(int WinID, int index)
 
 void GMainWindow::GradientUpdate( int index )
 {
+
   QString Grad1 = QString( "Saving Gradient Change" );
   QString Grad2 = QString( "Status of gradient %1 based on Visual Checking" ).arg( index);
   

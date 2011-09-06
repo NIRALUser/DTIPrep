@@ -2094,6 +2094,19 @@ void IntensityMotionCheckPanel::UpdateProtocolToTreeWidget( )
   }
 
 
+  //Denoising method: "Recian LMMSE Image Filter" adopted from Slicer3
+  /*QTreeWidgetItem * item_DenoiseLMMSE = new QTreeWidgetItem(treeWidget);
+  item_DenoiseLMMSE->setText( 0, tr("Rician LMMSE Image Filter") );
+  if ( this->GetProtocol().GetDenoisingLMMSE_Protocol().bCheck )
+  {
+	item_DenoiseLMMSE->setText( 1, tr("Yes") );
+  }
+  else
+  {
+	item_DenoiseLMMSE->setText( 1, tr("No") );
+  }*/
+
+
   // Slice Check
   QTreeWidgetItem *itemSliceCheck = new QTreeWidgetItem(treeWidget);
   itemSliceCheck->setText( 0, tr("SLICE_bCheck") );
@@ -2725,7 +2738,7 @@ void IntensityMotionCheckPanel::f_overallSliceWiseCheck()
       num_SliceWiseCheckExc++;
   if ( qcResult.GetIntensityMotionCheckResult()[i].processing == QCResult::GRADIENT_EXCLUDE_INTERLACECHECK )
       num_InterlaceWiseCheckExc++;
-  if ( qcResult.GetIntensityMotionCheckResult()[i].processing == QCResult::GRADIENT_EXCLUDE_INTERLACECHECK )
+  if ( qcResult.GetIntensityMotionCheckResult()[i].processing == QCResult::GRADIENT_EXCLUDE_GRADIENTCHECK )
       num_GradientWiseCheckExc++;
   }
   
@@ -2746,7 +2759,7 @@ void IntensityMotionCheckPanel::f_overallInterlaceWiseCheck()
       num_SliceWiseCheckExc++;
   if ( qcResult.GetIntensityMotionCheckResult()[i].processing == QCResult::GRADIENT_EXCLUDE_INTERLACECHECK )
       num_InterlaceWiseCheckExc++;
-  if ( qcResult.GetIntensityMotionCheckResult()[i].processing == QCResult::GRADIENT_EXCLUDE_INTERLACECHECK )
+  if ( qcResult.GetIntensityMotionCheckResult()[i].processing == QCResult::GRADIENT_EXCLUDE_GRADIENTCHECK )
       num_GradientWiseCheckExc++;
   }
   r_InterlaceWiseCheck = num_InterlaceWiseCheckExc/(qcResult.GetIntensityMotionCheckResult().size()-num_SliceWiseCheckExc);
@@ -2768,7 +2781,7 @@ void IntensityMotionCheckPanel::f_overallGradientWiseCheck()
       num_SliceWiseCheckExc++;
   if ( qcResult.GetIntensityMotionCheckResult()[i].processing == QCResult::GRADIENT_EXCLUDE_INTERLACECHECK )
       num_InterlaceWiseCheckExc++;
-  if ( qcResult.GetIntensityMotionCheckResult()[i].processing == QCResult::GRADIENT_EXCLUDE_INTERLACECHECK )
+  if ( qcResult.GetIntensityMotionCheckResult()[i].processing == QCResult::GRADIENT_EXCLUDE_GRADIENTCHECK )
       num_GradientWiseCheckExc++;
   }
   
@@ -2997,7 +3010,7 @@ void IntensityMotionCheckPanel::ResultUpdate()
 
 
 
-   if (!this->GetProtocol().GetSliceCheckProtocol().bQuitOnCheckFailure && !this->GetProtocol().GetInterlaceCheckProtocol().bQuitOnCheckFailure && this->GetProtocol().GetGradientCheckProtocol().bCheck)
+   if ((((!qcResult.Get_result()  & InterlaceWiseCheckBit) == InterlaceWiseCheckBit ) || (!(this->GetProtocol().GetSliceCheckProtocol().bQuitOnCheckFailure || this->GetProtocol().GetInterlaceCheckProtocol().bQuitOnCheckFailure) )) && this->GetProtocol().GetGradientCheckProtocol().bCheck)
    {
       if ((qcResult.Get_result() & GradientWiseCheckBit) == 0)
       {
@@ -3150,7 +3163,7 @@ void IntensityMotionCheckPanel::ResultUpdate()
     else
        itemSliceWiseCheck->setText( 2, tr("INCLUDE"));
    }
-    if ( (qcResult.Get_result() & SliceWiseCheckBit) == 0 ){ 
+    if ( !((qcResult.Get_result()  & SliceWiseCheckBit) == SliceWiseCheckBit &&  this->GetProtocol().GetSliceCheckProtocol().bQuitOnCheckFailure) ){ 
      if ( this->GetProtocol().GetInterlaceCheckProtocol().bCheck )
      {
        if (EXCLUDE_InterlaceWiseCheck==true)
@@ -3191,7 +3204,7 @@ void IntensityMotionCheckPanel::ResultUpdate()
 
        itemInterlaceCorrelation->setText(1,QString("%1").arg(qcResult.GetInterlaceWiseCheckResult()[i].Correlation));
       }
-       if ( (qcResult.Get_result() & InterlaceWiseCheckBit) == 0 )
+       if ( (((!qcResult.Get_result()  & InterlaceWiseCheckBit) == InterlaceWiseCheckBit ) || (!(this->GetProtocol().GetSliceCheckProtocol().bQuitOnCheckFailure || this->GetProtocol().GetInterlaceCheckProtocol().bQuitOnCheckFailure) )) )
        {
          if ( this->GetProtocol().GetGradientCheckProtocol().bCheck )
          {
@@ -4260,15 +4273,15 @@ void IntensityMotionCheckPanel::GenerateOutput_VisualCheckingResult( std::string
       std::ostringstream ossMetaString;
       ossMetaString << std::setw(9) << std::setiosflags(std::ios::fixed)
         << std::setprecision(6) << std::setiosflags(std::ios::right)
-        << GradientDirectionContainer->ElementAt(i)[0]
+        << qcResult.GetIntensityMotionCheckResult()[i].CorrectedDir[0]
       << "    "
         << std::setw(9) << std::setiosflags(std::ios::fixed)
         << std::setprecision(6) << std::setiosflags(std::ios::right)
-        << GradientDirectionContainer->ElementAt(i)[1]
+        << qcResult.GetIntensityMotionCheckResult()[i].CorrectedDir[1]
       << "    "
         << std::setw(9) << std::setiosflags(std::ios::fixed)
         << std::setprecision(6) << std::setiosflags(std::ios::right)
-        << GradientDirectionContainer->ElementAt(i)[2];
+        << qcResult.GetIntensityMotionCheckResult()[i].CorrectedDir[2];
 
       // std::cout<<ossKey.str()<<ossMetaString.str()<<std::endl;
       itk::EncapsulateMetaData<std::string>( output_imgMetaDictionary,

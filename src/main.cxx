@@ -330,7 +330,7 @@ if ([NSBundle loadNibNamed:@"qt_menu" owner:qtMenuLoader] == false) { qFatal("Qt
 	num_SliceWiseCheckExc++;
 	if ( qcResult.GetIntensityMotionCheckResult()[i].processing == QCResult::GRADIENT_EXCLUDE_INTERLACECHECK )
 	num_InterlaceWiseCheckExc++;
-	if ( qcResult.GetIntensityMotionCheckResult()[i].processing == QCResult::GRADIENT_EXCLUDE_INTERLACECHECK )
+	if ( qcResult.GetIntensityMotionCheckResult()[i].processing == QCResult::GRADIENT_EXCLUDE_GRADIENTCHECK )
 	num_GradientWiseCheckExc++;
 	}
 	r_SliceWiseCkeck = num_SliceWiseCheckExc/qcResult.GetIntensityMotionCheckResult().size();
@@ -340,6 +340,134 @@ if ([NSBundle loadNibNamed:@"qt_menu" owner:qtMenuLoader] == false) { qFatal("Qt
 	xmlWriter.writeStartElement("entry");
   	xmlWriter.writeAttribute( "parameter", "DWI Check"  );	
 
+        xmlWriter.writeStartElement("entry");
+	xmlWriter.writeAttribute( "parameter", "SliceWiseCheck"  );
+
+        if ( protocol.GetSliceCheckProtocol().bCheck )   // Check protocol whether run SliceWiseChecking
+	{
+		if ( (qcResult.Get_result()  & SliceWiseCheckBit) == SliceWiseCheckBit )
+		{
+		if ( protocol.GetSliceCheckProtocol().bQuitOnCheckFailure )
+		{
+			xmlWriter.writeTextElement("value","Fail Pipeline Termination");
+		}
+                else
+		     if (r_SliceWiseCkeck > protocol.GetInterlaceCheckProtocol().correlationThresholdGradient)
+		     {
+			
+			xmlWriter.writeTextElement("value","Fail");
+		     }
+		     else
+		     {
+			xmlWriter.writeTextElement("value","Pass");
+		     }
+		}
+		else
+		     if (r_SliceWiseCkeck > protocol.GetInterlaceCheckProtocol().correlationThresholdGradient)
+		     {
+			
+			xmlWriter.writeTextElement("value","Fail");
+			
+		     }
+		     else
+		     {
+			xmlWriter.writeTextElement("value","Pass");
+		     }
+	}
+	else if ( !protocol.GetSliceCheckProtocol().bCheck )
+	{
+		xmlWriter.writeTextElement("value","Not Set");
+	}
+
+	xmlWriter.writeEndElement();
+
+	xmlWriter.writeStartElement("entry");
+	xmlWriter.writeAttribute( "parameter", "InterlaceWiseCheck"  );
+
+	if ( !(( (qcResult.Get_result()  & SliceWiseCheckBit) == SliceWiseCheckBit ) && protocol.GetSliceCheckProtocol().bQuitOnCheckFailure) && protocol.GetInterlaceCheckProtocol().bCheck )  // Check protocol whether run InterlaceWiseChecking
+	{
+	if (  (qcResult.Get_result() & InterlaceWiseCheckBit) == InterlaceWiseCheckBit )
+	{
+	if ( protocol.GetInterlaceCheckProtocol().bQuitOnCheckFailure )
+	{
+		xmlWriter.writeTextElement("value","Fail Pipeline Termination");
+	}
+	else
+	{
+		if ( r_InterlaceWiseCheck > protocol.GetInterlaceCheckProtocol().correlationThresholdGradient)
+		{
+		xmlWriter.writeTextElement("value","Fail");
+		}
+		else 
+		{
+		xmlWriter.writeTextElement("value","Pass");
+		}
+	}
+	}
+	else 
+	{
+		if ( r_InterlaceWiseCheck > protocol.GetInterlaceCheckProtocol().correlationThresholdGradient)
+		{
+		xmlWriter.writeTextElement("value","Fail");
+		}
+		else 
+		{
+		xmlWriter.writeTextElement("value","Pass");
+		}
+	}
+	}
+	else if ( !protocol.GetInterlaceCheckProtocol().bCheck )
+	{
+		xmlWriter.writeTextElement("value","Not Set");
+	}	
+
+	xmlWriter.writeEndElement();
+
+	xmlWriter.writeStartElement("entry");
+	xmlWriter.writeAttribute( "parameter", "GradientWiseCheck"  );
+
+	if ( !protocol.GetSliceCheckProtocol().bQuitOnCheckFailure &&  !protocol.GetInterlaceCheckProtocol().bQuitOnCheckFailure && protocol.GetGradientCheckProtocol().bCheck )   // Check protocol whether run GradientWiseChecking
+	{
+	if  ( (qcResult.Get_result() & GradientWiseCheckBit) == GradientWiseCheckBit )
+	{
+	if (protocol.GetGradientCheckProtocol().bQuitOnCheckFailure)
+	{
+		
+		xmlWriter.writeTextElement("value","Fail Pipeline Terminatio");
+	}
+	else
+	{
+		if ( r_GradWiseCheck > protocol.GetInterlaceCheckProtocol().correlationThresholdGradient)
+		{
+		xmlWriter.writeTextElement("value","Fail");
+		}
+		else 
+		{
+		xmlWriter.writeTextElement("value","Pass");
+		}		
+	}
+	}
+	else
+	{
+		if ( r_GradWiseCheck > protocol.GetInterlaceCheckProtocol().correlationThresholdGradient)
+		{
+		xmlWriter.writeTextElement("value","Fail");
+		}
+		else 
+		{
+		xmlWriter.writeTextElement("value","Pass");
+		}	
+	}
+
+	}
+	else if ( ! protocol.GetGradientCheckProtocol().bCheck )
+	{
+		xmlWriter.writeTextElement("value","Not Set");
+	}
+	xmlWriter.writeEndElement();
+
+	
+/**** Old
 
 	if ( protocol.GetSliceCheckProtocol().bCheck )   // Check protocol whether run SliceWiseChecking
 	{
@@ -606,7 +734,9 @@ if ([NSBundle loadNibNamed:@"qt_menu" owner:qtMenuLoader] == false) { qFatal("Qt
 	}
 	
 	}
-*/
+*///
+
+
 
         for ( unsigned int i = 0;
 	i < qcResult.GetIntensityMotionCheckResult().size();
@@ -669,21 +799,21 @@ if ([NSBundle loadNibNamed:@"qt_menu" owner:qtMenuLoader] == false) { qFatal("Qt
 	xmlWriter.writeStartElement("entry");
   	xmlWriter.writeAttribute( "parameter",  "ReplacedDir" );
         xmlWriter.writeTextElement("value",QString("%1 %2 %3")
-	.arg(qcResult.GetIntensityMotionCheckResult()[i].OriginalDir[0], 0, 'f',
+	.arg(qcResult.GetIntensityMotionCheckResult()[i].ReplacedDir[0], 0, 'f',
 	6)
-	.arg(qcResult.GetIntensityMotionCheckResult()[i].OriginalDir[1], 0, 'f',
+	.arg(qcResult.GetIntensityMotionCheckResult()[i].ReplacedDir[1], 0, 'f',
 	6)
-	.arg(qcResult.GetIntensityMotionCheckResult()[i].OriginalDir[2], 0, 'f',
+	.arg(qcResult.GetIntensityMotionCheckResult()[i].ReplacedDir[2], 0, 'f',
 	6));		
       	xmlWriter.writeEndElement();
 	xmlWriter.writeStartElement("entry");
   	xmlWriter.writeAttribute( "parameter",  "CorrectedDir" );
         xmlWriter.writeTextElement("value",QString("%1 %2 %3")
-	.arg(qcResult.GetIntensityMotionCheckResult()[i].OriginalDir[0], 0, 'f',
+	.arg(qcResult.GetIntensityMotionCheckResult()[i].CorrectedDir[0], 0, 'f',
 	6)
-	.arg(qcResult.GetIntensityMotionCheckResult()[i].OriginalDir[1], 0, 'f',
+	.arg(qcResult.GetIntensityMotionCheckResult()[i].CorrectedDir[1], 0, 'f',
 	6)
-	.arg(qcResult.GetIntensityMotionCheckResult()[i].OriginalDir[2], 0, 'f',
+	.arg(qcResult.GetIntensityMotionCheckResult()[i].CorrectedDir[2], 0, 'f',
 	6));		
       	xmlWriter.writeEndElement();
 
@@ -717,7 +847,7 @@ if ([NSBundle loadNibNamed:@"qt_menu" owner:qtMenuLoader] == false) { qFatal("Qt
 	xmlWriter.writeEndElement();
 	xmlWriter.writeStartElement("entry");
   	xmlWriter.writeAttribute( "parameter",  "InterlaceWiseCheck" );
-	if ( (qcResult.Get_result() & SliceWiseCheckBit) == 0 )
+	if ( !(( (qcResult.Get_result()  & SliceWiseCheckBit) == SliceWiseCheckBit ) && protocol.GetSliceCheckProtocol().bQuitOnCheckFailure) )
 	{ 
         if ( protocol.GetInterlaceCheckProtocol().bCheck )
         {
@@ -798,7 +928,7 @@ if ([NSBundle loadNibNamed:@"qt_menu" owner:qtMenuLoader] == false) { qFatal("Qt
 	xmlWriter.writeEndElement();	
 	xmlWriter.writeStartElement("entry");
   	xmlWriter.writeAttribute( "parameter",  "GradientWiseCheck" );
-	if ( (qcResult.Get_result() & InterlaceWiseCheckBit) == 0 )
+	if ( (((!qcResult.Get_result()  & InterlaceWiseCheckBit) == InterlaceWiseCheckBit ) || (!(protocol.GetSliceCheckProtocol().bQuitOnCheckFailure || protocol.GetInterlaceCheckProtocol().bQuitOnCheckFailure) )) )
         {
          if ( protocol.GetGradientCheckProtocol().bCheck )
          {
@@ -905,8 +1035,10 @@ if ([NSBundle loadNibNamed:@"qt_menu" owner:qtMenuLoader] == false) { qFatal("Qt
         xmlWriter.writeTextElement("value","EDDY_MOTION_CORRECTED");
 	break;
 	case QCResult::GRADIENT_INCLUDE:
+	xmlWriter.writeTextElement("value","INCLUDE");
+	break;
 	default:
-        xmlWriter.writeTextElement("value","INCLUDE");
+        xmlWriter.writeTextElement("value","NoChange");
 	break;
 	}
         xmlWriter.writeEndElement();
