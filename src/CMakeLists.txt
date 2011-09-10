@@ -67,7 +67,6 @@ SET( DTIPrep_SRCS
   IntensityMotionCheckPanel.cxx
   ImageView2DPanelWithControls.cxx
   IntensityMotionCheck.cxx
-  VisualCheckingStatus.cxx
   IntraGradientRigidRegistration.cxx
   InterGradientRigidRegistration.cxx
   RigidRegistration.cxx
@@ -106,7 +105,6 @@ SET( DTIPrep_HRDS
   ThreadEddyMotionCorrect.h
   ThreadDicomToNrrd.h
   ThreadDicomSeriesRead.h
-  VisualCheckingStatus.h
   FurtherQCThread.h
 )
 
@@ -115,7 +113,6 @@ SET( DTIPrep_UIS
   gui/Dicom2NrrdPanel.ui
   gui/IntensityMotionCheckPanel.ui
   gui/ImageView2DPanelWithControls.ui
-  gui/VisualCheckingStatus.ui
 )
 
 SET(DTIPrep_RCCS gui/DTIPrep.qrc)

@@ -60,7 +60,8 @@ namespace itk
    */
   template <class TVectorImageType>
     DWIBaselineAverager<TVectorImageType>
-    ::DWIBaselineAverager()
+    ::DWIBaselineAverager():
+      m_baselineNumber(0) //Initialize to no baselines
       {
       m_b0 = -1.0;
       m_ReportFileName = "";
