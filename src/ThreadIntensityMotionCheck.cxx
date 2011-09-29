@@ -44,8 +44,9 @@ void CThreadIntensityMotionCheck::run()
   m_IntensityMotionCheck->SetXmlFileName(XmlFilename);
   m_IntensityMotionCheck->SetProtocol( protocol);
   m_IntensityMotionCheck->SetQCResult( qcResult);
+  std::cout << "TEST1:" << qcResult->GetIntensityMotionCheckResult().size() << std::endl;
   m_IntensityMotionCheck->GetImagesInformation();
-
+  std::cout << "TEST2:" << qcResult->GetIntensityMotionCheckResult().size() << std::endl;
   emit StartProgressSignal();  // start showing progress bar
   const unsigned char result = m_IntensityMotionCheck->RunPipelineByProtocol();
 

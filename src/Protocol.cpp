@@ -25,6 +25,7 @@ void Protocol::initProtocols()
 
   initImageProtocol();
   initDiffusionProtocol();
+  initDenoisingLMMSE();
   initSliceCheckProtocol();
   initInterlaceCheckProtocol();
   initBaselineAverageProtocol();
@@ -83,6 +84,43 @@ void Protocol::initDiffusionProtocol()
   diffusionProtocol.reportFileMode = 1; // 0: new   1: append
 
   diffusionProtocol.bQuitOnCheckFailure = true;
+}
+
+void Protocol::initDenoisingLMMSE()
+{
+
+  denoisingLMMSE.bCheck = false;  
+  denoisingLMMSE.NumIter = 1;
+  denoisingLMMSE.LMMSECommand = "/tools/Slicer3/Slicer3-3.6.3-2011-03-04-linux-x86_64/lib/Slicer3/Plugins/dwiNoiseFilter";
+  denoisingLMMSE.Est_Radius[0] = 3;
+  denoisingLMMSE.Est_Radius[1] = 3;
+  denoisingLMMSE.Est_Radius[2] = 0;
+
+  denoisingLMMSE.Filter_Radius[0] = 3;
+  denoisingLMMSE.Filter_Radius[1] = 3;
+  denoisingLMMSE.Filter_Radius[2] = 0;
+
+  denoisingLMMSE.Min_VoxelNum_Filter = 1;
+  denoisingLMMSE.Min_VoxelNum_Est = 1;
+  denoisingLMMSE.MinNoiseSTD = 0;
+  denoisingLMMSE.MaxNoiseSTD = 10000;
+  denoisingLMMSE.HistogramResolution = 2;
+  denoisingLMMSE.AbsoluteValue = 0;
+}
+
+void Protocol::initDenoisingJointLMMSE()
+{
+  denoisingJointLMMSE.bCheck = false;
+  denoisingJointLMMSE.NumNeighborGradients = 0;
+  denoisingJointLMMSE.JointLMMSECommand = "/tools/Slicer3/Slicer3-3.6.3-2011-03-04-linux-x86_64/lib/Slicer3/Plugins/jointLMMSE";
+  denoisingJointLMMSE.Est_Radius[0] = 2;
+  denoisingJointLMMSE.Est_Radius[1] = 2;
+  denoisingJointLMMSE.Est_Radius[2] = 1;
+
+  denoisingJointLMMSE.Filter_Radius[0] = 2;
+  denoisingJointLMMSE.Filter_Radius[1] = 2;
+  denoisingJointLMMSE.Filter_Radius[2] = 1;
+
 }
 
 void Protocol::initSliceCheckProtocol()

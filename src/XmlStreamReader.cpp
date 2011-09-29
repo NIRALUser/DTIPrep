@@ -77,6 +77,46 @@ void XmlStreamReader::InitializeProtocolStringValues()
   s_mapProtocolStringValues["DIFFUSION_bQuitOnCheckFailure"]
   = DIFFUSION_bQuitOnCheckFailure;
 
+  // denoising 1
+  s_mapProtocolStringValues["DENOISING_bCheck"]
+  = DENOISING_bCheck;
+  s_mapProtocolStringValues["DENOISING_Path"]
+  = DENOISING_Path;
+  s_mapProtocolStringValues["DENOISING_ParameterSet"]
+  = DENOISING_ParameterSet;
+  s_mapProtocolStringValues["DENOISING_NumIter"]
+  = DENOISING_NumIter;
+  s_mapProtocolStringValues["DENOISING_Est_Radius"]
+  = DENOISING_Est_Radius;
+  s_mapProtocolStringValues["DENOISING_Filter_Radius"]
+  = DENOISING_Filter_Radius;
+  s_mapProtocolStringValues["DENOISING_Min_VoxelNum_Filter"]
+  = DENOISING_Min_VoxelNum_Filter;
+  s_mapProtocolStringValues["DENOISING_Min_VoxelNum_Est"]
+  = DENOISING_Min_VoxelNum_Est;
+  s_mapProtocolStringValues["DENOISING_MinNoiseSTD"]
+  = DENOISING_MinNoiseSTD;
+  s_mapProtocolStringValues["DENOISING_MaxNoiseSTD"]
+  = DENOISING_MaxNoiseSTD;
+  s_mapProtocolStringValues["DENOISING_HistogramResolution"]
+  = DENOISING_HistogramResolution;
+  s_mapProtocolStringValues["DENOISING_AbsoluteValue"]
+  = DENOISING_AbsoluteValue;
+
+  // denoising 2
+  s_mapProtocolStringValues["JOINDENOISING_bCheck"]
+  = JOINDENOISING_bCheck;
+  s_mapProtocolStringValues["JOINDENOISING_Path"]
+  = JOINDENOISING_Path;
+  s_mapProtocolStringValues["JOINDENOISING_ParameterSet"]
+  = JOINDENOISING_ParameterSet;
+  s_mapProtocolStringValues["JOINDENOISING_NumNeighborGradients"]
+  = JOINDENOISING_NumNeighborGradients;
+  s_mapProtocolStringValues["JOINDENOISING_Est_Radius"]
+  = JOINDENOISING_Est_Radius;
+  s_mapProtocolStringValues["JOINDENOISING_Filter_Radius"]
+  = JOINDENOISING_Filter_Radius;
+  
   // slice check
   s_mapProtocolStringValues["SLICE_bCheck"]
   = SLICE_bCheck;
@@ -200,6 +240,7 @@ void XmlStreamReader::InitializeProtocolStringValues()
   s_mapProtocolStringValues["EDDYMOTION_reportFileMode"]
   = EDDYMOTION_reportFileMode;
 
+  
   // DTI computing
   s_mapProtocolStringValues["DTI_bCompute"]
   = DTI_bCompute;
@@ -862,7 +903,10 @@ void XmlStreamReader::LoadQCResultFromDWICheckGradientParsing(int Grd_num)
   if (parametersQCResult_Gradient[parametersQCResult_Gradient.size()-1].value == "Include")
      GrdIntMotionChk.VisualChecking = 0;
   if (parametersQCResult_Gradient[parametersQCResult_Gradient.size()-1].value == "Exclude")
+  {
      GrdIntMotionChk.VisualChecking = 6;
+     //std::cout << "Test VisualChecking xml" << GrdIntMotionChk.VisualChecking << std::endl;
+  }
   if (parametersQCResult_Gradient[parametersQCResult_Gradient.size()-1].value == "NoChange")
      GrdIntMotionChk.VisualChecking = -1;
 
@@ -1131,6 +1175,61 @@ void XmlStreamReader::parseXMLParametersToProtocol()
       }
       protocol->GetDiffusionProtocol(). gradients.push_back(vect);
     }
+    if ( paremeters[i].parameter.left(24) ==
+      QObject::tr("DENOISING_Est_Radius") )
+    {
+      vnl_vector_fixed<int, 3> vect;
+      values = paremeters[i].value.split(",");
+      {
+        int ii = 0;
+        foreach (QString value, values)
+        {
+          protocol->GetDenoisingLMMSEProtocol(). Est_Radius[ii] = value.toInt();
+          std::cout << "valueRadius:" << value.toInt() << std::endl;
+          ii++;
+        }
+      }
+      
+    } 
+    if ( paremeters[i].parameter.left(24) ==
+      QObject::tr("DENOISING_Filter_Radius") )
+    {
+      vnl_vector_fixed<int, 3> vect;
+      values = paremeters[i].value.split(",");
+      {
+        int ii = 0;
+        foreach (QString value, values)
+        {
+          protocol->GetDenoisingLMMSEProtocol(). Filter_Radius[ii] = value.toInt();
+          ii++;
+        }
+      }
+      
+    }
+    if ( paremeters[i].parameter.left(34) ==
+      QObject::tr("JOINDENOISING_Est_Radius") )
+    {
+       values = paremeters[i].value.split(",");
+        int ii = 0;
+        foreach (QString value, values)
+        {
+          protocol->GetDenoisingJointLMMSE().Est_Radius[ii] = value.toInt();
+          ii++;
+        }
+    }
+    if ( paremeters[i].parameter.left(34) ==
+      QObject::tr("JOINDENOISING_Filter_Radius") )
+    {
+       values = paremeters[i].value.split(",");
+       int ik = 0;
+       foreach (QString value, values)
+        {
+          protocol->GetDenoisingJointLMMSE().Filter_Radius[ik] = value.toInt();
+	  std::cout << "Test in JointDenoising Filter:" << protocol->GetDenoisingJointLMMSE().Filter_Radius[ik] << std::endl;
+          ik++;
+        }
+    }
+
     else
     {
       switch ( s_mapProtocolStringValues[paremeters[i].parameter.toStdString()] )
@@ -1379,6 +1478,45 @@ void XmlStreamReader::parseXMLParametersToProtocol()
           protocol->GetDiffusionProtocol(). bQuitOnCheckFailure = false;
         }
         break;
+
+        //Denoising
+      case DENOISING_bCheck:
+      if ( paremeters[i].value.toLower().toStdString() == "yes" )
+      {
+          protocol->GetDenoisingLMMSEProtocol().bCheck = true;
+      }
+      else
+      {
+          protocol->GetDenoisingLMMSEProtocol().bCheck = false;
+      }
+      break;
+      case DENOISING_Path:
+	   protocol->GetDenoisingLMMSEProtocol().LMMSECommand = paremeters[i].value.toStdString();
+      break;
+      case DENOISING_ParameterSet:
+	   protocol->GetDenoisingLMMSEProtocol().ParameterSet = paremeters[i].value.toStdString();
+      break;
+      case DENOISING_NumIter:
+	  protocol->GetDenoisingLMMSEProtocol().ParameterSet = paremeters[i].value.toInt();
+      break;
+      case DENOISING_Min_VoxelNum_Filter:
+	  protocol->GetDenoisingLMMSEProtocol().Min_VoxelNum_Filter = paremeters[i].value.toInt();
+      break;
+      case DENOISING_Min_VoxelNum_Est:
+	  protocol->GetDenoisingLMMSEProtocol().Min_VoxelNum_Est = paremeters[i].value.toInt();
+      break;
+      case DENOISING_MinNoiseSTD:
+	  protocol->GetDenoisingLMMSEProtocol().MinNoiseSTD = paremeters[i].value.toInt();
+      break;
+      case DENOISING_MaxNoiseSTD:
+	  protocol->GetDenoisingLMMSEProtocol().MaxNoiseSTD = paremeters[i].value.toInt();
+      break;
+      case DENOISING_HistogramResolution:
+	  protocol->GetDenoisingLMMSEProtocol().HistogramResolution = paremeters[i].value.toDouble();
+      break;
+      case DENOISING_AbsoluteValue:
+	  protocol->GetDenoisingLMMSEProtocol().AbsoluteValue = paremeters[i].value.toInt();
+      break;
 
         // slice Check
       case SLICE_bCheck:
@@ -1671,6 +1809,24 @@ void XmlStreamReader::parseXMLParametersToProtocol()
         protocol->GetEddyMotionCorrectionProtocol().reportFileMode
           =  paremeters[i].value.toInt();
         break;
+
+      // JOIN DENOISING
+     case JOINDENOISING_bCheck:
+        if ( paremeters[i].value.toLower().toStdString() == "yes" )
+	  protocol->GetDenoisingJointLMMSE().bCheck = true;
+        else
+          protocol->GetDenoisingJointLMMSE().bCheck = false;
+     break;
+       
+     case JOINDENOISING_Path:
+        protocol->GetDenoisingJointLMMSE().JointLMMSECommand = paremeters[i].value.toStdString();
+     break;
+     case JOINDENOISING_NumNeighborGradients:
+        protocol->GetDenoisingJointLMMSE().NumNeighborGradients = paremeters[i].value.toInt();
+     break;
+     case JOINDENOISING_ParameterSet:
+        protocol->GetDenoisingJointLMMSE().ParameterSet = paremeters[i].value.toStdString();
+     break;
 
         //  DTI
       case DTI_bCompute:

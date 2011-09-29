@@ -41,6 +41,33 @@ struct DiffusionProtocol {
   bool bQuitOnCheckFailure;
 };
 
+struct DenoisingLMMSE {
+
+  bool bCheck;
+  std::string LMMSECommand;
+  std::string ParameterSet;
+  int NumIter;
+  vnl_vector_fixed<int, 3> Est_Radius;
+  vnl_vector_fixed<int, 3> Filter_Radius;
+  int Min_VoxelNum_Filter;
+  int Min_VoxelNum_Est;
+  int MinNoiseSTD;
+  int MaxNoiseSTD;
+  double HistogramResolution;
+  bool AbsoluteValue;  
+
+};
+
+struct DenoisingJointLMMSE{
+
+  bool bCheck;
+  std::string JointLMMSECommand;
+  std::string ParameterSet;
+  int NumNeighborGradients;
+  vnl_vector_fixed<int, 3> Est_Radius;
+  vnl_vector_fixed<int, 3> Filter_Radius;
+};
+
 struct SliceCheckProtocol {
   bool bCheck;
 
@@ -194,6 +221,8 @@ public:
 
   void initDiffusionProtocol();
 
+  void initDenoisingLMMSE();
+
   void initSliceCheckProtocol();
 
   void initInterlaceCheckProtocol();
@@ -203,6 +232,8 @@ public:
   void initBaselineAverageProtocol();
 
   void initEddyMotionCorrectionProtocol();
+  
+  void initDenoisingJointLMMSE();
 
   void initDTIProtocol();
 
@@ -259,6 +290,16 @@ public:
   struct ImageProtocol & GetImageProtocol()
   {
     return imageProtocol;
+  }
+
+  struct DenoisingLMMSE & GetDenoisingLMMSEProtocol()
+  {
+    return denoisingLMMSE;
+  }
+
+  struct DenoisingJointLMMSE & GetDenoisingJointLMMSE()
+  {
+    return denoisingJointLMMSE;
   }
 
   struct DiffusionProtocol & GetDiffusionProtocol()
@@ -396,10 +437,12 @@ private:
 
   ImageProtocol                imageProtocol;
   DiffusionProtocol            diffusionProtocol;
+  DenoisingLMMSE	       denoisingLMMSE;
   SliceCheckProtocol           sliceCheckProtocol;
   InterlaceCheckProtocol       interlaceCheckProtocol;
   BaselineAverageProtocol      baselineAverageProtocol;
   EddyMotionCorrectionProtocol eddyMotionCorrectionProtocol;
   GradientCheckProtocol        gradientCheckProtocol;
+  DenoisingJointLMMSE	       denoisingJointLMMSE;
   DTIProtocol                  dTIProtocol;
 };

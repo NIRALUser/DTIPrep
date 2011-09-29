@@ -1021,7 +1021,8 @@ void GMainWindow::on_actionOpenDWINrrd_triggered()
 
   UpdateDWIDiffusionVectorActors();
 
-  bQCResultLoad = false;  
+  bQCResultLoad = false;
+  DTIPrepPanel->Clear_VC_Status();
   DTIPrepPanel->GetQCResult().Clear();
 }
 

@@ -22,6 +22,7 @@
 
 
 
+
 //The version of DTI prep should be incremented with each algorithm changes
 static const std::string DTIPREP_VERSION("1.5");
 
@@ -412,6 +413,30 @@ void CIntensityMotionCheck::GetImagesInformation()
     std::cout << "DWI load error, no Gradient Direction Loaded" << std::endl;
     m_bGetGradientDirections = false;
     return;
+  }
+
+  if ( qcResult->GetIntensityMotionCheckResult().size()== 0 )
+  {
+    GradientIntensityMotionCheckResult result;
+    result.processing = QCResult::GRADIENT_INCLUDE;
+    result.VisualChecking = -1;
+
+    for ( unsigned int j = 0; j < m_DwiOriginalImage->GetVectorLength(); j++ )
+    {
+      result.OriginalDir[0] = this->m_GradientDirectionContainer->ElementAt(j)[0];
+      result.OriginalDir[1] = this->m_GradientDirectionContainer->ElementAt(j)[1];
+      result.OriginalDir[2] = this->m_GradientDirectionContainer->ElementAt(j)[2];
+
+      result.ReplacedDir[0] = this->m_GradientDirectionContainer->ElementAt(j)[0];
+      result.ReplacedDir[1] = this->m_GradientDirectionContainer->ElementAt(j)[1];
+      result.ReplacedDir[2] = this->m_GradientDirectionContainer->ElementAt(j)[2];
+
+      result.CorrectedDir[0] = this->m_GradientDirectionContainer->ElementAt(j)[0];
+      result.CorrectedDir[1] = this->m_GradientDirectionContainer->ElementAt(j)[1];
+      result.CorrectedDir[2] = this->m_GradientDirectionContainer->ElementAt(j)[2];
+
+      qcResult->GetIntensityMotionCheckResult().push_back(result);
+    }
   }
 
   itk::MetaDataDictionary imgMetaDictionary
@@ -873,6 +898,153 @@ void CIntensityMotionCheck::ForceCroppingOfImage(const bool bReport, const std::
 }
 
 
+int CIntensityMotionCheck::Denoising( DwiImageType::Pointer dwi )
+{
+  int ret = 0;
+
+  if ( protocol->GetDenoisingLMMSEProtocol().bCheck)
+  {
+
+  std::string DenoiseInput;
+  std::string DenoiseOutput;
+  DenoiseInput = m_DwiFileName.substr( 0, m_DwiFileName.find_last_of('.') );
+  DenoiseInput.append( "_DenoiseInput.nhdr");
+  DenoiseOutput = m_DwiFileName.substr( 0, m_DwiFileName.find_last_of('.') );
+  DenoiseOutput.append( "_DenoiseOutput.nhdr");
+  try
+  {
+  DwiWriterType::Pointer DwiWriter_DenoisingInput = DwiWriterType::New();
+  itk::NrrdImageIO::Pointer myNrrdImageIO = itk::NrrdImageIO::New();
+  DwiWriter_DenoisingInput->SetImageIO(myNrrdImageIO);
+  DwiWriter_DenoisingInput->SetFileName( DenoiseInput );
+  DwiWriter_DenoisingInput->SetInput( dwi );
+  DwiWriter_DenoisingInput->UseCompressionOn();
+  DwiWriter_DenoisingInput->Update();
+  }
+  catch ( itk::ExceptionObject & e )
+  {
+  std::cout << e.GetDescription() << std::endl;
+  return false;
+  }
+  
+  
+  QStringList str_line;
+   
+  //str_line.append( protocol->GetDenoisingLMMSEProtocol().LMMSECommand.c_str() );
+  if ( protocol->GetDenoisingLMMSEProtocol().ParameterSet.length() >0 )
+  {
+  //str_line.append( " --returnparameterfile  " );
+  //str_line.append( (protocol->GetDenoisingLMMSEProtocol().ParameterSet).c_str() );
+  }
+  char iter1[10];
+  char iter2[10];
+  char iter3[10];
+  char iter[10];
+  QString iteration;
+  iteration.append("--iter ");
+  sprintf( iter, "%d", protocol->GetDenoisingLMMSEProtocol().NumIter );
+  iteration.append( iter );
+  str_line.append( iteration );
+  sprintf( iter1, "%d", protocol->GetDenoisingLMMSEProtocol().Est_Radius[0] );
+  sprintf( iter2, "%d", protocol->GetDenoisingLMMSEProtocol().Est_Radius[1] );
+  sprintf( iter3, "%d", protocol->GetDenoisingLMMSEProtocol().Est_Radius[2] );
+  QString Est;
+  Est.append("--re " );
+  Est.append(iter1);
+  Est.append(",");
+  Est.append(iter2);
+  Est.append(",");
+  Est.append(iter3);
+  str_line.append(Est);
+  sprintf( iter1, "%d", protocol->GetDenoisingLMMSEProtocol().Filter_Radius[0] );
+  sprintf( iter2, "%d", protocol->GetDenoisingLMMSEProtocol().Filter_Radius[1] );
+  sprintf( iter3, "%d", protocol->GetDenoisingLMMSEProtocol().Filter_Radius[2] );
+  QString Filter;
+  Filter.append("--rf ");
+  Filter.append(iter1);
+  Filter.append(",");
+  Filter.append(iter2);
+  Filter.append(",");
+  Filter.append(iter3);
+  str_line.append(Filter);
+  QString mnvf;
+  mnvf.append("--mnvf " );
+  sprintf( iter, "%d", protocol->GetDenoisingLMMSEProtocol().Min_VoxelNum_Filter );
+  mnvf.append( iter );
+  str_line.append(mnvf);
+  QString mnve;
+  mnve.append( "--mnve " );
+  sprintf( iter, "%d", protocol->GetDenoisingLMMSEProtocol().Min_VoxelNum_Est );
+  mnve.append( iter );
+  str_line.append( mnve );
+  QString minstd;
+  minstd.append( "--minnstd ");
+  sprintf( iter, "%d", protocol->GetDenoisingLMMSEProtocol().MinNoiseSTD );
+  minstd.append( iter );
+  str_line.append(minstd);
+  QString maxstd;
+  maxstd.append( "--maxnstd ");
+  sprintf( iter, "%d", protocol->GetDenoisingLMMSEProtocol().MaxNoiseSTD );
+  maxstd.append( iter );
+  str_line.append( maxstd );
+  QString hrf;
+  hrf.append( "--hrf " );
+  sprintf( iter, "%f", protocol->GetDenoisingLMMSEProtocol().HistogramResolution );
+  hrf.append( iter );
+  str_line.append( hrf );
+  //str_line.append( " --uav " );
+  //sprintf( iter, "%d", protocol->GetDenoisingLMMSEProtocol().AbsoluteValue );
+  //str_line.append( iter );
+  QString Input_str;
+  //Input_str.append(" ");
+  Input_str.append(DenoiseInput.c_str());
+  str_line.append(Input_str);
+  QString Output_str;
+  //Output_str.append(" ");
+  Output_str.append(DenoiseOutput.c_str());
+  str_line.append(Output_str);
+
+  std::cout << " Running Rician LMMSE Filter..." << std::endl;
+  std::cout << (str_line.join(" ")).toStdString() << std::endl;
+
+  QProcess *process= new QProcess();
+
+  ret = process->execute( protocol->GetDenoisingLMMSEProtocol().LMMSECommand.c_str(), str_line);
+  
+  std::cout << " DONE" << std::endl;
+
+  if ( ret == 0 )
+  {
+  DwiReaderType::Pointer DwiReader_DenoiseOutput;
+  DwiReader_DenoiseOutput = DwiReaderType::New();
+  try
+  {
+    itk::NrrdImageIO::Pointer myNrrdImageIO = itk::NrrdImageIO::New();
+    DwiReader_DenoiseOutput->SetImageIO(myNrrdImageIO);
+    DwiReader_DenoiseOutput->SetFileName(DenoiseOutput);
+    DwiReader_DenoiseOutput->Update();
+  }
+  catch ( itk::ExceptionObject & e )
+  {
+    std::cout << e.GetDescription() << std::endl;
+    return false;
+  }    
+    
+  m_DwiForcedConformanceImage = DwiReader_DenoiseOutput->GetOutput();
+  }
+  else
+  {
+  std::cout << " Error in execution process of Rician LMMSE Filter."<< std::endl;
+  }
+  }
+  else
+  {
+    std::cout << "Denoising LMMSE check NOT set." << std::endl;
+  }
+
+  return ret;
+}
+
 bool CIntensityMotionCheck::SliceWiseCheck( DwiImageType::Pointer dwi )
 {
   bool ret = true;
@@ -995,7 +1167,6 @@ bool CIntensityMotionCheck::SliceWiseCheck( DwiImageType::Pointer dwi )
     //........
 
     SliceWiseCheckResult SliceWise;    //Updating qcresult for SliceWise cheking information
-    
     for (unsigned int i=0; i < SliceChecker->GetSliceWiseCheckResult().size(); i++)
     {
     SliceWise.GradientNum=SliceChecker->GetSliceWiseCheckResult()[i].GradientNum;
@@ -1603,7 +1774,7 @@ bool CIntensityMotionCheck::BaselineAverage( DwiImageType::Pointer dwi )
 	std::vector<bool>	tem_vector = BaselineAverager->getGradient_indx_Baselines();
 	std::vector<int>	B0_indices;
 	Original_ForcedConformance_Mapping  m_B0s;
-	int id = 0;
+	unsigned id = 0;
     	while ( id < tem_vector.size() )
     	{
       		if ( tem_vector[id] == 1 )
@@ -2620,6 +2791,129 @@ bool CIntensityMotionCheck::GradientWiseCheck( DwiImageType::Pointer dwi )
   return ret;
 }
 
+int CIntensityMotionCheck::JointDenoising( DwiImageType::Pointer dwi )
+{
+
+  int ret = 0;
+  if ( protocol->GetDenoisingJointLMMSE().bCheck)
+  {
+
+    std::string JointDenoiseInput;
+    std::string JointDenoiseOutput;
+    JointDenoiseInput = m_DwiFileName.substr( 0, m_DwiFileName.find_last_of('.') );
+    JointDenoiseInput.append( "_JointDenoiseInput.nhdr");
+    JointDenoiseOutput = m_DwiFileName.substr( 0, m_DwiFileName.find_last_of('.') );
+    JointDenoiseOutput.append( "_JointDenoiseOutput.nhdr");
+    try
+    {
+    DwiWriterType::Pointer DwiWriter_JointDenoisingInput = DwiWriterType::New();
+    itk::NrrdImageIO::Pointer my_NrrdImageIO = itk::NrrdImageIO::New();
+    DwiWriter_JointDenoisingInput->SetImageIO(my_NrrdImageIO);
+    DwiWriter_JointDenoisingInput->SetFileName( JointDenoiseInput );
+    DwiWriter_JointDenoisingInput->SetInput( dwi );
+    DwiWriter_JointDenoisingInput->UseCompressionOn();
+    DwiWriter_JointDenoisingInput->Update();
+    }
+    catch ( itk::ExceptionObject & e )
+    { 
+    std::cout << e.GetDescription() << std::endl;
+    return false;
+    }
+  
+    QStringList str_line;
+   
+    if ( protocol->GetDenoisingLMMSEProtocol().ParameterSet.length() >0 )
+    {
+    QString Parameterfile;
+    Parameterfile.append("--returnparameterfile");
+    Parameterfile.append( protocol->GetDenoisingLMMSEProtocol().ParameterSet.c_str() );
+    //str_line.append(Parameterfile);
+    }
+    char iter1[10];
+    char iter2[10];
+    char iter3[10];
+    char iter[10];
+    QString NumNeighborGrad;
+    NumNeighborGrad.append("--ng ");
+    sprintf( iter, "%d", protocol->GetDenoisingJointLMMSE().NumNeighborGradients );
+    NumNeighborGrad.append( iter );
+    str_line.append( NumNeighborGrad );
+    sprintf( iter1, "%d", protocol->GetDenoisingJointLMMSE().Est_Radius[0] );
+    sprintf( iter2, "%d", protocol->GetDenoisingJointLMMSE().Est_Radius[1] );
+    sprintf( iter3, "%d", protocol->GetDenoisingJointLMMSE().Est_Radius[2] );
+    QString Est;
+    Est.append("--re " );
+    Est.append(iter1);
+    Est.append(",");
+    Est.append(iter2);
+    Est.append(",");
+    Est.append(iter3);
+    str_line.append(Est);
+    sprintf( iter1, "%d", protocol->GetDenoisingJointLMMSE().Filter_Radius[0] );
+    sprintf( iter2, "%d", protocol->GetDenoisingJointLMMSE().Filter_Radius[1] );
+    sprintf( iter3, "%d", protocol->GetDenoisingJointLMMSE().Filter_Radius[2] );
+    QString Filter;
+    Filter.append("--rf ");
+    Filter.append(iter1);
+    Filter.append(",");
+    Filter.append(iter2);
+    Filter.append(",");
+    Filter.append(iter3);
+    str_line.append(Filter);
+    
+    QString Input_str;
+    //Input_str.append(" ");
+    Input_str.append(JointDenoiseInput.c_str());
+    str_line.append(Input_str);
+    QString Output_str;
+    //Output_str.append(" ");
+    Output_str.append(JointDenoiseOutput.c_str());
+    str_line.append(JointDenoiseOutput.c_str());
+
+    std::cout << " Running Joint LMMSE Filter..." << std::endl;
+    std::cout << (str_line.join(" ")).toStdString() << std::endl;
+
+    QProcess *process= new QProcess();
+
+    ret = process->execute( protocol->GetDenoisingJointLMMSE().JointLMMSECommand.c_str(), str_line);
+    std::cout << "JointCommand" << protocol->GetDenoisingJointLMMSE().JointLMMSECommand.c_str() << std::endl;
+    std::cout << " DONE" << std::endl;  
+
+    if ( ret == 0)
+    {
+      
+      
+      
+    	DwiReaderType::Pointer DwiReader_JointDenoiseOutput;
+    	DwiReader_JointDenoiseOutput = DwiReaderType::New();
+    	try
+    	{
+      	itk::NrrdImageIO::Pointer myNrrdImageIO_J = itk::NrrdImageIO::New();
+      	DwiReader_JointDenoiseOutput->SetImageIO(myNrrdImageIO_J);
+      	DwiReader_JointDenoiseOutput->SetFileName(JointDenoiseOutput);
+      	DwiReader_JointDenoiseOutput->Update();
+    	}
+    	catch ( itk::ExceptionObject & e )
+    	{
+      	std::cout << e.GetDescription() << std::endl;
+      	return false;
+    	}    
+    
+    	m_DwiForcedConformanceImage = DwiReader_JointDenoiseOutput->GetOutput();
+    }
+    else
+        std::cout<< "Error in execution process of Joint LMMSE Filter."<< std::endl;
+    
+  
+  }
+  else
+  {
+    std::cout << "Denoising ( Joint LMMSE ) check NOT set." << std::endl;
+  }
+
+  return true;
+}
+
 bool CIntensityMotionCheck::SaveDwiForcedConformanceImage(void) const
 {
   if ( protocol->GetQCedDWIFileNameSuffix().length() > 0 )
@@ -3049,6 +3343,12 @@ unsigned char CIntensityMotionCheck::RunPipelineByProtocol()
   std::cout << "DiffusionCheck DONE " << std::endl;
   
 
+  // Denoising Filter
+  std::cout << "=====================" << std::endl;
+  std::cout << "Denoising LMMSE... " << std::endl;
+  Denoising ( m_DwiForcedConformanceImage );
+  std::cout << "Denoising LMMSE DONE " << std::endl;
+
   // SliceChecker
   std::cout << "=====================" << std::endl;
   std::cout << "SliceWiseCheck ... " << std::endl;
@@ -3133,7 +3433,7 @@ unsigned char CIntensityMotionCheck::RunPipelineByProtocol()
 	}
 	}
 	else
-	std::cout << "Included Gradients_indices:" << " " << m_Original_ForcedConformance_Mapping[k_ind].index_original[0] << std::endl;
+	std::cout << "Included Gradients:" << " " << m_Original_ForcedConformance_Mapping[k_ind].index_original[0] << std::endl;
 	
   }
   // Saving m_Original_ForcedConformance_Mapping in the QCResult
@@ -3147,6 +3447,11 @@ unsigned char CIntensityMotionCheck::RunPipelineByProtocol()
       this->qcResult->GetOriginal_ForcedConformance_Map().push_back( item_map );
   }  */
 
+  // Denoising ( Joint LMMSE ) Filter
+  std::cout << "=====================" << std::endl;
+  std::cout << "Denoising Joint LMMSE... " << std::endl;
+  JointDenoising ( m_DwiForcedConformanceImage );
+  std::cout << "Denoising Joint LMMSE DONE " << std::endl;
 
   // Save QC'ed DWI
   std::cout << "=====================" << std::endl;
@@ -3172,6 +3477,7 @@ unsigned char CIntensityMotionCheck::RunPipelineByProtocol()
   ValidateResult = validateLeftDiffusionStatistics();
 
   this->qcResult-> Set_result( ( ValidateResult << 5 ) + this->qcResult->Get_result() );
+
   
   
   

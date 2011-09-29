@@ -63,6 +63,7 @@ namespace itk
     ::DWIBaselineAverager():
       m_baselineNumber(0) //Initialize to no baselines
       {
+      m_baselineNumber = 0;
       m_b0 = -1.0;
       m_ReportFileName = "";
       m_AverageMethod = DWIBaselineAverager::BaselineOptimized;

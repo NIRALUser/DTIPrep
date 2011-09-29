@@ -322,7 +322,7 @@ if ([NSBundle loadNibNamed:@"qt_menu" owner:qtMenuLoader] == false) { qFatal("Qt
 	int num_SliceWiseCheckExc = 0;
 	int num_InterlaceWiseCheckExc = 0;
 	int num_GradientWiseCheckExc = 0;
-	for ( int i = 0; i< qcResult.GetIntensityMotionCheckResult().size();
+	for ( unsigned int i = 0; i< qcResult.GetIntensityMotionCheckResult().size();
 	i++ )
 	{
 	
@@ -825,7 +825,7 @@ if ([NSBundle loadNibNamed:@"qt_menu" owner:qtMenuLoader] == false) { qFatal("Qt
 	if (EXCLUDE_SliceWiseCheck==true)
 	{
 	xmlWriter.writeTextElement("processing","EXCLUDE");
-	for (int S_index=0; S_index<qcResult.GetSliceWiseCheckResult().size(); S_index++)
+	for (unsigned int S_index=0; S_index<qcResult.GetSliceWiseCheckResult().size(); S_index++)
 	{
 	if (i==qcResult.GetSliceWiseCheckResult()[S_index].GradientNum)
 	{

@@ -234,6 +234,9 @@ public:
  
   void Match_NameDwiQC();
   void Match_DwiQC();
+
+  void Clear_VC_Status();
+
 struct VC_STATUS
 {
 int index;

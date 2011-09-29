@@ -345,25 +345,25 @@ void IntensityMotionCheckPanel::on_toolButton_ResultFileOpen_clicked( )
 void IntensityMotionCheckPanel::SetVisualCheckingStatus( int index, int status, int pro )
 {
    
-   bool new_item = true;
+   //bool new_item = true;
    for ( unsigned int j = 0 ; j < VC_Status.size() ; j++ )
    {
 	if ( index == VC_Status[j].index )
 	{
 		VC_Status[j].VC_status = status;
-		new_item = false;
+		//new_item = false;
 		
 	}
 
    }
-   if ( new_item == true )
+   /*/if ( new_item == true )
    {
 	VC_STATUS vc;
    	vc.index = index ;
    	vc.VC_status = status; 
 
    	VC_Status.push_back( vc );
-   }
+   }*/
 
    if ( status == 0 ){
        this->GetQTreeWidgetResult()->topLevelItem(2)->child(index+3)->setText( 3, tr ("INCLUDE_MANUALLY") );
@@ -504,6 +504,19 @@ void IntensityMotionCheckPanel::OpenXML_ResultFile()
   XmlReader.setQCRESULT( &qcResult);
   //XmlReader.readFile_QCResult(xmlResultFile, XmlStreamReader::TreeWise);
   XmlReader.readFile_QCResult(xmlResultFile, XmlStreamReader::QCResultlWise);
+  // Updating VC_Status
+  for ( unsigned int ind = 0; ind < this->GetQCResult().GetIntensityMotionCheckResult().size() ; ind ++ )
+  {
+	VC_STATUS vc;
+   	vc.index = ind ;
+   	vc.VC_status = this->GetQCResult().GetIntensityMotionCheckResult()[ind].VisualChecking;
+
+   	VC_Status.push_back( vc );
+
+  }
+
+
+
   //std::cout<<qcResult.GetSliceWiseCheckResult()[1].GradientNum<<"GradientNum"<<std::endl;
   //std::cout<<qcResult.GetSliceWiseCheckResult()[1].SliceNum<<"SliceNum"<<std::endl;
   //std::cout<<qcResult.GetSliceWiseCheckResult()[1].Correlation<<"Correlation"<<std::endl;
@@ -1121,6 +1134,10 @@ void IntensityMotionCheckPanel::DefaultProtocol()
   this->GetProtocol().GetDiffusionProtocol().reportFileMode = 1;
   this->GetProtocol().GetDiffusionProtocol().bQuitOnCheckFailure = true;
 
+  // ***** Denoising 
+
+  this->GetProtocol().initDenoisingLMMSE();
+
   // ***** slice check
   emit status("Estimating protocol parameter  ...");
   std::cout << "Estimating protocol parameter  ..." << std::endl;
@@ -1272,6 +1289,9 @@ void IntensityMotionCheckPanel::DefaultProtocol()
   this->GetProtocol().GetEddyMotionCorrectionProtocol().reportFileNameSuffix
     = "_QCReport.txt";
   this->GetProtocol().GetEddyMotionCorrectionProtocol().reportFileMode = 1;
+
+  // Denoising JointLMMSE
+  this->GetProtocol().initDenoisingJointLMMSE();
 
   // ***** DTI
   this->GetProtocol().GetDTIProtocol().bCompute = true;
@@ -2094,18 +2114,68 @@ void IntensityMotionCheckPanel::UpdateProtocolToTreeWidget( )
   }
 
 
-  //Denoising method: "Recian LMMSE Image Filter" adopted from Slicer3
-  /*QTreeWidgetItem * item_DenoiseLMMSE = new QTreeWidgetItem(treeWidget);
-  item_DenoiseLMMSE->setText( 0, tr("Rician LMMSE Image Filter") );
-  if ( this->GetProtocol().GetDenoisingLMMSE_Protocol().bCheck )
+  //Denoising method1: "Recian LMMSE Image Filter" adopted from Slicer3
+  QTreeWidgetItem * item_DenoiseLMMSE = new QTreeWidgetItem(treeWidget);
+  item_DenoiseLMMSE->setText( 0, tr("DENOISING_bCheck") );
+  if ( this->GetProtocol().GetDenoisingLMMSEProtocol().bCheck )
   {
 	item_DenoiseLMMSE->setText( 1, tr("Yes") );
   }
   else
   {
 	item_DenoiseLMMSE->setText( 1, tr("No") );
-  }*/
+  }
 
+  QTreeWidgetItem * item_PathCommand = new QTreeWidgetItem(item_DenoiseLMMSE);
+  item_PathCommand->setText( 0, tr("DENOISING_Path") );
+  item_PathCommand->setText( 1, QString::fromStdString(this->GetProtocol().GetDenoisingLMMSEProtocol().LMMSECommand) );
+
+  QTreeWidgetItem * item_ParameterSet = new QTreeWidgetItem(item_DenoiseLMMSE);
+  item_ParameterSet->setText( 0, tr("DENOISING_ParameterSet") );
+  item_ParameterSet->setText( 1, QString::fromStdString(this->GetProtocol().GetDenoisingLMMSEProtocol().ParameterSet) );
+  
+  QTreeWidgetItem * item_NumItr = new QTreeWidgetItem(item_DenoiseLMMSE);
+  item_NumItr->setText( 0,tr("DENOISING_NumIter") );
+  item_NumItr->setText( 1, QString("%1").arg( this->GetProtocol().GetDenoisingLMMSEProtocol().NumIter, 0 , 10 ));
+
+  QTreeWidgetItem * item_EstRadius = new QTreeWidgetItem(item_DenoiseLMMSE);
+  item_EstRadius->setText( 0,tr("DENOISING_Est_Radius") );
+  item_EstRadius->setText( 1, QString("%1, %2, %3").arg( this->GetProtocol().GetDenoisingLMMSEProtocol().Est_Radius[0], 0 , 10 ).arg( this->GetProtocol().GetDenoisingLMMSEProtocol().Est_Radius[1], 0 , 10 ).arg( this->GetProtocol().GetDenoisingLMMSEProtocol().Est_Radius[2], 0 , 10 ));
+
+  QTreeWidgetItem * item_FilterRadius = new QTreeWidgetItem(item_DenoiseLMMSE);
+  item_FilterRadius->setText( 0,tr("DENOISING_Filter_Radius") );
+  item_FilterRadius->setText( 1, QString("%1, %2, %3").arg( this->GetProtocol().GetDenoisingLMMSEProtocol().Filter_Radius[0], 0 , 10 ).arg( this->GetProtocol().GetDenoisingLMMSEProtocol().Filter_Radius[1], 0 , 10 ).arg( this->GetProtocol().GetDenoisingLMMSEProtocol().Filter_Radius[2], 0 , 10 ));
+
+  QTreeWidgetItem * item_MinNumVoxelFilter = new QTreeWidgetItem(item_DenoiseLMMSE);
+  item_MinNumVoxelFilter->setText( 0,tr("DENOISING_Min_VoxelNum_Filter") );
+  item_MinNumVoxelFilter->setText( 1, QString("%1").arg( this->GetProtocol().GetDenoisingLMMSEProtocol().Min_VoxelNum_Filter, 0 , 10 ));
+
+  QTreeWidgetItem * item_MinNumVoxelEstimation = new QTreeWidgetItem(item_DenoiseLMMSE);
+  item_MinNumVoxelEstimation->setText( 0,tr("DENOISING_Min_VoxelNum_Est") );
+  item_MinNumVoxelEstimation->setText( 1, QString("%1").arg( this->GetProtocol().GetDenoisingLMMSEProtocol().Min_VoxelNum_Est, 0 , 10 ));
+
+  QTreeWidgetItem * item_MinNoiseSTD = new QTreeWidgetItem(item_DenoiseLMMSE);
+  item_MinNoiseSTD->setText( 0,tr("DENOISING_MinNoiseSTD") );
+  item_MinNoiseSTD->setText( 1, QString("%1").arg( this->GetProtocol().GetDenoisingLMMSEProtocol().MinNoiseSTD, 0 , 10 ));
+
+  QTreeWidgetItem * item_MaxNoiseSTD = new QTreeWidgetItem(item_DenoiseLMMSE);
+  item_MaxNoiseSTD->setText( 0,tr("DENOISING_MaxNoiseSTD") );
+  item_MaxNoiseSTD->setText( 1, QString("%1").arg( this->GetProtocol().GetDenoisingLMMSEProtocol().MaxNoiseSTD, 0 , 10 ));
+
+  QTreeWidgetItem * item_HistogramResolutionFactor = new QTreeWidgetItem(item_DenoiseLMMSE);
+  item_HistogramResolutionFactor->setText( 0,tr("DENOISING_HistogramResolution") );
+  item_HistogramResolutionFactor->setText( 1, QString("%1").arg( this->GetProtocol().GetDenoisingLMMSEProtocol().HistogramResolution, 0 , 'f', 6 ));
+
+  QTreeWidgetItem * item_uav = new QTreeWidgetItem(item_DenoiseLMMSE);
+  item_uav->setText( 0,tr("DENOISING_AbsoluteValue") );
+  if ( this->GetProtocol().GetDenoisingLMMSEProtocol().AbsoluteValue )
+  {
+    item_uav->setText( 1, tr("Yes") );
+  }
+  else
+  {
+    item_uav->setText( 1, tr("No") );
+  }
 
   // Slice Check
   QTreeWidgetItem *itemSliceCheck = new QTreeWidgetItem(treeWidget);
@@ -2564,6 +2634,39 @@ void IntensityMotionCheckPanel::UpdateProtocolToTreeWidget( )
     itembGradientQuitOnCheckFailur->setText( 1, tr("No") );
   }
 
+  //Denoising method2: "Joint LMMSE Image Filter" adopted from Slicer3
+
+  QTreeWidgetItem * item_JointLMMSE = new QTreeWidgetItem(treeWidget);
+  item_JointLMMSE->setText( 0, tr("JOINDENOISING_bCheck") );
+  if ( this->GetProtocol().GetDenoisingJointLMMSE().bCheck )
+    item_JointLMMSE->setText( 1, tr("Yes") );
+  else
+    item_JointLMMSE->setText( 1, tr("No") );
+
+  QTreeWidgetItem * item_JointLMMSE_Command = new QTreeWidgetItem( item_JointLMMSE );
+  item_JointLMMSE_Command->setText( 0, tr("JOINDENOISING_Path") );
+  item_JointLMMSE_Command->setText( 1, QString::fromStdString(this->GetProtocol().GetDenoisingJointLMMSE().JointLMMSECommand));
+
+  QTreeWidgetItem * item_JointLMMSE_ParameterSet = new QTreeWidgetItem( item_JointLMMSE );
+  item_JointLMMSE_ParameterSet->setText( 0, tr("JOINDENOISING_ParameterSet") );
+  item_JointLMMSE_ParameterSet->setText( 1, QString::fromStdString(this->GetProtocol().GetDenoisingJointLMMSE().ParameterSet));
+  
+  QTreeWidgetItem * item_JointLMMSE_NumNeighborGradients = new QTreeWidgetItem( item_JointLMMSE );
+  item_JointLMMSE_NumNeighborGradients->setText( 0, tr("JOINDENOISING_NumNeighborGradients") );
+  item_JointLMMSE_NumNeighborGradients->setText( 1, QString("%1").arg(this->GetProtocol().GetDenoisingJointLMMSE().NumNeighborGradients, 0 , 10) );
+
+  QTreeWidgetItem * item_JointLMMSE_EstRadius = new QTreeWidgetItem(item_JointLMMSE);
+  item_JointLMMSE_EstRadius->setText( 0,tr("JOINDENOISING_Est_Radius") );
+  item_JointLMMSE_EstRadius->setText( 1, QString("%1, %2, %3").arg( this->GetProtocol().GetDenoisingJointLMMSE().Est_Radius[0], 0 , 10 ).arg( this->GetProtocol().GetDenoisingJointLMMSE().Est_Radius[1], 0 , 10 ).arg( this->GetProtocol().GetDenoisingJointLMMSE().Est_Radius[2], 0 , 10 ));
+
+  QTreeWidgetItem * item_JointLMMSE_FilterRadius = new QTreeWidgetItem(item_JointLMMSE);
+  item_JointLMMSE_FilterRadius->setText( 0,tr("JOINDENOISING_Filter_Radius") );
+  item_JointLMMSE_FilterRadius->setText( 1, QString("%1, %2, %3").arg( this->GetProtocol().GetDenoisingJointLMMSE().Filter_Radius[0], 0 , 10 ).arg( this->GetProtocol().GetDenoisingJointLMMSE().Filter_Radius[1], 0 , 10 ).arg( this->GetProtocol().GetDenoisingJointLMMSE().Filter_Radius[2], 0 , 10 ));
+
+  
+  
+
+
 
   // DTI Computing
   QTreeWidgetItem *itemDTIComputing = new QTreeWidgetItem(treeWidget);
@@ -2730,6 +2833,7 @@ void IntensityMotionCheckPanel::f_overallSliceWiseCheck()
   int num_SliceWiseCheckExc = 0;
   int num_InterlaceWiseCheckExc = 0;
   int num_GradientWiseCheckExc = 0;
+  int r_SliceWiseCkeck = 0;
   for ( unsigned int i = 0; i<qcResult.GetIntensityMotionCheckResult().size();
     i++ )
   {
@@ -2741,8 +2845,16 @@ void IntensityMotionCheckPanel::f_overallSliceWiseCheck()
   if ( qcResult.GetIntensityMotionCheckResult()[i].processing == QCResult::GRADIENT_EXCLUDE_GRADIENTCHECK )
       num_GradientWiseCheckExc++;
   }
-  
+  std::cout << "TEST FLOAT: " << num_SliceWiseCheckExc << " " << qcResult.GetIntensityMotionCheckResult().size() << std::endl;
   r_SliceWiseCkeck = num_SliceWiseCheckExc/qcResult.GetIntensityMotionCheckResult().size();
+  
+  if (r_SliceWiseCkeck > this->GetProtocol().GetInterlaceCheckProtocol().correlationThresholdGradient)
+  {
+     qcResult.GetOverallQCResult().SWCk = false;
+  }
+  else
+     qcResult.GetOverallQCResult().SWCk = true;
+
 }
 
 void IntensityMotionCheckPanel::f_overallInterlaceWiseCheck()
@@ -2751,6 +2863,7 @@ void IntensityMotionCheckPanel::f_overallInterlaceWiseCheck()
   int num_SliceWiseCheckExc = 0;
   int num_InterlaceWiseCheckExc = 0;
   int num_GradientWiseCheckExc = 0;
+  int r_InterlaceWiseCheck = 0;
   for ( unsigned int i = 0; i<qcResult.GetIntensityMotionCheckResult().size();
     i++ )
   {
@@ -2763,8 +2876,13 @@ void IntensityMotionCheckPanel::f_overallInterlaceWiseCheck()
       num_GradientWiseCheckExc++;
   }
   r_InterlaceWiseCheck = num_InterlaceWiseCheckExc/(qcResult.GetIntensityMotionCheckResult().size()-num_SliceWiseCheckExc);
+  if (r_InterlaceWiseCheck > this->GetProtocol().GetInterlaceCheckProtocol().correlationThresholdGradient)
+  {
+     qcResult.GetOverallQCResult().IWCk = false;
+  }
+  else
+     qcResult.GetOverallQCResult().IWCk = true;
   
-
 }
 
 void IntensityMotionCheckPanel::f_overallGradientWiseCheck()
@@ -2773,6 +2891,7 @@ void IntensityMotionCheckPanel::f_overallGradientWiseCheck()
   int num_SliceWiseCheckExc = 0;
   int num_InterlaceWiseCheckExc = 0;
   int num_GradientWiseCheckExc = 0;
+  int r_GradWiseCheck = 0;
   for ( unsigned int i = 0; i<qcResult.GetIntensityMotionCheckResult().size();
     i++ )
   {
@@ -2786,6 +2905,13 @@ void IntensityMotionCheckPanel::f_overallGradientWiseCheck()
   }
   
   r_GradWiseCheck = num_GradientWiseCheckExc/(qcResult.GetIntensityMotionCheckResult().size()-num_SliceWiseCheckExc-num_InterlaceWiseCheckExc);
+
+  if (r_InterlaceWiseCheck > this->GetProtocol().GetInterlaceCheckProtocol().correlationThresholdGradient)
+  {
+     qcResult.GetOverallQCResult().GWCk = false;
+  }
+  else
+     qcResult.GetOverallQCResult().GWCk = true;
 
 
 }
@@ -2949,9 +3075,8 @@ void IntensityMotionCheckPanel::ResultUpdate()
 		}
 		else
 		{
-			f_overallSliceWiseCheck();
-			
-			if ( r_SliceWiseCkeck > this->GetProtocol().GetInterlaceCheckProtocol().correlationThresholdGradient )
+			f_overallSliceWiseCheck();	
+			if ( qcResult.GetOverallQCResult().SWCk == 0 )
 				overallSliceWiseCheck->setText( 1, tr("Fail") );
 			else 
 				overallSliceWiseCheck->setText( 1, tr("Pass") );
@@ -2961,7 +3086,7 @@ void IntensityMotionCheckPanel::ResultUpdate()
 	{
 		f_overallSliceWiseCheck();
 		
-		if ( r_SliceWiseCkeck > this->GetProtocol().GetInterlaceCheckProtocol().correlationThresholdGradient )
+		if ( qcResult.GetOverallQCResult().SWCk == 0 )
 			overallSliceWiseCheck->setText( 1, tr("Fail") );
 		else 
 			overallSliceWiseCheck->setText( 1, tr("Pass") );
@@ -2981,7 +3106,7 @@ void IntensityMotionCheckPanel::ResultUpdate()
      if ( (qcResult.Get_result() & InterlaceWiseCheckBit) == 0 )
      {
 	f_overallInterlaceWiseCheck();
-	if ( r_InterlaceWiseCheck > this->GetProtocol().GetInterlaceCheckProtocol().correlationThresholdGradient)
+	if ( qcResult.GetOverallQCResult().IWCk == 0)
 		overallInterlaceWiseCheck->setText( 1, tr("Fail") );
 	else 
 		overallInterlaceWiseCheck->setText( 1, tr("Pass") );
@@ -2996,7 +3121,7 @@ void IntensityMotionCheckPanel::ResultUpdate()
          else 
          {
             f_overallInterlaceWiseCheck();
-            if ( r_InterlaceWiseCheck > this->GetProtocol().GetInterlaceCheckProtocol().correlationThresholdGradient)
+            if ( qcResult.GetOverallQCResult().IWCk == 0)
                   overallInterlaceWiseCheck->setText( 1, tr("Fail") );
             else 
                   overallInterlaceWiseCheck->setText( 1, tr("Pass") );
@@ -3015,7 +3140,7 @@ void IntensityMotionCheckPanel::ResultUpdate()
       if ((qcResult.Get_result() & GradientWiseCheckBit) == 0)
       {
         f_overallGradientWiseCheck();
-        if ( r_GradWiseCheck > this->GetProtocol().GetInterlaceCheckProtocol().correlationThresholdGradient)
+        if ( qcResult.GetOverallQCResult().GWCk == 0)
           overallGradientWiseCheck->setText( 1, tr("Fail") );
         else 
           overallGradientWiseCheck->setText( 1, tr("Pass") );
@@ -3029,7 +3154,7 @@ void IntensityMotionCheckPanel::ResultUpdate()
         else 
         {
             f_overallGradientWiseCheck();
-            if ( r_GradWiseCheck > this->GetProtocol().GetInterlaceCheckProtocol().correlationThresholdGradient)
+            if ( qcResult.GetOverallQCResult().GWCk == 0)
                 overallGradientWiseCheck->setText( 1, tr("Fail") );
             else 
                 overallGradientWiseCheck->setText( 1, tr("Pass") );
@@ -3204,7 +3329,7 @@ void IntensityMotionCheckPanel::ResultUpdate()
 
        itemInterlaceCorrelation->setText(1,QString("%1").arg(qcResult.GetInterlaceWiseCheckResult()[i].Correlation));
       }
-       if ( (((!qcResult.Get_result()  & InterlaceWiseCheckBit) == InterlaceWiseCheckBit ) || (!(this->GetProtocol().GetSliceCheckProtocol().bQuitOnCheckFailure || this->GetProtocol().GetInterlaceCheckProtocol().bQuitOnCheckFailure) )) )
+       if ( ((!((qcResult.Get_result()  & InterlaceWiseCheckBit) == InterlaceWiseCheckBit) ) || (!(this->GetProtocol().GetSliceCheckProtocol().bQuitOnCheckFailure || this->GetProtocol().GetInterlaceCheckProtocol().bQuitOnCheckFailure) )) )
        {
          if ( this->GetProtocol().GetGradientCheckProtocol().bCheck )
          {
@@ -3239,6 +3364,7 @@ void IntensityMotionCheckPanel::ResultUpdate()
         }
        }
        else{
+         std::cout << "TEST PRINTING2" <<std::endl;
          itemGradientWiseCheck->setText( 2, tr ("NA"));
        }
     }
@@ -3934,10 +4060,11 @@ bool IntensityMotionCheckPanel::GetGradientDirections()
 {
  
   int num_Includegradient_VC = false;
+  //std::cout << "Test VC Satus :" << VC_Status.size() << std::endl;
 
   for( unsigned int i=0; i< VC_Status.size(); i++)
   {
-     std::cout << "index:" << VC_Status[i].index << " " << VC_Status[i].VC_status << std::endl;
+     //std::cout << "index:" << VC_Status[i].index << " " << VC_Status[i].VC_status << std::endl;
   }
 
   for( unsigned int i=0; i< VC_Status.size(); i++)
@@ -4075,7 +4202,7 @@ void IntensityMotionCheckPanel::SaveVisualCheckingResult()
   
   GenerateOutput_VisualCheckingResult( DWIFile.toStdString() );
 
-  VC_Status.clear();
+  //VC_Status.clear();
   emit UpdateOutputDWIDiffusionVectorActors();
 
 }
@@ -4100,7 +4227,7 @@ void IntensityMotionCheckPanel::GenerateOutput_VisualCheckingResult( std::string
   {
     if (j == 0)
     {
-       for ( int k = 0; k< (qcResult.GetOriginal_ForcedConformance_Map()[j].index_original).size() ; k++ )
+       for ( unsigned int k = 0; k< (qcResult.GetOriginal_ForcedConformance_Map()[j].index_original).size() ; k++ )
 		list_index_original.push_back( (qcResult.GetOriginal_ForcedConformance_Map()[j].index_original)[k] ); // indices for Baseline
     }
     else
@@ -4351,26 +4478,26 @@ void IntensityMotionCheckPanel::GenerateOutput_VisualCheckingResult( )
 {
     
   std::vector<int> list_index_original;  // list of original indices in dwi
-  for ( int j = 0; j< myIntensityThread.m_IntensityMotionCheck->get_Original_ForcedConformance_Mapping().size() ; j++ )
+  for ( unsigned int j = 0; j< myIntensityThread.m_IntensityMotionCheck->get_Original_ForcedConformance_Mapping().size() ; j++ )
   {
     if (j == 0)
     {
-       for ( int k = 0; k< (myIntensityThread.m_IntensityMotionCheck->get_Original_ForcedConformance_Mapping()[j].index_original).size() ; k++ )
+       for ( unsigned int k = 0; k< (myIntensityThread.m_IntensityMotionCheck->get_Original_ForcedConformance_Mapping()[j].index_original).size() ; k++ )
 		list_index_original.push_back( (myIntensityThread.m_IntensityMotionCheck->get_Original_ForcedConformance_Mapping()[j].index_original)[k] ); // indices for Baseline
     }
     else
        list_index_original.push_back( (myIntensityThread.m_IntensityMotionCheck->get_Original_ForcedConformance_Mapping()[j].index_original)[0] ); 
   }
 
-  for ( int i =0 ; i < list_index_original.size() ; i++ )
+  for ( unsigned int i =0 ; i < list_index_original.size() ; i++ )
   {
 	std::cout << "list_index_original: " << list_index_original[i] << std::endl;
   }
-  for ( int i =0 ; i < index_listVCExcluded.size() ; i++ )
+  for ( unsigned int i =0 ; i < index_listVCExcluded.size() ; i++ )
   {
 	std::cout << "index_listVCExcluded: " << index_listVCExcluded[i] << std::endl;
   }
-  for ( int i =0 ; i < index_listVCIncluded.size() ; i++ )
+  for ( unsigned int i =0 ; i < index_listVCIncluded.size() ; i++ )
   {
 	std::cout << "index_listVCIncluded: " << index_listVCIncluded[i] << std::endl;
   }
@@ -4600,7 +4727,10 @@ void IntensityMotionCheckPanel::DefaultProcess( )
 
 }
   
-  
+void IntensityMotionCheckPanel::Clear_VC_Status()
+{
+	VC_Status.clear();
+}
 /*void IntensityMotionCheckPanel::DefaultProcess( )
 {
   this->qcResult.Clear();

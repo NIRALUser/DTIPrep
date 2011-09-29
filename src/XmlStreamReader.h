@@ -59,6 +59,20 @@ enum ProtocolStringValue {
   DIFFUSION_reportFileMode,
 
   DIFFUSION_bQuitOnCheckFailure,
+  
+  //Denoising 1
+  DENOISING_bCheck,
+  DENOISING_Path,
+  DENOISING_ParameterSet,
+  DENOISING_NumIter,
+  DENOISING_Est_Radius,
+  DENOISING_Filter_Radius,
+  DENOISING_Min_VoxelNum_Filter,
+  DENOISING_Min_VoxelNum_Est,
+  DENOISING_MinNoiseSTD,
+  DENOISING_MaxNoiseSTD,
+  DENOISING_HistogramResolution,
+  DENOISING_AbsoluteValue,
 
   // slice check
   SLICE_bCheck,
@@ -102,6 +116,14 @@ enum ProtocolStringValue {
   GRADIENT_reportFileMode,
   GRADIENT_excludedDWINrrdFileNameSuffix,
   GRADIENT_bQuitOnCheckFailure,
+
+  // Denoising 2
+  JOINDENOISING_bCheck,
+  JOINDENOISING_Path,
+  JOINDENOISING_ParameterSet,
+  JOINDENOISING_NumNeighborGradients,
+  JOINDENOISING_Est_Radius,
+  JOINDENOISING_Filter_Radius,
 
   // baseline average
   BASELINE_bAverage,

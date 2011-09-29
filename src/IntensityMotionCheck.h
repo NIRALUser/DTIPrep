@@ -23,12 +23,15 @@
 #include "itkDWIQCInterlaceChecker.h"
 #include "itkDWIBaselineAverager.h"
 #include "itkDWIQCGradientChecker.h"
+#include <itksys/Process.h>
+#include <itksys/Glob.hxx>
 
 
 #include "itkDWIEddyCurrentHeadMotionCorrector.h" // eddy-motion Utah
 #include "itkVectorImageRegisterAffineFilter.h"   // eddy-motion IOWA
 
 #include <QObject>
+#include <QProcess>
 
 
 
@@ -64,6 +67,8 @@ public:
   typedef itk::DWIQCInterlaceChecker<DwiImageType> InterlaceCheckerType;
   typedef itk::DWIBaselineAverager<DwiImageType>   BaselineAveragerType;
   typedef itk::DWIQCGradientChecker<DwiImageType>  GradientCheckerType;
+  
+  itksysProcess* m_Process;
 
   //eddy-motion Utah
   typedef itk::DWIEddyCurrentHeadMotionCorrector<DwiImageType> EddyMotionCorrectorType;
@@ -97,6 +102,8 @@ public:
 
   bool DiffusionCheck( DwiImageType::Pointer dwi );
   bool SliceWiseCheck( DwiImageType::Pointer dwi );
+  int Denoising( DwiImageType::Pointer dwi );
+  int JointDenoising( DwiImageType::Pointer dwi );
   bool InterlaceWiseCheck( DwiImageType::Pointer dwi );
   bool BaselineAverage( DwiImageType::Pointer dwi );
   bool EddyMotionCorrect( DwiImageType::Pointer dwi );
@@ -342,6 +349,10 @@ private:
   double m_b0_FurtherQC;
 
   bool protocol_load;
+
+  // Log File
+  std::string m_output;
+  char m_LogFile[512];
 
 };
 

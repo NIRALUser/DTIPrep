@@ -144,6 +144,8 @@ public:
     gradientWiseCheckResult.clear();
     sliceWiseCheckResult.clear();
     sliceWiseCheckProcessing.clear();
+    m_Original_ForcedConformance_Map.clear();
+    
 
     imageInformationCheckResult.origin = true;
     imageInformationCheckResult.size = true;
