@@ -1,7 +1,7 @@
 #include <QtGui>
 #include <QThread>
 #include <QFont>
-
+#include <qdom.h>
 
 #include "IntensityMotionCheckPanel.h"
 //#include "IntensityMotionCheck.h"
@@ -42,7 +42,7 @@ QDockWidget(parentNew)
 {
   setupUi(this);
   verticalLayout->setContentsMargins(0, 0, 0, 0);
-
+  qRegisterMetaType< QString >();
   //Setting max and min to zero to behave as a busy indicator
   this->progressBar2->setMinimum(0);  
   this->progressBar2->setMaximum(0);
@@ -102,14 +102,49 @@ QDockWidget(parentNew)
   connect( &myIntensityThread,
     SIGNAL( ResultUpdate() ),
     this,
-    SLOT( ResultUpdate() ) );
+    SLOT( ResultUpdate() ));
 
   connect( &myFurtherQCThread,
     SIGNAL( ResultUpdate() ),
     this,
     SLOT( ResultUpdate() ) );
+ 
+  connect( &myFurtherQCThread,
+    SIGNAL( ResultUpdate() ),
+    this,
+    SLOT( ResultUpdate() ));
 
+  connect( &myIntensityThread,
+    SIGNAL( Building_Mapping_XML() ),
+    this,
+    SLOT( Building_Mapping_XML() ) );
+
+  connect( &myIntensityThread,
+    SIGNAL( LoadQCedDWI( QString) ),
+    this,
+    SLOT( LoadQCedDWI( QString ) ));
+
+  connect( &myIntensityThread,
+    SIGNAL( QCedResultUpdate() ),
+    this,
+    SLOT( QCedResultUpdate() ));
   
+
+  connect( &myIntensityThread,
+    SIGNAL( Set_VCStatus() ),
+    this,
+    SLOT( Set_VCStatus() ));
+
+  connect( &myIntensityThread,
+    SIGNAL( Set_Original_ForcedConformance_Mapping() ),
+    this,
+    SLOT( Set_Original_ForcedConformance_Mapping() ));
+
+  connect( &myIntensityThread,
+    SIGNAL( Set_QCedDWI() ),
+    this,
+    SLOT( Set_QCedDWI() ));
+
 }
 
 IntensityMotionCheckPanel::~IntensityMotionCheckPanel(){}
@@ -306,8 +341,6 @@ void IntensityMotionCheckPanel::on_pushButton_RunPipeline_clicked( )
   
   bResultTreeEditable = false;
   //pushButton_SaveDWIAs->setEnabled( 0 );
-  
-  
 
 }
 
@@ -318,11 +351,11 @@ void IntensityMotionCheckPanel::SetFileName(QString nrrd )
   DwiFileName = nrrd.toStdString();
 }
 
+
 void IntensityMotionCheckPanel::SetName( QString nrrd_path )
 {
  DwiFilePath = nrrd_path;
  DwiName = nrrd_path.section('/',-1); // set only dwi file name to DwiName
- std::cout<<DwiName.toStdString().c_str()<<"DwiName"<<std::endl;
 }
 
 void IntensityMotionCheckPanel::on_toolButton_ProtocolFileOpen_clicked( )
@@ -338,149 +371,56 @@ void IntensityMotionCheckPanel::on_toolButton_ResultFileOpen_clicked( )
   bMatchNameQCResult_DwiFile = false;
   OpenXML_ResultFile();
   emit SignalActivateSphere(); // Activate the "actionIncluded" bottom
+  
   //bProtocolTreeEditable = true;
   //emit ProtocolChanged();
 }
 
-void IntensityMotionCheckPanel::SetVisualCheckingStatus( int index, int status, int pro )
+void IntensityMotionCheckPanel::SetVisualCheckingStatus( int index, int status )
 {
-   
-   //bool new_item = true;
+
+   // Set Visual Status with the assumption that user is not able to exclude Baseline
+   int pro = this->GetQCResult().GetIntensityMotionCheckResult()[ t_Original_ForcedConformance_Mapping[index].index_original[0]].processing;
+   //std::cout << "index: " << index << "pro: " << pro << std::endl;
    for ( unsigned int j = 0 ; j < VC_Status.size() ; j++ )
    {
 	if ( index == VC_Status[j].index )
 	{
 		VC_Status[j].VC_status = status;
-		//new_item = false;
 		
 	}
 
    }
-   /*/if ( new_item == true )
-   {
-	VC_STATUS vc;
-   	vc.index = index ;
-   	vc.VC_status = status; 
-
-   	VC_Status.push_back( vc );
-   }*/
 
    if ( status == 0 ){
-       this->GetQTreeWidgetResult()->topLevelItem(2)->child(index+3)->setText( 3, tr ("INCLUDE_MANUALLY") );
-       this->GetQTreeWidgetResult()->topLevelItem(2)->child( index+3)->child( 6 )-> child( 0 )->setText( 1, tr ("Include") );
-       this->GetQCResult().GetIntensityMotionCheckResult()[ index ].VisualChecking = 0;
+       this->GetQTreeWidgetResult()->topLevelItem(0)->child( index )->setText( 1, tr ("INCLUDE_MANUALLY") );
+       this->GetQTreeWidgetResult()->topLevelItem(0)->child( index )->child( 1 )-> child( 0 )->setText( 1, tr ("Include") );
+       this->GetQCResult().GetIntensityMotionCheckResult()[ t_Original_ForcedConformance_Mapping[index].index_original[0]].VisualChecking = 0;
    }
    if ( status == 6 ){
-       this->GetQTreeWidgetResult()->topLevelItem(2)->child(index+3)->setText(3, tr ("EXCLUDE_MANUALLY") );
-       this->GetQTreeWidgetResult()->topLevelItem(2)->child( index+3 )->child( 6 )-> child( 0 )->setText( 1, tr ("Exclude") );
-       this->GetQCResult().GetIntensityMotionCheckResult()[ index ].VisualChecking = 6;
+       this->GetQTreeWidgetResult()->topLevelItem(0)->child( index )-> setText(1, tr ("EXCLUDE_MANUALLY") );
+       this->GetQTreeWidgetResult()->topLevelItem(0)->child( index )->child( 1 )-> child( 0 )->setText( 1, tr ("Exclude") );
+       this->GetQCResult().GetIntensityMotionCheckResult()[ t_Original_ForcedConformance_Mapping[index].index_original[0] ].VisualChecking = 6;
    }
    if ( status == -1 ){
-       this->GetQTreeWidgetResult()->topLevelItem(2)->child( index+3 )->child( 6 )-> child( 0 )->setText( 1, tr ("NoChange") );   
-       this->GetQTreeWidgetResult()->topLevelItem(2)->child(index+3)->setText(3, tr ("") );
-       this->GetQCResult().GetIntensityMotionCheckResult()[ index ].VisualChecking = -1;
+       this->GetQTreeWidgetResult()->topLevelItem(0)->child( index )->child( 1 )-> child( 0 )->setText( 1, tr ("NoChange") );   
+       this->GetQTreeWidgetResult()->topLevelItem(0)->child( index )->setText(1, tr ("") );
+       this->GetQCResult().GetIntensityMotionCheckResult()[ t_Original_ForcedConformance_Mapping[index].index_original[0] ].VisualChecking = -1;
    }
 
-   /*if ( status==-1 )
-  {
-    switch ( this->GetQCResult().GetIntensityMotionCheckResult()[ index ].processing )
-   {
-   case QCResult::GRADIENT_BASELINE_AVERAGED:
-   this->GetQTreeWidgetResult()->topLevelItem(2)->child(index+2)->setText( 1, tr ("BASELINE_AVERAGED") );
-   break;
-   case QCResult::GRADIENT_EXCLUDE_SLICECHECK:
-   this->GetQTreeWidgetResult()->topLevelItem(2)->child(index+2)->setText( 1, tr ("EXCLUDE_SLICECHECK") );
-   break;
-   case QCResult::GRADIENT_EXCLUDE_INTERLACECHECK:
-   this->GetQTreeWidgetResult()->topLevelItem(2)->child(index+2)->setText( 1, tr ("EXCLUDE_INTERLACECHECK") );
-   break;
-   case QCResult::GRADIENT_EXCLUDE_GRADIENTCHECK:
-   this->GetQTreeWidgetResult()->topLevelItem(2)->child(index+2)->setText( 2, tr ("EXCLUDE_GRADIENTCHECK") );
-   break;
-   case QCResult::GRADIENT_EXCLUDE_MANUALLY:
-   this->GetQTreeWidgetResult()->topLevelItem(2)->child(index+2)->setText( 2, tr ("EXCLUDE_MANUALLY") );
-   break;
-   case QCResult::GRADIENT_EDDY_MOTION_CORRECTED:
-   this->GetQTreeWidgetResult()->topLevelItem(2)->child(index+2)->setText( 2, tr ("EDDY_MOTION_CORRECTED") );
-   break;
-   case QCResult::GRADIENT_INCLUDE:
-   {
-   this->GetQTreeWidgetResult()->topLevelItem(2)->child(index+2)->setText( 2, tr ("INCLUDE") );
-   }
-   }
-  }  */ 
+   
 
   if ( pro <= 2 && status >= 3 )
   {
-   /*
-   switch ( status )
-   {
-   case QCResult::GRADIENT_BASELINE_AVERAGED:
-   this->GetQTreeWidgetResult()->topLevelItem(2)->child(index+2)->setText( 1, tr ("BASELINE_AVERAGED") );
-   break;
-   case QCResult::GRADIENT_EXCLUDE_SLICECHECK:
-   this->GetQTreeWidgetResult()->topLevelItem(2)->child(index+2)->setText( 1, tr ("EXCLUDE_SLICECHECK") );
-   break;
-   case QCResult::GRADIENT_EXCLUDE_INTERLACECHECK:
-   this->GetQTreeWidgetResult()->topLevelItem(2)->child(index+2)->setText( 1, tr ("EXCLUDE_INTERLACECHECK") );
-   break;
-   case QCResult::GRADIENT_EXCLUDE_GRADIENTCHECK:
-   this->GetQTreeWidgetResult()->topLevelItem(2)->child(index+2)->setText( 2, tr ("EXCLUDE_GRADIENTCHECK") );
-   break;
-   case QCResult::GRADIENT_EXCLUDE_MANUALLY:
-   this->GetQTreeWidgetResult()->topLevelItem(2)->child(index+2)->setText( 2, tr ("EXCLUDE_MANUALLY") );
-   break;
-   case QCResult::GRADIENT_EDDY_MOTION_CORRECTED:
-   this->GetQTreeWidgetResult()->topLevelItem(2)->child(index+2)->setText( 2, tr ("EDDY_MOTION_CORRECTED") );
-   break;
-   case QCResult::GRADIENT_INCLUDE:
-   {
-   this->GetQTreeWidgetResult()->topLevelItem(2)->child(index+2)->setText( 2, tr ("INCLUDE") );
-   }
-   }
-   std::cout<<"Processing Include"<< this->GetQCResult().GetIntensityMotionCheckResult()[ index ].processing <<"status Exclude"<<std::endl;
-   //SetProcessingQCResult(this->GetQCResult().GetIntensityMotionCheckResult()[ index ].processing, status);  
-   //this->GetQCResult().setProcessing(index) = status ;
-   */
+   
    pushButton_SaveVisualChecking->setEnabled( 1 );
   }
   
    if( pro >= 3 && status <= 2 && status >-1)
   {
-   /*
-    switch ( status )
-   {
-   case QCResult::GRADIENT_BASELINE_AVERAGED:
-   this->GetQTreeWidgetResult()->topLevelItem(2)->child(index+2)->setText( 2, tr ("BASELINE_AVERAGED") );
-   break;
-   case QCResult::GRADIENT_EXCLUDE_SLICECHECK:
-   this->GetQTreeWidgetResult()->topLevelItem(2)->child(index+2)->setText( 2, tr ("EXCLUDE_SLICECHECK") );
-   break;
-   case QCResult::GRADIENT_EXCLUDE_INTERLACECHECK:
-   this->GetQTreeWidgetResult()->topLevelItem(2)->child(index+2)->setText( 2, tr ("EXCLUDE_INTERLACECHECK") );
-   break;
-   case QCResult::GRADIENT_EXCLUDE_GRADIENTCHECK:
-   this->GetQTreeWidgetResult()->topLevelItem(2)->child(index+2)->setText( 2, tr ("EXCLUDE_GRADIENTCHECK") );
-   break;
-   case QCResult::GRADIENT_EXCLUDE_MANUALLY:
-   this->GetQTreeWidgetResult()->topLevelItem(2)->child(index+2)->setText( 2, tr ("EXCLUDE_MANUALLY") );
-   break;
-   case QCResult::GRADIENT_EDDY_MOTION_CORRECTED:
-   this->GetQTreeWidgetResult()->topLevelItem(2)->child(index+2)->setText( 2, tr ("EDDY_MOTION_CORRECTED") );
-   break;
-   case QCResult::GRADIENT_INCLUDE:
-   {
-   this->GetQTreeWidgetResult()->topLevelItem(2)->child(index+2)->setText( 2, tr ("INCLUDE_MANUALLY") );
-   }
-   }
-   //SetProcessingQCResult(this->GetQCResult().GetIntensityMotionCheckResult()[ index ].processing, status); 
- 
-   //this->GetQCResult().setProcessing(index) = status ;
-   //this->GetQCResult().GetIntensityMotionCheckResult()[ index ].processing = status ;
-   */
+   
    pushButton_SaveVisualChecking->setEnabled( 1 );
   }
-  //std::cout<< this->GetQCResult().GetIntensityMotionCheckResult()[ index ].processing<<"processing_A"<<std::endl;
 
 }
 
@@ -488,7 +428,7 @@ void IntensityMotionCheckPanel::SetVisualCheckingStatus( int index, int status, 
 
 void IntensityMotionCheckPanel::OpenXML_ResultFile()
 {
-  QString xmlResultFile=QFileDialog::getOpenFileName (this, tr("Select Report Result"), lineEdit_Result->text(),tr("xml Files (*.xml)"));
+  QString xmlResultFile=QFileDialog::getOpenFileName (this, tr("Select QC Report Result"), lineEdit_Result->text(),tr("xml Files (*.xml)"));
 
   if (xmlResultFile.length()>0)
   {
@@ -504,27 +444,69 @@ void IntensityMotionCheckPanel::OpenXML_ResultFile()
   XmlReader.setQCRESULT( &qcResult);
   //XmlReader.readFile_QCResult(xmlResultFile, XmlStreamReader::TreeWise);
   XmlReader.readFile_QCResult(xmlResultFile, XmlStreamReader::QCResultlWise);
-  // Updating VC_Status
-  for ( unsigned int ind = 0; ind < this->GetQCResult().GetIntensityMotionCheckResult().size() ; ind ++ )
+
+  // ..........................................................................................................................................
+  // Check weather user wants to visualize the entire QCed result or only passed result
+  //...........................................................................................................................................
+  QString Grad1 = "Warnning!";
+  QString Grad2 = "Visualization QCed Report?";
+  QMessageBox msgBox;
+  msgBox.setWindowTitle( Grad1 );
+  msgBox.setText( Grad2 );
+  QPushButton * Passed_QCedResult= msgBox.addButton( tr("Passed_QCedResult"), QMessageBox::ActionRole);
+  QPushButton * Cancel = msgBox.addButton( tr("Cancel"), QMessageBox::ActionRole);
+     
+  msgBox.exec();
+
+  if ( msgBox.clickedButton() == Cancel )
+  {
+	return;
+  }
+
+  if ( msgBox.clickedButton() == Passed_QCedResult )
+  {
+  //............................................................................................................................................
+  // loading Original_ForcedConformance_Mapping
+  //............................................................................................................................................
+  t_Original_ForcedConformance_Mapping.clear();
+  Set_Original_ForcedConformance_Mapping();
+
+  //std::cout << "t_Original_ForcedConformance_Mapping" << t_Original_ForcedConformance_Mapping.size() << std::endl;
+
+  //............................................................................................................................................
+  // loading VC_Status
+  //............................................................................................................................................
+  Clear_VC_Status();
+
+  //std::cout << "t_Original_ForcedConformance_Mapping.size()" << t_Original_ForcedConformance_Mapping.size() << std::endl;
+  for ( unsigned int ind = 0; ind < t_Original_ForcedConformance_Mapping.size(); ind++  )
   {
 	VC_STATUS vc;
    	vc.index = ind ;
-   	vc.VC_status = this->GetQCResult().GetIntensityMotionCheckResult()[ind].VisualChecking;
+	//std::cout << "t_Original_ForcedConformance_Mapping[ind].index_original[0]" << t_Original_ForcedConformance_Mapping[ind].index_original[0] << " " << "t_Original_ForcedConformance_Mapping[ind].index_ForcedConformance" << t_Original_ForcedConformance_Mapping[ind].index_ForcedConformance << std::endl;
+	if ( ind == 0 )
+		for ( unsigned int k = 0 ; k < t_Original_ForcedConformance_Mapping[0].index_original.size() ; k++ )
+			vc.VC_status = this->GetQCResult().GetIntensityMotionCheckResult()[ t_Original_ForcedConformance_Mapping[ind].index_original[k] ].VisualChecking;
 
+	else
+		vc.VC_status = this->GetQCResult().GetIntensityMotionCheckResult()[ t_Original_ForcedConformance_Mapping[ind].index_original[0] ].VisualChecking;
    	VC_Status.push_back( vc );
+	//std::cout << "VC_Status" << ind  << this->GetQCResult().GetIntensityMotionCheckResult()[ t_Original_ForcedConformance_Mapping[ind].index_original[0] ].VisualChecking << std::endl;
 
+  }  
+
+  QCedResultUpdate();
+
+  return;
   }
-
-
-
   //std::cout<<qcResult.GetSliceWiseCheckResult()[1].GradientNum<<"GradientNum"<<std::endl;
   //std::cout<<qcResult.GetSliceWiseCheckResult()[1].SliceNum<<"SliceNum"<<std::endl;
   //std::cout<<qcResult.GetSliceWiseCheckResult()[1].Correlation<<"Correlation"<<std::endl;
   //std::cout<<qcResult.GetSliceWiseCheckProcessing()[50]<<"GradientWiseCheck"<<std::endl;
+  
   emit UpdateOutputDWIDiffusionVectorActors();
 
   emit LoadQCResult(true);
-  
 
   if (bDwiLoaded)
   {
@@ -986,7 +968,7 @@ void IntensityMotionCheckPanel::DefaultProtocol()
   this->GetProtocol().initDTIProtocol();
 
   this->GetProtocol().GetQCOutputDirectory() = "";
-  this->GetProtocol().GetQCedDWIFileNameSuffix() = "_QCed.nhdr";
+  this->GetProtocol().GetQCedDWIFileNameSuffix() = "_QCed.nrrd";
   this->GetProtocol().GetReportFileNameSuffix() = "_QCReport.txt";
   this->GetProtocol().SetBadGradientPercentageTolerance(0.2);
   this->GetProtocol().SetReportType(0);
@@ -1060,7 +1042,7 @@ void IntensityMotionCheckPanel::DefaultProtocol()
 
   this->GetProtocol().GetImageProtocol().bCrop = true;
   this->GetProtocol().GetImageProtocol().croppedDWIFileNameSuffix
-    = "_CroppedDWI.nhdr";
+    = "_CroppedDWI.nrrd";
 
   this->GetProtocol().GetImageProtocol().reportFileNameSuffix = "_QCReport.txt";
   this->GetProtocol().GetImageProtocol().reportFileMode = 1;
@@ -1127,7 +1109,7 @@ void IntensityMotionCheckPanel::DefaultProtocol()
   //HACK:  This breaks encapsulation of the function.  SetFunctions should be used!
   this->GetProtocol().GetDiffusionProtocol().bUseDiffusionProtocol = false;
   this->GetProtocol().GetDiffusionProtocol().diffusionReplacedDWIFileNameSuffix
-    = "_DiffusionReplaced.nhdr";
+    = "_DiffusionReplaced.nrrd";
 
   this->GetProtocol().GetDiffusionProtocol().reportFileNameSuffix
     = "_QCReport.txt";
@@ -1270,9 +1252,9 @@ void IntensityMotionCheckPanel::DefaultProtocol()
   //   this->GetProtocol().GetEddyMotionCorrectionProtocol().EddyMotionCommand =
   // "/tools/bin_linux64/EddyMotionCorrector";
   //  this->GetProtocol().GetEddyMotionCorrectionProtocol().InputFileName =
-  // "_QCOutput.nhdr";
+  // "_QCOutput.nrrd";
   //  this->GetProtocol().GetEddyMotionCorrectionProtocol().OutputFileName =
-  // "_EddyMotion_Output.nhdr";
+  // "_EddyMotion_Output.nrrd";
 
   this->GetProtocol().GetEddyMotionCorrectionProtocol().numberOfBins    =  24;
   this->GetProtocol().GetEddyMotionCorrectionProtocol().numberOfSamples
@@ -1302,20 +1284,20 @@ void IntensityMotionCheckPanel::DefaultProtocol()
   this->GetProtocol().GetDTIProtocol().method = Protocol::METHOD_WLS;
   this->GetProtocol().GetDTIProtocol().baselineThreshold = 50; //
   this->GetProtocol().GetDTIProtocol().mask = "";
-  this->GetProtocol().GetDTIProtocol().tensorSuffix = "_DTI.nhdr";
+  this->GetProtocol().GetDTIProtocol().tensorSuffix = "_DTI.nrrd";
   this->GetProtocol().GetDTIProtocol().bbaseline = true;
-  this->GetProtocol().GetDTIProtocol().baselineSuffix = "_Baseline.nhdr";
+  this->GetProtocol().GetDTIProtocol().baselineSuffix = "_Baseline.nrrd";
   this->GetProtocol().GetDTIProtocol().bidwi = true;
-  this->GetProtocol().GetDTIProtocol().idwiSuffix = "_IDWI.nhdr";
+  this->GetProtocol().GetDTIProtocol().idwiSuffix = "_IDWI.nrrd";
   this->GetProtocol().GetDTIProtocol().bfa = true;
-  this->GetProtocol().GetDTIProtocol().faSuffix = "_FA.nhdr";
+  this->GetProtocol().GetDTIProtocol().faSuffix = "_FA.nrrd";
   this->GetProtocol().GetDTIProtocol().bmd = true;
-  this->GetProtocol().GetDTIProtocol().mdSuffix = "_MD.nhdr";
+  this->GetProtocol().GetDTIProtocol().mdSuffix = "_MD.nrrd";
   this->GetProtocol().GetDTIProtocol().bcoloredfa = true;
-  this->GetProtocol().GetDTIProtocol().coloredfaSuffix = "_colorFA.nhdr";
+  this->GetProtocol().GetDTIProtocol().coloredfaSuffix = "_colorFA.nrrd";
   this->GetProtocol().GetDTIProtocol().bfrobeniusnorm = true;
   this->GetProtocol().GetDTIProtocol().frobeniusnormSuffix
-    = "_frobeniusnorm.nhdr";
+    = "_frobeniusnorm.nrrd";
 
   this->GetProtocol().GetDTIProtocol().reportFileNameSuffix = "_QCReport.txt";
   this->GetProtocol().GetDTIProtocol().reportFileMode = 1;
@@ -2845,7 +2827,6 @@ void IntensityMotionCheckPanel::f_overallSliceWiseCheck()
   if ( qcResult.GetIntensityMotionCheckResult()[i].processing == QCResult::GRADIENT_EXCLUDE_GRADIENTCHECK )
       num_GradientWiseCheckExc++;
   }
-  std::cout << "TEST FLOAT: " << num_SliceWiseCheckExc << " " << qcResult.GetIntensityMotionCheckResult().size() << std::endl;
   r_SliceWiseCkeck = num_SliceWiseCheckExc/qcResult.GetIntensityMotionCheckResult().size();
   
   if (r_SliceWiseCkeck > this->GetProtocol().GetInterlaceCheckProtocol().correlationThresholdGradient)
@@ -2915,6 +2896,152 @@ void IntensityMotionCheckPanel::f_overallGradientWiseCheck()
 
 
 }
+
+void IntensityMotionCheckPanel::Set_VCStatus()
+{
+
+  // Updating VC_Status
+  Clear_VC_Status();
+  for ( unsigned int ind = 0; ind < myIntensityThread.m_IntensityMotionCheck->get_Original_ForcedConformance_Mapping().size(); ind++  )
+  {
+	VC_STATUS vc;
+   	vc.index = ind ;
+	if ( ind == 0 )
+		for ( unsigned int k = 0 ; k < myIntensityThread.m_IntensityMotionCheck->get_Original_ForcedConformance_Mapping()[0].index_original.size() ; k++ )
+			vc.VC_status = this->GetQCResult().GetIntensityMotionCheckResult()[ myIntensityThread.m_IntensityMotionCheck->get_Original_ForcedConformance_Mapping()[ind].index_original[k] ].VisualChecking;
+
+	else
+		vc.VC_status = this->GetQCResult().GetIntensityMotionCheckResult()[ myIntensityThread.m_IntensityMotionCheck->get_Original_ForcedConformance_Mapping()[ind].index_original[0] ].VisualChecking;
+   	VC_Status.push_back( vc );
+	//std::cout << "VC_Status" << ind  << vc.VC_status << std::endl;
+
+  }
+
+}
+
+void IntensityMotionCheckPanel::Set_Original_ForcedConformance_Mapping()
+{
+
+ //std::cout << "GetDwiOutputImage()->GetVectorLength()" << GetDwiOutputImage()->GetVectorLength() << std::endl;
+ for ( unsigned int i = 0 ; i < GetDwiOutputImage()->GetVectorLength() ; i++ )
+ {
+	m_Original_ForcedConformance_Mapping item;
+	item.index_ForcedConformance = i ;
+	std::vector< int > Bing;
+	
+	for ( unsigned int k = 0 ; k < qcResult.GetIntensityMotionCheckResult().size(); k++ )
+	{
+		if ( qcResult.GetIntensityMotionCheckResult()[k].QCIndex == i )
+		{
+			Bing.push_back( k );
+			//std::cout << "i: " << i << "qcResult.GetIntensityMotionCheckResult()[k].QCIndex" << qcResult.GetIntensityMotionCheckResult()[k].QCIndex << std::endl;
+		}
+	}
+	item.index_original = Bing;
+	//std::cout << "Bing" << Bing[0] << std::endl;
+	t_Original_ForcedConformance_Mapping.push_back( item );			
+ }
+
+  
+}
+
+void IntensityMotionCheckPanel::Set_QCedDWI()
+{
+	SetDwiOutputImage( myIntensityThread.m_IntensityMotionCheck->Getm_DwiForcedConformanceImage() );
+
+}
+
+void IntensityMotionCheckPanel::QCedResultUpdate()
+{
+
+  // creating QCResult tree include "gradeints info + visual checking process" :"
+  std::cout << "Signal QCedResultUpdate" << std::endl;
+  treeWidget_Results->clear();
+
+  // gradient
+  QTreeWidgetItem *itemIntensityMotionInformation = new QTreeWidgetItem( treeWidget_Results );
+  itemIntensityMotionInformation->setText( 0, tr("DWI Check") );
+
+  
+  // Obtaing directions of gradeints of QCed dwi
+  //..............................................................................................................................................
+  itk::MetaDataDictionary imgMetaDictionary = GetDwiOutputImage()->GetMetaDataDictionary();
+  std::vector< std::string > imgMetaKeys = imgMetaDictionary.GetKeys();
+  std::vector<std::string>::const_iterator itKey = imgMetaKeys.begin();
+  std::string      metaString;
+ 
+  // gradient vectors
+  TensorReconstructionImageFilterType::GradientDirectionType vect3d_T;
+  GradientDirectionContainer_ConformanceImg = GradientDirectionContainerType::New();
+  for (; itKey != imgMetaKeys.end(); itKey++ )
+  {
+    // double x,y,z;
+    itk::ExposeMetaData<std::string>(imgMetaDictionary, *itKey, metaString);
+    if ( itKey->find("DWMRI_gradient") != std::string::npos )
+    {
+      std::istringstream iss(metaString);
+      iss >> vect3d_T[0] >> vect3d_T[1] >> vect3d_T[2];
+      std::cout << "gradeints dir: " << vect3d_T[0] << " " << vect3d_T[1] << " " << vect3d_T[2] << std::endl;
+      GradientDirectionContainer_ConformanceImg->push_back(vect3d_T);
+    }
+  }
+  //..................................................................................................................................................
+
+  for ( unsigned int i = 0; i < t_Original_ForcedConformance_Mapping.size(); i++ )
+  {
+
+     QTreeWidgetItem *gradient = new QTreeWidgetItem(
+      itemIntensityMotionInformation);
+
+     gradient->setText( 0,QString("gradient_%1").arg( i, 4, 10, QLatin1Char( '0' ) ) );
+
+     QTreeWidgetItem *itemGradientDir = new QTreeWidgetItem(gradient);
+     itemGradientDir->setText( 0, tr("Dir") );
+     itemGradientDir->setText(1, QString("%1 %2 %3")
+      .arg(GradientDirectionContainer_ConformanceImg->ElementAt(i)[0], 0,
+      'f', 6)
+      .arg(GradientDirectionContainer_ConformanceImg->ElementAt(i)[1], 0,
+      'f', 6)
+      .arg(GradientDirectionContainer_ConformanceImg->ElementAt(i)[2], 0,
+      'f', 6)
+      );
+
+     QTreeWidgetItem * itemVisualCheck = new QTreeWidgetItem(gradient);  // item for visual gradient checking
+     itemVisualCheck->setText(0, tr("Visual Check"));
+     QTreeWidgetItem * itemVisualCheck_Satus = new QTreeWidgetItem(itemVisualCheck);
+     itemVisualCheck_Satus->setText( 0,QString("VC_Status_%1").arg( i, 4, 10, QLatin1Char( '0' ) ) );
+     
+     if ( i == 0 )
+     {
+ 	for ( unsigned int k = 0 ; k < t_Original_ForcedConformance_Mapping[0].index_original.size() ; k++ )
+	{
+		if ( qcResult.GetIntensityMotionCheckResult()[ (t_Original_ForcedConformance_Mapping[i].index_original)[k] ].VisualChecking == 0)
+			itemVisualCheck_Satus->setText( 1, tr("Include" ));
+		if ( qcResult.GetIntensityMotionCheckResult()[ (t_Original_ForcedConformance_Mapping[i].index_original)[k] ].VisualChecking == 6)
+			itemVisualCheck_Satus->setText( 1, tr("Exclude" ));
+		if ( qcResult.GetIntensityMotionCheckResult()[ (t_Original_ForcedConformance_Mapping[i].index_original)[k] ].VisualChecking == -1)
+			itemVisualCheck_Satus->setText( 1, tr("NoChange" ));
+		QTreeWidgetItem * itemQCIndex = new QTreeWidgetItem(gradient);	// item for showing the mapping to the QCed dwi image
+        	itemQCIndex->setText(0, tr("Original_Index") );
+               itemQCIndex->setText(1, QString("%1").arg( (t_Original_ForcedConformance_Mapping[0].index_original)[k]) );
+	}
+     }
+     else
+     {
+	if ( qcResult.GetIntensityMotionCheckResult()[ (t_Original_ForcedConformance_Mapping[i].index_original)[0] ].VisualChecking == 0)
+		itemVisualCheck_Satus->setText( 1, tr("Include" ));
+	if ( qcResult.GetIntensityMotionCheckResult()[ (t_Original_ForcedConformance_Mapping[i].index_original)[0] ].VisualChecking == 6)
+		itemVisualCheck_Satus->setText( 1, tr("Exclude" ));
+	if ( qcResult.GetIntensityMotionCheckResult()[ (t_Original_ForcedConformance_Mapping[i].index_original)[0] ].VisualChecking == -1)
+		itemVisualCheck_Satus->setText( 1, tr("NoChange" ));
+	QTreeWidgetItem * itemQCIndex = new QTreeWidgetItem(gradient);	// item for showing the mapping to the QCed dwi image
+        itemQCIndex->setText(0, tr("Original_Index") );
+        itemQCIndex->setText(1, QString("%1").arg( (t_Original_ForcedConformance_Mapping[i].index_original)[0] ) );
+     }
+
+  }
+}
+
 
 void IntensityMotionCheckPanel::ResultUpdate()   
 {
@@ -3364,7 +3491,6 @@ void IntensityMotionCheckPanel::ResultUpdate()
         }
        }
        else{
-         std::cout << "TEST PRINTING2" <<std::endl;
          itemGradientWiseCheck->setText( 2, tr ("NA"));
        }
     }
@@ -3383,6 +3509,10 @@ void IntensityMotionCheckPanel::ResultUpdate()
     itemVisualCheck_Satus->setText( 1, tr("Exclude" ));
    if ( qcResult.GetIntensityMotionCheckResult()[i].VisualChecking == -1 ) 
     itemVisualCheck_Satus->setText( 1, tr("NoChange" ));
+
+   QTreeWidgetItem * itemQCIndex = new QTreeWidgetItem(gradient);	// item for showing the mapping to the QCed dwi image
+   itemQCIndex->setText(0, tr("QC_Index") );
+   itemQCIndex->setText(1, QString("%1").arg(qcResult.GetIntensityMotionCheckResult()[i].QCIndex) );
   }
 
   if (bLoadDefaultQC == true)
@@ -3418,14 +3548,14 @@ void IntensityMotionCheckPanel::ResultUpdate()
 
   emit UpdateOutputDWIDiffusionVectorActors();
   emit LoadQCResult(true);
-  if (bLoadDefaultQC)
-  {
-     SavingTreeWidgetResult_XmlFile_Default();
-  }
-  else 
-  {
-       SavingTreeWidgetResult_XmlFile();  
-  }
+  //if (bLoadDefaultQC)
+  //{
+  //SavingTreeWidgetResult_XmlFile_Default();
+  //}
+  //else 
+  //{
+   SavingTreeWidgetResult_XmlFile();  
+  //}
   emit SignalActivateSphere(); // Activate "actionIncluded" bottom 
   pushButton_SaveVisualChecking->setEnabled( 1 );
   return;
@@ -3439,6 +3569,7 @@ void IntensityMotionCheckPanel::SavingTreeWidgetResult_XmlFile_Default( )    // 
   Result_xmlFile.append(DwiFileName.c_str());
   Result_xmlFile.append(QString(tr("_XMLQCResult_Default.xml")));
 
+  
   if ( Result_xmlFile.length() > 0 )
   {
     lineEdit_Result->setText(Result_xmlFile);
@@ -3454,15 +3585,10 @@ void IntensityMotionCheckPanel::SavingTreeWidgetResult_XmlFile( )    // Saving t
 {
   //QString Result_xmlFile = QFileDialog::getSaveFileName( this, tr(
     //"Save Result As"), lineEdit_Result->text(),  tr("xml Files (*.xml)") );
-  QString Result_xmlFile;
-  Result_xmlFile.append(DwiFileName.c_str());
-  if ( bDwi_VisualCheckLoad == false )
-  {
+  QString Result_xmlFile = DwiFilePath.section('.',-2,0);
+  Result_xmlFile.remove("_QCed");
   Result_xmlFile.append(QString(tr("_XMLQCResult.xml")));
-  }
-  else
-  Result_xmlFile.append(QString(tr("_XMLQCResult_VC.xml")));
-
+  
   if ( Result_xmlFile.length() > 0 )
   {
     lineEdit_Result->setText(Result_xmlFile);
@@ -3519,6 +3645,8 @@ void IntensityMotionCheckPanel::GenerateCheckOutputImage( DwiImageType::Pointer 
       }
     }
   }
+
+  
 
   if ( gradientLeft == qcResult.GetIntensityMotionCheckResult().size() )
   {
@@ -4060,34 +4188,35 @@ bool IntensityMotionCheckPanel::GetGradientDirections()
 {
  
   int num_Includegradient_VC = false;
-  //std::cout << "Test VC Satus :" << VC_Status.size() << std::endl;
+
+  std::cout << "VC_Status.size(): " << VC_Status.size() << std::endl;
 
   for( unsigned int i=0; i< VC_Status.size(); i++)
   {
-     //std::cout << "index:" << VC_Status[i].index << " " << VC_Status[i].VC_status << std::endl;
+     std::cout << "index:" << VC_Status[i].index << " " << " VC_Status: " << VC_Status[i].VC_status << std::endl;
   }
 
-  for( unsigned int i=0; i< VC_Status.size(); i++)
-  {
-     if (VC_Status[i].VC_status == 0 && this->GetQCResult().GetIntensityMotionCheckResult()[ VC_Status[i].index ].processing >= 3 ) // check if the gradient (index th) changed to Include in Visual Checking step but its QCResult has been Excluded
-     {
-        num_Includegradient_VC = true;
-	index_listVCIncluded.push_back( VC_Status[i].index );
-     }
-  }
+  //for( unsigned int i=0; i< VC_Status.size(); i++)
+  //{
+  //   if (VC_Status[i].VC_status == 0 && this->GetQCResult().GetIntensityMotionCheckResult()[ VC_Status[i].index ].processing >= 3 ) // check if the gradient (index th) changed to Include in Visual Checking step but its QCResult has been Excluded
+  //   {
+  //      num_Includegradient_VC = true;
+ //  index_listVCIncluded.push_back( VC_Status[i].index );
+ //    }
+ // }
 
-  for ( unsigned int i = 0; i< VC_Status.size() ; i++)
-  {
-     if (VC_Status[i].VC_status == QCResult::GRADIENT_EXCLUDE_MANUALLY)
-     {
-	index_listVCExcluded.push_back( VC_Status[i].index );
-     }
-  }
+//  for ( unsigned int i = 0; i< VC_Status.size() ; i++)
+//  {
+//     if (VC_Status[i].VC_status == QCResult::GRADIENT_EXCLUDE_MANUALLY)
+//     {
+//	index_listVCExcluded.push_back( VC_Status[i].index );
+//     }
+// }
   
   
   if (num_Includegradient_VC)
   {
-     QString Grad2 = QString("There are some gradients which have changed their status from Exclude to Include after Visual Checking. Do you want to rerun the automatic QC (recommended)?  If say No, it means that the gradients with changed status will not be saved.");
+     QString Grad2 = QString("There are some gradients which have changed their status from Exclude to Include after Visual Checking. Do you want to return the automatic QC (recommended)?  If say No, it means that the gradients with changed status will not be saved.");
      QMessageBox msgBox;
      msgBox.setText( Grad2 );
      QPushButton * YES = msgBox.addButton( tr("Yes"), QMessageBox::ActionRole);
@@ -4173,34 +4302,37 @@ void IntensityMotionCheckPanel::SaveVisualCheckingResult()
 {
   
   pushButton_SaveVisualChecking->setEnabled( 0 );
-  // Saving QC Result
-  if (bLoadDefaultQC)
-  {
-     SavingTreeWidgetResult_XmlFile_Default();
-  }
-  else 
-  {
-       SavingTreeWidgetResult_XmlFile();  
-  }
+  // Saving QC Result in associated xml file
+  ResultUpdate();
+  QCedResultUpdate();  
+  //if (bLoadDefaultQC)
+  //{
+  //   SavingTreeWidgetResult_XmlFile_Default();
+  //}
+  //else 
+  //{
+  //     SavingTreeWidgetResult_XmlFile();  
+  //}
   
   // Saving Output
   QString VisualChecking_DwiFileName = DwiFilePath.section('.',-2,0);
-  VisualChecking_DwiFileName.append(QString(tr("_VC.nhdr")));
+  VisualChecking_DwiFileName.remove( "_QCed");
+  VisualChecking_DwiFileName.append(QString(tr("_VC.nrrd")));
 
   QString DWIFile = QFileDialog::getSaveFileName( this, tr(
-    "Save New DWI File As"), VisualChecking_DwiFileName,
-    tr("nrrd Files (*.nhdr)") );
+    "Save Visual Checking DWI File As"), VisualChecking_DwiFileName,
+    tr("nrrd Files (*.nrrd)") );
 
   if ( DWIFile.length() > 0 )
   {
-     std::cout << "Save DWI into file: " << DWIFile.toStdString() << std::endl;
+     std::cout << "Save Visual Checking DWI into file: " << DWIFile.toStdString() << std::endl;
   }
   else
   {
-    std::cout << "DWI file name NOT set" << std::endl;
+    std::cout << "Visual Checking DWI file name NOT set" << std::endl;
   }
   
-  GenerateOutput_VisualCheckingResult( DWIFile.toStdString() );
+  GenerateOutput_VisualCheckingResult2( DWIFile.toStdString() );
 
   //VC_Status.clear();
   emit UpdateOutputDWIDiffusionVectorActors();
@@ -4219,61 +4351,25 @@ bool IntensityMotionCheckPanel::Search_index( int index, std::vector<int> list_i
   return false;
 }
 
-void IntensityMotionCheckPanel::GenerateOutput_VisualCheckingResult( std::string filename )
+void IntensityMotionCheckPanel::GenerateOutput_VisualCheckingResult2( std::string filename )
 {
-  
-  std::vector<int> list_index_original;  // list of original indices in dwi ???? ( Problem )
-  for ( unsigned int j = 0; j< qcResult.GetOriginal_ForcedConformance_Map().size() ; j++ )
+
+  // Saving QCed dwi image that visually checked
+  int num_gradeints_left = 0;
+  for ( unsigned int i = 0; i < VC_Status.size(); i++ )
   {
-    if (j == 0)
-    {
-       for ( unsigned int k = 0; k< (qcResult.GetOriginal_ForcedConformance_Map()[j].index_original).size() ; k++ )
-		list_index_original.push_back( (qcResult.GetOriginal_ForcedConformance_Map()[j].index_original)[k] ); // indices for Baseline
-    }
-    else
-       list_index_original.push_back( (qcResult.GetOriginal_ForcedConformance_Map()[j].index_original)[0] ); 
+	if ( VC_Status[i].VC_status == -1 || VC_Status[i].VC_status == 0 )
+		num_gradeints_left++;
+
   }
 
-  for ( unsigned int i =0 ; i < list_index_original.size() ; i++ )
-  {
-	std::cout << "list_index_original: " << list_index_original[i] << std::endl;
-  }
-  for ( unsigned int i =0 ; i < index_listVCExcluded.size() ; i++ )
-  {
-	std::cout << "index_listVCExcluded: " << index_listVCExcluded[i] << std::endl;
-  }
-  for ( unsigned int i =0 ; i < index_listVCIncluded.size() ; i++ )
-  {
-	std::cout << "index_listVCIncluded: " << index_listVCIncluded[i] << std::endl;
-  }
+  std::cout << "num_gradeints_left: " << num_gradeints_left << std::endl;
 
-  unsigned int gradientLeft = 0;
-  /*for ( unsigned int i = 0; i < qcResult.GetIntensityMotionCheckResult().size();  i++ )
-  {
-    // Finding the included gradients after QC and Visual Checking
-    if (  Search_index( i, index_listVCExcluded ) == false && ( Search_index( i, list_index_original ) == true ||  Search_index( i, index_listVCIncluded ) == true ) )
-    {
-      std::cout << "Leftgradient : " << i << std::endl; 
-      gradientLeft++;
-    }
-  }*/
-
-  for ( unsigned int i = 0; i < qcResult.GetIntensityMotionCheckResult().size();  i++ )
-  {
-    // Finding the included gradients after QC and Visual Checking
-    if (  Search_index( i, index_listVCExcluded ) == false && ( (qcResult.GetIntensityMotionCheckResult()[i].processing == 0 || qcResult.GetIntensityMotionCheckResult()[i].processing == 1 || qcResult.GetIntensityMotionCheckResult()[i].processing == 2) ||  Search_index( i, index_listVCIncluded ) == true ) )
-    {
-      std::cout << "Leftgradient : " << i << std::endl; 
-      gradientLeft++;
-    }
-  }
-
-  std::cout << "gradientLeft: " << gradientLeft << std::endl;
-  
+  // Check wether the number of excluded gradeints does not exceed the threshold mentioned in protocol
   if ( bProtocol )
   {
     if ( 1.0
-      - (float)( (float)gradientLeft
+      - (float)( (float)num_gradeints_left
       / (float)qcResult.GetIntensityMotionCheckResult().size() ) >=
       this->protocol.GetBadGradientPercentageTolerance() )
     {
@@ -4290,7 +4386,7 @@ void IntensityMotionCheckPanel::GenerateOutput_VisualCheckingResult( std::string
     }
   }
 
-  if ( gradientLeft == qcResult.GetIntensityMotionCheckResult().size() )
+  if ( num_gradeints_left == GetDwiOutputImage()->GetVectorLength() )
   {
     itk::NrrdImageIO::Pointer myNrrdImageIO = itk::NrrdImageIO::New();
     try
@@ -4299,7 +4395,7 @@ void IntensityMotionCheckPanel::GenerateOutput_VisualCheckingResult( std::string
       DwiWriter->SetImageIO(myNrrdImageIO);
       DwiWriter->SetFileName( filename );
       DwiWriter->UseInputMetaDataDictionaryOn();
-      DwiWriter->SetInput( this->m_DwiOriginalImage );
+      DwiWriter->SetInput( GetDwiOutputImage() );
       DwiWriter->UseCompressionOn();
       DwiWriter->Update();
     }
@@ -4309,19 +4405,19 @@ void IntensityMotionCheckPanel::GenerateOutput_VisualCheckingResult( std::string
       bDwi_VisualCheckLoad = false ;
       return;
     }
-    bDwi_VisualCheckLoad = true;
+    bDwi_VisualCheckLoad = true;	
     return;
   }
 
   DwiImageType::Pointer newDwiImage = DwiImageType::New();
-  newDwiImage->CopyInformation(m_DwiOriginalImage);
-  newDwiImage->SetRegions( m_DwiOriginalImage->GetLargestPossibleRegion() );
+  newDwiImage->CopyInformation(GetDwiOutputImage());
+  newDwiImage->SetRegions( GetDwiOutputImage()->GetLargestPossibleRegion() );
   newDwiImage->Allocate();
-  newDwiImage->SetVectorLength( gradientLeft);
+  newDwiImage->SetVectorLength( num_gradeints_left);
 
   typedef itk::ImageRegionConstIteratorWithIndex<DwiImageType>
     ConstIteratorType;
-  ConstIteratorType oit( m_DwiOriginalImage, m_DwiOriginalImage->GetLargestPossibleRegion() );
+  ConstIteratorType oit( GetDwiOutputImage(), GetDwiOutputImage()->GetLargestPossibleRegion() );
   typedef itk::ImageRegionIteratorWithIndex<DwiImageType> IteratorType;
   IteratorType nit( newDwiImage, newDwiImage->GetLargestPossibleRegion() );
 
@@ -4329,14 +4425,14 @@ void IntensityMotionCheckPanel::GenerateOutput_VisualCheckingResult( std::string
   nit.GoToBegin();
 
   DwiImageType::PixelType value;
-  value.SetSize( gradientLeft );
+  value.SetSize( num_gradeints_left );
 
   while ( !oit.IsAtEnd() )
   {
     int element = 0;
-    for ( unsigned int i = 0; i < m_DwiOriginalImage->GetVectorLength();i++ )
+    for ( unsigned int i = 0; i < GetDwiOutputImage()->GetVectorLength(); i++ )
     {
-    if ( Search_index( i, index_listVCExcluded ) == false && ( (qcResult.GetIntensityMotionCheckResult()[i].processing == 0 || qcResult.GetIntensityMotionCheckResult()[i].processing == 1 || qcResult.GetIntensityMotionCheckResult()[i].processing == 2) || Search_index( i, index_listVCIncluded ) == true ) )
+    if ( VC_Status[i].VC_status == -1 || VC_Status[i].VC_status == 0 )  
       {
         value.SetElement( element, oit.Get()[i] );
         element++;
@@ -4347,10 +4443,10 @@ void IntensityMotionCheckPanel::GenerateOutput_VisualCheckingResult( std::string
     ++nit;
   }
 
- // wrting MetaDataDictionary of the output dwi image from input metaDataDictionary information
+  // wrting MetaDataDictionary of the output dwi image from input metaDataDictionary information
   itk::MetaDataDictionary output_imgMetaDictionary;  // output dwi image dictionary 
 
-  itk::MetaDataDictionary imgMetaDictionary = m_DwiOriginalImage->GetMetaDataDictionary();
+  itk::MetaDataDictionary imgMetaDictionary = GetDwiOutputImage()->GetMetaDataDictionary();
   std::vector< std::string > imgMetaKeys = imgMetaDictionary.GetKeys();
   std::vector<std::string>::const_iterator itKey = imgMetaKeys.begin();
   std::string      metaString;
@@ -4387,12 +4483,27 @@ void IntensityMotionCheckPanel::GenerateOutput_VisualCheckingResult( std::string
        metaString);
   }
 
-  // gradient vectors
+   // gradient vectors
+  //TensorReconstructionImageFilterType::GradientDirectionType vect3d_T;
+
+  //GradientDirectionContainer_ConformanceImg = GradientDirectionContainerType::New();
+
+  //for (; itKey != imgMetaKeys.end(); itKey++ )
+  //{
+  //  // double x,y,z;
+  //  itk::ExposeMetaData<std::string>(imgMetaDictionary, *itKey, metaString);
+  //  if ( itKey->find("DWMRI_gradient") != std::string::npos )
+  //  {
+  //    std::istringstream iss(metaString);
+  //    iss >> vect3d_T[0] >> vect3d_T[1] >> vect3d_T[2];
+  //     GradientDirectionContainer_ConformanceImg->push_back(vect3d_T);
+  //  }
+ // }
   int temp = 0;
-  for ( unsigned int i = 0; i < GradientDirectionContainer->size(); i++ )
+  for ( unsigned int i = 0; i < GetDwiOutputImage()->GetVectorLength(); i++ )
   {
 
-   if ( Search_index( i, index_listVCExcluded ) == false && ( (qcResult.GetIntensityMotionCheckResult()[i].processing == 0 || qcResult.GetIntensityMotionCheckResult()[i].processing == 1 || qcResult.GetIntensityMotionCheckResult()[i].processing == 2) ||  Search_index( i, index_listVCIncluded ) == true ) ) 
+   if ( VC_Status[i].VC_status == -1 || VC_Status[i].VC_status == 0 ) 
    {
       std::ostringstream ossKey;
       ossKey << "DWMRI_gradient_" << std::setw(4) << std::setfill('0') << temp;
@@ -4400,15 +4511,268 @@ void IntensityMotionCheckPanel::GenerateOutput_VisualCheckingResult( std::string
       std::ostringstream ossMetaString;
       ossMetaString << std::setw(9) << std::setiosflags(std::ios::fixed)
         << std::setprecision(6) << std::setiosflags(std::ios::right)
-        << qcResult.GetIntensityMotionCheckResult()[i].CorrectedDir[0]
+        << GradientDirectionContainer_ConformanceImg->ElementAt(i)[0]
       << "    "
         << std::setw(9) << std::setiosflags(std::ios::fixed)
         << std::setprecision(6) << std::setiosflags(std::ios::right)
-        << qcResult.GetIntensityMotionCheckResult()[i].CorrectedDir[1]
+        << GradientDirectionContainer_ConformanceImg->ElementAt(i)[1]
       << "    "
         << std::setw(9) << std::setiosflags(std::ios::fixed)
         << std::setprecision(6) << std::setiosflags(std::ios::right)
-        << qcResult.GetIntensityMotionCheckResult()[i].CorrectedDir[2];
+        << GradientDirectionContainer_ConformanceImg->ElementAt(i)[2];
+
+      // std::cout<<ossKey.str()<<ossMetaString.str()<<std::endl;
+      itk::EncapsulateMetaData<std::string>( output_imgMetaDictionary,
+        ossKey.str(), ossMetaString.str() );
+      ++temp;
+    }
+  }
+  
+  newDwiImage->SetMetaDataDictionary(output_imgMetaDictionary);
+  
+  itk::NrrdImageIO::Pointer myNrrdImageIO = itk::NrrdImageIO::New();
+  try
+  {
+    DwiWriterType::Pointer DwiWriter = DwiWriterType::New();
+    DwiWriter->SetImageIO(myNrrdImageIO);
+    DwiWriter->SetFileName( filename );
+    DwiWriter->UseInputMetaDataDictionaryOn();
+    DwiWriter->SetInput(newDwiImage);
+    DwiWriter->UseCompressionOn();
+    DwiWriter->Update();
+  }
+  catch ( itk::ExceptionObject & e )
+  {
+    std::cout << e.GetDescription() << std::endl;
+    bDwi_VisualCheckLoad = false ;
+    return;
+  }
+  std::cout << "QC dwi Savd" << std::endl;
+  bDwi_VisualCheckLoad = true;
+  return;
+
+}
+
+void IntensityMotionCheckPanel::GenerateOutput_VisualCheckingResult( std::string filename )
+{
+  
+  /*std::vector<int> list_index_original;  // list of original indices in dwi ???? ( Problem )
+  for ( unsigned int j = 0; j< qcResult.GetOriginal_ForcedConformance_Map().size() ; j++ )
+  {
+    if (j == 0)
+    {
+       for ( unsigned int k = 0; k< (qcResult.GetOriginal_ForcedConformance_Map()[j].index_original).size() ; k++ )
+		list_index_original.push_back( (qcResult.GetOriginal_ForcedConformance_Map()[j].index_original)[k] ); // indices for Baseline
+    }
+    else
+       list_index_original.push_back( (qcResult.GetOriginal_ForcedConformance_Map()[j].index_original)[0] ); 
+  }
+
+  for ( unsigned int i =0 ; i < list_index_original.size() ; i++ )
+  {
+	std::cout << "list_index_original: " << list_index_original[i] << std::endl;
+  }*/
+  for ( unsigned int i =0 ; i < index_listVCExcluded.size() ; i++ )
+  {
+	std::cout << "index_listVCExcluded: " << index_listVCExcluded[i] << std::endl;
+  }
+  for ( unsigned int i =0 ; i < index_listVCIncluded.size() ; i++ )
+  {
+	std::cout << "index_listVCIncluded: " << index_listVCIncluded[i] << std::endl;
+  }
+
+  unsigned int gradientLeft = 0;
+  /*for ( unsigned int i = 0; i < qcResult.GetIntensityMotionCheckResult().size();  i++ )
+  {
+    // Finding the included gradients after QC and Visual Checking
+    if (  Search_index( i, index_listVCExcluded ) == false && ( Search_index( i, list_index_original ) == true ||  Search_index( i, index_listVCIncluded ) == true ) )
+    {
+      std::cout << "Leftgradient : " << i << std::endl; 
+      gradientLeft++;
+    }
+  }*/
+
+  /*for ( unsigned int i = 0; i < qcResult.GetIntensityMotionCheckResult().size();  i++ )
+  {
+    // Finding the included gradients after QC and Visual Checking
+    if (  Search_index( i, index_listVCExcluded ) == false && ( (qcResult.GetIntensityMotionCheckResult()[i].processing == 0 || qcResult.GetIntensityMotionCheckResult()[i].processing == 1 || qcResult.GetIntensityMotionCheckResult()[i].processing == 2) ||  Search_index( i, index_listVCIncluded ) == true ) )
+    {
+      std::cout << "Leftgradient : " << i << std::endl; 
+      gradientLeft++;
+    }
+  }*/
+  std::cout << "" << "index_listVCExcluded.size()" << index_listVCExcluded.size() << std::endl;
+
+  std::cout << "myIntensityThread.m_IntensityMotionCheck->get_Original_ForcedConformance_Mapping().size() " << t_Original_ForcedConformance_Mapping.size() << std::endl;
+
+  for ( unsigned int i = 0; i < t_Original_ForcedConformance_Mapping.size();  i++ )
+  {
+    // Finding the included gradients after Visual Checking
+
+    if (  Search_index( t_Original_ForcedConformance_Mapping[i].index_original[0], index_listVCExcluded ) == false || Search_index( t_Original_ForcedConformance_Mapping[i].index_original[0], index_listVCIncluded ) == true ) 
+    {
+      std::cout << "Leftgradient : " << i << std::endl; 
+      gradientLeft++;
+    }
+  }
+
+  std::cout << "gradientLeft: " << gradientLeft << std::endl;
+  
+  if ( bProtocol )
+  {
+    if ( 1.0
+      - (float)( (float)gradientLeft
+      / (float)qcResult.GetIntensityMotionCheckResult().size() ) >=
+      this->protocol.GetBadGradientPercentageTolerance() )
+    {
+      QMessageBox::StandardButton reply;
+      reply = QMessageBox::question(this, tr("Attention"),
+        tr(
+        "Bad gradients number is greater than that in protocol, save anyway?"),
+        QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
+      if ( reply == QMessageBox::No || reply == QMessageBox::Cancel )
+      {
+        bDwi_VisualCheckLoad = false ;
+        return;
+      }
+    }
+  }
+
+  if ( gradientLeft == myIntensityThread.m_IntensityMotionCheck->Getm_DwiForcedConformanceImage()->GetVectorLength() )
+  {
+    itk::NrrdImageIO::Pointer myNrrdImageIO = itk::NrrdImageIO::New();
+    try
+    {
+      DwiWriterType::Pointer DwiWriter = DwiWriterType::New();
+      DwiWriter->SetImageIO(myNrrdImageIO);
+      DwiWriter->SetFileName( filename );
+      DwiWriter->UseInputMetaDataDictionaryOn();
+      DwiWriter->SetInput( myIntensityThread.m_IntensityMotionCheck->Getm_DwiForcedConformanceImage() );
+      DwiWriter->UseCompressionOn();
+      DwiWriter->Update();
+    }
+    catch ( itk::ExceptionObject & e )
+    {
+      std::cout << e.GetDescription() << std::endl;
+      bDwi_VisualCheckLoad = false ;
+      return;
+    }
+    bDwi_VisualCheckLoad = true;	//????
+    return;
+  }
+
+  DwiImageType::Pointer newDwiImage = DwiImageType::New();
+  newDwiImage->CopyInformation(myIntensityThread.m_IntensityMotionCheck->Getm_DwiForcedConformanceImage());
+  newDwiImage->SetRegions( myIntensityThread.m_IntensityMotionCheck->Getm_DwiForcedConformanceImage()->GetLargestPossibleRegion() );
+  newDwiImage->Allocate();
+  newDwiImage->SetVectorLength( gradientLeft);
+
+  typedef itk::ImageRegionConstIteratorWithIndex<DwiImageType>
+    ConstIteratorType;
+  ConstIteratorType oit( myIntensityThread.m_IntensityMotionCheck->Getm_DwiForcedConformanceImage(), myIntensityThread.m_IntensityMotionCheck->Getm_DwiForcedConformanceImage()->GetLargestPossibleRegion() );
+  typedef itk::ImageRegionIteratorWithIndex<DwiImageType> IteratorType;
+  IteratorType nit( newDwiImage, newDwiImage->GetLargestPossibleRegion() );
+
+  oit.GoToBegin();
+  nit.GoToBegin();
+
+  DwiImageType::PixelType value;
+  value.SetSize( gradientLeft );
+
+  while ( !oit.IsAtEnd() )
+  {
+    int element = 0;
+    for ( unsigned int i = 0; i < myIntensityThread.m_IntensityMotionCheck->Getm_DwiForcedConformanceImage()->GetVectorLength();i++ )
+    {
+    if ( Search_index( t_Original_ForcedConformance_Mapping[i].index_original[0], index_listVCExcluded ) == false || Search_index( t_Original_ForcedConformance_Mapping[i].index_original[0], index_listVCIncluded ) == true )  
+      {
+        value.SetElement( element, oit.Get()[i] );
+        element++;
+      }
+    }
+    nit.Set(value);
+    ++oit;
+    ++nit;
+  }
+
+  // wrting MetaDataDictionary of the output dwi image from input metaDataDictionary information
+  itk::MetaDataDictionary output_imgMetaDictionary;  // output dwi image dictionary 
+
+  itk::MetaDataDictionary imgMetaDictionary = myIntensityThread.m_IntensityMotionCheck->Getm_DwiForcedConformanceImage()->GetMetaDataDictionary();
+  std::vector< std::string > imgMetaKeys = imgMetaDictionary.GetKeys();
+  std::vector<std::string>::const_iterator itKey = imgMetaKeys.begin();
+  std::string      metaString;
+ 
+  if ( imgMetaDictionary.HasKey("NRRD_measurement frame") )
+    {
+      // Meausurement frame
+      std::vector<std::vector<double> > nrrdmf;
+      itk::ExposeMetaData<std::vector<std::vector<double> > >(
+        imgMetaDictionary,
+        "NRRD_measurement frame",
+        nrrdmf);
+      itk::EncapsulateMetaData<std::vector<std::vector<double> > >(
+        output_imgMetaDictionary,
+        "NRRD_measurement frame",
+        nrrdmf);
+    }
+
+  // modality
+  if ( imgMetaDictionary.HasKey("modality") )
+  {
+      itk::ExposeMetaData(imgMetaDictionary, "modality", metaString);
+      itk::EncapsulateMetaData<std::string>( output_imgMetaDictionary,
+      "modality",
+       metaString);
+  } 
+
+  // b-value
+  if ( imgMetaDictionary.HasKey("DWMRI_b-value") )
+  {
+      itk::ExposeMetaData(imgMetaDictionary, "DWMRI_b-value", metaString);
+      itk::EncapsulateMetaData<std::string>( output_imgMetaDictionary,
+      "DWMRI_b-value",
+       metaString);
+  }
+
+   // gradient vectors
+  TensorReconstructionImageFilterType::GradientDirectionType vect3d_T;
+
+  GradientDirectionContainer_ConformanceImg = GradientDirectionContainerType::New();
+
+  for (; itKey != imgMetaKeys.end(); itKey++ )
+  {
+    // double x,y,z;
+    itk::ExposeMetaData<std::string>(imgMetaDictionary, *itKey, metaString);
+    if ( itKey->find("DWMRI_gradient") != std::string::npos )
+    {
+      std::istringstream iss(metaString);
+      iss >> vect3d_T[0] >> vect3d_T[1] >> vect3d_T[2];
+      GradientDirectionContainer_ConformanceImg->push_back(vect3d_T);
+    }
+  }
+
+  int temp = 0;
+  for ( unsigned int i = 0; i < t_Original_ForcedConformance_Mapping.size(); i++ )
+  {
+
+   if ( Search_index( t_Original_ForcedConformance_Mapping[i].index_original[0], index_listVCExcluded ) == false || Search_index( t_Original_ForcedConformance_Mapping[i].index_original[0], index_listVCIncluded ) == true ) 
+   {
+      std::ostringstream ossKey;
+      ossKey << "DWMRI_gradient_" << std::setw(4) << std::setfill('0') << temp;
+
+      std::ostringstream ossMetaString;
+      ossMetaString << std::setw(9) << std::setiosflags(std::ios::fixed)
+        << std::setprecision(6) << std::setiosflags(std::ios::right)
+        << GradientDirectionContainer_ConformanceImg->ElementAt(i)[0]
+      << "    "
+        << std::setw(9) << std::setiosflags(std::ios::fixed)
+        << std::setprecision(6) << std::setiosflags(std::ios::right)
+        << GradientDirectionContainer_ConformanceImg->ElementAt(i)[1]
+      << "    "
+        << std::setw(9) << std::setiosflags(std::ios::fixed)
+        << std::setprecision(6) << std::setiosflags(std::ios::right)
+        << GradientDirectionContainer_ConformanceImg->ElementAt(i)[2];
 
       // std::cout<<ossKey.str()<<ossMetaString.str()<<std::endl;
       itk::EncapsulateMetaData<std::string>( output_imgMetaDictionary,
@@ -4438,7 +4802,7 @@ void IntensityMotionCheckPanel::GenerateOutput_VisualCheckingResult( std::string
     bDwi_VisualCheckLoad = false ;
     return;
   }
-  std::cout << "QC Savd" << std::endl;
+  std::cout << "QC dwi Savd" << std::endl;
   bDwi_VisualCheckLoad = true;
   return;
 }
@@ -4730,6 +5094,152 @@ void IntensityMotionCheckPanel::DefaultProcess( )
 void IntensityMotionCheckPanel::Clear_VC_Status()
 {
 	VC_Status.clear();
+}
+
+void IntensityMotionCheckPanel::LoadQCedDWI( QString qcdwiname )
+{
+	emit SignalLoadQCedDWI( qcdwiname );
+	std::cout << "emit SignalLoadQCedDWI( qcdwiname )" << std::endl;
+}
+
+void IntensityMotionCheckPanel::Building_Mapping_XML()
+{
+  // This function builds the xml file from m_Original_ForcedConformance_Mapping which contains mapping information between the original dwi and the conformance dwi
+  QString Mapping_xmlFile;
+  Mapping_xmlFile.append(DwiFileName.c_str());
+  Mapping_xmlFile.append(QString(tr("_MappingXML.xml")));
+  
+  QFile file_Mapping(Mapping_xmlFile);
+
+  if ( !file_Mapping.open(QFile::WriteOnly | QFile::Text) )
+  {
+	std::cerr << "Error: Cannot write file "
+        << qPrintable(Mapping_xmlFile) << ": "
+        << qPrintable( file_Mapping.errorString() ) << std::endl;
+  }
+
+  QXmlStreamWriter xmlWriter(&file_Mapping);
+  xmlWriter.setAutoFormatting(true);
+  xmlWriter.writeStartDocument();
+  xmlWriter.writeStartElement("MappingSettings");
+
+//std::cout << "Size of myIntensityThread.m_IntensityMotionCheck->get_Original_ForcedConformance_Mapping(): "<< myIntensityThread.m_IntensityMotionCheck->get_Original_ForcedConformance_Mapping().size() << std::endl;
+
+  for ( unsigned int i = 0; i < myIntensityThread.m_IntensityMotionCheck->get_Original_ForcedConformance_Mapping().size(); i++ )
+  {
+
+          // gradient
+          
+
+          xmlWriter.writeStartElement("entry");
+          xmlWriter.writeAttribute( "parameter",  QString("Conformanced_gradients_%1").arg( i, 4, 10, QLatin1Char( '0' ) ) );
+	  for (unsigned int j = 0; j< myIntensityThread.m_IntensityMotionCheck->get_Original_ForcedConformance_Mapping()[i].index_original.size(); j++)
+	  {
+	  	xmlWriter.writeTextElement("Original_id",QString("%1").arg((myIntensityThread.m_IntensityMotionCheck->get_Original_ForcedConformance_Mapping()[i]).index_original[j]));
+		
+	  }
+          xmlWriter.writeEndElement();
+
+  }
+
+  xmlWriter.writeEndElement();
+  xmlWriter.writeEndDocument();
+  file_Mapping.close();
+
+}
+
+/*bool IntensityMotionCheckPanel::OpenQCedDWI()
+{
+	QString QCedDWINrrdFile = QFileDialog::getOpenFileName ( this, tr(
+      		"Open QCed nrrd DWI"), QDir::currentPath(), tr("Nrrd Files (*.nhdr *.nrrd)") );
+
+  	if ( QCedDWINrrdFile.length() > 0 )
+    	{
+    	itk::NrrdImageIO::Pointer NrrdImageIO = itk::NrrdImageIO::New();
+    	QCedDwiReader = DwiReaderType::New();
+    	QCedDwiReader->SetImageIO(NrrdImageIO);
+
+   	try
+      	{
+        QCedDwiReader->SetFileName( QCedDWINrrdFile.toStdString() );
+
+        QCedDwiReader->Update();
+        }
+        catch ( itk::ExceptionObject & e )
+        {
+        std::cout << e.GetDescription() << std::endl;
+        return false;
+        }
+        }
+        else
+        {
+        std::cout << "QCedDwi file name not set" << std::endl;
+        return false;
+        }
+        std::cout << "done " << std::endl;
+	SetDwiOutputImage(QCedDwiReader->GetOutput());
+	return true;
+
+}*/
+
+bool IntensityMotionCheckPanel::OpenMappingXML()
+{
+	QString xmlFile = QFileDialog::getOpenFileName ( this, tr(
+    			"Select Mapping file"), lineEdit_Protocol->text(), tr("xml Files (*.xml)") );
+
+  	if ( xmlFile.length() <= 0 )
+  	{
+    	   std::cerr<< "Error: Failed in opening file." << std::endl;
+  	   return false;
+  	}
+
+	QDomDocument doc("mydocument");
+	QFile file (xmlFile);
+	
+	if ( !file.open(QFile::ReadOnly | QFile::Text) )
+  	{
+    		std::cerr << "Error: Failed in reading file." << qPrintable(xmlFile)
+      		<< ": " << qPrintable( file.errorString() )
+      		<< std::endl;
+    		return false;
+  	}
+	if (!doc.setContent(&file))
+	{
+		file.close();
+		return false;
+	}
+	file.close();
+
+	t_Original_ForcedConformance_Mapping.clear();
+
+	QDomElement docElement = doc.documentElement();		// MappingSettings tag
+	
+	QDomNode n = docElement.firstChild();
+	int conformanced_id = 0;
+	while (!n.isNull())
+	{
+		m_Original_ForcedConformance_Mapping m_item;
+		m_item.index_ForcedConformance = conformanced_id;
+
+		QStringList values;
+		QDomNode m = n.firstChild();	// Original_id tag
+		values = m.toElement().text().split(" ");
+		foreach (QString value, values)
+      		{
+        		 m_item.index_original.push_back(value.toInt());
+      		}
+		t_Original_ForcedConformance_Mapping.push_back(m_item);
+		n = n.nextSibling();
+		conformanced_id++;
+	}
+	
+	for ( int i=0; i< t_Original_ForcedConformance_Mapping.size() ; i++ )
+	{
+		//std::cout<< "Testing Mapping XML " << t_Original_ForcedConformance_Mapping[i].index_original[0] << std::endl;
+	}
+
+	return true;
+
 }
 /*void IntensityMotionCheckPanel::DefaultProcess( )
 {

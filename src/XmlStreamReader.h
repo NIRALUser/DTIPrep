@@ -214,7 +214,8 @@ enum QCRESULTStringValue {
  DWI_GRADIENT_TRY,
  DWI_GRADIENT_TRz,
  DWI_GRADIENT_TRZ,
- DWI_GRADIENT_MI
+ DWI_GRADIENT_MI,
+ DWI_QC_Index
 };
 
 class XmlStreamReader

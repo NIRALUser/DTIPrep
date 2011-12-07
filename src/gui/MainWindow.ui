@@ -46,7 +46,7 @@
        <enum>QTabWidget::Rounded</enum>
       </property>
       <property name="currentIndex">
-       <number>1</number>
+       <number>0</number>
       </property>
       <property name="elideMode">
        <enum>Qt::ElideNone</enum>
@@ -54,7 +54,7 @@
       <widget class="QWidget" name="tab_MPR">
        <attribute name="icon">
         <iconset>
-         <normalon>../../../../../../../Documents and Settings/Administrator/My Documents/My QQ Files/u=318474793,1338338098&amp;fm=0&amp;gp=40.jpg</normalon>
+         <normalon>../../../../../../../../../../../../../../../Documents and Settings/Administrator/My Documents/My QQ Files/u=318474793,1338338098&amp;fm=0&amp;gp=40.jpg</normalon>
         </iconset>
        </attribute>
        <attribute name="title">
@@ -116,8 +116,8 @@
     <addaction name="menuOpen_DWI"/>
     <addaction name="actionOpen_XML"/>
     <addaction name="actionQCResult"/>
-    <addaction name="separator"/>
     <addaction name="actionExit"/>
+    <addaction name="separator"/>
    </widget>
    <widget class="QMenu" name="menuView">
     <property name="title">
@@ -140,7 +140,7 @@
      </property>
      <property name="icon">
       <iconset>
-       <normaloff>../../../../../../../DTIPrep_bin/Release/images/protocol.png</normaloff>../../../../../../../DTIPrep_bin/Release/images/protocol.png</iconset>
+       <normaloff>../../../../../../../../../../../../../../../DTIPrep_bin/Release/images/protocol.png</normaloff>../../../../../../../../../../../../../../../DTIPrep_bin/Release/images/protocol.png</iconset>
      </property>
      <addaction name="actionSphere"/>
      <addaction name="actionFrom_Protocol"/>
@@ -289,7 +289,7 @@
    </property>
    <property name="icon">
     <iconset>
-     <normaloff>../../../../../../../Documents and Settings/Administrator/My Documents/My Skype Pictures/Angel Skype.png</normaloff>../../../../../../../Documents and Settings/Administrator/My Documents/My Skype Pictures/Angel Skype.png</iconset>
+     <normaloff>../../../../../../../../../../../../../../../Documents and Settings/Administrator/My Documents/My Skype Pictures/Angel Skype.png</normaloff>../../../../../../../../../../../../../../../Documents and Settings/Administrator/My Documents/My Skype Pictures/Angel Skype.png</iconset>
    </property>
    <property name="text">
     <string>Windows</string>
@@ -307,8 +307,8 @@
    </property>
    <property name="icon">
     <iconset>
-     <normaloff>../../../../../../../Documents and Settings/Administrator/My Documents/My Skype Pictures/Skype Cool Shades.png</normaloff>
-     <normalon>../../../../../../../Documents and Settings/Administrator/My Documents/My Skype Pictures/Angel Skype.png</normalon>../../../../../../../Documents and Settings/Administrator/My Documents/My Skype Pictures/Skype Cool Shades.png</iconset>
+     <normaloff>../../../../../../../../../../../../../../../Documents and Settings/Administrator/My Documents/My Skype Pictures/Skype Cool Shades.png</normaloff>
+     <normalon>../../../../../../../../../../../../../../../Documents and Settings/Administrator/My Documents/My Skype Pictures/Angel Skype.png</normalon>../../../../../../../../../../../../../../../Documents and Settings/Administrator/My Documents/My Skype Pictures/Skype Cool Shades.png</iconset>
    </property>
    <property name="text">
     <string>Motif</string>
@@ -320,7 +320,7 @@
    </property>
    <property name="icon">
     <iconset>
-     <normaloff>../../../../../../../Documents and Settings/Administrator/My Documents/My Skype Pictures/Hula Skype.png</normaloff>../../../../../../../Documents and Settings/Administrator/My Documents/My Skype Pictures/Hula Skype.png</iconset>
+     <normaloff>../../../../../../../../../../../../../../../Documents and Settings/Administrator/My Documents/My Skype Pictures/Hula Skype.png</normaloff>../../../../../../../../../../../../../../../Documents and Settings/Administrator/My Documents/My Skype Pictures/Hula Skype.png</iconset>
    </property>
    <property name="text">
     <string>CDE</string>
@@ -378,7 +378,7 @@
    </property>
    <property name="icon">
     <iconset>
-     <normaloff>../../../../../../../Documents and Settings/Administrator/My Documents/My Skype Pictures/Geisha Skype.png</normaloff>../../../../../../../Documents and Settings/Administrator/My Documents/My Skype Pictures/Geisha Skype.png</iconset>
+     <normaloff>../../../../../../../../../../../../../../../Documents and Settings/Administrator/My Documents/My Skype Pictures/Geisha Skype.png</normaloff>../../../../../../../../../../../../../../../Documents and Settings/Administrator/My Documents/My Skype Pictures/Geisha Skype.png</iconset>
    </property>
    <property name="text">
     <string>Plastique</string>
@@ -390,7 +390,7 @@
    </property>
    <property name="icon">
     <iconset>
-     <normaloff>../../../../../../../Documents and Settings/Administrator/My Documents/My Skype Pictures/Skypahontas.png</normaloff>../../../../../../../Documents and Settings/Administrator/My Documents/My Skype Pictures/Skypahontas.png</iconset>
+     <normaloff>../../../../../../../../../../../../../../../Documents and Settings/Administrator/My Documents/My Skype Pictures/Skypahontas.png</normaloff>../../../../../../../../../../../../../../../Documents and Settings/Administrator/My Documents/My Skype Pictures/Skypahontas.png</iconset>
    </property>
    <property name="text">
     <string>Cleanlooks</string>
@@ -399,7 +399,7 @@
   <action name="actionWindowsXP">
    <property name="icon">
     <iconset>
-     <normaloff>../../../../../../../Documents and Settings/Administrator/My Documents/My Skype Pictures/Hula Skype.png</normaloff>../../../../../../../Documents and Settings/Administrator/My Documents/My Skype Pictures/Hula Skype.png</iconset>
+     <normaloff>../../../../../../../../../../../../../../../Documents and Settings/Administrator/My Documents/My Skype Pictures/Hula Skype.png</normaloff>../../../../../../../../../../../../../../../Documents and Settings/Administrator/My Documents/My Skype Pictures/Hula Skype.png</iconset>
    </property>
    <property name="text">
     <string>WindowsXP</string>
@@ -588,6 +588,16 @@
   <action name="actionImageView3">
    <property name="text">
     <string>Image View 3 Panel</string>
+   </property>
+  </action>
+  <action name="actionOpenMappingXML">
+   <property name="text">
+    <string>Open Mapping XML</string>
+   </property>
+  </action>
+  <action name="actionOpen_QCed_DWI">
+   <property name="text">
+    <string>Open QCed DWI</string>
    </property>
   </action>
  </widget>

@@ -354,6 +354,10 @@ s_mapQCRESULTStringValue[ "GradientAngleX" ]
  s_mapQCRESULTStringValue[ "GradientMetric(MI)" ]
  = DWI_GRADIENT_MI;
 
+ s_mapQCRESULTStringValue[ "QC_Index" ]
+ = DWI_QC_Index;
+ 
+
 
 /*
  s_mapQCResultStringValues[ "IntensityMotion" ]
@@ -563,7 +567,7 @@ void XmlStreamReader::parseQCResultElement( const QDomElement &element)
 
   child = child.nextSibling();
   if (child.isNull()){
-      std::cerr<<"Inproper xml QCResult file"<<std::endl;
+      std::cerr<<"Improper xml QCResult file"<<std::endl;
   }
   
   GetDWICheckParsing(child);   // DWI Check
@@ -582,7 +586,7 @@ void XmlStreamReader::GetImgInfoParsing(const QDomElement &element)
   }
   
   else {
-        std::cerr<<"Error: Inproper xml QCResult file"<<std::endl;
+        std::cerr<<"Error: Improper xml QCResult file"<<std::endl;
         return;
   }
 
@@ -899,15 +903,16 @@ void XmlStreamReader::LoadQCResultFromDWICheckGradientParsing(int Grd_num)
   //std::cout<<"gradient"<<Grd_num<<parametersQCResult_Gradient[0].value.toStdString().c_str()<<std::endl;
   //std::cout<<"gradient"<<Grd_num<<parametersQCResult_Gradient[1].value.toStdString().c_str()<<std::endl;
   //std::cout<<"gradient"<<Grd_num<<parametersQCResult_Gradient[parametersQCResult_Gradient.size()-1].value.toStdString().c_str()<<std::endl;
+
   //status of the Visual Checking
-  if (parametersQCResult_Gradient[parametersQCResult_Gradient.size()-1].value == "Include")
+  if (parametersQCResult_Gradient[parametersQCResult_Gradient.size()-2].value == "Include")
      GrdIntMotionChk.VisualChecking = 0;
-  if (parametersQCResult_Gradient[parametersQCResult_Gradient.size()-1].value == "Exclude")
+  if (parametersQCResult_Gradient[parametersQCResult_Gradient.size()-2].value == "Exclude")
   {
      GrdIntMotionChk.VisualChecking = 6;
      //std::cout << "Test VisualChecking xml" << GrdIntMotionChk.VisualChecking << std::endl;
   }
-  if (parametersQCResult_Gradient[parametersQCResult_Gradient.size()-1].value == "NoChange")
+  if (parametersQCResult_Gradient[parametersQCResult_Gradient.size()-2].value == "NoChange")
      GrdIntMotionChk.VisualChecking = -1;
 
   QStringList values;
@@ -1021,7 +1026,10 @@ void XmlStreamReader::LoadQCResultFromDWICheckGradientParsing(int Grd_num)
        break;
     case DWI_GRADIENT_MI:
        GrdWiseCheck.MutualInformation = parametersQCResult_Gradient[i].value.toDouble();
-       break;  
+       break;
+    case DWI_QC_Index:
+       GrdIntMotionChk.QCIndex = parametersQCResult_Gradient[i].value.toInt();
+       break;
     default:
        break;
   }

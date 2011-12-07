@@ -23,6 +23,7 @@ struct GradientIntensityMotionCheckResult {
   double ReplacedDir[3];
   double CorrectedDir[3];
   int VisualChecking;
+  int QCIndex;		// mapped to the index of QCed gradeint
   };
 
 

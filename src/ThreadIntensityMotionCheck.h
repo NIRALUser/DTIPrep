@@ -53,12 +53,23 @@ signals:
 
   void ResultUpdate();
 
+  void QCedResultUpdate();
+
+  void Set_VCStatus();
+
+  void Set_Original_ForcedConformance_Mapping();
+
+  void Set_QCedDWI();
+
   void QQQ(int);
 
   void kkk( int );
 
   void StartProgressSignal();   // Signal for progressBar function
   void StopProgressSignal();   // Signal for progressBar function
+
+  void Building_Mapping_XML();		// Signal to create mapping between conformanced gradeints and original gradeints
+  void LoadQCedDWI( QString qcdwiname);
 
 
 protected:

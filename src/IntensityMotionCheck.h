@@ -109,7 +109,7 @@ public:
   bool EddyMotionCorrect( DwiImageType::Pointer dwi );
   bool EddyMotionCorrectIowa( DwiImageType::Pointer dwi );
   bool GradientWiseCheck( DwiImageType::Pointer dwi );
-  bool SaveDwiForcedConformanceImage(void) const;
+  bool SaveDwiForcedConformanceImage(void);
   bool SaveDwiForcedConformanceImage_FurtherQC(void) const;
 
   bool DTIComputing();
@@ -280,6 +280,11 @@ public:
   {
     return m_Original_ForcedConformance_Mapping;
   }
+
+  std::string GetOutputDWIFileName()
+  {
+    return m_outputDWIFileName;
+  }
   
 private:
   void collectDiffusionStatistics();
@@ -313,6 +318,7 @@ private:
 
   std::string m_DwiFileName;
   std::string m_XmlFileName;
+  std::string m_outputDWIFileName;	// the name of QCed DWI file
   std::string m_GlobalReportFileName;
 
   DwiImageType::Pointer m_DwiForcedConformanceImage;

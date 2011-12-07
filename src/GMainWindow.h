@@ -63,9 +63,12 @@ public:
 
 signals:
 
-void currentGradient_VC_Include(int winID, int gradient );
-void currentGradient_VC_Exclude(int winID, int gradient );
-void VisualCheckingStatus(int index, int status, int pro );
+void currentGradient_VC_Include( int winID, int gradient );
+void currentGradient_VC_Exclude( int winID, int gradient );
+void VisualCheckingStatus( int index, int status );
+void OpenMappingXML();
+void OpenQCedDWI();
+void Signal_actionOpenDWINrrd_triggered();
 
 private slots:
   void save();
@@ -87,6 +90,10 @@ private slots:
   void on_actionOpen_XML_triggered();
 
   void on_actionQCResult_triggered();
+
+  void on_actionOpenMappingXML_triggered();
+
+  //void on_actionOpen_QCed_DWI_triggered();
 
   void on_actionDicom2NrrdPanel_triggered();
 
@@ -113,14 +120,14 @@ private slots:
 
   void on_actionCleanlooks_triggered();
 
+  
+
   // When loading QCResult
 
   void LoadQCResult(bool);
 
   // vector view
   void UpdateProtocolDiffusionVectorActors();
-
-  void UpdateDWIDiffusionVectorActors();
 
   void UpdateOutputDWIDiffusionVectorActors();
   
@@ -188,7 +195,10 @@ private slots:
  //
   void SetactionIncluded();  // Activate the "actionIncluded" bottom
 
-     
+ //
+  void LoadQCedDWI( QString Qqcdwiname);
+
+      
 
 private:
   bool bDwiLoaded; // =false;
@@ -275,7 +285,9 @@ public:
   // itk::NrrdImageIO::Pointer  NrrdImageIO
 
   DwiImageType::Pointer  DWIImage;
+  DwiImageType::Pointer  QCedDWIImage;
   DwiReaderType::Pointer DwiReader;
+  DwiReaderType::Pointer QCedDwiReader;
 
   typedef itk::ImageToVTKImageFilter<GradientImageType>
   ItkVtkImageFilterTypeUShort;
@@ -343,6 +355,9 @@ public:
 
   void RemoveDwiFile();
 
+  void UpdateDWIDiffusionVectorActors( DwiImageType::Pointer );
+
+  void ReloadQCedDWI( QString Qqcdwiname );
 
   struct VC_STATUS
   {

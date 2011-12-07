@@ -133,6 +133,15 @@ int main ( int argc, char **argv )
       QCResult qcResult;
       qcResult.Clear();
       protocol.clear();
+
+      if ( resultXMLFile.length() <= 0 ) 
+      {
+      QString Result_xmlFile = QString::fromStdString( DWIFileName ).section('.',-2,0);
+      Result_xmlFile.remove("_QCed");
+      Result_xmlFile.append(QString("_XMLQCResult.xml"));
+      resultXMLFile = Result_xmlFile.toStdString();
+      }
+
       CIntensityMotionCheck IntensityMotionCheck;
       IntensityMotionCheck.SetXmlFileName(resultXMLFile);
       IntensityMotionCheck.SetDwiFileName(DWIFileName);
@@ -169,8 +178,8 @@ int main ( int argc, char **argv )
 
         const unsigned char result = IntensityMotionCheck.RunPipelineByProtocol();
         unsigned char out = result;
-        std::cout << "qcResult.GetIntensityMotionCheckResult()[0].processing" << qcResult.GetIntensityMotionCheckResult()[0].processing << std::endl;
-        std::cout << "qcResult.GetIntensityMotionCheckResult()[0].processing" << qcResult.GetIntensityMotionCheckResult()[46].processing << std::endl;
+        //std::cout << "qcResult.GetIntensityMotionCheckResult()[0].processing" << qcResult.GetIntensityMotionCheckResult()[0].processing << std::endl;
+        //std::cout << "qcResult.GetIntensityMotionCheckResult()[0].processing" << qcResult.GetIntensityMotionCheckResult()[46].processing << std::endl;
 
 
         //.........................................................................................
@@ -281,8 +290,19 @@ int main ( int argc, char **argv )
         // DiffusionInformationCheckResult
         xmlWriter.writeStartElement("entry");
         xmlWriter.writeAttribute( "parameter", "DiffusionInformation"  );
+	
         if ( protocol.GetDiffusionProtocol().bCheck )
           {
+
+	  // DiffusionInformationCheckResult
+  	  if( protocol.GetDiffusionProtocol().bQuitOnCheckFailure && ( (qcResult.Get_result()  & DiffusionCheckBit) !=  0) )
+	  {
+	  	xmlWriter.writeTextElement("value","Fail Pipeline Terminated");
+          	return 0;
+          }
+
+
+
           xmlWriter.writeStartElement("entry");
           xmlWriter.writeAttribute( "parameter", "b value"  );
           if ( qcResult.GetDiffusionInformationCheckResult().b )
@@ -663,8 +683,10 @@ int main ( int argc, char **argv )
             xmlWriter.writeEndElement();
             xmlWriter.writeStartElement("entry");
             xmlWriter.writeAttribute( "parameter",  "GradientWiseCheck" );
-            if ( (((!qcResult.Get_result()  & InterlaceWiseCheckBit) == InterlaceWiseCheckBit ) || (!(protocol.GetSliceCheckProtocol().bQuitOnCheckFailure || protocol.GetInterlaceCheckProtocol().bQuitOnCheckFailure) )) )
+            if ( ((!((qcResult.Get_result()  & InterlaceWiseCheckBit) == InterlaceWiseCheckBit) ) || (!(protocol.GetSliceCheckProtocol().bQuitOnCheckFailure || protocol.GetInterlaceCheckProtocol().bQuitOnCheckFailure) )) )
               {
+
+
               if ( protocol.GetGradientCheckProtocol().bCheck )
                 {
                 if (EXCLUDE_GreadientWiseCheck==true )
@@ -778,6 +800,12 @@ int main ( int argc, char **argv )
             }
           xmlWriter.writeEndElement();
           xmlWriter.writeEndElement();
+
+	  xmlWriter.writeStartElement("entry");
+          xmlWriter.writeAttribute( "parameter",  "QC_Index" );
+	  xmlWriter.writeTextElement("value", QString("%1").arg(qcResult.GetIntensityMotionCheckResult()[i].QCIndex));
+	  xmlWriter.writeEndElement();
+
           xmlWriter.writeEndElement();
           }
         xmlWriter.writeEndElement();

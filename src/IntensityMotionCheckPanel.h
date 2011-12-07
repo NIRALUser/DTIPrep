@@ -52,6 +52,8 @@ signals:
 
   void SignalActivateSphere();
 
+  void SignalLoadQCedDWI( QString qcdwiname);
+
   private slots:
     // void on_comboBox_Protocol_currentIndexChanged(QString protocolName);
     void on_treeWidget_itemDoubleClicked(QTreeWidgetItem *item, int column);
@@ -96,6 +98,8 @@ signals:
 
     void ResultUpdate();
 
+    void QCedResultUpdate();
+
     void SavingTreeWidgetResult_XmlFile();
 
     void SavingTreeWidgetResult_XmlFile_Default();
@@ -110,8 +114,15 @@ public slots:
     void StopProgressSlot();
     void f_StartProgressSlot();
     void f_StopProgressSlot();
-    void SetVisualCheckingStatus( int index, int status, int pro);
-    
+    void SetVisualCheckingStatus( int index, int status);
+
+    bool OpenMappingXML();
+    //bool OpenQCedDWI();
+    void Building_Mapping_XML();
+    void LoadQCedDWI( QString qcdwiname);
+    void Set_VCStatus();
+    void Set_Original_ForcedConformance_Mapping();
+    void Set_QCedDWI();
 
 	
 
@@ -205,6 +216,8 @@ public:
   void GenerateCheckOutputImage( DwiImageType::Pointer dwi, const std::string filename);
 
   void GenerateOutput_VisualCheckingResult( std::string filename );
+ 
+  void GenerateOutput_VisualCheckingResult2( std::string filename );
 
   void GenerateOutput_VisualCheckingResult();
 
@@ -258,6 +271,8 @@ void set_Original_ForcedConformance_Mapping( std::vector<m_Original_ForcedConfor
    t_Original_ForcedConformance_Mapping = m_t;
 }
 
+
+
 private:
 
   bool     bProtocol;
@@ -269,6 +284,7 @@ private:
   QString                DwiFilePath;  // Dwi file name with full path
   DwiImageType::Pointer  m_DwiOriginalImage;
   DwiImageType::Pointer  m_DwiOutputImage;   // QCed Dwi image
+  std::string		QCedDwiFileName;	//????
 
   bool                                    bDwiLoaded;
   bool					  bDwi_VisualCheckLoad;		// set true when the new updated dwi after visual checking is created sucessfully 
@@ -276,6 +292,7 @@ private:
   bool                                    readb0;
   double                                  b0;
   GradientDirectionContainerType::Pointer GradientDirectionContainer;
+  GradientDirectionContainerType::Pointer GradientDirectionContainer_ConformanceImg;
 
   bool bResultTreeEditable;
   bool bProtocolTreeEditable;
@@ -294,6 +311,8 @@ private:
 
   std::vector< int > index_listVCExcluded;		// contains the VC-excluded gradients id
   std::vector< int > index_listVCIncluded;		// contains the VC-included gradients id
+
+  DwiReaderType::Pointer QCedDwiReader;
   
  
 };

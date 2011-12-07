@@ -44,9 +44,9 @@ void CThreadIntensityMotionCheck::run()
   m_IntensityMotionCheck->SetXmlFileName(XmlFilename);
   m_IntensityMotionCheck->SetProtocol( protocol);
   m_IntensityMotionCheck->SetQCResult( qcResult);
-  std::cout << "TEST1:" << qcResult->GetIntensityMotionCheckResult().size() << std::endl;
+  //std::cout << "TEST1:" << qcResult->GetIntensityMotionCheckResult().size() << std::endl;
   m_IntensityMotionCheck->GetImagesInformation();
-  std::cout << "TEST2:" << qcResult->GetIntensityMotionCheckResult().size() << std::endl;
+  //std::cout << "TEST2:" << qcResult->GetIntensityMotionCheckResult().size() << std::endl;
   emit StartProgressSignal();  // start showing progress bar
   const unsigned char result = m_IntensityMotionCheck->RunPipelineByProtocol();
 
@@ -146,7 +146,14 @@ void CThreadIntensityMotionCheck::run()
   emit StopProgressSignal();  // hiding progress bar
 
   emit allDone("Checking Thread ended");
+  emit Set_QCedDWI();	// set QCed DWI in DTIPnale
+  emit Set_Original_ForcedConformance_Mapping();	// set mapping in DTIPanel
   emit ResultUpdate();
+  //emit Building_Mapping_XML();
+  emit LoadQCedDWI( QString::fromStdString( m_IntensityMotionCheck->GetOutputDWIFileName() ) );
+  emit QCedResultUpdate();
+  emit Set_VCStatus();	//initialize the VC_Status in DTIPanel
+  
 }
 
 

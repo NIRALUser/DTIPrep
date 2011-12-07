@@ -198,14 +198,20 @@ GMainWindow::GMainWindow()
   connect( this->DTIPrepPanel, SIGNAL( currentGradientChanged_VC(int) ),
     this, SLOT( GradientUpdate( int ) ) );
  
-  connect( this, SIGNAL( VisualCheckingStatus(int, int ,int) ), 
-    this->DTIPrepPanel, SLOT( SetVisualCheckingStatus ( int, int,int )) );
+  connect( this, SIGNAL( VisualCheckingStatus(int, int ) ), 
+    this->DTIPrepPanel, SLOT( SetVisualCheckingStatus ( int, int )) );
 
   connect( this->DTIPrepPanel, SIGNAL( UpdateOutputDWIDiffusionVectorActors() ),
     this, SLOT( UpdateOutputDWIDiffusionVectorActors() ) );
 
-  
+  connect( this, SIGNAL( OpenMappingXML() ), 
+    this->DTIPrepPanel, SLOT( OpenMappingXML ()) );
 
+  //connect( this, SIGNAL( OpenQCedDWI() ), 
+    //this->DTIPrepPanel, SLOT( OpenQCedDWI()) );
+
+  connect( this->DTIPrepPanel, SIGNAL( SignalLoadQCedDWI( QString ) ),
+    this, SLOT( LoadQCedDWI( QString ) ) );
   //
 
   connect( this->DTIPrepPanel, SIGNAL( LoadQCResult(bool) ), this, SLOT ( LoadQCResult(bool) ) );
@@ -358,6 +364,11 @@ GMainWindow::GMainWindow()
   connect( this->DTIPrepPanel,
     SIGNAL( SignalActivateSphere ()),
     this, SLOT( SetactionIncluded() ));
+
+  connect( this,
+    SIGNAL( Signal_actionOpenDWINrrd_triggered()),
+    this, SLOT( on_actionOpenDWINrrd_triggered() ));  
+
 
   }
 
@@ -899,10 +910,264 @@ void GMainWindow::on_actionExit_triggered()
   qApp->quit();
 }
 
+void GMainWindow::ReloadQCedDWI( QString Qqcdwiname )
+{
+  // Load QCed DWI newly in DTIPrep which can be used for new running or visual checking
+  if ( Qqcdwiname.length() > 0)
+  {
+    itk::NrrdImageIO::Pointer NrrdImageIO = itk::NrrdImageIO::New();
+    QCedDwiReader = DwiReaderType::New();
+    QCedDwiReader->SetImageIO(NrrdImageIO);
+
+    try
+      {
+      QCedDwiReader->SetFileName( Qqcdwiname.toStdString() );
+      std::cout << "Loading automatically QCed DWI in GMainWindow: " << Qqcdwiname.toStdString() << " ... ";
+      QCedDwiReader->Update();
+      }
+    catch ( itk::ExceptionObject & e )
+      {
+      std::cout << e.GetDescription() << std::endl;
+      bDwiLoaded = false;
+      return;
+      }
+  }
+  else 
+  {
+     std::cerr << "QCed DWI name is not set." << std::endl;
+  }
+  std::cout << "done " << std::endl;
+
+  bDwiLoaded = true;
+  QCedDWIImage = QCedDwiReader->GetOutput();
+
+  setWindowTitle(tr("DTIPrep Tools(Qt4) - ") + Qqcdwiname);
+
+  // update DTIPrepPanel
+  DTIPrepPanel->SetFileName(Qqcdwiname);
+  DTIPrepPanel->SetName(Qqcdwiname);
+  DTIPrepPanel->SetDwiOutputImage(QCedDWIImage);
+  DTIPrepPanel->SetDWIImage(QCedDWIImage);
+  DTIPrepPanel->UpdatePanelDWI();
+
+  // update 2D/3D Image display
+  componentExtractor1 = FilterType::New();
+  componentExtractor2 = FilterType::New();
+  componentExtractor3 = FilterType::New();
+
+  gradientConnecter1 = ItkVtkImageFilterTypeUShort::New();
+  gradientConnecter2 = ItkVtkImageFilterTypeUShort::New();
+  gradientConnecter3 = ItkVtkImageFilterTypeUShort::New();
+
+  //  componentExtractor1->SetInput(DwiReader->GetOutput());
+  //  componentExtractor2->SetInput(DwiReader->GetOutput());
+  //  componentExtractor3->SetInput(DwiReader->GetOutput());
+
+  componentExtractor1->SetInput( QCedDWIImage );
+  componentExtractor2->SetInput( QCedDWIImage );
+  componentExtractor3->SetInput( QCedDWIImage );
+
+  componentExtractor1->SetIndex( 0 );
+  componentExtractor2->SetIndex( 0 );
+  componentExtractor3->SetIndex( 0 );
+
+  gradientConnecter1->SetInput( componentExtractor1->GetOutput() );
+  gradientConnecter2->SetInput( componentExtractor2->GetOutput() );
+  gradientConnecter3->SetInput( componentExtractor3->GetOutput() );
+
+  gradientConnecter1->Update();
+  gradientConnecter2->Update();
+  gradientConnecter3->Update();
+
+  UpdateImagePlaneWidgets(0, 0, 0);
+  UpdateImageView2DWindows( 0, 0, 0, QCedDwiReader->GetOutput()->GetVectorLength() );
+
+  whichWindow[0] = 0;
+  whichWindow[1] = 1;
+  whichWindow[2] = 2;
+
+  vtkQtConnections->Connect(
+    imageView2DPanelWithControls2->GetImageViewer2()->GetRenderWindow()->
+      GetInteractor()->GetInteractorStyle(),
+    vtkCommand::WindowLevelEvent,
+    this,
+    SLOT( WindowLevelChanged( vtkObject *, unsigned long, void *, void *,
+        vtkCommand *) ),
+    &whichWindow[1], 1.0);
+
+  vtkQtConnections->Connect(
+    imageView2DPanelWithControls3->GetImageViewer2()->GetRenderWindow()->
+      GetInteractor()->GetInteractorStyle(),
+    vtkCommand::WindowLevelEvent,
+    this,
+    SLOT( WindowLevelChanged( vtkObject *, unsigned long, void *, void *,
+        vtkCommand *) ),
+    &whichWindow[2], 1.0);
+
+  vtkQtConnections->Connect(
+    imageView2DPanelWithControls1->GetImageViewer2()->GetRenderWindow()->
+      GetInteractor()->GetInteractorStyle(),
+    vtkCommand::WindowLevelEvent,
+    this,
+    SLOT( WindowLevelChanged( vtkObject *, unsigned long, void *, void *,
+        vtkCommand *) ),
+    &whichWindow[0], 1.0);
+
+  UpdateDWIDiffusionVectorActors( QCedDWIImage );
+
+  bQCResultLoad = false;
+  DTIPrepPanel->Clear_VC_Status();
+  DTIPrepPanel->GetQCResult().Clear();
+
+}
+
+
+void GMainWindow::LoadQCedDWI( QString Qqcdwiname )
+{
+  // Load QCed DWI file automatically after running 
+  	
+  if ( Qqcdwiname.length() > 0)
+  {
+    itk::NrrdImageIO::Pointer NrrdImageIO = itk::NrrdImageIO::New();
+    QCedDwiReader = DwiReaderType::New();
+    QCedDwiReader->SetImageIO(NrrdImageIO);
+
+    try
+      {
+      QCedDwiReader->SetFileName( Qqcdwiname.toStdString() );
+      std::cout << "Loading automatically QCed DWI in GMainWindow: " << Qqcdwiname.toStdString() << " ... ";
+      QCedDwiReader->Update();
+      }
+    catch ( itk::ExceptionObject & e )
+      {
+      std::cout << e.GetDescription() << std::endl;
+      bDwiLoaded = false;
+      return;
+      }
+  }
+  else 
+  {
+     std::cerr << "QCed DWI name is not set." << std::endl;
+  }
+  std::cout << "done " << std::endl;
+
+  bDwiLoaded = true;
+  QCedDWIImage = QCedDwiReader->GetOutput();
+
+  setWindowTitle(tr("DTIPrep Tools(Qt4) - ") + Qqcdwiname);
+
+  // update DTIPrepPanel
+  //DTIPrepPanel->SetFileName(Qqcdwiname);
+  //DTIPrepPanel->SetName(Qqcdwiname);
+  //DTIPrepPanel->SetDWIImage(QCedDWIImage);
+  //DTIPrepPanel->UpdatePanelDWI();
+
+  // update 2D/3D Image display
+  componentExtractor1 = FilterType::New();
+  componentExtractor2 = FilterType::New();
+  componentExtractor3 = FilterType::New();
+
+  gradientConnecter1 = ItkVtkImageFilterTypeUShort::New();
+  gradientConnecter2 = ItkVtkImageFilterTypeUShort::New();
+  gradientConnecter3 = ItkVtkImageFilterTypeUShort::New();
+
+  //  componentExtractor1->SetInput(DwiReader->GetOutput());
+  //  componentExtractor2->SetInput(DwiReader->GetOutput());
+  //  componentExtractor3->SetInput(DwiReader->GetOutput());
+
+  componentExtractor1->SetInput( QCedDWIImage );
+  componentExtractor2->SetInput( QCedDWIImage );
+  componentExtractor3->SetInput( QCedDWIImage );
+
+  componentExtractor1->SetIndex( 0 );
+  componentExtractor2->SetIndex( 0 );
+  componentExtractor3->SetIndex( 0 );
+
+  gradientConnecter1->SetInput( componentExtractor1->GetOutput() );
+  gradientConnecter2->SetInput( componentExtractor2->GetOutput() );
+  gradientConnecter3->SetInput( componentExtractor3->GetOutput() );
+
+  gradientConnecter1->Update();
+  gradientConnecter2->Update();
+  gradientConnecter3->Update();
+
+  UpdateImagePlaneWidgets(0, 0, 0);
+  UpdateImageView2DWindows( 0, 0, 0, QCedDwiReader->GetOutput()->GetVectorLength() );
+
+  whichWindow[0] = 0;
+  whichWindow[1] = 1;
+  whichWindow[2] = 2;
+
+  vtkQtConnections->Connect(
+    imageView2DPanelWithControls2->GetImageViewer2()->GetRenderWindow()->
+      GetInteractor()->GetInteractorStyle(),
+    vtkCommand::WindowLevelEvent,
+    this,
+    SLOT( WindowLevelChanged( vtkObject *, unsigned long, void *, void *,
+        vtkCommand *) ),
+    &whichWindow[1], 1.0);
+
+  vtkQtConnections->Connect(
+    imageView2DPanelWithControls3->GetImageViewer2()->GetRenderWindow()->
+      GetInteractor()->GetInteractorStyle(),
+    vtkCommand::WindowLevelEvent,
+    this,
+    SLOT( WindowLevelChanged( vtkObject *, unsigned long, void *, void *,
+        vtkCommand *) ),
+    &whichWindow[2], 1.0);
+
+  vtkQtConnections->Connect(
+    imageView2DPanelWithControls1->GetImageViewer2()->GetRenderWindow()->
+      GetInteractor()->GetInteractorStyle(),
+    vtkCommand::WindowLevelEvent,
+    this,
+    SLOT( WindowLevelChanged( vtkObject *, unsigned long, void *, void *,
+        vtkCommand *) ),
+    &whichWindow[0], 1.0);
+
+  //UpdateDWIDiffusionVectorActors();
+
+  //bQCResultLoad = false;
+  DTIPrepPanel->Clear_VC_Status();
+  //DTIPrepPanel->GetQCResult().Clear();
+  
+
+}
+
 void GMainWindow::on_actionOpenDWINrrd_triggered()
 {
   QString DWINrrdFile = QFileDialog::getOpenFileName ( this, tr(
       "Open nrrd DWI"), QDir::currentPath(), tr("Nrrd Files (*.nhdr *.nrrd)") );
+
+
+  if ( DWINrrdFile.contains("_QCed.nrrd", Qt::CaseSensitive) )
+  {
+	// User loads QCed file
+
+	QString Messg = QString( " You are loading QCed file! Two options for loaded QCed file: 1) Visual checking 2) Running again. Do you want to continue ?" );
+	QMessageBox msgBox;
+  	msgBox.setText( Messg );
+  	QPushButton * Yes= msgBox.addButton( tr("Yes"), QMessageBox::ActionRole);
+  	QPushButton * No= msgBox.addButton( tr("No"), QMessageBox::ActionRole);
+  	msgBox.exec();
+
+  	if ( msgBox.clickedButton() == Yes )
+	{
+		ReloadQCedDWI( DWINrrdFile );
+		return;
+
+	}
+
+	if ( msgBox.clickedButton() == No )
+	{
+		emit Signal_actionOpenDWINrrd_triggered();
+		return;
+	}
+  	
+
+  }
+  else
+  {
 
   if ( DWINrrdFile.length() > 0 )
     {
@@ -1019,14 +1284,15 @@ void GMainWindow::on_actionOpenDWINrrd_triggered()
         vtkCommand *) ),
     &whichWindow[0], 1.0);
 
-  UpdateDWIDiffusionVectorActors();
+  UpdateDWIDiffusionVectorActors( DWIImage );
 
   bQCResultLoad = false;
   DTIPrepPanel->Clear_VC_Status();
   DTIPrepPanel->GetQCResult().Clear();
+ }
 }
 
-void GMainWindow::UpdateDWIDiffusionVectorActors()
+void GMainWindow::UpdateDWIDiffusionVectorActors( DwiImageType::Pointer DWIImage)
 {
   itk::MetaDataDictionary imgMetaDictionary = DWIImage->GetMetaDataDictionary();    //
 
@@ -1341,6 +1607,17 @@ void GMainWindow::on_actionOpen_XML_triggered()
   UpdateProtocolDiffusionVectorActors();
 }
 
+void GMainWindow::on_actionOpenMappingXML_triggered()
+{
+  OpenMappingXML();
+}
+
+//void  GMainWindow::on_actionOpen_QCed_DWI_triggered()
+//{
+//  OpenQCedDWI();
+//}
+
+
 void GMainWindow::on_actionDicom2NrrdPanel_triggered()
 {
   createDockPanels_Dicom2NrrdPanel();
@@ -1370,7 +1647,6 @@ void GMainWindow::on_actionQCResult_triggered()
 {
   DTIPrepPanel->OpenXML_ResultFile();
 }
-
 
 
 
@@ -1938,8 +2214,7 @@ void GMainWindow::GradientUpdate( int index )
     
     std::cout<<DTIPrepPanel->GetQCResult().GetIntensityMotionCheckResult()[index].processing<<"processingTest"<<std::endl;
     int pro = DTIPrepPanel->GetQCResult().GetIntensityMotionCheckResult()[index].processing;
-    emit VisualCheckingStatus ( index,  QCResult::GRADIENT_INCLUDE, pro );
-    std::cout<<DTIPrepPanel->GetQCResult().GetIntensityMotionCheckResult()[index].VisualChecking<<"VisualCheckingTest"<<std::endl;
+    emit VisualCheckingStatus ( index,  QCResult::GRADIENT_INCLUDE );
   }
   if ( msgBox.clickedButton() == Exclude )
   {
@@ -1948,10 +2223,8 @@ void GMainWindow::GradientUpdate( int index )
     emit currentGradient_VC_Exclude( 1, index);
     emit currentGradient_VC_Exclude( 2, index);
     
-    //std::cout<<DTIPrepPanel->GetQCResult().GetIntensityMotionCheckResult()[index].processing<<"processingTest2"<<std::endl;
     int pro = DTIPrepPanel->GetQCResult().GetIntensityMotionCheckResult()[index].processing;
-    emit VisualCheckingStatus ( index,  QCResult::GRADIENT_EXCLUDE_MANUALLY, pro );
-    //std::cout<<DTIPrepPanel->GetQCResult().GetIntensityMotionCheckResult()[index].VisualChecking<<"VisualCheckingTest2"<<std::endl;
+    emit VisualCheckingStatus ( index,  QCResult::GRADIENT_EXCLUDE_MANUALLY);
   }
   if ( msgBox.clickedButton() == Nochange )
   {
@@ -1967,7 +2240,7 @@ void GMainWindow::GradientUpdate( int index )
        emit currentGradient_VC_Exclude( 1, index);
        emit currentGradient_VC_Exclude( 2, index);
     }
-   emit VisualCheckingStatus ( index, -1, pro );
+   emit VisualCheckingStatus ( index, -1);
   }
   //std::cout<< DTIPrepPanel->GetQCResult().GetIntensityMotionCheckResult()[ index ].processing<<"processing_N"<<std::endl;
   UpdateOutputDWIDiffusionVectorActors_VC();

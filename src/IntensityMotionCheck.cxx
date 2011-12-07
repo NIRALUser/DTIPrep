@@ -155,6 +155,7 @@ bool CIntensityMotionCheck::LoadDwiImage()
     GradientIntensityMotionCheckResult result;
     result.processing = QCResult::GRADIENT_INCLUDE;
     result.VisualChecking = -1;
+    result.QCIndex = -1;
 
     qcResult->Clear();
     for ( unsigned int j = 0; j < m_DwiOriginalImage->GetVectorLength(); j++ )
@@ -2914,11 +2915,11 @@ int CIntensityMotionCheck::JointDenoising( DwiImageType::Pointer dwi )
   return true;
 }
 
-bool CIntensityMotionCheck::SaveDwiForcedConformanceImage(void) const
+bool CIntensityMotionCheck::SaveDwiForcedConformanceImage(void)
 {
   if ( protocol->GetQCedDWIFileNameSuffix().length() > 0 )
   {
-    std::string outputDWIFileName;
+    
     if ( protocol->GetQCOutputDirectory().length() > 0 )
     {
       if ( protocol->GetQCOutputDirectory().at( protocol->GetQCOutputDirectory()
@@ -2926,26 +2927,26 @@ bool CIntensityMotionCheck::SaveDwiForcedConformanceImage(void) const
         || protocol->GetQCOutputDirectory().at( protocol->
         GetQCOutputDirectory().length() - 1 ) == '/'     )
       {
-        outputDWIFileName = protocol->GetQCOutputDirectory().substr(
+        m_outputDWIFileName = protocol->GetQCOutputDirectory().substr(
           0, protocol->GetQCOutputDirectory().find_last_of("/\\") );
       }
       else
       {
-        outputDWIFileName = protocol->GetQCOutputDirectory();
+        m_outputDWIFileName = protocol->GetQCOutputDirectory();
       }
 
-      outputDWIFileName.append( "/" );
+      m_outputDWIFileName.append( "/" );
 
       std::string str = m_DwiFileName.substr( 0, m_DwiFileName.find_last_of('.') );
       str = str.substr( str.find_last_of("/\\") + 1);
 
-      outputDWIFileName.append( str );
-      outputDWIFileName.append( protocol->GetQCedDWIFileNameSuffix() );
+      m_outputDWIFileName.append( str );
+      m_outputDWIFileName.append( protocol->GetQCedDWIFileNameSuffix() );
     }
     else
     {
-      outputDWIFileName = m_DwiFileName.substr( 0, m_DwiFileName.find_last_of('.') );
-      outputDWIFileName.append( protocol->GetQCedDWIFileNameSuffix() );
+      m_outputDWIFileName = m_DwiFileName.substr( 0, m_DwiFileName.find_last_of('.') );
+      m_outputDWIFileName.append( protocol->GetQCedDWIFileNameSuffix() );
     }
 
     try
@@ -2953,7 +2954,7 @@ bool CIntensityMotionCheck::SaveDwiForcedConformanceImage(void) const
       DwiWriterType::Pointer DwiWriter = DwiWriterType::New();
       itk::NrrdImageIO::Pointer myNrrdImageIO = itk::NrrdImageIO::New();
       DwiWriter->SetImageIO(myNrrdImageIO);
-      DwiWriter->SetFileName( outputDWIFileName );
+      DwiWriter->SetFileName( m_outputDWIFileName );
       DwiWriter->SetInput( this->m_DwiForcedConformanceImage );
       DwiWriter->UseCompressionOn();
       DwiWriter->Update();
@@ -3268,7 +3269,7 @@ unsigned char CIntensityMotionCheck::RunPipelineByProtocol()
 
     outfile.close();
   }
-
+  m_Original_ForcedConformance_Mapping.clear();
   Original_ForcedConformance_Mapping m_map;
   for ( unsigned int jj = 0; jj< m_DwiOriginalImage->GetVectorLength(); jj++ )
   {	
@@ -3423,19 +3424,27 @@ unsigned char CIntensityMotionCheck::RunPipelineByProtocol()
   }
   std::cout << "GradientCheck DONE " << std::endl;
 
+  
   for ( unsigned int k_ind = 0; k_ind < m_Original_ForcedConformance_Mapping.size() ; k_ind ++ )
   {
 	if ( k_ind == 0 )
 	{
 	for ( unsigned int kk_ind = 0; kk_ind < m_Original_ForcedConformance_Mapping[k_ind].index_original.size(); kk_ind ++ )
  	{
-	std::cout << "Baselines_indices:" << " " << m_Original_ForcedConformance_Mapping[k_ind].index_original[kk_ind] << std::endl;
+	std::cout << "Baselines_indices:" << " " << m_Original_ForcedConformance_Mapping[k_ind].index_original[kk_ind] << " QCIndex: " << k_ind << std::endl;
+	qcResult->GetIntensityMotionCheckResult()[m_Original_ForcedConformance_Mapping[k_ind].index_original[kk_ind]].QCIndex = k_ind;
 	}
 	}
 	else
-	std::cout << "Included Gradients:" << " " << m_Original_ForcedConformance_Mapping[k_ind].index_original[0] << std::endl;
+	std::cout << "Included Gradients:" << " " << m_Original_ForcedConformance_Mapping[k_ind].index_original[0] << " QCIndex: " << k_ind << std::endl;
+	qcResult->GetIntensityMotionCheckResult()[m_Original_ForcedConformance_Mapping[k_ind].index_original[0]].QCIndex = k_ind;
 	
   }
+
+  //ofstream	report_file_Original_ForcedConformance_Mapping;
+  //report_file_Original_ForcedConformance_Mapping.open(
+
+
   // Saving m_Original_ForcedConformance_Mapping in the QCResult
  /* Original_ForcedConformance_Map item_map;
   for ( unsigned int ind_map = 0; ind_map < m_Original_ForcedConformance_Mapping.size() ; ind_map++ )
@@ -4755,7 +4764,7 @@ bool CIntensityMotionCheck::MakeDefaultProtocol( Protocol *protocol )
   protocol->initDTIProtocol();
 
   protocol->GetQCOutputDirectory() = "";
-  protocol->GetQCedDWIFileNameSuffix() = "_QCed.nhdr";
+  protocol->GetQCedDWIFileNameSuffix() = "_QCed.nrrd";
   protocol->GetReportFileNameSuffix() = "_QCReport.txt";
   protocol->SetBadGradientPercentageTolerance(0.2);
   protocol->SetReportType(0);
@@ -4987,20 +4996,20 @@ bool CIntensityMotionCheck::MakeDefaultProtocol( Protocol *protocol )
   protocol->GetDTIProtocol().method = Protocol::METHOD_WLS;
   protocol->GetDTIProtocol().baselineThreshold = 50; 
   protocol->GetDTIProtocol().mask = "";
-  protocol->GetDTIProtocol().tensorSuffix = "_DTI.nhdr";
+  protocol->GetDTIProtocol().tensorSuffix = "_DTI.nrrd";
   protocol->GetDTIProtocol().bbaseline = true;
-  protocol->GetDTIProtocol().baselineSuffix = "_Baseline.nhdr";
+  protocol->GetDTIProtocol().baselineSuffix = "_Baseline.nrrd";
   protocol->GetDTIProtocol().bidwi = true;
-  protocol->GetDTIProtocol().idwiSuffix = "_IDWI.nhdr";
+  protocol->GetDTIProtocol().idwiSuffix = "_IDWI.nrrd";
   protocol->GetDTIProtocol().bfa = true;
-  protocol->GetDTIProtocol().faSuffix = "_FA.nhdr";
+  protocol->GetDTIProtocol().faSuffix = "_FA.nrrd";
   protocol->GetDTIProtocol().bmd = true;
-  protocol->GetDTIProtocol().mdSuffix = "_MD.nhdr";
+  protocol->GetDTIProtocol().mdSuffix = "_MD.nrrd";
   protocol->GetDTIProtocol().bcoloredfa = true;
-  protocol->GetDTIProtocol().coloredfaSuffix = "_colorFA.nhdr";
+  protocol->GetDTIProtocol().coloredfaSuffix = "_colorFA.nrrd";
   protocol->GetDTIProtocol().bfrobeniusnorm = true;
   protocol->GetDTIProtocol().frobeniusnormSuffix
-    = "_frobeniusnorm.nhdr";
+    = "_frobeniusnorm.nrrd";
 
   protocol->GetDTIProtocol().reportFileNameSuffix = "_QCReport.txt";
   protocol->GetDTIProtocol().reportFileMode = 1;

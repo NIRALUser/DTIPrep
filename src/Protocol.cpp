@@ -18,7 +18,7 @@ Protocol::~Protocol(void)
 void Protocol::initProtocols()
 {
   this->QCOutputDirectory = "";
-  this->QCedDWIFileNameSuffix = "_QCed.nhdr";
+  this->QCedDWIFileNameSuffix = "_QCed.nrrd";
   this->reportFileNameSuffix = "_QCReport.txt";
   this->m_BadGradientPercentageTolerance = 0.2;
   this->m_ReportType = REPORT_TYPE_VERBOSE;
