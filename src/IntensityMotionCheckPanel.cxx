@@ -3499,16 +3499,16 @@ void IntensityMotionCheckPanel::ResultUpdate()
     itemInterlaceWiseCheck->setText( 2, tr("NA"));
     itemGradientWiseCheck->setText( 2, tr ("NA"));
    }
-   QTreeWidgetItem * itemVisualCheck = new QTreeWidgetItem(gradient);  // item for visual gradient checking
-   itemVisualCheck->setText(0, tr("Visual Check"));
-   QTreeWidgetItem * itemVisualCheck_Satus = new QTreeWidgetItem(itemVisualCheck);
-   itemVisualCheck_Satus->setText( 0,QString("VC_Status_%1").arg( i, 4, 10, QLatin1Char( '0' ) ) );
-   if ( qcResult.GetIntensityMotionCheckResult()[i].VisualChecking == 0 )
-    itemVisualCheck_Satus->setText( 1, tr("Include" ));
-   if ( qcResult.GetIntensityMotionCheckResult()[i].VisualChecking == 6 )
-    itemVisualCheck_Satus->setText( 1, tr("Exclude" ));
-   if ( qcResult.GetIntensityMotionCheckResult()[i].VisualChecking == -1 ) 
-    itemVisualCheck_Satus->setText( 1, tr("NoChange" ));
+   //QTreeWidgetItem * itemVisualCheck = new QTreeWidgetItem(gradient);  // item for visual gradient checking
+   //itemVisualCheck->setText(0, tr("Visual Check"));
+   //QTreeWidgetItem * itemVisualCheck_Satus = new QTreeWidgetItem(itemVisualCheck);
+   //itemVisualCheck_Satus->setText( 0,QString("VC_Status_%1").arg( i, 4, 10, QLatin1Char( '0' ) ) );
+   //if ( qcResult.GetIntensityMotionCheckResult()[i].VisualChecking == 0 )
+   //itemVisualCheck_Satus->setText( 1, tr("Include" ));
+   //if ( qcResult.GetIntensityMotionCheckResult()[i].VisualChecking == 6 )
+   // itemVisualCheck_Satus->setText( 1, tr("Exclude" ));
+   //if ( qcResult.GetIntensityMotionCheckResult()[i].VisualChecking == -1 ) 
+   // itemVisualCheck_Satus->setText( 1, tr("NoChange" ));
 
    QTreeWidgetItem * itemQCIndex = new QTreeWidgetItem(gradient);	// item for showing the mapping to the QCed dwi image
    itemQCIndex->setText(0, tr("QC_Index") );
