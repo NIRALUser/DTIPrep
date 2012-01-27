@@ -905,14 +905,14 @@ void XmlStreamReader::LoadQCResultFromDWICheckGradientParsing(int Grd_num)
   //std::cout<<"gradient"<<Grd_num<<parametersQCResult_Gradient[parametersQCResult_Gradient.size()-1].value.toStdString().c_str()<<std::endl;
 
   //status of the Visual Checking
-  if (parametersQCResult_Gradient[parametersQCResult_Gradient.size()-2].value == "Include")
+  if (parametersQCResult_Gradient[parametersQCResult_Gradient.size()-1].value == "Include")
      GrdIntMotionChk.VisualChecking = 0;
-  if (parametersQCResult_Gradient[parametersQCResult_Gradient.size()-2].value == "Exclude")
+  if (parametersQCResult_Gradient[parametersQCResult_Gradient.size()-1].value == "Exclude")
   {
      GrdIntMotionChk.VisualChecking = 6;
      //std::cout << "Test VisualChecking xml" << GrdIntMotionChk.VisualChecking << std::endl;
   }
-  if (parametersQCResult_Gradient[parametersQCResult_Gradient.size()-2].value == "NoChange")
+  if (parametersQCResult_Gradient[parametersQCResult_Gradient.size()-1].value == "NoChange")
      GrdIntMotionChk.VisualChecking = -1;
 
   QStringList values;

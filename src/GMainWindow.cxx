@@ -1403,16 +1403,21 @@ void GMainWindow::UpdateOutputDWIDiffusionVectorActors()
   pvtkRenderer_3DView->RemoveActor(actorDirInclude);
   actorDirInclude->GetParts()->RemoveAllItems();
 
+  
+
   for ( unsigned int i = 0;
         i < DTIPrepPanel->GetQCResult().GetIntensityMotionCheckResult().size();
         i++ )
     {
+
     if ( (DTIPrepPanel->GetQCResult().GetIntensityMotionCheckResult()[i].VisualChecking == -1 && DTIPrepPanel->GetQCResult().GetIntensityMotionCheckResult()[i].
            processing == QCResult::GRADIENT_INCLUDE)
          || (DTIPrepPanel->GetQCResult().GetIntensityMotionCheckResult()[i].VisualChecking == -1 && DTIPrepPanel->GetQCResult().GetIntensityMotionCheckResult()[i].
            processing == QCResult::GRADIENT_EDDY_MOTION_CORRECTED) || (DTIPrepPanel->GetQCResult().GetIntensityMotionCheckResult()[i].
            VisualChecking == QCResult::GRADIENT_INCLUDE) )
       {
+
+	
       if ( DTIPrepPanel->GetQCResult().GetIntensityMotionCheckResult()[i].
              CorrectedDir[0] == 0.0
            && DTIPrepPanel->GetQCResult().GetIntensityMotionCheckResult()[i].
@@ -2243,7 +2248,9 @@ void GMainWindow::GradientUpdate( int index )
    emit VisualCheckingStatus ( index, -1);
   }
   //std::cout<< DTIPrepPanel->GetQCResult().GetIntensityMotionCheckResult()[ index ].processing<<"processing_N"<<std::endl;
-  UpdateOutputDWIDiffusionVectorActors_VC();
+  
+    UpdateOutputDWIDiffusionVectorActors();
+  //UpdateOutputDWIDiffusionVectorActors_VC();
 }
 
 

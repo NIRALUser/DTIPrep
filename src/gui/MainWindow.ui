@@ -411,7 +411,7 @@
      <normaloff>:/icon/images/openXML.png</normaloff>:/icon/images/openXML.png</iconset>
    </property>
    <property name="text">
-    <string>OpenXML</string>
+    <string>Open Protocol</string>
    </property>
    <property name="statusTip">
     <string>Load a xml protocol file</string>

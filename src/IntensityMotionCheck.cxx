@@ -67,6 +67,7 @@ CIntensityMotionCheck::CIntensityMotionCheck()
 
   // Flags with _FurtherQC name are related to the Further QC process
   m_DwiOriginalImage = NULL;
+  m_outputDWIFileName = "";
   m_bDwiLoaded = false;
   m_bDwiLoaded_FurtherQC = false;		// this flag is set when new dwi loaded for Further QC process 
   m_bGetGradientDirections = false;
@@ -173,6 +174,7 @@ bool CIntensityMotionCheck::LoadDwiImage()
       result.CorrectedDir[2] = this->m_GradientDirectionContainer->ElementAt(j)[2];
 
       qcResult->GetIntensityMotionCheckResult().push_back(result);
+      std::cout << "Visual Checking Testing " << qcResult->GetIntensityMotionCheckResult()[j].VisualChecking << std::endl;
     }
     // std::cout<<"initilize the result.OriginalDir[0] and result.CorrectedDir[0]
     // "<<std::endl;
@@ -2917,6 +2919,8 @@ int CIntensityMotionCheck::JointDenoising( DwiImageType::Pointer dwi )
 
 bool CIntensityMotionCheck::SaveDwiForcedConformanceImage(void)
 {
+
+  std::cout << " protocol->GetQCedDWIFileNameSuffix()" <<  protocol->GetQCedDWIFileNameSuffix() << std::endl;
   if ( protocol->GetQCedDWIFileNameSuffix().length() > 0 )
   {
     
@@ -2948,6 +2952,7 @@ bool CIntensityMotionCheck::SaveDwiForcedConformanceImage(void)
       m_outputDWIFileName = m_DwiFileName.substr( 0, m_DwiFileName.find_last_of('.') );
       m_outputDWIFileName.append( protocol->GetQCedDWIFileNameSuffix() );
     }
+
 
     try
     {
@@ -3333,7 +3338,7 @@ unsigned char CIntensityMotionCheck::RunPipelineByProtocol()
   if ( !DiffusionCheck( m_DwiForcedConformanceImage ) )
   {
     this-> qcResult->Set_result( this-> qcResult->Get_result() | 2 );
-    printf("result of DiffusionCheck = %d",this-> qcResult->Get_result());
+    //printf("result of DiffusionCheck = %d",this-> qcResult->Get_result());
     if( protocol->GetDiffusionProtocol().bQuitOnCheckFailure )
     {
       std::cout << "Diffusion Check failed, pipeline terminated. " << std::endl;
@@ -3374,7 +3379,7 @@ unsigned char CIntensityMotionCheck::RunPipelineByProtocol()
   if ( !InterlaceWiseCheck( m_DwiForcedConformanceImage ) )
   {
     this-> qcResult->Set_result( this-> qcResult->Get_result() | 8 );
-    printf("result of InterlaceWiseCheck = %d",this-> qcResult->Get_result());
+    //printf("result of InterlaceWiseCheck = %d",this-> qcResult->Get_result());
     if( protocol->GetInterlaceCheckProtocol().bQuitOnCheckFailure)
     {
       std::cout << "InterlaceWise Check failed, pipeline terminated. " << std::endl;
@@ -3414,7 +3419,7 @@ unsigned char CIntensityMotionCheck::RunPipelineByProtocol()
   if ( !GradientWiseCheck( m_DwiForcedConformanceImage ) )
   {
     this-> qcResult->Set_result( this-> qcResult->Get_result() | 16 );
-    printf("result of GradientCheck = %d",this-> qcResult->Get_result());
+    //printf("result of GradientCheck = %d ",this-> qcResult->Get_result());
     if( protocol->GetGradientCheckProtocol().bQuitOnCheckFailure)
     {
       std::cout << "GradientWise Check failed, pipeline terminated. " << std::endl;
@@ -3465,7 +3470,7 @@ unsigned char CIntensityMotionCheck::RunPipelineByProtocol()
   // Save QC'ed DWI
   std::cout << "=====================" << std::endl;
   std::cout << "Save QC'ed DWI ... ";
-  SaveDwiForcedConformanceImage();
+	SaveDwiForcedConformanceImage();
 
   std::cout << "DONE" << std::endl;
 

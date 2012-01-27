@@ -77,7 +77,7 @@ QDockWidget(parentNew)
   //   pushButton_SaveQCReport->setEnabled( 0 );
   //   pushButton_SaveQCReportAs->setEnabled( 0 );
  
-  pushButton_SaveVisualChecking->setEnabled( 0 );
+  pushButton_SaveVisualChecking->setEnabled( 1 );
   //pushButton_SaveDWIAs->setEnabled( 0 );
   // pushButton_CreateDefaultProtocol->setEnabled( 0 );
 
@@ -367,7 +367,7 @@ void IntensityMotionCheckPanel::on_toolButton_ProtocolFileOpen_clicked( )
 
 void IntensityMotionCheckPanel::on_toolButton_ResultFileOpen_clicked( )
 {
-  pushButton_SaveVisualChecking->setEnabled( 0 );
+  pushButton_SaveVisualChecking->setEnabled( 1 );
   bMatchNameQCResult_DwiFile = false;
   OpenXML_ResultFile();
   emit SignalActivateSphere(); // Activate the "actionIncluded" bottom
@@ -428,6 +428,8 @@ void IntensityMotionCheckPanel::SetVisualCheckingStatus( int index, int status )
 
 void IntensityMotionCheckPanel::OpenXML_ResultFile()
 {
+
+
   QString xmlResultFile=QFileDialog::getOpenFileName (this, tr("Select QC Report Result"), lineEdit_Result->text(),tr("xml Files (*.xml)"));
 
   if (xmlResultFile.length()>0)
@@ -437,6 +439,11 @@ void IntensityMotionCheckPanel::OpenXML_ResultFile()
   else 
     return;
 
+  if ( !(xmlResultFile.contains("_XMLQCResult.xml", Qt::CaseSensitive) ) )
+  {
+    std::cerr << "No QCed XML File Loaded." << std::endl;
+    return;
+  }
   treeWidget_Results->clear();
   qcResult.Clear();
 
@@ -445,21 +452,33 @@ void IntensityMotionCheckPanel::OpenXML_ResultFile()
   //XmlReader.readFile_QCResult(xmlResultFile, XmlStreamReader::TreeWise);
   XmlReader.readFile_QCResult(xmlResultFile, XmlStreamReader::QCResultlWise);
 
+  std::cout << " ***** " << std::endl;
+  std::cout << " this->GetQCResult().GetIntensityMotionCheckResult().size()" << this->GetQCResult().GetIntensityMotionCheckResult().size() << std::endl;
+  for ( unsigned int kkk = 0 ; kkk < this->GetQCResult().GetIntensityMotionCheckResult().size() ; kkk ++ )
+  {
+	//std::cout << "Mehdi ** Visual Check " << this->GetQCResult().GetIntensityMotionCheckResult()[kkk].VisualChecking << std::endl;
+  }
+
   // ..........................................................................................................................................
   // Check weather user wants to visualize the entire QCed result or only passed result
   //...........................................................................................................................................
-  QString Grad1 = "Warnning!";
-  QString Grad2 = "Visualization QCed Report?";
+  QString Grad1 = "Warning!";
+  QString Grad2 = "Do you want to do visual checking?";
   QMessageBox msgBox;
   msgBox.setWindowTitle( Grad1 );
   msgBox.setText( Grad2 );
-  QPushButton * Passed_QCedResult= msgBox.addButton( tr("Passed_QCedResult"), QMessageBox::ActionRole);
-  QPushButton * Cancel = msgBox.addButton( tr("Cancel"), QMessageBox::ActionRole);
+  QPushButton * Passed_QCedResult= msgBox.addButton( tr("Yes"), QMessageBox::ActionRole);
+  QPushButton * Cancel = msgBox.addButton( tr("No"), QMessageBox::ActionRole);
      
   msgBox.exec();
 
   if ( msgBox.clickedButton() == Cancel )
   {
+	emit UpdateOutputDWIDiffusionVectorActors();
+  	emit LoadQCResult(true);
+
+  
+  	emit SignalActivateSphere(); // Activate "actionIncluded" bottom 
 	return;
   }
 
@@ -468,6 +487,11 @@ void IntensityMotionCheckPanel::OpenXML_ResultFile()
   //............................................................................................................................................
   // loading Original_ForcedConformance_Mapping
   //............................................................................................................................................
+  if ( !bDwiLoaded )
+  {
+    std::cerr << "No DWI Image Loaded for Visual Checking. Please Load QCed Image. " << std::endl;
+    return;
+  }
   t_Original_ForcedConformance_Mapping.clear();
   Set_Original_ForcedConformance_Mapping();
 
@@ -483,7 +507,7 @@ void IntensityMotionCheckPanel::OpenXML_ResultFile()
   {
 	VC_STATUS vc;
    	vc.index = ind ;
-	//std::cout << "t_Original_ForcedConformance_Mapping[ind].index_original[0]" << t_Original_ForcedConformance_Mapping[ind].index_original[0] << " " << "t_Original_ForcedConformance_Mapping[ind].index_ForcedConformance" << t_Original_ForcedConformance_Mapping[ind].index_ForcedConformance << std::endl;
+	std::cout << "t_Original_ForcedConformance_Mapping[ind].index_original[0]" << t_Original_ForcedConformance_Mapping[ind].index_original[0] << " " << "t_Original_ForcedConformance_Mapping[ind].index_ForcedConformance" << t_Original_ForcedConformance_Mapping[ind].index_ForcedConformance << std::endl;
 	if ( ind == 0 )
 		for ( unsigned int k = 0 ; k < t_Original_ForcedConformance_Mapping[0].index_original.size() ; k++ )
 			vc.VC_status = this->GetQCResult().GetIntensityMotionCheckResult()[ t_Original_ForcedConformance_Mapping[ind].index_original[k] ].VisualChecking;
@@ -496,6 +520,11 @@ void IntensityMotionCheckPanel::OpenXML_ResultFile()
   }  
 
   QCedResultUpdate();
+
+  emit UpdateOutputDWIDiffusionVectorActors();
+  emit LoadQCResult(true);
+  
+  emit SignalActivateSphere(); // Activate "actionIncluded" bottom 
 
   return;
   }
@@ -598,6 +627,12 @@ void IntensityMotionCheckPanel::OpenXML( )
   }
   else
   {
+    return;
+  }
+
+   if ( (xmlFile.contains("_XMLQCResult.xml", Qt::CaseSensitive) ) )
+  {
+    std::cerr << "No Protocol File Loaded." << std::endl;
     return;
   }
 
@@ -3499,29 +3534,35 @@ void IntensityMotionCheckPanel::ResultUpdate()
     itemInterlaceWiseCheck->setText( 2, tr("NA"));
     itemGradientWiseCheck->setText( 2, tr ("NA"));
    }
-   //QTreeWidgetItem * itemVisualCheck = new QTreeWidgetItem(gradient);  // item for visual gradient checking
-   //itemVisualCheck->setText(0, tr("Visual Check"));
-   //QTreeWidgetItem * itemVisualCheck_Satus = new QTreeWidgetItem(itemVisualCheck);
-   //itemVisualCheck_Satus->setText( 0,QString("VC_Status_%1").arg( i, 4, 10, QLatin1Char( '0' ) ) );
-   //if ( qcResult.GetIntensityMotionCheckResult()[i].VisualChecking == 0 )
-   //itemVisualCheck_Satus->setText( 1, tr("Include" ));
-   //if ( qcResult.GetIntensityMotionCheckResult()[i].VisualChecking == 6 )
-   // itemVisualCheck_Satus->setText( 1, tr("Exclude" ));
-   //if ( qcResult.GetIntensityMotionCheckResult()[i].VisualChecking == -1 ) 
-   // itemVisualCheck_Satus->setText( 1, tr("NoChange" ));
 
    QTreeWidgetItem * itemQCIndex = new QTreeWidgetItem(gradient);	// item for showing the mapping to the QCed dwi image
    itemQCIndex->setText(0, tr("QC_Index") );
    itemQCIndex->setText(1, QString("%1").arg(qcResult.GetIntensityMotionCheckResult()[i].QCIndex) );
-  }
-
-  if (bLoadDefaultQC == true)
-  {
+   
    QTreeWidgetItem * itemVisualCheck = new QTreeWidgetItem(gradient);  // item for visual gradient checking
    itemVisualCheck->setText(0, tr("Visual Check"));
    QTreeWidgetItem * itemVisualCheck_Satus = new QTreeWidgetItem(itemVisualCheck);
    itemVisualCheck_Satus->setText( 0,QString("VC_Status_%1").arg( i, 4, 10, QLatin1Char( '0' ) ) );
-   itemVisualCheck_Satus->setText( 1, tr("Include" ));   
+   if ( qcResult.GetIntensityMotionCheckResult()[i].VisualChecking == 0 )
+   itemVisualCheck_Satus->setText( 1, tr("Include" ));
+   if ( qcResult.GetIntensityMotionCheckResult()[i].VisualChecking == 6 )
+    itemVisualCheck_Satus->setText( 1, tr("Exclude" ));
+   if ( qcResult.GetIntensityMotionCheckResult()[i].VisualChecking == -1 ) 
+    itemVisualCheck_Satus->setText( 1, tr("NoChange" ));
+
+  }
+
+  if (bLoadDefaultQC == true)
+  {
+   QTreeWidgetItem * itemQCIndex = new QTreeWidgetItem(gradient);	// item for showing the mapping to the QCed dwi image
+   itemQCIndex->setText(0, tr("QC_Index") );
+   itemQCIndex->setText(1, QString("%1").arg(qcResult.GetIntensityMotionCheckResult()[i].QCIndex) );
+
+   QTreeWidgetItem * itemVisualCheck = new QTreeWidgetItem(gradient);  // item for visual gradient checking
+   itemVisualCheck->setText(0, tr("Visual Check"));
+   QTreeWidgetItem * itemVisualCheck_Satus = new QTreeWidgetItem(itemVisualCheck);
+   itemVisualCheck_Satus->setText( 0,QString("VC_Status_%1").arg( i, 4, 10, QLatin1Char( '0' ) ) );
+   itemVisualCheck_Satus->setText( 1, tr("NoChange" ));   
   }
       
  }
@@ -3548,12 +3589,35 @@ void IntensityMotionCheckPanel::ResultUpdate()
 
   emit UpdateOutputDWIDiffusionVectorActors();
   emit LoadQCResult(true);
-  //if (bLoadDefaultQC)
-  //{
+
+  if (bLoadDefaultQC)
+  {
+
+     QString Grad2 = QString(" Do you want to save QCed result.");
+     QMessageBox msgBox;
+     msgBox.setText( Grad2 );
+     QPushButton * YES = msgBox.addButton( tr("Yes"), QMessageBox::ActionRole);
+     QPushButton * NO = msgBox.addButton( tr("No"), QMessageBox::ActionRole);
+     msgBox.exec();
+
+  if ( msgBox.clickedButton() == YES )
+  {  
+
+     SavingTreeWidgetResult_XmlFile();  
+  
+     emit SignalActivateSphere(); // Activate "actionIncluded" bottom 
+     pushButton_SaveVisualChecking->setEnabled( 1 );
+     return; 
+
+  }
+  if ( msgBox.clickedButton() == NO )
+  {   
+     return;
+  }
+  
   //SavingTreeWidgetResult_XmlFile_Default();
-  //}
-  //else 
-  //{
+  }
+  
    SavingTreeWidgetResult_XmlFile();  
   //}
   emit SignalActivateSphere(); // Activate "actionIncluded" bottom 
@@ -4301,7 +4365,7 @@ bool IntensityMotionCheckPanel::GetGradientDirections()
 void IntensityMotionCheckPanel::SaveVisualCheckingResult()
 {
   
-  pushButton_SaveVisualChecking->setEnabled( 0 );
+  pushButton_SaveVisualChecking->setEnabled( 1 );
   // Saving QC Result in associated xml file
   ResultUpdate();
   QCedResultUpdate();  
@@ -4601,9 +4665,9 @@ void IntensityMotionCheckPanel::GenerateOutput_VisualCheckingResult( std::string
       gradientLeft++;
     }
   }*/
-  std::cout << "" << "index_listVCExcluded.size()" << index_listVCExcluded.size() << std::endl;
+  //std::cout << "" << "index_listVCExcluded.size()" << index_listVCExcluded.size() << std::endl;
 
-  std::cout << "myIntensityThread.m_IntensityMotionCheck->get_Original_ForcedConformance_Mapping().size() " << t_Original_ForcedConformance_Mapping.size() << std::endl;
+  //std::cout << "myIntensityThread.m_IntensityMotionCheck->get_Original_ForcedConformance_Mapping().size() " << t_Original_ForcedConformance_Mapping.size() << std::endl;
 
   for ( unsigned int i = 0; i < t_Original_ForcedConformance_Mapping.size();  i++ )
   {
@@ -5030,7 +5094,7 @@ void IntensityMotionCheckPanel::on_pushButton_DefaultQCResult_clicked( )
   ResultUpdate();
 
   bResultTreeEditable = true;
-  pushButton_SaveVisualChecking->setEnabled( 0 );
+  pushButton_SaveVisualChecking->setEnabled( 1 );
 
   emit UpdateOutputDWIDiffusionVectorActors();
 }
@@ -5040,7 +5104,9 @@ void IntensityMotionCheckPanel::DefaultProcess( )
   this->GetQCResult().Clear();
 
   GradientIntensityMotionCheckResult IntensityMotionCR;
-  //IntensityMotionCR.processing = QCResult::GRADIENT_INCLUDE;
+  IntensityMotionCR.processing = QCResult::GRADIENT_INCLUDE;
+  IntensityMotionCR.VisualChecking = -1;
+  
 
   for ( unsigned int i = 0; i < this->m_DwiOriginalImage->GetVectorLength(); i++ )
   {
@@ -5064,6 +5130,8 @@ void IntensityMotionCheckPanel::DefaultProcess( )
     = this->GradientDirectionContainer->ElementAt(i)[1];
     IntensityMotionCR.CorrectedDir[2]
     = this->GradientDirectionContainer->ElementAt(i)[2];
+
+   IntensityMotionCR.QCIndex = i;
 
    this->GetQCResult().GetIntensityMotionCheckResult().push_back(
       IntensityMotionCR);
@@ -5099,7 +5167,6 @@ void IntensityMotionCheckPanel::Clear_VC_Status()
 void IntensityMotionCheckPanel::LoadQCedDWI( QString qcdwiname )
 {
 	emit SignalLoadQCedDWI( qcdwiname );
-	std::cout << "emit SignalLoadQCedDWI( qcdwiname )" << std::endl;
 }
 
 void IntensityMotionCheckPanel::Building_Mapping_XML()

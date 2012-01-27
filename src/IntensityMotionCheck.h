@@ -281,10 +281,17 @@ public:
     return m_Original_ForcedConformance_Mapping;
   }
 
-  std::string GetOutputDWIFileName()
+  std::string & GetOutputDWIFileName()
   {
     return m_outputDWIFileName;
   }
+
+  void SetOutputDWIFileName( std::string outputDWIFileName )
+  {
+    m_outputDWIFileName = outputDWIFileName;
+  }
+
+  std::string m_outputDWIFileName;	// the name of QCed DWI file
   
 private:
   void collectDiffusionStatistics();
@@ -318,7 +325,7 @@ private:
 
   std::string m_DwiFileName;
   std::string m_XmlFileName;
-  std::string m_outputDWIFileName;	// the name of QCed DWI file
+  //std::string m_outputDWIFileName;	// the name of QCed DWI file
   std::string m_GlobalReportFileName;
 
   DwiImageType::Pointer m_DwiForcedConformanceImage;
