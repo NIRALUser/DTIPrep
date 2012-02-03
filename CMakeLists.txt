@@ -3,6 +3,17 @@ set(LOCAL_PROJECT_NAME DTIPrep)
 cmake_minimum_required(VERSION 2.8.2)
 cmake_policy(VERSION 2.8.2)
 
+#-----------------------------------------------------------------------------
+# Git protocole option
+#-----------------------------------------------------------------------------
+option(${CMAKE_PROJECT_NAME}_USE_GIT_PROTOCOL "If behind a firewall turn this off to use http instead." ON)
+set(git_protocol "git")
+if(NOT ${CMAKE_PROJECT_NAME}_USE_GIT_PROTOCOL)
+  set(git_protocol "http")
+endif()
+
+find_package(Git REQUIRED)
+
 set(BRAINS_CMAKE_HELPER_DIR ${CMAKE_CURRENT_SOURCE_DIR}/BuildScripts)
 include(${BRAINS_CMAKE_HELPER_DIR}/PreventInSourceBuilds.cmake)
 
@@ -77,7 +88,9 @@ PACKAGE_NEEDS_BRAINSCommonLib     ("${LOCAL_CMAKE_BUILD_OPTIONS}" "${gen}")
 set(EXTERNAL_PACKAGES DicomToNrrdConverter)
 foreach(proj ${EXTERNAL_PACKAGES})
   ExternalProject_Add(${proj}
-    SVN_REPOSITORY "http://svn.slicer.org/Slicer3/trunk/Applications/CLI/DicomToNrrdConverter"
+    #SVN_REPOSITORY "http://svn.slicer.org/Slicer3/trunk/Applications/CLI/DicomToNrrdConverter"
+    SVN_REPOSITORY "http://svn.slicer.org/Slicer4/trunk/Modules/CLI/DicomToNrrdConverter/"
+    SVN_REVISION -r "19206"
     SOURCE_DIR ${proj}
     BINARY_DIR ${proj}-build
     DEPENDS  ${ITK_DEPEND} SlicerExecutionModel
@@ -87,8 +100,8 @@ foreach(proj ${EXTERNAL_PACKAGES})
       ${QT_ARGS}
       -DGenerateCLP_DIR:PATH=${GenerateCLP_DIR}
       -DITK_DIR:PATH=${ITK_DIR}
-      #INSTALL_COMMAND ""
-      INSTALL_DIR "${CMAKE_INSTALL_PREFIX}"
+    INSTALL_COMMAND ""
+    INSTALL_DIR "${CMAKE_INSTALL_PREFIX}"
   )
   FORCE_BUILD_CHECK(${proj})
 endforeach()
