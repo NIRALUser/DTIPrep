@@ -33,6 +33,8 @@ set(LOCAL_CMAKE_BUILD_OPTIONS
   -DCMAKE_C_FLAGS_RELEASE:STRING=${CMAKE_C_FLAGS_RELEASE}
   -DCMAKE_C_FLAGS_DEBUG:STRING=${CMAKE_C_FLAGS_DEBUG}
   -DCMAKE_C_FLAGS:STRING=${CMAKE_C_FLAGS}
+  -DCMAKE_C_COMPILER:STRING=${CMAKE_C_COMPILER}
+  -DCMAKE_CXX_COMPILER:STRING=${CMAKE_CXX_COMPILER}
   -DBUILD_EXAMPLES:BOOL=OFF
   -DBUILD_SHARED_LIBS:BOOL=${BUILD_SHARED_LIBS}
   -DBUILD_TESTING:BOOL=${BUILD_TESTING}
@@ -141,7 +143,8 @@ endforeach()
 set(EXTERNAL_PACKAGES GTRACTprog)
 foreach(proj ${EXTERNAL_PACKAGES})
   ExternalProject_Add(${proj}
-    SVN_REPOSITORY "https://www.nitrc.org/svn/vmagnotta/GTRACT"
+    SVN_REPOSITORY "https://www.nitrc.org/svn/vmagnotta/tags/BRAINS3"
+    SVN_REVISION -r "156"
     SVN_USERNAME "slicerbot"
     SVN_PASSWORD "slicer"
     SOURCE_DIR ${proj}
@@ -166,6 +169,7 @@ set(EXTERNAL_PACKAGES BRAINSFit)
 foreach(proj ${EXTERNAL_PACKAGES})
   ExternalProject_Add(${proj}
     SVN_REPOSITORY "https://www.nitrc.org/svn/multimodereg/trunk"
+    SVN_REVISION -r "506"
     SVN_USERNAME "slicerbot"
     SVN_PASSWORD "slicer"
     SOURCE_DIR ${proj}
@@ -190,6 +194,7 @@ set(EXTERNAL_PACKAGES BRAINSResample)
 foreach(proj ${EXTERNAL_PACKAGES})
   ExternalProject_Add(${proj}
     SVN_REPOSITORY "https://www.nitrc.org/svn/brains/BRAINS/trunk/BRAINSTools/BRAINSResample"
+    SVN_REVISION -r "13249"
     SVN_USERNAME "slicerbot"
     SVN_PASSWORD "slicer"
     SOURCE_DIR ${proj}
