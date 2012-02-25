@@ -36,11 +36,11 @@ struct  InterlaceWiseCheckResult{
   double TranslationZ;
   double Metric;                // MutualInformation;
   double Correlation;           // graylevel correlation
-  int InterlaceWiseCheckProcessing;  // the result of the InterlaceWiseCheck processing
+  //int InterlaceWiseCheckProcessing;  // the result of the InterlaceWiseCheck processing
 };
 
 struct  GradientWiseCheckResult {
-  int GradientWiseCheckProcessing; // the result of the GradientWiseCheck processing
+  //int GradientWiseCheckProcessing; // the result of the GradientWiseCheck processing
   double AngleX;      // in degrees
   double AngleY;      // in degrees
   double AngleZ;      // in degrees
@@ -159,6 +159,9 @@ public:
     diffusionInformationCheckResult.measurementFrame = true;
 
     result = 0;
+
+
+    
   }
 
   void Set_result( unsigned char r )

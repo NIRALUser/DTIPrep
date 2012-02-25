@@ -69,7 +69,7 @@ void Protocol::initImageProtocol()
   imageProtocol.reportFileNameSuffix = "_Report.txt";
   imageProtocol.reportFileMode = 1; // 0: new   1: append
 
-  imageProtocol.bQuitOnCheckSpacingFailure = true;
+  imageProtocol.bQuitOnCheckSpacingFailure = false;
   imageProtocol.bQuitOnCheckSizeFailure = false;
 }
 
@@ -83,13 +83,14 @@ void Protocol::initDiffusionProtocol()
   diffusionProtocol.reportFileNameSuffix = "_Report.txt";
   diffusionProtocol.reportFileMode = 1; // 0: new   1: append
 
-  diffusionProtocol.bQuitOnCheckFailure = true;
+  diffusionProtocol.bQuitOnCheckFailure = false;
 }
 
 void Protocol::initDenoisingLMMSE()
 {
 
-  denoisingLMMSE.bCheck = false;  
+  denoisingLMMSE.bCheck = false;
+  denoisingLMMSE.ParameterSet = "" ;
   denoisingLMMSE.NumIter = 1;
   denoisingLMMSE.LMMSECommand = "/tools/Slicer3/Slicer3-3.6.3-2011-03-04-linux-x86_64/lib/Slicer3/Plugins/dwiNoiseFilter";
   denoisingLMMSE.Est_Radius[0] = 3;
@@ -111,6 +112,7 @@ void Protocol::initDenoisingLMMSE()
 void Protocol::initDenoisingJointLMMSE()
 {
   denoisingJointLMMSE.bCheck = false;
+  denoisingJointLMMSE.ParameterSet = "" ;
   denoisingJointLMMSE.NumNeighborGradients = 0;
   denoisingJointLMMSE.JointLMMSECommand = "/tools/Slicer3/Slicer3-3.6.3-2011-03-04-linux-x86_64/lib/Slicer3/Plugins/jointLMMSE";
   denoisingJointLMMSE.Est_Radius[0] = 2;
@@ -141,7 +143,7 @@ void Protocol::initSliceCheckProtocol()
   sliceCheckProtocol.reportFileMode = 1; // 0: new   1: append
 
   std::string excludedDWINrrdFileNameSuffix = "_SliceWiseExcluded.nrrd";
-  sliceCheckProtocol.bQuitOnCheckFailure = true;
+  sliceCheckProtocol.bQuitOnCheckFailure = false;
 }
 
 void Protocol::initInterlaceCheckProtocol()
@@ -160,7 +162,7 @@ void Protocol::initInterlaceCheckProtocol()
   interlaceCheckProtocol.reportFileMode = 1; // 0: new   1: append
 
   std::string excludedDWINrrdFileNameSuffix = "_InterlaceWiseExcluded.nrrd";
-  interlaceCheckProtocol.bQuitOnCheckFailure = true;
+  interlaceCheckProtocol.bQuitOnCheckFailure = false;
 }
 
 void Protocol::initGradientCheckProtocol()
@@ -175,7 +177,7 @@ void Protocol::initGradientCheckProtocol()
   gradientCheckProtocol.reportFileMode = 1; // 0: new   1: append
 
   std::string excludedDWINrrdFileNameSuffix = "_GradientWiseExcluded.nrrd";
-  gradientCheckProtocol.bQuitOnCheckFailure = true;
+  gradientCheckProtocol.bQuitOnCheckFailure = false;
 }
 
 void Protocol::initBaselineAverageProtocol()

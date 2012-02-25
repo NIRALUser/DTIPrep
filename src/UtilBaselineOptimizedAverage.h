@@ -8,7 +8,7 @@ namespace itk {
    *
    */
   template <class TImageType>
-    void BaselineOptimizedAverage(
+    bool BaselineOptimizedAverage(
       const std::vector<typename TImageType::Pointer> &baselineContainer,
       typename itk::Image<float,3>::Pointer & InitialAndReturnedAverageBaseline,
       int OptimizationStopCriteria,
@@ -16,6 +16,12 @@ namespace itk {
       unsigned int MaxIterations
     )
       {
+      
+
+      // Keep status of Baselines
+      std::vector< bool > BaselineStatus;
+      BaselineStatus.resize(baselineContainer.size());
+
       // first do direct averaging baselines
       std::vector<struRigidRegResult> allImageRegistrations;
       allImageRegistrations.resize(baselineContainer.size());
@@ -159,6 +165,8 @@ namespace itk {
           }
         const double ratio = meanSquarediff / meanIntensity;
 
+	std::cout << "OptimizationStopCriteria " << OptimizationStopCriteria << "IntensityMeanSquareDiffBased" << IntensityMeanSquareDiffBased << "ratio" << ratio << std::endl;
+
         if ( OptimizationStopCriteria == IntensityMeanSquareDiffBased )
           {
           std::cout << "IntensityMeanSquareDiffBased: " << ratio << " < " << OptimiationStopThreshold << std::endl;
@@ -171,15 +179,17 @@ namespace itk {
 
         if ( iterationCount > MaxIterations )
           {
-          std::cout << "Iterative registration seems not converging,doing direct averaging ...";
-          exit(-1);//HACK:  This is not an acceptable work around.
+          std::cout << "Iterative registration seems not converging,doing direct averaging ..." << std::endl;
+          ////exit(-1);//HACK:  This is not an acceptable work around. (Mahshid deleted this line! and changed the BaselineOptimizedAverage() to return bool)
           //DirectAverage();
           bRegister = false;
+	  return false;
           }
         } while ( bRegister);
       // if ( ratio > OptimiationStopThreshold ) && max interation number reached
       // register all the other baselines to the 1st one
       std::cout << "DONE" << std::endl;
+      return true;
       }
 
 } //end namespace itk

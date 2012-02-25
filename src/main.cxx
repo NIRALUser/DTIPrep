@@ -18,6 +18,9 @@
 #include "metaCommand.h"
 #include "IntensityMotionCheck.h"
 
+#include <itksys/SystemTools.hxx>
+
+
 #include "Protocol.h"
 #include "XmlStreamReader.h"
 #include "XmlStreamWriter.h"
@@ -60,6 +63,8 @@ int main ( int argc, char **argv )
 
     MetaCommand command;
 
+    command.SetCategory("Diffusion");
+    command.SetName("DTIPrep");
     // DWI filename
     command.SetOption(
       "DWIFileName",
@@ -80,12 +85,12 @@ int main ( int argc, char **argv )
                                MetaCommand::STRING,
                                true);
     // result QC XML
-    command.SetOption(      "resultXML", "q", false, "QCresult XML file");
-    command.SetOptionLongTag(  "resultXML", "resultXMLFile");
-    command.AddOptionField(    "resultXML",
-                               "xmlQCFile",
-                               MetaCommand::STRING,
-                               true);
+    //command.SetOption(      "resultXML", "q", false, "QCresult XML file");
+    //command.SetOptionLongTag(  "resultXML", "resultXMLFile");
+    //command.AddOptionField(    "resultXML",
+                               //"xmlQCFile",
+                               //MetaCommand::STRING,
+                               //true);
     // to create a default protocol
     command.SetOption(      "createDefaultProtocol", "d", false, "create default protocol xml file");
     command.SetOptionLongTag(  "createDefaultProtocol", "default");
@@ -119,8 +124,8 @@ int main ( int argc, char **argv )
     string xmlFileName  = command.GetValueAsString("xmlSetting", "xmlFileName");
     string resultNotes  = command.GetValueAsString("resultNotes", "NotesFile");
     string resultFolder = command.GetValueAsString("outputFolder","OutputFolder");
-    string resultXMLFile = command.GetValueAsString("resultXML","xmlQCFile");
-
+    //string resultXMLFile = command.GetValueAsString("resultXML","xmlQCFile");
+    string resultXMLFile;
 
     bool bCreateDefaultProtocol = command.GetOptionWasSet("createDefaultProtocol");
     bool bcheckByProtocol       = command.GetOptionWasSet("checkByProtocol");
@@ -134,13 +139,46 @@ int main ( int argc, char **argv )
       qcResult.Clear();
       protocol.clear();
 
-      if ( resultXMLFile.length() <= 0 ) 
-      {
-      QString Result_xmlFile = QString::fromStdString( DWIFileName ).section('.',-2,0);
-      Result_xmlFile.remove("_QCed");
-      Result_xmlFile.append(QString("_XMLQCResult.xml"));
-      resultXMLFile = Result_xmlFile.toStdString();
-      }
+      protocol.GetQCOutputDirectory() = resultFolder;
+
+      //if ( resultXMLFile.length() <= 0 ) 
+      //{
+
+	std::string Full_path;	
+        std::string Dwi_file_name;	// Full name of dwi image
+        size_t found2 = DWIFileName.find_last_of(".");
+        Full_path = DWIFileName.substr( 0, found2);
+        Dwi_file_name = Full_path.substr(Full_path.find_last_of("/\\")+1);
+
+
+	if ( protocol.GetQCOutputDirectory().length() > 0 )
+	{
+	
+			size_t found;
+			found = DWIFileName.find_last_of("/\\");
+			std::string str;
+			str = DWIFileName.substr( 0 , found );	// str : path of QCed outputs
+			str.append( "/" );
+			str.append( protocol.GetQCOutputDirectory() );
+			if ( !itksys::SystemTools::FileIsDirectory( str.c_str() ) )
+				itksys::SystemTools::MakeDirectory( str.c_str() );
+			resultXMLFile = str;
+			resultXMLFile.append( Dwi_file_name );
+			resultXMLFile.append( "_XMLQCResult.xml" );
+	
+	}
+	else
+	{
+			resultXMLFile = DWIFileName.substr( 0, DWIFileName.find_last_of('.') );
+			resultXMLFile.append( "_XMLQCResult.xml" );
+	}
+
+
+	//QString Result_xmlFile = QString::fromStdString( DWIFileName ).section('.',-2,0);
+	//Result_xmlFile.remove("_QCed");
+	//Result_xmlFile.append(QString("_XMLQCResult.xml"));
+	//resultXMLFile = Result_xmlFile.toStdString();
+      //}
 
       CIntensityMotionCheck IntensityMotionCheck;
       IntensityMotionCheck.SetXmlFileName(resultXMLFile);
@@ -151,7 +189,8 @@ int main ( int argc, char **argv )
       XmlReader.setProtocol( &protocol);
       if( xmlFile.exists() )
         XmlReader.readFile(str, XmlStreamReader::ProtocolWise);
-      protocol.GetQCOutputDirectory() = resultFolder;
+   
+      protocol.GetQCOutputDirectory() = resultFolder;   
       protocol.printProtocols();
       IntensityMotionCheck.SetProtocol( &protocol);
       IntensityMotionCheck.SetQCResult( &qcResult);
@@ -758,39 +797,44 @@ int main ( int argc, char **argv )
           xmlWriter.writeEndElement();
           }
 
+	  xmlWriter.writeStartElement("entry");
+          xmlWriter.writeAttribute( "parameter",  "QC_Index" );
+	  xmlWriter.writeTextElement("value", QString("%1").arg(qcResult.GetIntensityMotionCheckResult()[i].QCIndex));
+	  xmlWriter.writeEndElement();
+
           xmlWriter.writeStartElement("entry");
           xmlWriter.writeAttribute( "parameter",  "Visual Check" );
           xmlWriter.writeStartElement("entry");
           xmlWriter.writeAttribute( "parameter",  QString("VC_Status_%1").arg( i, 4, 10, QLatin1Char( '0' ) ) );
           switch ( qcResult.GetIntensityMotionCheckResult()[i].VisualChecking )
             {
-            case QCResult::GRADIENT_BASELINE_AVERAGED:
-              xmlWriter.writeTextElement("value","BASELINE_AVERAGED");
-              break;
-            case QCResult::GRADIENT_EXCLUDE_SLICECHECK:
-            {
-            xmlWriter.writeTextElement("value","EXCLUDE_SLICECHECK");
-            EXCLUDE_SliceWiseCheck=true;
-            }
-            break;
-            case QCResult::GRADIENT_EXCLUDE_INTERLACECHECK:
-            {
-            xmlWriter.writeTextElement("value","EXCLUDE_INTERLACECHECK");
-            EXCLUDE_InterlaceWiseCheck=true;
-            }
-            break;
-            case QCResult::GRADIENT_EXCLUDE_GRADIENTCHECK:
-            {
-            xmlWriter.writeTextElement("value","EXCLUDE_GRADIENTCHECK");
-            EXCLUDE_GreadientWiseCheck=true;
-            }
-            break;
+            //case QCResult::GRADIENT_BASELINE_AVERAGED:
+              //xmlWriter.writeTextElement("value","BASELINE_AVERAGED");
+              //break;
+            //case QCResult::GRADIENT_EXCLUDE_SLICECHECK:
+            //{
+            //xmlWriter.writeTextElement("value","EXCLUDE_SLICECHECK");
+            //EXCLUDE_SliceWiseCheck=true;
+            //}
+            //break;
+            //case QCResult::GRADIENT_EXCLUDE_INTERLACECHECK:
+            //{
+            //xmlWriter.writeTextElement("value","EXCLUDE_INTERLACECHECK");
+            //EXCLUDE_InterlaceWiseCheck=true;
+            //}
+            //break;
+            //case QCResult::GRADIENT_EXCLUDE_GRADIENTCHECK:
+            //{
+            //xmlWriter.writeTextElement("value","EXCLUDE_GRADIENTCHECK");
+            //EXCLUDE_GreadientWiseCheck=true;
+            //}
+            //break;
             case QCResult::GRADIENT_EXCLUDE_MANUALLY:
               xmlWriter.writeTextElement("value","EXCLUDE");
               break;
-            case QCResult::GRADIENT_EDDY_MOTION_CORRECTED:
-              xmlWriter.writeTextElement("value","EDDY_MOTION_CORRECTED");
-              break;
+            //case QCResult::GRADIENT_EDDY_MOTION_CORRECTED:
+              //xmlWriter.writeTextElement("value","EDDY_MOTION_CORRECTED");
+              //break;
             case QCResult::GRADIENT_INCLUDE:
               xmlWriter.writeTextElement("value","INCLUDE");
               break;
@@ -801,10 +845,6 @@ int main ( int argc, char **argv )
           xmlWriter.writeEndElement();
           xmlWriter.writeEndElement();
 
-	  xmlWriter.writeStartElement("entry");
-          xmlWriter.writeAttribute( "parameter",  "QC_Index" );
-	  xmlWriter.writeTextElement("value", QString("%1").arg(qcResult.GetIntensityMotionCheckResult()[i].QCIndex));
-	  xmlWriter.writeEndElement();
 
           xmlWriter.writeEndElement();
           }

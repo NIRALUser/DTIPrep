@@ -342,6 +342,11 @@ public:
     return QCOutputDirectory;
   }
 
+  void SetQCOutputDirectory( std::string QCDirectory )
+  {
+	QCOutputDirectory = QCDirectory;
+  }
+
   std::string GetQCedDWIFileNameSuffix() const
   {
     return QCedDWIFileNameSuffix;

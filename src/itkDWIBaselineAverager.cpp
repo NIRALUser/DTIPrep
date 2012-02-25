@@ -69,7 +69,7 @@ namespace itk
       m_AverageMethod = DWIBaselineAverager::BaselineOptimized;
       m_StopCriteria = IntensityMeanSquareDiffBased;
       m_StopThreshold = 0.02;
-      m_MaxIteration = 15;
+      m_MaxIteration = 2;
       m_ReportFileMode = DWIBaselineAverager::REPORT_FILE_NEW;
       AverageDoneOff();
       }
@@ -464,10 +464,15 @@ namespace itk
                 std::cout << "WRONG NUMBER OF BASELINES FOUND: "  <<
                  this->getBaselineNumber() << " != " << FoundBaselines << std::endl;
                 exit(-1);
+		return;
                 }
                 }
               std::cout << "BaselineOptimized" << std::endl;
-              BaselineOptimizedAverage<UnsignedImageType>(baselineContainer,this->m_averagedBaseline,this->m_StopCriteria,this->m_StopThreshold,this->GetMaxIteration());
+	      if( BaselineOptimizedAverage<UnsignedImageType>(baselineContainer,this->m_averagedBaseline,this->m_StopCriteria,this->m_StopThreshold,this->GetMaxIteration()) == false )
+		{
+			std::cout << "Since BaselineOptimized is failed, DirectAverging is applied!" << std::endl;
+			this->DirectAverage();
+		}
               this->computeIDWI();
               }
             break;
@@ -533,8 +538,9 @@ namespace itk
         if( this->getBaselineNumber() != FoundBaselines )
           {
           std::cout << "ERROR:  Number of baselines found does not match previous estimates!" <<
-            this->getBaselineNumber() << " != " << FoundBaselines << std::endl;
+          this->getBaselineNumber() << " != " << FoundBaselines << std::endl;
           exit(-1);
+	  return;
           }
           {
           const float InvFoundBaselines=1.0/static_cast<float>(FoundBaselines);

@@ -13,6 +13,7 @@
 #include "itkMetaDataObject.h"
 #include "itkVectorIndexSelectionCastImageFilter.h"
 
+
 // #include "itkQtAdaptor.h"
 // #include "itkQtAdaptor.h"
 // #include "itkQtLightIndicator.h"
@@ -328,7 +329,6 @@ void IntensityMotionCheckPanel::on_pushButton_RunPipeline_clicked( )
 
   treeWidget_Results->clear();
   qcResult.Clear();
-  // std::cout <<
   // "ThreadIntensityMotionCheck->SetFileName(lineEdit_DWIFileName->text().toStdString());"<<std::endl;
   myIntensityThread.SetDwiFileName(DwiFileName); 
   myIntensityThread.SetXmlFileName(lineEdit_Protocol->text().toStdString());
@@ -439,11 +439,11 @@ void IntensityMotionCheckPanel::OpenXML_ResultFile()
   else 
     return;
 
-  if ( !(xmlResultFile.contains("_XMLQCResult.xml", Qt::CaseSensitive) ) )
-  {
-    std::cerr << "No QCed XML File Loaded." << std::endl;
-    return;
-  }
+  //if ( !(xmlResultFile.contains("_XMLQCResult.xml", Qt::CaseSensitive) ) )	// *  * Should be changed so that makes cerr if protocol xml file
+  //{
+    //std::cerr << "No QCed XML File Loaded." << std::endl;
+    //return;
+  //}
   treeWidget_Results->clear();
   qcResult.Clear();
 
@@ -453,11 +453,7 @@ void IntensityMotionCheckPanel::OpenXML_ResultFile()
   XmlReader.readFile_QCResult(xmlResultFile, XmlStreamReader::QCResultlWise);
 
   std::cout << " ***** " << std::endl;
-  std::cout << " this->GetQCResult().GetIntensityMotionCheckResult().size()" << this->GetQCResult().GetIntensityMotionCheckResult().size() << std::endl;
-  for ( unsigned int kkk = 0 ; kkk < this->GetQCResult().GetIntensityMotionCheckResult().size() ; kkk ++ )
-  {
-	//std::cout << "Mehdi ** Visual Check " << this->GetQCResult().GetIntensityMotionCheckResult()[kkk].VisualChecking << std::endl;
-  }
+  //std::cout << " this->GetQCResult().GetIntensityMotionCheckResult().size()" << this->GetQCResult().GetIntensityMotionCheckResult().size() << std::endl;
 
   // ..........................................................................................................................................
   // Check weather user wants to visualize the entire QCed result or only passed result
@@ -630,11 +626,11 @@ void IntensityMotionCheckPanel::OpenXML( )
     return;
   }
 
-   if ( (xmlFile.contains("_XMLQCResult.xml", Qt::CaseSensitive) ) )
-  {
-    std::cerr << "No Protocol File Loaded." << std::endl;
-    return;
-  }
+  //if ( (xmlFile.contains("_XMLQCResult.xml", Qt::CaseSensitive) ) )		// *  * Should be changed so that makes cerr if protocol xml file
+  //{
+    //std::cerr << "No Protocol File Loaded." << std::endl;
+    //return;
+  //}
 
   treeWidget->clear();
   protocol.clear();
@@ -1082,7 +1078,7 @@ void IntensityMotionCheckPanel::DefaultProtocol()
   this->GetProtocol().GetImageProtocol().reportFileNameSuffix = "_QCReport.txt";
   this->GetProtocol().GetImageProtocol().reportFileMode = 1;
 
-  this->GetProtocol().GetImageProtocol().bQuitOnCheckSpacingFailure = true;
+  this->GetProtocol().GetImageProtocol().bQuitOnCheckSpacingFailure = false;
   this->GetProtocol().GetImageProtocol().bQuitOnCheckSizeFailure = false;
 
   // ***** diffusion
@@ -1149,7 +1145,7 @@ void IntensityMotionCheckPanel::DefaultProtocol()
   this->GetProtocol().GetDiffusionProtocol().reportFileNameSuffix
     = "_QCReport.txt";
   this->GetProtocol().GetDiffusionProtocol().reportFileMode = 1;
-  this->GetProtocol().GetDiffusionProtocol().bQuitOnCheckFailure = true;
+  this->GetProtocol().GetDiffusionProtocol().bQuitOnCheckFailure = false;
 
   // ***** Denoising 
 
@@ -1199,7 +1195,7 @@ void IntensityMotionCheckPanel::DefaultProtocol()
     = "_QCReport.txt";
   this->GetProtocol().GetSliceCheckProtocol().reportFileMode = 1;
   this->GetProtocol().GetSliceCheckProtocol().excludedDWINrrdFileNameSuffix = "";
-  this->GetProtocol().GetSliceCheckProtocol().bQuitOnCheckFailure = true;
+  this->GetProtocol().GetSliceCheckProtocol().bQuitOnCheckFailure = false;
   // ***** interlace check
   double interlaceBaselineThreshold, interlaceGradientThreshold,
     interlaceBaselineDev, interlaceGradientDev;
@@ -1245,7 +1241,7 @@ void IntensityMotionCheckPanel::DefaultProtocol()
     = "_QCReport.txt";
   this->GetProtocol().GetInterlaceCheckProtocol().reportFileMode = 1;
   this->GetProtocol().GetInterlaceCheckProtocol().excludedDWINrrdFileNameSuffix = "";
-  this->GetProtocol().GetInterlaceCheckProtocol().bQuitOnCheckFailure = true;
+  this->GetProtocol().GetInterlaceCheckProtocol().bQuitOnCheckFailure = false;
 
   // ***** gradient check
   this->GetProtocol().GetGradientCheckProtocol().bCheck = true;
@@ -1269,7 +1265,7 @@ void IntensityMotionCheckPanel::DefaultProtocol()
     = "_QCReport.txt";
   this->GetProtocol().GetGradientCheckProtocol().reportFileMode = 1;
   this->GetProtocol().GetGradientCheckProtocol().excludedDWINrrdFileNameSuffix = "";
-  this->GetProtocol().GetGradientCheckProtocol().bQuitOnCheckFailure = true;
+  this->GetProtocol().GetGradientCheckProtocol().bQuitOnCheckFailure = false;
 
   // ***** baseline average
   this->GetProtocol().GetBaselineAverageProtocol().bAverage = true;
@@ -3630,9 +3626,28 @@ void IntensityMotionCheckPanel::SavingTreeWidgetResult_XmlFile_Default( )    // 
   //QString Result_xmlFile = QFileDialog::getSaveFileName( this, tr(
     //"Save Result As"), lineEdit_Result->text(),  tr("xml Files (*.xml)") );
   QString Result_xmlFile;
-  Result_xmlFile.append(DwiFileName.c_str());
-  Result_xmlFile.append(QString(tr("_XMLQCResult_Default.xml")));
+  
+  if ( protocol.GetQCOutputDirectory().length() > 0 )
+  {
+	QString Full_path = DwiFilePath;
+	QString Full_name = DwiFilePath.section('/',-1);
+	Full_path.remove(Full_name);
+	Full_path.append( "/" );
+	Full_path.append( QString ( protocol.GetQCOutputDirectory().c_str() ) );
+	if ( !QDir( Full_path ).exists() )
+		QDir().mkdir( Full_path );
+	Full_path.append ( Full_name.section('.',-2,0) );
+	Full_path.append(QString(tr("_XMLQCResult_Default.xml")));
+	Result_xmlFile = Full_path;
+  }
 
+  else
+  {
+	Result_xmlFile = DwiFilePath.section('.',-2,0);
+  	Result_xmlFile.remove("_QCed");
+  	Result_xmlFile.append(QString(tr("_XMLQCResult_Default.xml")));
+  }
+  
   
   if ( Result_xmlFile.length() > 0 )
   {
@@ -3643,15 +3658,37 @@ void IntensityMotionCheckPanel::SavingTreeWidgetResult_XmlFile_Default( )    // 
 
   }
 
+
 }
 
 void IntensityMotionCheckPanel::SavingTreeWidgetResult_XmlFile( )    // Saving the treeWidget_Results in the xml file format
 {
-  //QString Result_xmlFile = QFileDialog::getSaveFileName( this, tr(
-    //"Save Result As"), lineEdit_Result->text(),  tr("xml Files (*.xml)") );
-  QString Result_xmlFile = DwiFilePath.section('.',-2,0);
-  Result_xmlFile.remove("_QCed");
-  Result_xmlFile.append(QString(tr("_XMLQCResult.xml")));
+  
+  QString Result_xmlFile;
+  if ( protocol.GetQCOutputDirectory().length() > 0 )
+  {
+	QString Full_path = DwiFilePath;
+	QString Full_name = DwiFilePath.section('/',-1);
+	
+	Full_path.remove(Full_name);
+	Full_path.append( "/" );
+	Full_path.append( QString ( protocol.GetQCOutputDirectory().c_str() ) );
+	
+	if ( !QDir( Full_path ).exists() )
+		QDir().mkdir( Full_path );
+
+	Full_path.append ( Full_name.section('.',-2,0) );
+	Full_path.append(QString(tr("_XMLQCResult.xml")));
+	Result_xmlFile = Full_path;
+  }
+
+  else
+  {
+	Result_xmlFile = DwiFilePath.section('.',-2,0);
+  	Result_xmlFile.remove("_QCed");
+  	Result_xmlFile.append(QString(tr("_XMLQCResult.xml")));
+  }
+  
   
   if ( Result_xmlFile.length() > 0 )
   {

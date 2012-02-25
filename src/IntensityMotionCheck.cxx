@@ -3,6 +3,7 @@
 #include "itkMetaDataDictionary.h"
 #include "itkMetaDataObject.h"
 #include "itkVectorIndexSelectionCastImageFilter.h"
+#include <itksys/SystemTools.hxx>
 
 #include "IntraGradientRigidRegistration.h"
 #include "itkExtractImageFilter.h"
@@ -158,6 +159,27 @@ bool CIntensityMotionCheck::LoadDwiImage()
     result.VisualChecking = -1;
     result.QCIndex = -1;
 
+    InterlaceWiseCheckResult Interlace_result;
+    // -1 means no Interlace process has been done
+    Interlace_result.AngleX = -1;	
+    Interlace_result.AngleY = -1;	
+    Interlace_result.AngleZ = -1;
+    Interlace_result.TranslationX = -1;
+    Interlace_result.TranslationZ = -1;
+    Interlace_result.Metric = -1;
+    Interlace_result.Correlation = -1;
+    
+    GradientWiseCheckResult GradientWise_result;
+    // -1 means no GradientWise process has been done
+    GradientWise_result.AngleX = -1;
+    GradientWise_result.AngleY = -1;
+    GradientWise_result.AngleZ = -1;
+    GradientWise_result.TranslationX = -1;
+    GradientWise_result.TranslationY = -1;
+    GradientWise_result.TranslationZ = -1;
+    GradientWise_result.MutualInformation = -1;
+
+
     qcResult->Clear();
     for ( unsigned int j = 0; j < m_DwiOriginalImage->GetVectorLength(); j++ )
     {
@@ -174,10 +196,10 @@ bool CIntensityMotionCheck::LoadDwiImage()
       result.CorrectedDir[2] = this->m_GradientDirectionContainer->ElementAt(j)[2];
 
       qcResult->GetIntensityMotionCheckResult().push_back(result);
-      std::cout << "Visual Checking Testing " << qcResult->GetIntensityMotionCheckResult()[j].VisualChecking << std::endl;
+      qcResult->GetInterlaceWiseCheckResult().push_back(Interlace_result);
+      qcResult->GetGradientWiseCheckResult().push_back(GradientWise_result);
+ 
     }
-    // std::cout<<"initilize the result.OriginalDir[0] and result.CorrectedDir[0]
-    // "<<std::endl;
   }
   return true;
 }
@@ -521,39 +543,39 @@ unsigned char CIntensityMotionCheck::ImageCheck( DwiImageType::Pointer localDWII
   bool        bReport = false;
   std::string ImageCheckReportFileName;
 
+  std::string Full_path;	
+  std::string Dwi_file_name;	// Full name of dwi image
+  size_t found2 = m_DwiFileName.find_last_of(".");
+  Full_path = m_DwiFileName.substr( 0, found2);
+  Dwi_file_name = Full_path.substr(Full_path.find_last_of("/\\")+1);
+  
+
+  
   if ( protocol->GetImageProtocol().reportFileNameSuffix.length() > 0 )
   {
-    if ( protocol->GetQCOutputDirectory().length() > 0 )
+
+  if ( protocol->GetQCOutputDirectory().length() > 0 )
     {
-      if ( protocol->GetQCOutputDirectory().at( protocol->GetQCOutputDirectory()
-        .length() - 1 ) == '\\'
-        || protocol->GetQCOutputDirectory().at( protocol->
-        GetQCOutputDirectory().length() - 1 ) == '/'     )
-      {
-        ImageCheckReportFileName = protocol->GetQCOutputDirectory().substr(
-          0, protocol->GetQCOutputDirectory().find_last_of("/\\") );
-      }
-      else
-      {
-        ImageCheckReportFileName = protocol->GetQCOutputDirectory();
-      }
 
-      ImageCheckReportFileName.append( "/" );
+	size_t found;
+	found = m_DwiFileName.find_last_of("/\\");
+	std::string str;
+	str = m_DwiFileName.substr( 0 , found );	// str : path of QCed outputs
+	str.append( "/" );
+	str.append( protocol->GetQCOutputDirectory() );
+	if ( !itksys::SystemTools::FileIsDirectory( str.c_str() ) )
+		itksys::SystemTools::MakeDirectory( str.c_str() );
+	ImageCheckReportFileName = str;
+	ImageCheckReportFileName.append( Dwi_file_name );
+	ImageCheckReportFileName.append( protocol->GetImageProtocol().reportFileNameSuffix );
 
-      std::string str = m_DwiFileName.substr( 0, m_DwiFileName.find_last_of('.') );
-      str = str.substr( str.find_last_of("/\\") + 1);
-
-      ImageCheckReportFileName.append( str );
-      ImageCheckReportFileName.append(
-        protocol->GetImageProtocol().reportFileNameSuffix );
     }
     else
     {
-      ImageCheckReportFileName = m_DwiFileName.substr(
-        0, m_DwiFileName.find_last_of('.') );
-      ImageCheckReportFileName.append(
-        protocol->GetImageProtocol().reportFileNameSuffix );
+      ImageCheckReportFileName = m_DwiFileName.substr( 0, m_DwiFileName.find_last_of('.') );
+      ImageCheckReportFileName.append( protocol->GetImageProtocol().reportFileNameSuffix );
     }
+
   }
 
   //   std::cout << "m_DwiFileName: " << m_DwiFileName<<std::endl;
@@ -564,11 +586,11 @@ unsigned char CIntensityMotionCheck::ImageCheck( DwiImageType::Pointer localDWII
 
   if ( protocol->GetImageProtocol().reportFileMode == 1 )
   {
-    outfile.open( ImageCheckReportFileName.c_str(), std::ios_base::app);
+    outfile.open( ImageCheckReportFileName.c_str(), std::ios_base::app | std::ios_base::out);
   }
   else
   {
-    outfile.open( ImageCheckReportFileName.c_str() );
+    outfile.open( ImageCheckReportFileName.c_str());
   }
 
   if ( outfile )
@@ -844,41 +866,36 @@ void CIntensityMotionCheck::ForceCroppingOfImage(const bool bReport, const std::
     try
     {
       std::string CroppedFileName;
-      if ( protocol->GetImageProtocol().reportFileNameSuffix.length() > 0 )
+      std::string Full_path;	
+      std::string Dwi_file_name;	// Full name of dwi image
+      size_t found2 = m_DwiFileName.find_last_of(".");
+      Full_path = m_DwiFileName.substr( 0, found2);
+      Dwi_file_name = Full_path.substr(Full_path.find_last_of("/\\")+1);
+      
+
+      if ( protocol->GetQCOutputDirectory().length() > 0 )
       {
-        if ( protocol->GetQCOutputDirectory().length() > 0 )
-        {
-          if ( protocol->GetQCOutputDirectory().at( protocol->
-            GetQCOutputDirectory().length() - 1 ) == '\\'
-            || protocol->GetQCOutputDirectory().at( protocol->
-            GetQCOutputDirectory().length() - 1 ) == '/'     )
-          {
-            CroppedFileName = protocol->GetQCOutputDirectory().substr(
-              0, protocol->GetQCOutputDirectory().find_last_of("/\\") );
-          }
-          else
-          {
-            CroppedFileName = protocol->GetQCOutputDirectory();
-          }
 
-          CroppedFileName.append( "/" );
+	size_t found;
+	found = m_DwiFileName.find_last_of("/\\");
+	std::string str;
+	str = m_DwiFileName.substr( 0 , found );	// str : path of QCed outputs
+	str.append( "/" );
+	str.append( protocol->GetQCOutputDirectory() );
+	if ( !itksys::SystemTools::FileIsDirectory( str.c_str() ) )
+		itksys::SystemTools::MakeDirectory( str.c_str() );
+	CroppedFileName = str;
+	CroppedFileName.append( Dwi_file_name );
+	CroppedFileName.append( protocol->GetImageProtocol().croppedDWIFileNameSuffix );
 
-          std::string str
-            = m_DwiFileName.substr( 0, m_DwiFileName.find_last_of('.') );
-          str = str.substr( str.find_last_of("/\\") + 1);
+     }
+     else
+     {
+        CroppedFileName = m_DwiFileName.substr( 0, m_DwiFileName.find_last_of('.') );
+        CroppedFileName.append( protocol->GetImageProtocol().croppedDWIFileNameSuffix );
+     }
+      
 
-          CroppedFileName.append( str );
-          CroppedFileName.append(
-            protocol->GetImageProtocol().croppedDWIFileNameSuffix );
-        }
-        else
-        {
-          CroppedFileName
-            = m_DwiFileName.substr( 0, m_DwiFileName.find_last_of('.') );
-          CroppedFileName.append(
-            protocol->GetImageProtocol().croppedDWIFileNameSuffix );
-        }
-      }
 
       std::cout << "Saving cropped DWI: " << CroppedFileName << " ... ";
 
@@ -910,10 +927,44 @@ int CIntensityMotionCheck::Denoising( DwiImageType::Pointer dwi )
 
   std::string DenoiseInput;
   std::string DenoiseOutput;
-  DenoiseInput = m_DwiFileName.substr( 0, m_DwiFileName.find_last_of('.') );
-  DenoiseInput.append( "_DenoiseInput.nhdr");
-  DenoiseOutput = m_DwiFileName.substr( 0, m_DwiFileName.find_last_of('.') );
-  DenoiseOutput.append( "_DenoiseOutput.nhdr");
+
+  std::string Full_path;	
+  std::string Dwi_file_name;	// Full name of dwi image
+  size_t found2 = m_DwiFileName.find_last_of(".");
+  Full_path = m_DwiFileName.substr( 0, found2);
+  Dwi_file_name = Full_path.substr(Full_path.find_last_of("/\\")+1);
+  
+
+
+  if ( protocol->GetQCOutputDirectory().length() > 0 )
+    {
+
+	size_t found;
+	found = m_DwiFileName.find_last_of("/\\");
+	std::string str;
+	str = m_DwiFileName.substr( 0 , found );	// str : path of QCed outputs
+	str.append( "/" );
+	str.append( protocol->GetQCOutputDirectory() );
+	if ( !itksys::SystemTools::FileIsDirectory( str.c_str() ) )
+		itksys::SystemTools::MakeDirectory( str.c_str() );
+	DenoiseInput = str;
+	DenoiseInput.append( Dwi_file_name );
+	DenoiseInput.append( "_DenoiseInput.nrrd");
+
+	DenoiseOutput = str;
+	DenoiseOutput.append( Dwi_file_name );
+	DenoiseOutput.append( "_DenoiseOutput.nrrd");
+
+    }
+   else
+    {
+      DenoiseInput = m_DwiFileName.substr( 0, m_DwiFileName.find_last_of('.') );
+      DenoiseInput.append( "_DenoiseInput.nrrd"); 
+
+      DenoiseOutput= m_DwiFileName.substr( 0, m_DwiFileName.find_last_of('.') );
+      DenoiseOutput.append( "_DenoiseOutput.nrrd");
+    }
+
   try
   {
   DwiWriterType::Pointer DwiWriter_DenoisingInput = DwiWriterType::New();
@@ -1054,43 +1105,40 @@ bool CIntensityMotionCheck::SliceWiseCheck( DwiImageType::Pointer dwi )
   if ( protocol->GetSliceCheckProtocol().bCheck )
   {
     std::string ReportFileName;
+
+    std::string Full_path;	
+    std::string Dwi_file_name;	// Full name of dwi image
+    size_t found2 = m_DwiFileName.find_last_of(".");
+    Full_path = m_DwiFileName.substr( 0, found2);
+    Dwi_file_name = Full_path.substr(Full_path.find_last_of("/\\")+1);
+    
+
     if ( protocol->GetSliceCheckProtocol().reportFileNameSuffix.length() > 0 )
     {
+
       if ( protocol->GetQCOutputDirectory().length() > 0 )
       {
-        if ( protocol->GetQCOutputDirectory().at( protocol->
-          GetQCOutputDirectory().length() - 1 ) == '\\'
-          || protocol->GetQCOutputDirectory().at( protocol->
-          GetQCOutputDirectory().length() - 1 ) == '/'     )
-        {
-          ReportFileName = protocol->GetQCOutputDirectory().substr(
-            0, protocol->GetQCOutputDirectory().find_last_of("/\\") );
-        }
-        else
-        {
-          ReportFileName = protocol->GetQCOutputDirectory();
-        }
 
-        ReportFileName.append( "/" );
+	size_t found;
+	found = m_DwiFileName.find_last_of("/\\");
+	std::string str;
+	str = m_DwiFileName.substr( 0 , found );	// str : path of QCed outputs
+	str.append( "/" );
+	str.append( protocol->GetQCOutputDirectory() );
+	if ( !itksys::SystemTools::FileIsDirectory( str.c_str() ) )
+		itksys::SystemTools::MakeDirectory( str.c_str() );
+	ReportFileName = str;
+	ReportFileName.append( Dwi_file_name );
+	ReportFileName.append( protocol->GetSliceCheckProtocol().reportFileNameSuffix );
 
-        std::string str = m_DwiFileName.substr( 0, m_DwiFileName.find_last_of('.') );
-        str = str.substr( str.find_last_of("/\\") + 1);
-
-        ReportFileName.append( str );
-        ReportFileName.append(
-          protocol->GetSliceCheckProtocol().reportFileNameSuffix );
-      }
-      else
-      {
+     }
+     else
+     {
         ReportFileName = m_DwiFileName.substr( 0, m_DwiFileName.find_last_of('.') );
-        ReportFileName.append(
-          protocol->GetSliceCheckProtocol().reportFileNameSuffix );
-      }
+        ReportFileName.append( protocol->GetSliceCheckProtocol().reportFileNameSuffix );
+     }
 
-      //       ReportFileName=m_DwiFileName.substr(0,m_DwiFileName.find_last_of('.')
-      // );
-      //       ReportFileName.append(
-      // protocol->GetSliceCheckProtocol().reportFileNameSuffix );
+
     }
 
     SliceCheckerType::Pointer SliceChecker = SliceCheckerType::New();
@@ -1148,12 +1196,6 @@ bool CIntensityMotionCheck::SliceWiseCheck( DwiImageType::Pointer dwi )
     }*/
     std::vector<bool>	tem_vector = SliceChecker->getQCResults();
 
-    //std::cout << "SliceChecker_qcResult Size:" << SliceChecker->getQCResults().size() << std::endl;
-    //for ( int jj=0 ; jj< SliceChecker->getQCResults().size() ; jj++ )
-    //{
-    //std::cout << "SliceChecker_qcResult:" << SliceChecker->getQCResults()[jj] << std::endl;
-    //}
-
     unsigned int id = 0;
     while (  id < tem_vector.size()  )
     {
@@ -1168,7 +1210,6 @@ bool CIntensityMotionCheck::SliceWiseCheck( DwiImageType::Pointer dwi )
       id++;
     }
     //........
-
     SliceWiseCheckResult SliceWise;    //Updating qcresult for SliceWise cheking information
     for (unsigned int i=0; i < SliceChecker->GetSliceWiseCheckResult().size(); i++)
     {
@@ -1179,7 +1220,7 @@ bool CIntensityMotionCheck::SliceWiseCheck( DwiImageType::Pointer dwi )
     qcResult->GetSliceWiseCheckResult().push_back(SliceWise);
     
     }
-    
+
     // update the QCResults
     //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     //Wrong: This parts must be changed since the results of Interlace QC are not matched with this->qcResult --> Look at the New: June 2011
@@ -1221,36 +1262,31 @@ bool CIntensityMotionCheck::SliceWiseCheck( DwiImageType::Pointer dwi )
     if ( protocol->GetSliceCheckProtocol().outputDWIFileNameSuffix.length() > 0 )
     {
       std::string SliceWiseOutput;
+
+
       if ( protocol->GetQCOutputDirectory().length() > 0 )
       {
-        if ( protocol->GetQCOutputDirectory().at( protocol->
-          GetQCOutputDirectory().length() - 1 ) == '\\'
-          || protocol->GetQCOutputDirectory().at( protocol->
-          GetQCOutputDirectory().length() - 1 ) == '/'     )
-        {
-          SliceWiseOutput = protocol->GetQCOutputDirectory().substr(
-            0, protocol->GetQCOutputDirectory().find_last_of("/\\") );
-        }
-        else
-        {
-          SliceWiseOutput = protocol->GetQCOutputDirectory();
-        }
 
-        SliceWiseOutput.append( "/" );
+	size_t found;
+	found = m_DwiFileName.find_last_of("/\\");
+	std::string str;
+	str = m_DwiFileName.substr( 0 , found );	// str : path of QCed outputs
+	str.append( "/" );
+	str.append( protocol->GetQCOutputDirectory() );
+	if ( !itksys::SystemTools::FileIsDirectory( str.c_str() ) )
+		itksys::SystemTools::MakeDirectory( str.c_str() );
+	SliceWiseOutput = str;
+	SliceWiseOutput.append( Dwi_file_name );
+	SliceWiseOutput.append( protocol->GetSliceCheckProtocol().outputDWIFileNameSuffix );
 
-        std::string str = m_DwiFileName.substr( 0, m_DwiFileName.find_last_of('.') );
-        str = str.substr( str.find_last_of("/\\") + 1);
-
-        SliceWiseOutput.append( str );
-        SliceWiseOutput.append(
-          protocol->GetSliceCheckProtocol().outputDWIFileNameSuffix );
       }
       else
       {
         SliceWiseOutput = m_DwiFileName.substr( 0, m_DwiFileName.find_last_of('.') );
-        SliceWiseOutput.append(
-          protocol->GetSliceCheckProtocol().outputDWIFileNameSuffix );
+        SliceWiseOutput.append( protocol->GetSliceCheckProtocol().outputDWIFileNameSuffix );
       }
+
+
 
       try
       {
@@ -1281,36 +1317,29 @@ bool CIntensityMotionCheck::SliceWiseCheck( DwiImageType::Pointer dwi )
       if ( protocol->GetSliceCheckProtocol().excludedDWINrrdFileNameSuffix.length() > 0 )
       {
         std::string SliceWiseExcludeOutput;
+
         if ( protocol->GetQCOutputDirectory().length() > 0 )
         {
-          if ( protocol->GetQCOutputDirectory().at( protocol->
-            GetQCOutputDirectory().length() - 1 ) == '\\'
-            || protocol->GetQCOutputDirectory().at( protocol->
-            GetQCOutputDirectory().length() - 1 ) == '/'     )
-          {
-            SliceWiseExcludeOutput = protocol->GetQCOutputDirectory().substr(
-              0, protocol->GetQCOutputDirectory().find_last_of("/\\") );
-          }
-          else
-          {
-            SliceWiseExcludeOutput = protocol->GetQCOutputDirectory();
-          }
 
-          SliceWiseExcludeOutput.append( "/" );
+		size_t found;
+		found = m_DwiFileName.find_last_of("/\\");
+		std::string str;
+		str = m_DwiFileName.substr( 0 , found );	// str : path of QCed outputs
+		str.append( "/" );
+		str.append( protocol->GetQCOutputDirectory() );
+		if ( !itksys::SystemTools::FileIsDirectory( str.c_str() ) )
+			itksys::SystemTools::MakeDirectory( str.c_str() );
+		SliceWiseExcludeOutput = str;
+		SliceWiseExcludeOutput.append( Dwi_file_name );
+		SliceWiseExcludeOutput.append( protocol->GetSliceCheckProtocol().excludedDWINrrdFileNameSuffix );
 
-          std::string str = m_DwiFileName.substr( 0, m_DwiFileName.find_last_of('.') );
-          str = str.substr( str.find_last_of("/\\") + 1);
+       }
+       else
+       {
+		SliceWiseExcludeOutput = m_DwiFileName.substr( 0, m_DwiFileName.find_last_of('.') );
+		SliceWiseExcludeOutput.append( protocol->GetSliceCheckProtocol().excludedDWINrrdFileNameSuffix );
+       }
 
-          SliceWiseExcludeOutput.append( str );
-          SliceWiseExcludeOutput.append(
-            protocol->GetSliceCheckProtocol().excludedDWINrrdFileNameSuffix );
-        }
-        else
-        {
-          SliceWiseExcludeOutput = m_DwiFileName.substr( 0, m_DwiFileName.find_last_of('.') );
-          SliceWiseExcludeOutput.append(
-            protocol->GetSliceCheckProtocol().excludedDWINrrdFileNameSuffix );
-        }
 
         try
         {
@@ -1378,44 +1407,41 @@ bool CIntensityMotionCheck::InterlaceWiseCheck( DwiImageType::Pointer dwi )
   if ( protocol->GetInterlaceCheckProtocol().bCheck )
   {
     std::string ReportFileName;
+
+    std::string Full_path;	
+    std::string Dwi_file_name;	// Full name of dwi image
+    size_t found2 = m_DwiFileName.find_last_of(".");
+    Full_path = m_DwiFileName.substr( 0, found2);
+    Dwi_file_name = Full_path.substr(Full_path.find_last_of("/\\")+1);
+    
+
+
     if ( protocol->GetInterlaceCheckProtocol().reportFileNameSuffix.length() >
       0 )
     {
-      if ( protocol->GetQCOutputDirectory().length() > 0 )
-      {
-        if ( protocol->GetQCOutputDirectory().at( protocol->
-          GetQCOutputDirectory().length() - 1 ) == '\\'
-          || protocol->GetQCOutputDirectory().at( protocol->
-          GetQCOutputDirectory().length() - 1 ) == '/'     )
+
+	if ( protocol->GetQCOutputDirectory().length() > 0 )
         {
-          ReportFileName = protocol->GetQCOutputDirectory().substr(
-            0, protocol->GetQCOutputDirectory().find_last_of("/\\") );
+
+		size_t found;
+		found = m_DwiFileName.find_last_of("/\\");
+		std::string str;
+		str = m_DwiFileName.substr( 0 , found );	// str : path of QCed outputs
+		str.append( "/" );
+		str.append( protocol->GetQCOutputDirectory() );
+		if ( !itksys::SystemTools::FileIsDirectory( str.c_str() ) )
+			itksys::SystemTools::MakeDirectory( str.c_str() );
+		ReportFileName = str;
+		ReportFileName.append( Dwi_file_name );
+		ReportFileName.append( protocol->GetInterlaceCheckProtocol().reportFileNameSuffix );
+
         }
         else
         {
-          ReportFileName = protocol->GetQCOutputDirectory();
+		ReportFileName = m_DwiFileName.substr( 0, m_DwiFileName.find_last_of('.') );
+		ReportFileName.append( protocol->GetInterlaceCheckProtocol().reportFileNameSuffix );
         }
 
-        ReportFileName.append( "/" );
-
-        std::string str = m_DwiFileName.substr( 0, m_DwiFileName.find_last_of('.') );
-        str = str.substr( str.find_last_of("/\\") + 1);
-
-        ReportFileName.append( str );
-        ReportFileName.append(
-          protocol->GetInterlaceCheckProtocol().reportFileNameSuffix );
-      }
-      else
-      {
-        ReportFileName = m_DwiFileName.substr( 0, m_DwiFileName.find_last_of('.') );
-        ReportFileName.append(
-          protocol->GetInterlaceCheckProtocol().reportFileNameSuffix );
-      }
-
-      //       ReportFileName=m_DwiFileName.substr(0,m_DwiFileName.find_last_of('.')
-      // );
-      //       ReportFileName.append(
-      // protocol->GetInterlaceCheckProtocol().reportFileNameSuffix );
     }
 
     InterlaceCheckerType::Pointer InterlaceChecker = InterlaceCheckerType::New();
@@ -1451,13 +1477,34 @@ bool CIntensityMotionCheck::InterlaceWiseCheck( DwiImageType::Pointer dwi )
 
     // .......Mapping between input gradeints and DWIForcedComformance gradeints
     // New : 16 Jun 2011
+
+    //........
+
+    ////Updating qcresult for Interlace cheking information
+    
+    for (unsigned int i=0; i < InterlaceChecker->GetResultsContainer().size(); i++)
+    {
+    std::cout << "(m_Original_ForcedConformance_Mapping[i].index_original)[0] " << (m_Original_ForcedConformance_Mapping[i].index_original)[0] << " " << qcResult->GetInterlaceWiseCheckResult()[(m_Original_ForcedConformance_Mapping[i].index_original)[0]].AngleX << std::endl;
+    qcResult->GetInterlaceWiseCheckResult()[(m_Original_ForcedConformance_Mapping[i].index_original)[0]].AngleX = InterlaceChecker->GetResultsContainer()[i].AngleX;
+    qcResult->GetInterlaceWiseCheckResult()[(m_Original_ForcedConformance_Mapping[i].index_original)[0]].AngleY = InterlaceChecker->GetResultsContainer()[i].AngleY;
+    qcResult->GetInterlaceWiseCheckResult()[(m_Original_ForcedConformance_Mapping[i].index_original)[0]].AngleZ = InterlaceChecker->GetResultsContainer()[i].AngleZ;
+    qcResult->GetInterlaceWiseCheckResult()[(m_Original_ForcedConformance_Mapping[i].index_original)[0]].TranslationX = InterlaceChecker->GetResultsContainer()[i].TranslationX;
+    qcResult->GetInterlaceWiseCheckResult()[(m_Original_ForcedConformance_Mapping[i].index_original)[0]].TranslationY = InterlaceChecker->GetResultsContainer()[i].TranslationY;
+    qcResult->GetInterlaceWiseCheckResult()[(m_Original_ForcedConformance_Mapping[i].index_original)[0]].TranslationZ = InterlaceChecker->GetResultsContainer()[i].TranslationZ;
+    qcResult->GetInterlaceWiseCheckResult()[(m_Original_ForcedConformance_Mapping[i].index_original)[0]].Metric = InterlaceChecker->GetResultsContainer()[i].Metric;
+    qcResult->GetInterlaceWiseCheckResult()[(m_Original_ForcedConformance_Mapping[i].index_original)[0]].Correlation = InterlaceChecker->GetResultsContainer()[i].Correlation;
+
+    
+    }
+    std::cout << "qcResult->GetInterlaceWiseCheckResult() After" << qcResult->GetInterlaceWiseCheckResult().size() << std::endl;
+    
     std::vector<bool>	tem_vector = InterlaceChecker->getQCResults();
 
-    //std::cout << "InterlaceWise_qcResult Size:" << InterlaceChecker->getQCResults().size() << std::endl;
-    //for ( int jj=0 ; jj< InterlaceChecker->getQCResults().size() ; jj++ )
-    //{
-    //std::cout << "InterlaceWise_qcResult:" << InterlaceChecker->getQCResults()[jj] << std::endl;
-    //}
+    std::cout << "InterlaceWise_qcResult Size:" << InterlaceChecker->getQCResults().size() << std::endl;
+    for ( int jj=0 ; jj< InterlaceChecker->getQCResults().size() ; jj++ )
+    {
+    std::cout << "InterlaceWise_qcResult:" << InterlaceChecker->getQCResults()[jj] << std::endl;
+    }
 
     unsigned int id = 0;
     while ( id < tem_vector.size() )
@@ -1473,26 +1520,7 @@ bool CIntensityMotionCheck::InterlaceWiseCheck( DwiImageType::Pointer dwi )
       }
       id ++;
     }
-    //........
-
-    InterlaceWiseCheckResult InterlaceResult;	////Updating qcresult for Interlace cheking information
-
-
-    for (unsigned int i=0; i < InterlaceChecker->GetResultsContainer().size(); i++)
-    {
-    InterlaceResult.AngleX=InterlaceChecker->GetResultsContainer()[i].AngleX;
-    InterlaceResult.AngleY=InterlaceChecker->GetResultsContainer()[i].AngleY;
-    InterlaceResult.AngleZ=InterlaceChecker->GetResultsContainer()[i].AngleZ;
-    InterlaceResult.TranslationX=InterlaceChecker->GetResultsContainer()[i].TranslationX;
-    InterlaceResult.TranslationY=InterlaceChecker->GetResultsContainer()[i].TranslationY;
-    InterlaceResult.TranslationZ=InterlaceChecker->GetResultsContainer()[i].TranslationZ;
-    InterlaceResult.Metric=InterlaceChecker->GetResultsContainer()[i].Metric;
-    InterlaceResult.Correlation=InterlaceChecker->GetResultsContainer()[i].Correlation;
-
-    qcResult->GetInterlaceWiseCheckResult().push_back(InterlaceResult);
     
-    }
-
     // update the QCResults
     //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%/
     //Wrong: This parts must be changed since the results of Interlace QC are not matched with this->qcResult look at New jun 2011
@@ -1551,36 +1579,30 @@ bool CIntensityMotionCheck::InterlaceWiseCheck( DwiImageType::Pointer dwi )
       // );
       //       outputDWIFileName.append(
       // protocol->GetInterlaceCheckProtocol().outputDWIFileNameSuffix );
+      
       if ( protocol->GetQCOutputDirectory().length() > 0 )
       {
-        if ( protocol->GetQCOutputDirectory().at( protocol->
-          GetQCOutputDirectory().length() - 1 ) == '\\'
-          || protocol->GetQCOutputDirectory().at( protocol->
-          GetQCOutputDirectory().length() - 1 ) == '/'     )
-        {
-          outputDWIFileName = protocol->GetQCOutputDirectory().substr(
-            0, protocol->GetQCOutputDirectory().find_last_of("/\\") );
-        }
-        else
-        {
-          outputDWIFileName = protocol->GetQCOutputDirectory();
-        }
 
-        outputDWIFileName.append( "/" );
+	size_t found;
+	found = m_DwiFileName.find_last_of("/\\");
+	std::string str;
+	str = m_DwiFileName.substr( 0 , found );	// str : path of QCed outputs
+	str.append( "/" );
+	str.append( protocol->GetQCOutputDirectory() );
+	if ( !itksys::SystemTools::FileIsDirectory( str.c_str() ) )
+		itksys::SystemTools::MakeDirectory( str.c_str() );
+	outputDWIFileName = str;
+	outputDWIFileName.append( Dwi_file_name );
+	outputDWIFileName.append( protocol->GetInterlaceCheckProtocol().outputDWIFileNameSuffix );
 
-        std::string str = m_DwiFileName.substr( 0, m_DwiFileName.find_last_of('.') );
-        str = str.substr( str.find_last_of("/\\") + 1);
-
-        outputDWIFileName.append( str );
-        outputDWIFileName.append(
-          protocol->GetInterlaceCheckProtocol().outputDWIFileNameSuffix );
       }
       else
       {
-        outputDWIFileName = m_DwiFileName.substr( 0, m_DwiFileName.find_last_of('.') );
-        outputDWIFileName.append(
-          protocol->GetInterlaceCheckProtocol().outputDWIFileNameSuffix );
+	outputDWIFileName = m_DwiFileName.substr( 0, m_DwiFileName.find_last_of('.') );
+	outputDWIFileName.append( protocol->GetInterlaceCheckProtocol().outputDWIFileNameSuffix );
       }
+
+
       try
       {
         std::cout << "Saving output of interlace check: "
@@ -1611,36 +1633,29 @@ bool CIntensityMotionCheck::InterlaceWiseCheck( DwiImageType::Pointer dwi )
       if ( protocol->GetInterlaceCheckProtocol().excludedDWINrrdFileNameSuffix.length() > 0 )
       {
         std::string InterlaceWiseExcludeOutput;
-        if ( protocol->GetQCOutputDirectory().length() > 0 )
-        {
-          if ( protocol->GetQCOutputDirectory().at( protocol->
-            GetQCOutputDirectory().length() - 1 ) == '\\'
-            || protocol->GetQCOutputDirectory().at( protocol->
-            GetQCOutputDirectory().length() - 1 ) == '/'     )
-          {
-            InterlaceWiseExcludeOutput = protocol->GetQCOutputDirectory().substr(
-              0, protocol->GetQCOutputDirectory().find_last_of("/\\") );
-          }
-          else
-          {
-            InterlaceWiseExcludeOutput = protocol->GetQCOutputDirectory();
-          }
 
-          InterlaceWiseExcludeOutput.append( "/" );
+	if ( protocol->GetQCOutputDirectory().length() > 0 )
+    	{
 
-          std::string str = m_DwiFileName.substr( 0, m_DwiFileName.find_last_of('.') );
-          str = str.substr( str.find_last_of("/\\") + 1);
+		size_t found;
+		found = m_DwiFileName.find_last_of("/\\");
+		std::string str;
+		str = m_DwiFileName.substr( 0 , found );	// str : path of QCed outputs
+		str.append( "/" );
+		str.append( protocol->GetQCOutputDirectory() );
+		if ( !itksys::SystemTools::FileIsDirectory( str.c_str() ) )
+			itksys::SystemTools::MakeDirectory( str.c_str() );
+		InterlaceWiseExcludeOutput = str;
+		InterlaceWiseExcludeOutput.append( Dwi_file_name );
+		InterlaceWiseExcludeOutput.append( protocol->GetInterlaceCheckProtocol().excludedDWINrrdFileNameSuffix );
 
-          InterlaceWiseExcludeOutput.append( str );
-          InterlaceWiseExcludeOutput.append(
-            protocol->GetInterlaceCheckProtocol().excludedDWINrrdFileNameSuffix );
-        }
-        else
-        {
-          InterlaceWiseExcludeOutput = m_DwiFileName.substr( 0, m_DwiFileName.find_last_of('.') );
-          InterlaceWiseExcludeOutput.append(
-            protocol->GetInterlaceCheckProtocol().excludedDWINrrdFileNameSuffix );
-        }
+    	}
+    	else
+    	{
+		InterlaceWiseExcludeOutput = m_DwiFileName.substr( 0, m_DwiFileName.find_last_of('.') );
+		InterlaceWiseExcludeOutput.append( protocol->GetInterlaceCheckProtocol().excludedDWINrrdFileNameSuffix );
+	}
+
 
         try
         {
@@ -1707,43 +1722,41 @@ bool CIntensityMotionCheck::BaselineAverage( DwiImageType::Pointer dwi )
   if ( protocol->GetBaselineAverageProtocol().bAverage )
   {
     std::string ReportFileName;
+
+    std::string Full_path;	
+    std::string Dwi_file_name;	// Full name of dwi image
+    size_t found2 = m_DwiFileName.find_last_of(".");
+    Full_path = m_DwiFileName.substr( 0, found2);
+    Dwi_file_name = Full_path.substr(Full_path.find_last_of("/\\")+1);
+    
+
     if ( protocol->GetBaselineAverageProtocol().reportFileNameSuffix.length() >
       0 )
     {
-      //       ReportFileName=m_DwiFileName.substr(0,m_DwiFileName.find_last_of('.')
-      // );
-      //       ReportFileName.append(
-      // protocol->GetBaselineAverageProtocol().reportFileNameSuffix );
-      if ( protocol->GetQCOutputDirectory().length() > 0 )
-      {
-        if ( protocol->GetQCOutputDirectory().at( protocol->
-          GetQCOutputDirectory().length() - 1 ) == '\\'
-          || protocol->GetQCOutputDirectory().at( protocol->
-          GetQCOutputDirectory().length() - 1 ) == '/'     )
-        {
-          ReportFileName = protocol->GetQCOutputDirectory().substr(
-            0, protocol->GetQCOutputDirectory().find_last_of("/\\") );
-        }
-        else
-        {
-          ReportFileName = protocol->GetQCOutputDirectory();
-        }
+      
 
-        ReportFileName.append( "/" );
+	if ( protocol->GetQCOutputDirectory().length() > 0 )
+    	{
 
-        std::string str = m_DwiFileName.substr( 0, m_DwiFileName.find_last_of('.') );
-        str = str.substr( str.find_last_of("/\\") + 1);
+		size_t found;
+		found = m_DwiFileName.find_last_of("/\\");
+		std::string str;
+		str = m_DwiFileName.substr( 0 , found );	// str : path of QCed outputs
+		str.append( "/" );
+		str.append( protocol->GetQCOutputDirectory() );
+		if ( !itksys::SystemTools::FileIsDirectory( str.c_str() ) )
+			itksys::SystemTools::MakeDirectory( str.c_str() );
+		ReportFileName = str;
+		ReportFileName.append( Dwi_file_name );
+		ReportFileName.append( protocol->GetBaselineAverageProtocol().reportFileNameSuffix );
 
-        ReportFileName.append( str );
-        ReportFileName.append(
-          protocol->GetBaselineAverageProtocol().reportFileNameSuffix );
-      }
-      else
-      {
-        ReportFileName = m_DwiFileName.substr( 0, m_DwiFileName.find_last_of('.') );
-        ReportFileName.append(
-          protocol->GetBaselineAverageProtocol().reportFileNameSuffix );
-      }
+    	}
+   	else
+    	{
+		ReportFileName = m_DwiFileName.substr( 0, m_DwiFileName.find_last_of('.') );
+		ReportFileName.append( protocol->GetBaselineAverageProtocol().reportFileNameSuffix );
+    	}
+
     }
 
     BaselineAveragerType::Pointer BaselineAverager = BaselineAveragerType::New();
@@ -1755,7 +1768,7 @@ bool CIntensityMotionCheck::BaselineAverage( DwiImageType::Pointer dwi )
       protocol->GetBaselineAverageProtocol().averageMethod );
     BaselineAverager->SetStopThreshold(
       protocol->GetBaselineAverageProtocol().stopThreshold );
-    BaselineAverager->SetMaxIteration( 15 );
+    BaselineAverager->SetMaxIteration( 2 );
     BaselineAverager->SetReportType(protocol->GetReportType() );
 
     try
@@ -1835,37 +1848,30 @@ bool CIntensityMotionCheck::BaselineAverage( DwiImageType::Pointer dwi )
       // );
       //       outputDWIFileName.append(
       // protocol->GetBaselineAverageProtocol().outputDWIFileNameSuffix );
-      if ( protocol->GetQCOutputDirectory().length() > 0 )
-      {
-        if ( protocol->GetQCOutputDirectory().at( protocol->
-          GetQCOutputDirectory().length() - 1 ) == '\\'
-          || protocol->GetQCOutputDirectory().at( protocol->
-          GetQCOutputDirectory().length() - 1 ) == '/'     )
-        {
-          outputDWIFileName = protocol->GetQCOutputDirectory().substr(
-            0, protocol->GetQCOutputDirectory().find_last_of("/\\") );
-        }
-        else
-        {
-          outputDWIFileName = protocol->GetQCOutputDirectory();
-        }
 
-        outputDWIFileName.append( "/" );
+     if ( protocol->GetQCOutputDirectory().length() > 0 )
+    {
 
-        std::string str = m_DwiFileName.substr( 0, m_DwiFileName.find_last_of('.') );
-        str = str.substr( str.find_last_of("/\\") + 1);
+		size_t found;
+		found = m_DwiFileName.find_last_of("/\\");
+		std::string str;
+		str = m_DwiFileName.substr( 0 , found );	// str : path of QCed outputs
+		str.append( "/" );
+		str.append( protocol->GetQCOutputDirectory() );
+		if ( !itksys::SystemTools::FileIsDirectory( str.c_str() ) )
+			itksys::SystemTools::MakeDirectory( str.c_str() );
+		outputDWIFileName = str;
+		outputDWIFileName.append( Dwi_file_name );
+		outputDWIFileName.append( protocol->GetBaselineAverageProtocol().outputDWIFileNameSuffix );
 
-        outputDWIFileName.append( str );
-        outputDWIFileName.append(
-          protocol->GetBaselineAverageProtocol().outputDWIFileNameSuffix );
-      }
-      else
-      {
-        outputDWIFileName = m_DwiFileName.substr( 0, m_DwiFileName.find_last_of('.') );
-        outputDWIFileName.append(
-          protocol->GetBaselineAverageProtocol().outputDWIFileNameSuffix );
-      }
+     }
+     else
+     {
+		outputDWIFileName = m_DwiFileName.substr( 0, m_DwiFileName.find_last_of('.') );
+		outputDWIFileName.append( protocol->GetBaselineAverageProtocol().outputDWIFileNameSuffix );
+     }
 
+	
       try
       {
         std::cout << "Saving output of baseline average: "
@@ -1902,6 +1908,14 @@ bool CIntensityMotionCheck::EddyMotionCorrectIowa( DwiImageType::Pointer dwi )
       << std::endl;
 
     std::string ReportFileName;
+
+    std::string Full_path;	
+    std::string Dwi_file_name;	// Full name of dwi image
+    size_t found2 = m_DwiFileName.find_last_of(".");
+    Full_path = m_DwiFileName.substr( 0, found2);
+    Dwi_file_name = Full_path.substr(Full_path.find_last_of("/\\")+1);
+    
+
     if ( protocol->GetEddyMotionCorrectionProtocol().reportFileNameSuffix.
       length() > 0 )
     {
@@ -1909,36 +1923,28 @@ bool CIntensityMotionCheck::EddyMotionCorrectIowa( DwiImageType::Pointer dwi )
       // );
       //       ReportFileName.append(
       // protocol->GetEddyMotionCorrectionProtocol().reportFileNameSuffix );
-      if ( protocol->GetQCOutputDirectory().length() > 0 )
-      {
-        if ( protocol->GetQCOutputDirectory().at( protocol->
-          GetQCOutputDirectory().length() - 1 ) == '\\'
-          || protocol->GetQCOutputDirectory().at( protocol->
-          GetQCOutputDirectory().length() - 1 ) == '/'     )
-        {
-          ReportFileName = protocol->GetQCOutputDirectory().substr(
-            0, protocol->GetQCOutputDirectory().find_last_of("/\\") );
-        }
-        else
-        {
-          ReportFileName = protocol->GetQCOutputDirectory();
-        }
 
-        ReportFileName.append( "/" );
+	if ( protocol->GetQCOutputDirectory().length() > 0 )
+    	{
 
-        std::string str = m_DwiFileName.substr( 0, m_DwiFileName.find_last_of('.') );
-        str = str.substr( str.find_last_of("/\\") + 1);
+		size_t found;
+		found = m_DwiFileName.find_last_of("/\\");
+		std::string str;
+		str = m_DwiFileName.substr( 0 , found );	// str : path of QCed outputs
+		str.append( "/" );
+		str.append( protocol->GetQCOutputDirectory() );
+		if ( !itksys::SystemTools::FileIsDirectory( str.c_str() ) )
+			itksys::SystemTools::MakeDirectory( str.c_str() );
+		ReportFileName = str;
+		ReportFileName.append( Dwi_file_name );
+		ReportFileName.append( protocol->GetEddyMotionCorrectionProtocol().reportFileNameSuffix );
 
-        ReportFileName.append( str );
-        ReportFileName.append(
-          protocol->GetEddyMotionCorrectionProtocol().reportFileNameSuffix );
-      }
-      else
-      {
-        ReportFileName = m_DwiFileName.substr( 0, m_DwiFileName.find_last_of('.') );
-        ReportFileName.append(
-          protocol->GetEddyMotionCorrectionProtocol().reportFileNameSuffix );
-      }
+    	}
+    	else
+    	{
+		ReportFileName = m_DwiFileName.substr( 0, m_DwiFileName.find_last_of('.') );
+		ReportFileName.append( protocol->GetEddyMotionCorrectionProtocol().reportFileNameSuffix );
+    	}
     }
 
     //    std::cout<<"ReportFileName: "<< ReportFileName <<std::endl;
@@ -2232,44 +2238,40 @@ bool CIntensityMotionCheck::EddyMotionCorrectIowa( DwiImageType::Pointer dwi )
     }
 
 
-    if ( protocol->GetGradientCheckProtocol().outputDWIFileNameSuffix.length()
+    if ( protocol->GetEddyMotionCorrectionProtocol().outputDWIFileNameSuffix.length()
     > 0 )
     {
       std::string outputDWIFileName;
-      //    outputDWIFileName=m_DwiFileName.substr(0,m_DwiFileName.find_last_of('.')
-      // );
-      //       outputDWIFileName.append(
-      // protocol->GetEddyMotionCorrectionProtocol().outputDWIFileNameSuffix );
-      if ( protocol->GetQCOutputDirectory().length() > 0 )
-      {
-        if ( protocol->GetQCOutputDirectory().at( protocol->
-          GetQCOutputDirectory().length() - 1 ) == '\\'
-          || protocol->GetQCOutputDirectory().at( protocol->
-          GetQCOutputDirectory().length() - 1 ) == '/'     )
-        {
-          outputDWIFileName = protocol->GetQCOutputDirectory().substr(
-            0, protocol->GetQCOutputDirectory().find_last_of("/\\") );
-        }
-        else
-        {
-          outputDWIFileName = protocol->GetQCOutputDirectory();
-        }
+	
+      std::string Full_path;	
+      std::string Dwi_file_name;	// Full name of dwi image
+      size_t found2 = m_DwiFileName.find_last_of(".");
+      Full_path = m_DwiFileName.substr( 0, found2);
+      Dwi_file_name = Full_path.substr(Full_path.find_last_of("/\\")+1);
+      
+      
+	
+     if ( protocol->GetQCOutputDirectory().length() > 0 )
+     {
 
-        outputDWIFileName.append( "/" );
+	size_t found;
+	found = m_DwiFileName.find_last_of("/\\");
+	std::string str;
+	str = m_DwiFileName.substr( 0 , found );	// str : path of QCed outputs
+	str.append( "/" );
+	str.append( protocol->GetQCOutputDirectory() );
+	if ( !itksys::SystemTools::FileIsDirectory( str.c_str() ) )
+		itksys::SystemTools::MakeDirectory( str.c_str() );
+	outputDWIFileName = str;
+	outputDWIFileName.append( Dwi_file_name );
+	outputDWIFileName.append( protocol->GetEddyMotionCorrectionProtocol().outputDWIFileNameSuffix );
 
-        std::string str = m_DwiFileName.substr( 0, m_DwiFileName.find_last_of('.') );
-        str = str.substr( str.find_last_of("/\\") + 1);
-
-        outputDWIFileName.append( str );
-        outputDWIFileName.append(
-          protocol->GetEddyMotionCorrectionProtocol().outputDWIFileNameSuffix );
-      }
-      else
-      {
-        outputDWIFileName = m_DwiFileName.substr( 0, m_DwiFileName.find_last_of('.') );
-        outputDWIFileName.append(
-          protocol->GetEddyMotionCorrectionProtocol().outputDWIFileNameSuffix );
-      }
+     }
+     else
+     {
+      outputDWIFileName = m_DwiFileName.substr( 0, m_DwiFileName.find_last_of('.') );
+      outputDWIFileName.append( protocol->GetEddyMotionCorrectionProtocol().outputDWIFileNameSuffix );
+     }
 
       try
       {
@@ -2303,39 +2305,40 @@ bool CIntensityMotionCheck::EddyMotionCorrect( DwiImageType::Pointer dwi )
   if ( protocol->GetEddyMotionCorrectionProtocol().bCorrect )
   {
     std::string ReportFileName;
+
+    std::string Full_path;	
+    std::string Dwi_file_name;	// Full name of dwi image
+    size_t found2 = m_DwiFileName.find_last_of(".");
+    Full_path = m_DwiFileName.substr( 0, found2);
+    Dwi_file_name = Full_path.substr(Full_path.find_last_of("/\\")+1);
+    
+
     if ( protocol->GetEddyMotionCorrectionProtocol().reportFileNameSuffix.
       length() > 0 )
     {
-      if ( protocol->GetQCOutputDirectory().length() > 0 )
-      {
-        if ( protocol->GetQCOutputDirectory().at( protocol->
-          GetQCOutputDirectory().length() - 1 ) == '\\'
-          || protocol->GetQCOutputDirectory().at( protocol->
-          GetQCOutputDirectory().length() - 1 ) == '/'     )
-        {
-          ReportFileName = protocol->GetQCOutputDirectory().substr(
-            0, protocol->GetQCOutputDirectory().find_last_of("/\\") );
-        }
-        else
-        {
-          ReportFileName = protocol->GetQCOutputDirectory();
-        }
 
-        ReportFileName.append( "/" );
+    if ( protocol->GetQCOutputDirectory().length() > 0 )
+    {
 
-        std::string str = m_DwiFileName.substr( 0, m_DwiFileName.find_last_of('.') );
-        str = str.substr( str.find_last_of("/\\") + 1);
+	size_t found;
+	found = m_DwiFileName.find_last_of("/\\");
+	std::string str;
+	str = m_DwiFileName.substr( 0 , found );	// str : path of QCed outputs
+	str.append( "/" );
+	str.append( protocol->GetQCOutputDirectory() );
+	if ( !itksys::SystemTools::FileIsDirectory( str.c_str() ) )
+		itksys::SystemTools::MakeDirectory( str.c_str() );
+	ReportFileName = str;
+	ReportFileName.append( Dwi_file_name );
+	ReportFileName.append( protocol->GetEddyMotionCorrectionProtocol().reportFileNameSuffix );
 
-        ReportFileName.append( str );
-        ReportFileName.append(
-          protocol->GetEddyMotionCorrectionProtocol().reportFileNameSuffix );
-      }
-      else
-      {
-        ReportFileName = m_DwiFileName.substr( 0, m_DwiFileName.find_last_of('.') );
-        ReportFileName.append(
-          protocol->GetEddyMotionCorrectionProtocol().reportFileNameSuffix );
-      }
+    }
+    else
+    {
+      ReportFileName = m_DwiFileName.substr( 0, m_DwiFileName.find_last_of('.') );
+      ReportFileName.append( protocol->GetEddyMotionCorrectionProtocol().reportFileNameSuffix );
+    }
+
     }
 
     // eddy-motion Utah
@@ -2432,40 +2435,40 @@ bool CIntensityMotionCheck::EddyMotionCorrect( DwiImageType::Pointer dwi )
       }
     }
 
-    if ( protocol->GetGradientCheckProtocol().outputDWIFileNameSuffix.length()
+    if ( protocol->GetEddyMotionCorrectionProtocol().outputDWIFileNameSuffix.length()
       > 0 )
     {
       std::string outputDWIFileName;
+
+      std::string Full_path;	
+      std::string Dwi_file_name;	// Full name of dwi image
+      size_t found2 = m_DwiFileName.find_last_of(".");
+      Full_path = m_DwiFileName.substr( 0, found2);
+      Dwi_file_name = Full_path.substr(Full_path.find_last_of("/\\")+1);
+      
+
       if ( protocol->GetQCOutputDirectory().length() > 0 )
       {
-        if ( protocol->GetQCOutputDirectory().at( protocol->
-          GetQCOutputDirectory().length() - 1 ) == '\\'
-          || protocol->GetQCOutputDirectory().at( protocol->
-          GetQCOutputDirectory().length() - 1 ) == '/'     )
-        {
-          outputDWIFileName = protocol->GetQCOutputDirectory().substr(
-            0, protocol->GetQCOutputDirectory().find_last_of("/\\") );
-        }
-        else
-        {
-          outputDWIFileName = protocol->GetQCOutputDirectory();
-        }
 
-        outputDWIFileName.append( "/" );
+	size_t found;
+	found = m_DwiFileName.find_last_of("/\\");
+	std::string str;
+	str = m_DwiFileName.substr( 0 , found );	// str : path of QCed outputs
+	str.append( "/" );
+	str.append( protocol->GetQCOutputDirectory() );
+	if ( !itksys::SystemTools::FileIsDirectory( str.c_str() ) )
+		itksys::SystemTools::MakeDirectory( str.c_str() );
+	outputDWIFileName = str;
+	outputDWIFileName.append( Dwi_file_name );
+	outputDWIFileName.append( protocol->GetEddyMotionCorrectionProtocol().outputDWIFileNameSuffix );
 
-        std::string str = m_DwiFileName.substr( 0, m_DwiFileName.find_last_of('.') );
-        str = str.substr( str.find_last_of("/\\") + 1);
-
-        outputDWIFileName.append( str );
-        outputDWIFileName.append(
-          protocol->GetEddyMotionCorrectionProtocol().outputDWIFileNameSuffix );
       }
       else
       {
-        outputDWIFileName = m_DwiFileName.substr( 0, m_DwiFileName.find_last_of('.') );
-        outputDWIFileName.append(
-          protocol->GetEddyMotionCorrectionProtocol().outputDWIFileNameSuffix );
+	outputDWIFileName = m_DwiFileName.substr( 0, m_DwiFileName.find_last_of('.') );
+	outputDWIFileName.append( protocol->GetEddyMotionCorrectionProtocol().outputDWIFileNameSuffix );
       }
+
 
       try
       {
@@ -2500,38 +2503,42 @@ bool CIntensityMotionCheck::GradientWiseCheck( DwiImageType::Pointer dwi )
   if ( protocol->GetGradientCheckProtocol().bCheck )
   {
     std::string ReportFileName;
+
+
+    std::string Full_path;	
+    std::string Dwi_file_name;	// Full name of dwi image
+    size_t found2 = m_DwiFileName.find_last_of(".");
+    Full_path = m_DwiFileName.substr( 0, found2);
+    Dwi_file_name = Full_path.substr(Full_path.find_last_of("/\\")+1);
+    
+
     if ( protocol->GetGradientCheckProtocol().reportFileNameSuffix.length() > 0 )
     {
-      if ( protocol->GetQCOutputDirectory().length() > 0 )
-      {
-        if ( protocol->GetQCOutputDirectory().at( protocol->
-          GetQCOutputDirectory().length() - 1 ) == '\\'
-          || protocol->GetQCOutputDirectory().at( protocol->
-          GetQCOutputDirectory().length() - 1 ) == '/'     )
-        {
-          ReportFileName = protocol->GetQCOutputDirectory().substr(
-            0, protocol->GetQCOutputDirectory().find_last_of("/\\") );
-        }
-        else
-        {
-          ReportFileName = protocol->GetQCOutputDirectory();
-        }
 
-        ReportFileName.append( "/" );
+	if ( protocol->GetQCOutputDirectory().length() > 0 )
+    	{
 
-        std::string str = m_DwiFileName.substr( 0, m_DwiFileName.find_last_of('.') );
-        str = str.substr( str.find_last_of("/\\") + 1);
+		size_t found;
+		found = m_DwiFileName.find_last_of("/\\");
+		std::string str;
+		str = m_DwiFileName.substr( 0 , found );	// str : path of QCed outputs
+		str.append( "/" );
+		str.append( protocol->GetQCOutputDirectory() );
+		if ( !itksys::SystemTools::FileIsDirectory( str.c_str() ) )
+			itksys::SystemTools::MakeDirectory( str.c_str() );
+		ReportFileName = str;
+		ReportFileName.append( Dwi_file_name );
+		ReportFileName.append( protocol->GetGradientCheckProtocol().reportFileNameSuffix  );
 
-        ReportFileName.append( str );
-        ReportFileName.append(
-          protocol->GetGradientCheckProtocol().reportFileNameSuffix );
-      }
-      else
-      {
-        ReportFileName = m_DwiFileName.substr( 0, m_DwiFileName.find_last_of('.') );
-        ReportFileName.append(
-          protocol->GetGradientCheckProtocol().reportFileNameSuffix );
-      }
+    	}
+    	else
+    	{
+		ReportFileName = m_DwiFileName.substr( 0, m_DwiFileName.find_last_of('.') );
+		ReportFileName.append( protocol->GetGradientCheckProtocol().reportFileNameSuffix  );
+	}
+
+
+      
     }
 
     GradientCheckerType::Pointer GradientChecker = GradientCheckerType::New();
@@ -2557,9 +2564,28 @@ bool CIntensityMotionCheck::GradientWiseCheck( DwiImageType::Pointer dwi )
 
     m_DwiForcedConformanceImage = GradientChecker->GetOutput();
 
+
     // .......Mapping between input gradeints and DWIForcedComformance gradeints
     //New : jun 2011
+    //........
+
+    ////updating qcResult
+    
+    for (unsigned int i=0; i < GradientChecker->GetResultsContainer().size(); i++)
+    {
+    
+       qcResult->GetGradientWiseCheckResult()[(m_Original_ForcedConformance_Mapping[i].index_original)[0]].AngleX = GradientChecker->GetResultsContainer()[i].AngleX;
+       qcResult->GetGradientWiseCheckResult()[(m_Original_ForcedConformance_Mapping[i].index_original)[0]].AngleY = GradientChecker->GetResultsContainer()[i].AngleY;
+       qcResult->GetGradientWiseCheckResult()[(m_Original_ForcedConformance_Mapping[i].index_original)[0]].AngleZ = GradientChecker->GetResultsContainer()[i].AngleZ;
+       qcResult->GetGradientWiseCheckResult()[(m_Original_ForcedConformance_Mapping[i].index_original)[0]].TranslationX = GradientChecker->GetResultsContainer()[i].TranslationX;
+       qcResult->GetGradientWiseCheckResult()[(m_Original_ForcedConformance_Mapping[i].index_original)[0]].TranslationY = GradientChecker->GetResultsContainer()[i].TranslationY;
+       qcResult->GetGradientWiseCheckResult()[(m_Original_ForcedConformance_Mapping[i].index_original)[0]].TranslationZ = GradientChecker->GetResultsContainer()[i].TranslationZ;
+       qcResult->GetGradientWiseCheckResult()[(m_Original_ForcedConformance_Mapping[i].index_original)[0]].MutualInformation = GradientChecker->GetResultsContainer()[i].MutualInformation;
+    
+    } 
+
     std::vector<bool>	tem_vector = GradientChecker->GetQCResults();
+    
     unsigned int id = 0;
     while ( id < tem_vector.size() )
     {
@@ -2576,25 +2602,6 @@ bool CIntensityMotionCheck::GradientWiseCheck( DwiImageType::Pointer dwi )
       }
       id++;
     }
-    //........
-
-
-    //updating qcResult
-    GradientWiseCheckResult GradientWiseResult;
-
-    for (unsigned int i=0; i < GradientChecker->GetResultsContainer().size(); i++)
-    {
-    GradientWiseResult.AngleX=GradientChecker->GetResultsContainer()[i].AngleX;
-    GradientWiseResult.AngleY=GradientChecker->GetResultsContainer()[i].AngleY;
-    GradientWiseResult.AngleZ=GradientChecker->GetResultsContainer()[i].AngleZ;
-    GradientWiseResult.TranslationX=GradientChecker->GetResultsContainer()[i].TranslationX;
-    GradientWiseResult.TranslationY=GradientChecker->GetResultsContainer()[i].TranslationY;
-    GradientWiseResult.TranslationZ=GradientChecker->GetResultsContainer()[i].TranslationZ;
-    GradientWiseResult.MutualInformation=GradientChecker->GetResultsContainer()[i].MutualInformation;
-    
-    qcResult->GetGradientWiseCheckResult().push_back(GradientWiseResult);
-    
-    }    
 
 
     // update the QCResults
@@ -2643,36 +2650,29 @@ bool CIntensityMotionCheck::GradientWiseCheck( DwiImageType::Pointer dwi )
     if ( protocol->GetGradientCheckProtocol().outputDWIFileNameSuffix.length() > 0 )
     {
       std::string outputDWIFileName;
+
       if ( protocol->GetQCOutputDirectory().length() > 0 )
       {
-        if ( protocol->GetQCOutputDirectory().at( protocol->
-          GetQCOutputDirectory().length() - 1 ) == '\\'
-          || protocol->GetQCOutputDirectory().at( protocol->
-          GetQCOutputDirectory().length() - 1 ) == '/'     )
-        {
-          outputDWIFileName = protocol->GetQCOutputDirectory().substr(
-            0, protocol->GetQCOutputDirectory().find_last_of("/\\") );
-        }
-        else
-        {
-          outputDWIFileName = protocol->GetQCOutputDirectory();
-        }
 
-        outputDWIFileName.append( "/" );
+	size_t found;
+	found = m_DwiFileName.find_last_of("/\\");
+	std::string str;
+	str = m_DwiFileName.substr( 0 , found );	// str : path of QCed outputs
+	str.append( "/" );
+	str.append( protocol->GetQCOutputDirectory() );
+	if ( !itksys::SystemTools::FileIsDirectory( str.c_str() ) )
+		itksys::SystemTools::MakeDirectory( str.c_str() );
+	outputDWIFileName = str;
+	outputDWIFileName.append( Dwi_file_name );
+	outputDWIFileName.append( protocol->GetGradientCheckProtocol().outputDWIFileNameSuffix );
 
-        std::string str = m_DwiFileName.substr( 0, m_DwiFileName.find_last_of('.') );
-        str = str.substr( str.find_last_of("/\\") + 1);
+     }
+     else
+     {
+      outputDWIFileName = m_DwiFileName.substr( 0, m_DwiFileName.find_last_of('.') );
+      outputDWIFileName.append( protocol->GetGradientCheckProtocol().outputDWIFileNameSuffix );
+     }
 
-        outputDWIFileName.append( str );
-        outputDWIFileName.append(
-          protocol->GetGradientCheckProtocol().outputDWIFileNameSuffix );
-      }
-      else
-      {
-        outputDWIFileName = m_DwiFileName.substr( 0, m_DwiFileName.find_last_of('.') );
-        outputDWIFileName.append(
-          protocol->GetGradientCheckProtocol().outputDWIFileNameSuffix );
-      }
 
       try
       {
@@ -2701,39 +2701,32 @@ bool CIntensityMotionCheck::GradientWiseCheck( DwiImageType::Pointer dwi )
     else
     {
 
-      if ( protocol->GetInterlaceCheckProtocol().excludedDWINrrdFileNameSuffix.length() > 0 )
+      if ( protocol->GetGradientCheckProtocol().excludedDWINrrdFileNameSuffix.length() > 0 )
       {
         std::string GradientWiseExcludeOutput;
-        if ( protocol->GetQCOutputDirectory().length() > 0 )
-        {
-          if ( protocol->GetQCOutputDirectory().at( protocol->
-            GetQCOutputDirectory().length() - 1 ) == '\\'
-            || protocol->GetQCOutputDirectory().at( protocol->
-            GetQCOutputDirectory().length() - 1 ) == '/'     )
-          {
-            GradientWiseExcludeOutput = protocol->GetQCOutputDirectory().substr(
-              0, protocol->GetQCOutputDirectory().find_last_of("/\\") );
-          }
-          else
-          {
-            GradientWiseExcludeOutput = protocol->GetQCOutputDirectory();
-          }
 
-          GradientWiseExcludeOutput.append( "/" );
+	if ( protocol->GetQCOutputDirectory().length() > 0 )
+    	{
 
-          std::string str = m_DwiFileName.substr( 0, m_DwiFileName.find_last_of('.') );
-          str = str.substr( str.find_last_of("/\\") + 1);
+		size_t found;
+		found = m_DwiFileName.find_last_of("/\\");
+		std::string str;
+		str = m_DwiFileName.substr( 0 , found );	// str : path of QCed outputs
+		str.append( "/" );
+		str.append( protocol->GetQCOutputDirectory() );
+		if ( !itksys::SystemTools::FileIsDirectory( str.c_str() ) )
+			itksys::SystemTools::MakeDirectory( str.c_str() );
+		GradientWiseExcludeOutput = str;
+		GradientWiseExcludeOutput.append( Dwi_file_name );
+		GradientWiseExcludeOutput.append( protocol->GetGradientCheckProtocol().excludedDWINrrdFileNameSuffix );
 
-          GradientWiseExcludeOutput.append( str );
-          GradientWiseExcludeOutput.append(
-            protocol->GetInterlaceCheckProtocol().excludedDWINrrdFileNameSuffix );
-        }
-        else
-        {
-          GradientWiseExcludeOutput = m_DwiFileName.substr( 0, m_DwiFileName.find_last_of('.') );
-          GradientWiseExcludeOutput.append(
-            protocol->GetGradientCheckProtocol().excludedDWINrrdFileNameSuffix );
-        }
+    	}
+    	else
+    	{
+		GradientWiseExcludeOutput = m_DwiFileName.substr( 0, m_DwiFileName.find_last_of('.') );
+		GradientWiseExcludeOutput.append( protocol->GetGradientCheckProtocol().excludedDWINrrdFileNameSuffix );
+    	}
+
 
         try
         {
@@ -2803,10 +2796,45 @@ int CIntensityMotionCheck::JointDenoising( DwiImageType::Pointer dwi )
 
     std::string JointDenoiseInput;
     std::string JointDenoiseOutput;
-    JointDenoiseInput = m_DwiFileName.substr( 0, m_DwiFileName.find_last_of('.') );
-    JointDenoiseInput.append( "_JointDenoiseInput.nhdr");
-    JointDenoiseOutput = m_DwiFileName.substr( 0, m_DwiFileName.find_last_of('.') );
-    JointDenoiseOutput.append( "_JointDenoiseOutput.nhdr");
+
+    std::string Full_path;	
+    std::string Dwi_file_name;	// Full name of dwi image
+    size_t found2 = m_DwiFileName.find_last_of(".");
+    Full_path = m_DwiFileName.substr( 0, found2);
+    Dwi_file_name = Full_path.substr(Full_path.find_last_of("/\\")+1);
+    
+
+
+    if ( protocol->GetQCOutputDirectory().length() > 0 )
+    {
+
+	size_t found;
+	found = m_DwiFileName.find_last_of("/\\");
+	std::string str;
+	str = m_DwiFileName.substr( 0 , found );	// str : path of QCed outputs
+	str.append( "/" );
+	str.append( protocol->GetQCOutputDirectory() );
+	if ( !itksys::SystemTools::FileIsDirectory( str.c_str() ) )
+		itksys::SystemTools::MakeDirectory( str.c_str() );
+	JointDenoiseInput = str;
+	JointDenoiseInput.append( Dwi_file_name );
+	JointDenoiseInput.append( "_JointDenoiseInput.nrrd");
+
+	JointDenoiseOutput = str;
+	JointDenoiseOutput.append( Dwi_file_name );
+	JointDenoiseOutput.append( "_JointDenoiseOutput.nrrd");
+
+    }
+   else
+    {
+      JointDenoiseInput = m_DwiFileName.substr( 0, m_DwiFileName.find_last_of('.') );
+      JointDenoiseInput.append( "_JointDenoiseInput.nrrd"); 
+
+      JointDenoiseOutput= m_DwiFileName.substr( 0, m_DwiFileName.find_last_of('.') );
+      JointDenoiseOutput.append( "_JointDenoiseOutput.nrrd");
+    }
+
+ 
     try
     {
     DwiWriterType::Pointer DwiWriter_JointDenoisingInput = DwiWriterType::New();
@@ -2919,12 +2947,17 @@ int CIntensityMotionCheck::JointDenoising( DwiImageType::Pointer dwi )
 
 bool CIntensityMotionCheck::SaveDwiForcedConformanceImage(void)
 {
+  std::string Full_path;	
+  std::string Dwi_file_name;	// Full name of dwi image
+  size_t found2 = m_DwiFileName.find_last_of(".");
+  Full_path = m_DwiFileName.substr( 0, found2);
+  Dwi_file_name = Full_path.substr(Full_path.find_last_of("/\\")+1);
+  
 
-  std::cout << " protocol->GetQCedDWIFileNameSuffix()" <<  protocol->GetQCedDWIFileNameSuffix() << std::endl;
   if ( protocol->GetQCedDWIFileNameSuffix().length() > 0 )
   {
     
-    if ( protocol->GetQCOutputDirectory().length() > 0 )
+    /*if ( protocol->GetQCOutputDirectory().length() > 0 )
     {
       if ( protocol->GetQCOutputDirectory().at( protocol->GetQCOutputDirectory()
         .length() - 1 ) == '\\'
@@ -2946,6 +2979,25 @@ bool CIntensityMotionCheck::SaveDwiForcedConformanceImage(void)
 
       m_outputDWIFileName.append( str );
       m_outputDWIFileName.append( protocol->GetQCedDWIFileNameSuffix() );
+    }*/
+
+
+
+    if ( protocol->GetQCOutputDirectory().length() > 0 )
+    {
+
+	size_t found;
+	found = m_DwiFileName.find_last_of("/\\");
+	std::string str;
+	str = m_DwiFileName.substr( 0 , found );	// str : path of QCed outputs
+	str.append( "/" );
+	str.append( protocol->GetQCOutputDirectory() );
+	itksys::SystemTools::MakeDirectory( str.c_str() );
+	
+	m_outputDWIFileName = str;
+	m_outputDWIFileName.append( Dwi_file_name );
+	m_outputDWIFileName.append( protocol->GetQCedDWIFileNameSuffix() );
+
     }
     else
     {
@@ -2979,36 +3031,36 @@ bool CIntensityMotionCheck::SaveDwiForcedConformanceImage_FurtherQC( void ) cons
   if ( protocol->GetQCedDWIFileNameSuffix().length() > 0 )
   {
     std::string outputDWIFileName;
+    
+    std::string Full_path;	
+    std::string Dwi_file_name;	// Full name of dwi image
+    size_t found2 = m_DwiFileName.find_last_of(".");
+    Full_path = m_DwiFileName.substr( 0, found2);
+    Dwi_file_name = Full_path.substr(Full_path.find_last_of("/\\")+1);
+    
+
     if ( protocol->GetQCOutputDirectory().length() > 0 )
     {
-      if ( protocol->GetQCOutputDirectory().at( protocol->GetQCOutputDirectory()
-        .length() - 1 ) == '\\'
-        || protocol->GetQCOutputDirectory().at( protocol->
-        GetQCOutputDirectory().length() - 1 ) == '/'     )
-      {
-        outputDWIFileName = protocol->GetQCOutputDirectory().substr(
-          0, protocol->GetQCOutputDirectory().find_last_of("/\\") );
-      }
-      else
-      {
-        outputDWIFileName = protocol->GetQCOutputDirectory();
-      }
 
-      outputDWIFileName.append( "/" );
-      outputDWIFileName.append("FurtherQC_");
+	size_t found;
+	found = m_DwiFileName.find_last_of("/\\");
+	std::string str;
+	str = m_DwiFileName.substr( 0 , found );	// str : path of QCed outputs
+	str.append( "/" );
+	str.append( protocol->GetQCOutputDirectory() );
+	if ( !itksys::SystemTools::FileIsDirectory( str.c_str() ) )
+		itksys::SystemTools::MakeDirectory( str.c_str() );
+	outputDWIFileName = str;
+	outputDWIFileName.append( Dwi_file_name );
+	outputDWIFileName.append( protocol->GetQCedDWIFileNameSuffix() );
 
-      std::string str = m_DwiFileName.substr( 0, m_DwiFileName.find_last_of('.') );
-      str = str.substr( str.find_last_of("/\\") + 1);
-
-      outputDWIFileName.append( str );
-      outputDWIFileName.append( protocol->GetQCedDWIFileNameSuffix() );
     }
     else
     {
       outputDWIFileName = m_DwiFileName.substr( 0, m_DwiFileName.find_last_of('.') );
-      outputDWIFileName.append("_FurtherQC");
       outputDWIFileName.append( protocol->GetQCedDWIFileNameSuffix() );
     }
+
 
     try
     {
@@ -3034,7 +3086,7 @@ bool CIntensityMotionCheck::SaveDwiForcedConformanceImage_FurtherQC( void ) cons
 
 unsigned char CIntensityMotionCheck::RunPipelineByProtocol_FurtherQC()
 {
-  
+  //Attention : For This Step the source code regarding putting folder in protocol->GetQCOutputDirectory() should be changed.
   
   if ( !protocol_load )
   {
@@ -3095,7 +3147,7 @@ unsigned char CIntensityMotionCheck::RunPipelineByProtocol_FurtherQC()
   if ( bReport )
   {
     outfile << "================================= " << std::endl;
-    outfile << "* DWI Further QC Report ( DTIPrep " << DTIPREP_VERSION << " ) * " << std::endl;
+    outfile << "* DWI Further QC Report ( DTIPrep ) * " << std::endl;
     outfile << "================================= " << std::endl;
     outfile << "DWI File: " << m_DwiFileName << std::endl;
     outfile << "xml File: " << m_XmlFileName << std::endl;
@@ -3115,6 +3167,8 @@ unsigned char CIntensityMotionCheck::RunPipelineByProtocol_FurtherQC()
 	m_Original_ForcedConformance_Mapping.push_back( m_map );
   }
 
+  
+  
   this-> qcResult->Set_result(0);	//unsigned char result = 0;	
 
   // ZYXEDCBA:
@@ -3212,54 +3266,57 @@ unsigned char CIntensityMotionCheck::RunPipelineByProtocol()
   std::ofstream outfile;
 
   std::string ReportFileName;
+
+  std::string Full_path;	
+  std::string Dwi_file_name;	// Full name of dwi image
+  size_t found2 = m_DwiFileName.find_last_of(".");
+  Full_path = m_DwiFileName.substr( 0, found2);
+  Dwi_file_name = Full_path.substr(Full_path.find_last_of("/\\")+1);
+  
   if ( protocol->GetQCOutputDirectory().length() > 0 )
   {
-    if ( protocol->GetQCOutputDirectory().at( protocol->GetQCOutputDirectory().
-      length() - 1 ) == '\\'
-      || protocol->GetQCOutputDirectory().at( protocol->GetQCOutputDirectory()
-      .length() - 1 ) == '/'     )
-    {
-      ReportFileName = protocol->GetQCOutputDirectory().substr(
-        0, protocol->GetQCOutputDirectory().find_last_of("/\\") );
+
+	size_t found;
+	found = m_DwiFileName.find_last_of("/\\");
+	std::string str;
+	str = m_DwiFileName.substr( 0 , found );	// str : path of QCed outputs
+	str.append( "/" );
+	str.append( protocol->GetQCOutputDirectory() );
+	itksys::SystemTools::MakeDirectory( str.c_str() );
+	
+	ReportFileName = str;
+	ReportFileName.append( Dwi_file_name );
+  
+        if ( protocol->GetReportFileNameSuffix().length() > 0 )
+        {
+        	ReportFileName.append( protocol->GetReportFileNameSuffix() );
+        }
+        else
+        {
+                ReportFileName.append( "_QC_CheckReports.txt");
+        }
+
     }
     else
     {
-      ReportFileName = protocol->GetQCOutputDirectory();
+        ReportFileName = m_DwiFileName.substr( 0, m_DwiFileName.find_last_of('.') );
+    	if ( protocol->GetReportFileNameSuffix().length() > 0 )
+    	{
+      		ReportFileName.append( protocol->GetReportFileNameSuffix() );
+    	}
+    	else
+    	{
+      		ReportFileName.append( "_QC_CheckReports.txt");
+    	}
     }
 
-    ReportFileName.append( "/" );
-
-    std::string str = m_DwiFileName.substr( 0, m_DwiFileName.find_last_of('.') );
-    str = str.substr( str.find_last_of("/\\") + 1);
-
-    ReportFileName.append( str );
-    if ( protocol->GetReportFileNameSuffix().length() > 0 )
-    {
-      ReportFileName.append( protocol->GetReportFileNameSuffix() );
-    }
-    else
-    {
-      ReportFileName.append( "_QC_CheckReports.txt");
-    }
-  }
-  else
-  {
-    ReportFileName = m_DwiFileName.substr( 0, m_DwiFileName.find_last_of('.') );
-    if ( protocol->GetReportFileNameSuffix().length() > 0 )
-    {
-      ReportFileName.append( protocol->GetReportFileNameSuffix() );
-    }
-    else
-    {
-      ReportFileName.append( "_QC_CheckReports.txt");
-    }
-  }
-
-  outfile.open( ReportFileName.c_str() );
+  
+  outfile.open( ReportFileName.c_str(), std::ios_base::out | std::ios_base::trunc);
 
   if ( outfile )
   {
     bReport = true;
+    
   }
 
   if ( bReport )
@@ -3273,7 +3330,9 @@ unsigned char CIntensityMotionCheck::RunPipelineByProtocol()
     outfile << "Check Time: " << ctime(&rawtime) << std::endl;
 
     outfile.close();
-  }
+  }		
+  
+
   m_Original_ForcedConformance_Mapping.clear();
   Original_ForcedConformance_Mapping m_map;
   for ( unsigned int jj = 0; jj< m_DwiOriginalImage->GetVectorLength(); jj++ )
@@ -3492,7 +3551,9 @@ unsigned char CIntensityMotionCheck::RunPipelineByProtocol()
 
   this->qcResult-> Set_result( ( ValidateResult << 5 ) + this->qcResult->Get_result() );
 
-  
+  std::cout << "qcResult->GetSliceWiseCheckResult().size() " << qcResult->GetSliceWiseCheckResult().size() << std::endl;
+  std::cout << "qcResult->GetInterlaceWiseCheckResult().size() " << qcResult->GetInterlaceWiseCheckResult().size() << std::endl;
+  std::cout << "qcResult->GetGradientWiseCheckResult().size() " << qcResult->GetGradientWiseCheckResult().size() << std::endl;
   
   
   return this->qcResult->Get_result();
@@ -3517,14 +3578,41 @@ unsigned char CIntensityMotionCheck::validateLeftDiffusionStatistics()
   bool bReport = false;
   std::string ReportFileName;
 
-  if ( protocol->GetImageProtocol().reportFileNameSuffix.length() > 0 )
+  std::string Full_path;	
+  std::string Dwi_file_name;	// Full name of dwi image
+  size_t found2 = m_DwiFileName.find_last_of(".");
+  Full_path = m_DwiFileName.substr( 0, found2);
+  Dwi_file_name = Full_path.substr(Full_path.find_last_of("/\\")+1);
+  
+
+  if ( protocol->GetReportFileNameSuffix().length() > 0 )
   {
-    ReportFileName = m_DwiFileName.substr( 0, m_DwiFileName.find_last_of('.') );
-    ReportFileName.append( protocol->GetImageProtocol().reportFileNameSuffix );
+   
+   if ( protocol->GetQCOutputDirectory().length() > 0 )
+    {
+
+	size_t found;
+	found = m_DwiFileName.find_last_of("/\\");
+	std::string str;
+	str = m_DwiFileName.substr( 0 , found );	// str : path of QCed outputs
+	str.append( "/" );
+	str.append( protocol->GetQCOutputDirectory() );
+	if ( !itksys::SystemTools::FileIsDirectory( str.c_str() ) )
+		itksys::SystemTools::MakeDirectory( str.c_str() );
+	ReportFileName = str;
+	ReportFileName.append( Dwi_file_name );
+	ReportFileName.append( protocol->GetReportFileNameSuffix() );
+
+    }
+    else
+    {
+        ReportFileName = m_DwiFileName.substr( 0, m_DwiFileName.find_last_of('.') );
+        ReportFileName.append( protocol->GetImageProtocol().reportFileNameSuffix );
+    }
   }
 
   std::ofstream outfile;
-  outfile.open( ReportFileName.c_str(), std::ios_base::app);
+  outfile.open( ReportFileName.c_str(), std::ios_base::app | std::ios_base::out);
 
   if ( outfile )
   {
@@ -3546,33 +3634,58 @@ unsigned char CIntensityMotionCheck::validateLeftDiffusionStatistics()
 
   if ( this->m_gradientDirLeftNumber < 6 )
   {
-    std::cout << "\tGradient direction # is less than 6!" << std::endl;
+    std::cout << "Gradient direction # is less than 6!" << std::endl;
     if ( bReport )
     {
-      outfile << "\tGradient direction # is less than 6!" << std::endl;
+      outfile << "Gradient direction # is less than 6!" << std::endl;
     }
     ret = ret | 1;
   }
+  else 
+  {
+    std::cout << "Gradient direction # is not less than 6!" << std::endl;
+    if ( bReport )
+    {
+      outfile << "Gradient direction # is not less than 6!" << std::endl;
+    }
+  }
+    
 
   if ( this->m_baselineLeftNumber == 0 && this->m_bValueLeftNumber == 1 )
   {
-    std::cout << "\tSingle b-value DWI without a b0/baseline!" << std::endl;
+    std::cout << "Single b-value DWI without a b0/baseline!" << std::endl;
     if ( bReport )
     {
-      outfile << "\tSingle b-value DWI without a b0/baseline!" << std::endl;
+      outfile << "Single b-value DWI without a b0/baseline!" << std::endl;
     }
     ret = ret | 2;
+  }
+  else
+  {
+    std::cout << "Left Baseline images and the left b-value are ok!" << std::endl;
+    if ( bReport )
+    {
+      outfile << "Left Baseline images and the left b-value are ok!" << std::endl;
+    }
   }
 
   if ( ( ( this->m_gradientDirNumber ) - ( this->m_gradientDirLeftNumber ) ) >
     protocol->GetBadGradientPercentageTolerance() * ( this->m_gradientDirNumber ) )
   {
-    std::cout << "\tToo many bad gradient directions found! " << std::endl;
+    std::cout << "Too many bad gradient directions found! " << std::endl;
     if ( bReport )
     {
-      outfile  << "\tToo many bad gradient directions found! " << std::endl;
+      outfile  << "Too many bad gradient directions found! " << std::endl;
     }
     ret = ret | 4;
+  }
+  else
+  {
+    std::cout << "Bad gradient directions # passed in the tolerance! " << std::endl;
+    if ( bReport )
+    {
+      outfile  << "Bad gradient directions # passed in the tolerance! " << std::endl;
+    }
   }
 
   // std::cout<<"validateDiffusionStatistics(): ret "<<ret<<std::endl;
@@ -3936,37 +4049,39 @@ bool CIntensityMotionCheck::dtiestim()
   str.append(" ");
 
   std::string outputDWIFileName;
+  
+  std::string Full_path;	
+  std::string Dwi_file_name;	// Full name of dwi image
+  size_t found2 = m_DwiFileName.find_last_of(".");
+  Full_path = m_DwiFileName.substr( 0, found2);
+  Dwi_file_name = Full_path.substr(Full_path.find_last_of("/\\")+1);
+  
+
   if ( protocol->GetQCedDWIFileNameSuffix().length() > 0 )
   {
-    if ( protocol->GetQCOutputDirectory().length() > 0 )
-    {
-      if ( protocol->GetQCOutputDirectory().at( protocol->GetQCOutputDirectory()
-        .length() - 1 ) == '\\'
-        || protocol->GetQCOutputDirectory().at( protocol->
-        GetQCOutputDirectory().length() - 1 ) == '/'     )
-      {
-        outputDWIFileName = protocol->GetQCOutputDirectory().substr(
-          0, protocol->GetQCOutputDirectory().find_last_of("/\\") );
-      }
-      else
-      {
-        outputDWIFileName = protocol->GetQCOutputDirectory();
-      }
 
-      outputDWIFileName.append( "/" );
+	if ( protocol->GetQCOutputDirectory().length() > 0 )
+    	{
 
-      std::string strLocal
-        = m_DwiFileName.substr( 0, m_DwiFileName.find_last_of('.') );
-      strLocal = strLocal.substr( strLocal.find_last_of("/\\") + 1);
+		size_t found;
+		found = m_DwiFileName.find_last_of("/\\");
+		std::string str;
+		str = m_DwiFileName.substr( 0 , found );	// str : path of QCed outputs
+		str.append( "/" );
+		str.append( protocol->GetQCOutputDirectory() );
+		if ( !itksys::SystemTools::FileIsDirectory( str.c_str() ) )
+			itksys::SystemTools::MakeDirectory( str.c_str() );
+		outputDWIFileName = str;
+		outputDWIFileName.append( Dwi_file_name );
+		outputDWIFileName.append( protocol->GetQCedDWIFileNameSuffix() );
 
-      outputDWIFileName.append( strLocal );
-      outputDWIFileName.append( protocol->GetQCedDWIFileNameSuffix() );
-    }
-    else
-    {
-      outputDWIFileName = m_DwiFileName.substr( 0, m_DwiFileName.find_last_of('.') );
-      outputDWIFileName.append( protocol->GetQCedDWIFileNameSuffix() );
-    }
+    	}
+    	else
+    	{
+		outputDWIFileName = m_DwiFileName.substr( 0, m_DwiFileName.find_last_of('.') );
+		outputDWIFileName.append( protocol->GetQCedDWIFileNameSuffix() );
+	}
+
   }
   else
   {
@@ -4057,36 +4172,38 @@ bool CIntensityMotionCheck::dtiprocess()
   string.append(" ");
 
   std::string outputDWIFileName;
+  std::string Full_path;	
+  std::string Dwi_file_name;	// Full name of dwi image
+  size_t found2 = m_DwiFileName.find_last_of(".");
+  Full_path = m_DwiFileName.substr( 0, found2);
+  Dwi_file_name = Full_path.substr(Full_path.find_last_of("/\\")+1);
+  
+
   if ( protocol->GetQCedDWIFileNameSuffix().length() > 0 )
   {
+
     if ( protocol->GetQCOutputDirectory().length() > 0 )
     {
-      if ( protocol->GetQCOutputDirectory().at( protocol->GetQCOutputDirectory()
-        .length() - 1 ) == '\\'
-        || protocol->GetQCOutputDirectory().at( protocol->
-        GetQCOutputDirectory().length() - 1 ) == '/'     )
-      {
-        outputDWIFileName = protocol->GetQCOutputDirectory().substr(
-          0, protocol->GetQCOutputDirectory().find_last_of("/\\") );
-      }
-      else
-      {
-        outputDWIFileName = protocol->GetQCOutputDirectory();
-      }
 
-      outputDWIFileName.append( "/" );
+	size_t found;
+	found = m_DwiFileName.find_last_of("/\\");
+	std::string str;
+	str = m_DwiFileName.substr( 0 , found );	// str : path of QCed outputs
+	str.append( "/" );
+	str.append( protocol->GetQCOutputDirectory() );
+	if ( !itksys::SystemTools::FileIsDirectory( str.c_str() ) )
+		itksys::SystemTools::MakeDirectory( str.c_str() );
+	outputDWIFileName = str;
+	outputDWIFileName.append( Dwi_file_name );
+	outputDWIFileName.append( protocol->GetQCedDWIFileNameSuffix()  );
 
-      std::string str = m_DwiFileName.substr( 0, m_DwiFileName.find_last_of('.') );
-      str = str.substr( str.find_last_of("/\\") + 1);
-
-      outputDWIFileName.append( str );
-      outputDWIFileName.append( protocol->GetQCedDWIFileNameSuffix() );
     }
     else
     {
       outputDWIFileName = m_DwiFileName.substr( 0, m_DwiFileName.find_last_of('.') );
-      outputDWIFileName.append( protocol->GetQCedDWIFileNameSuffix() );
+      outputDWIFileName.append( protocol->GetQCedDWIFileNameSuffix()  );
     }
+
   }
   else
   {
@@ -4163,12 +4280,44 @@ bool CIntensityMotionCheck::DiffusionCheck( DwiImageType::Pointer dwi)
   //protocol->GetDiffusionProtocol().reportFileNameSuffix
   //USE
   //protocol->GetDiffusionProtocol().GetReportFileName();
-  const std::string ReportFileName=protocol->GetDiffusionProtocolReportFileName(this->m_DwiFileName);
+
+  std::string ReportFileName;
+  
+  std::string Full_path;	
+  std::string Dwi_file_name;	// Full name of dwi image
+  size_t found2 = m_DwiFileName.find_last_of(".");
+  Full_path = m_DwiFileName.substr( 0, found2);
+  Dwi_file_name = Full_path.substr(Full_path.find_last_of("/\\")+1);
+  
+
+
+  if ( protocol->GetQCOutputDirectory().length() > 0 )
+  {
+
+	size_t found;
+	found = m_DwiFileName.find_last_of("/\\");
+	std::string str;
+	str = m_DwiFileName.substr( 0 , found );	// str : path of QCed outputs
+	str.append( "/" );
+	str.append( protocol->GetQCOutputDirectory() );
+	if ( !itksys::SystemTools::FileIsDirectory( str.c_str() ) )
+		itksys::SystemTools::MakeDirectory( str.c_str() );
+	ReportFileName = str;
+	ReportFileName.append( Dwi_file_name );
+	ReportFileName.append( protocol->GetDiffusionProtocol().reportFileNameSuffix );
+
+  }
+  else
+  {
+      ReportFileName = m_DwiFileName.substr( 0, m_DwiFileName.find_last_of('.') );
+      ReportFileName.append( protocol->GetDiffusionProtocol().reportFileNameSuffix );
+  }
+
 
   std::ofstream outfile;
-  if ( protocol->GetImageProtocol().reportFileMode == 1 )
+  if ( protocol->GetDiffusionProtocol().reportFileMode == 1 )
   {
-    outfile.open( ReportFileName.c_str(), std::ios_base::app);
+    outfile.open( ReportFileName.c_str(), std::ios_base::app | std::ios_base::out);
   }
   else
   {
@@ -4692,36 +4841,37 @@ bool CIntensityMotionCheck::DiffusionCheck( DwiImageType::Pointer dwi)
   {
 
     std::string DWIFileName;
+
+    std::string Full_path;	
+    std::string Dwi_file_name;	// Full name of dwi image
+    size_t found2 = m_DwiFileName.find_last_of(".");
+    Full_path = m_DwiFileName.substr( 0, found2);
+    Dwi_file_name = Full_path.substr(Full_path.find_last_of("/\\")+1);
+    
+
     if ( protocol->GetQCOutputDirectory().length() > 0 )
     {
-      if ( protocol->GetQCOutputDirectory().at( protocol->GetQCOutputDirectory()
-        .length() - 1 ) == '\\'
-        || protocol->GetQCOutputDirectory().at( protocol->
-        GetQCOutputDirectory().length() - 1 ) == '/'     )
-      {
-        DWIFileName = protocol->GetQCOutputDirectory().substr(
-          0, protocol->GetQCOutputDirectory().find_last_of("/\\") );
-      }
-      else
-      {
-        DWIFileName = protocol->GetQCOutputDirectory();
-      }
 
-      DWIFileName.append( "/" );
+	size_t found;
+	found = m_DwiFileName.find_last_of("/\\");
+	std::string str;
+	str = m_DwiFileName.substr( 0 , found );	// str : path of QCed outputs
+	str.append( "/" );
+	str.append( protocol->GetQCOutputDirectory() );
+	if ( !itksys::SystemTools::FileIsDirectory( str.c_str() ) )
+		itksys::SystemTools::MakeDirectory( str.c_str() );
+	DWIFileName = str;
+	DWIFileName.append( Dwi_file_name );
+	DWIFileName.append( protocol->GetDiffusionProtocol().diffusionReplacedDWIFileNameSuffix  );
 
-      std::string str = m_DwiFileName.substr( 0, m_DwiFileName.find_last_of('.') );
-      str = str.substr( str.find_last_of("/\\") + 1);
-
-      DWIFileName.append( str );
-      DWIFileName.append(
-        protocol->GetDiffusionProtocol().diffusionReplacedDWIFileNameSuffix );
     }
     else
     {
       DWIFileName = m_DwiFileName.substr( 0, m_DwiFileName.find_last_of('.') );
-      DWIFileName.append(
-        protocol->GetDiffusionProtocol().diffusionReplacedDWIFileNameSuffix );
+      DWIFileName.append( protocol->GetDiffusionProtocol().diffusionReplacedDWIFileNameSuffix  );
     }
+
+
 
     try
     {

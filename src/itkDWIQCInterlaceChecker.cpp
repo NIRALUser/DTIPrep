@@ -899,6 +899,8 @@ namespace itk
       << std::setw(10) << "TranslationZ\t" << std::setw(10)
       << "Metric(MI)\t" << std::setw(10) << "Correlation" << std::endl;
       
+
+      std::cout << "MEHDI INTELACE INSIDE " << this->qcResults.size() << std::endl;
       for ( unsigned int i = 0; i < this->qcResults.size(); i++ )
         {
         if ( !this->qcResults[i] )

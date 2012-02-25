@@ -972,11 +972,11 @@ void XmlStreamReader::LoadQCResultFromDWICheckGradientParsing(int Grd_num)
        QCRESULT->GetSliceWiseCheckProcessing().push_back(s_mapQCRESULTStringValue[parametersQCResult_Gradient[i].value.toStdString()]);
        break;
     }
-    case DWI_INTERLACEWISECHECK:
-    {
-       IntWiseCk.InterlaceWiseCheckProcessing = s_mapQCRESULTStringValue[parametersQCResult_Gradient[i].value.toStdString()];
-       break;
-    }
+    //case DWI_INTERLACEWISECHECK:
+    //{
+       //IntWiseCk.InterlaceWiseCheckProcessing = s_mapQCRESULTStringValue[parametersQCResult_Gradient[i].value.toStdString()];
+      // break;
+    // }
     case DWI_INTERLACEX:
     {
        IntWiseCk.AngleX = parametersQCResult_Gradient[i].value.toDouble();
@@ -1003,9 +1003,9 @@ void XmlStreamReader::LoadQCResultFromDWICheckGradientParsing(int Grd_num)
     case DWI_INTERLACE_CORRELATION:
        IntWiseCk.Correlation = parametersQCResult_Gradient[i].value.toDouble();
        break;
-    case DWI_GRADIENTWISECHECK:
-       GrdWiseCheck.GradientWiseCheckProcessing = s_mapQCRESULTStringValue[parametersQCResult_Gradient[i].value.toStdString()];
-       break;
+    //case DWI_GRADIENTWISECHECK:
+       //GrdWiseCheck.GradientWiseCheckProcessing = s_mapQCRESULTStringValue[parametersQCResult_Gradient[i].value.toStdString()];
+       //break;
     case DWI_GRADIENTX:
        GrdWiseCheck.AngleX = parametersQCResult_Gradient[i].value.toDouble();
        break;
