@@ -1,15 +1,14 @@
 #include "IntraGradientRigidRegistration.h"
 
-CIntraGradientRigidRegistration::CIntraGradientRigidRegistration(
-  ImageType::Pointer fixed,
-  ImageType::Pointer moving)
-  {
+CIntraGradientRigidRegistration::CIntraGradientRigidRegistration(ImageType::Pointer fixed, ImageType::Pointer moving)
+{
   fixedImage = fixed;
   movingImage = moving;
-  }
+}
 
 CIntraGradientRigidRegistration::~CIntraGradientRigidRegistration(void)
-     {}
+{
+}
 
 void CIntraGradientRigidRegistration::SetupFramework()
 {
@@ -88,7 +87,7 @@ struIntra2DResults CIntraGradientRigidRegistration::Run( bool bRegister )
   results.TranslationY = 0.0;
   results.Correlation = 0.0;
 
-  if ( bRegister )
+  if( bRegister )
     {
     results.bRegister = true;
     SetupFramework();
@@ -98,7 +97,7 @@ struIntra2DResults CIntraGradientRigidRegistration::Run( bool bRegister )
       {
       registration->StartRegistration();
       }
-    catch ( itk::ExceptionObject & err )
+    catch( itk::ExceptionObject & err )
       {
       std::cerr << "ExceptionObject caught !" << std::endl;
       std::cerr << err << std::endl;
@@ -143,7 +142,7 @@ struIntra2DResults CIntraGradientRigidRegistration::Run( bool bRegister )
     cit2.GoToBegin();
 
     double sAB = 0.0, sA2 = 0.0, sB2 = 0.0;
-    while ( !cit1.IsAtEnd() )
+    while( !cit1.IsAtEnd() )
       {
       sAB += cit1.Get() * cit2.Get();
       sA2 += cit1.Get() * cit1.Get();
@@ -152,7 +151,7 @@ struIntra2DResults CIntraGradientRigidRegistration::Run( bool bRegister )
       ++cit2;
       }
 
-    if ( sA2 * sB2 == 0 )
+    if( sA2 * sB2 == 0 )
       {
       results.Correlation = 1;
       }
@@ -174,7 +173,7 @@ struIntra2DResults CIntraGradientRigidRegistration::Run( bool bRegister )
     cit2.GoToBegin();
 
     double sAB = 0.0, sA2 = 0.0, sB2 = 0.0;
-    while ( !cit1.IsAtEnd() )
+    while( !cit1.IsAtEnd() )
       {
       sAB += cit1.Get() * cit2.Get();
       sA2 += cit1.Get() * cit1.Get();
@@ -183,7 +182,7 @@ struIntra2DResults CIntraGradientRigidRegistration::Run( bool bRegister )
       ++cit2;
       }
 
-    if ( sA2 * sB2 == 0 )
+    if( sA2 * sB2 == 0 )
       {
       // if(sA2==sB2)
       //  results.Correlation = 1;

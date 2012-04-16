@@ -29,19 +29,18 @@ namespace itk
  */
 void
 GradientSteepestDescentOptimizer
-  ::StepAlongGradient( double factor,
-  const DerivativeType & transformedGradient )
+::StepAlongGradient( double factor,
+                     const DerivativeType & transformedGradient )
 {
   itkDebugMacro(
-   << "factor = " << factor << "  transformedGradient= " << transformedGradient );
+    << "factor = " << factor << "  transformedGradient= " << transformedGradient );
 
   const unsigned int spaceDimension
     = m_CostFunction->GetNumberOfParameters();
 
   ParametersType newPosition( spaceDimension );
   ParametersType currentPosition = this->GetCurrentPosition();
-
-  for ( unsigned int j = 0; j < spaceDimension; j++ )
+  for( unsigned int j = 0; j < spaceDimension; j++ )
     {
     newPosition[j] = currentPosition[j] + transformedGradient[j] * factor;
     }
@@ -50,6 +49,7 @@ GradientSteepestDescentOptimizer
 
   this->SetCurrentPosition( newPosition );
 }
+
 } // end namespace itk
 
 #endif

@@ -4,7 +4,7 @@
 #include <QThread>
 
 class CThreadDicomSeriesRead : public QThread
-  {
+{
   Q_OBJECT
 public:
   CThreadDicomSeriesRead(QObject *parent = 0);
@@ -18,6 +18,6 @@ protected:
   void run();
 
 private:
-  };
+};
 
 #endif

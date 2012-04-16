@@ -6,46 +6,44 @@
 #include <QThread>
 #include <QFont>
 
-
-
 CFurtherQCThread::CFurtherQCThread(QObject *parentLocal) : QThread(parentLocal)
 {
-  	DWINrrdFilename = "";
-  	XmlFilename = "";
-  	protocol = NULL;
-  	qcResult = NULL;
-  	mf_IntensityMotionCheck = new CIntensityMotionCheck;
-	dwi = NULL;
+  DWINrrdFilename = "";
+  XmlFilename = "";
+  protocol = NULL;
+  qcResult = NULL;
+  mf_IntensityMotionCheck = new CIntensityMotionCheck;
+  dwi = NULL;
 }
 
 CFurtherQCThread::~CFurtherQCThread()
-{}
+{
+}
 
 void CFurtherQCThread::run()
 {
-  
-  if ( !protocol )
-  {
+
+  if( !protocol )
+    {
     std::cout << "protocol not set (in Further QC)!" << std::endl;
     return;
-  }
+    }
 
-  if ( !qcResult )
-  {
+  if( !qcResult )
+    {
     std::cout << "qcResult not set (in Further QC)!" << std::endl;
     return;
-  }
+    }
 
   std::cout << "Further QC thread begins here " << std::endl;
-  
+
   mf_IntensityMotionCheck->SetXmlFileName(XmlFilename);
   mf_IntensityMotionCheck->SetProtocol_FurtherQC( protocol);
   mf_IntensityMotionCheck->SetQCResult( qcResult);
   mf_IntensityMotionCheck->LoadDwiImage_FurtherQC( this->Getdwi() );
   std::cout << " Test Further 1 " << std::endl;
-  emit f_StartProgressSignal(); 	// start showing progress bar
+  emit f_StartProgressSignal();   // start showing progress bar
   mf_IntensityMotionCheck->RunPipelineByProtocol_FurtherQC();
-
 
   /*printf("result of PIPELINE = %d",result);
 
@@ -73,7 +71,7 @@ void CFurtherQCThread::run()
   out = out >> 7;
   if ( out )
   {
-    std::cout << "QC FAILURE: Gradient direction # is less than 6!"
+    std::cout << "QC FAILURE: Gradient direction #is less than 6!"
       << std::endl;
   }
 
@@ -137,10 +135,9 @@ void CFurtherQCThread::run()
     std::cout << "Gradient-wise check:\t\tPASS" << std::endl;
   }
   */
-  
+
   emit f_StopProgressSignal();  // hiding progress bar
 
-  //emit allDone("Checking Thread ended");
+  // emit allDone("Checking Thread ended");
   emit ResultUpdate();
 }
-

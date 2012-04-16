@@ -67,7 +67,7 @@ namespace itk
 template <class TInputImage, class TOutputImage>
 class ITK_EXPORT VectorImageRegisterAffineFilter :
   public ImageToImageFilter<TInputImage, TOutputImage>
-  {
+{
 public:
   /** Standard class typedefs. */
   typedef VectorImageRegisterAffineFilter Self;
@@ -124,7 +124,7 @@ public:
 
   /* Internally Used Typedefs */
   typedef itk::VectorIndexSelectionCastImageFilter<InputImageType,
-    FixedImageType> VectorIndexFilterType;
+                                                   FixedImageType> VectorIndexFilterType;
 
   typedef itk::AffineTransform<double>
   TransformType;
@@ -134,7 +134,7 @@ public:
     FixedImageType,
     FixedImageType>        MetricType;
 
-  typedef itk:: LinearInterpolateImageFunction<
+  typedef itk::LinearInterpolateImageFunction<
     FixedImageType,
     double>         InterpolatorType;
 
@@ -143,9 +143,9 @@ public:
     FixedImageType>        RegistrationType;
 
   typedef itk::CenteredTransformInitializer<TransformType,
-    FixedImageType,
-    FixedImageType
-    >  TransformInitializerType;
+                                            FixedImageType,
+                                            FixedImageType
+                                            >  TransformInitializerType;
   typedef itk::ResampleImageFilter<
     FixedImageType,
     FixedImageType>    ResampleFilterType;
@@ -161,7 +161,7 @@ public:
     FixedImageType>    CastFilterType;
 #else
   typedef itk::CastImageFilter<FixedImageType,
-    CastImageType>    CastFilterType;
+                               CastImageType>    CastFilterType;
 #endif
 
   typedef typename VectorIndexFilterType::Pointer VectorIndexFilterPointer;
@@ -177,24 +177,24 @@ public:
   typedef typename ResampleFilterType::Pointer ResampleFilterTypePointer;
   typedef typename CastFilterType::Pointer     CastFilterTypePointer;
 
-  typedef itk::Matrix<double, 3, 3>            Matrix3D;
-  typedef typename TransformType::MatrixType   MatrixType;
+  typedef itk::Matrix<double, 3, 3>          Matrix3D;
+  typedef typename TransformType::MatrixType MatrixType;
 
   /** ImageDimension constants */
   itkStaticConstMacro(InputImageDimension, unsigned int,
-    TInputImage::ImageDimension);
+                      TInputImage::ImageDimension);
   itkStaticConstMacro(OutputImageDimension, unsigned int,
-    TOutputImage::ImageDimension);
+                      TOutputImage::ImageDimension);
 
   /** The dimensions of the input image must equal those of the
       output image. */
   itkConceptMacro( SameDimension,
-    ( Concept::SameDimension<itkGetStaticConstMacro(InputImageDimension),
-        itkGetStaticConstMacro(OutputImageDimension)> ) );
+                   ( Concept::SameDimension<itkGetStaticConstMacro(InputImageDimension),
+                                            itkGetStaticConstMacro(OutputImageDimension)> ) );
 
   /** The dimension of the input image must be 3 */
   itkConceptMacro( DimensionShouldBe3,
-    ( Concept::SameDimension<itkGetStaticConstMacro(InputImageDimension), 3> ) );
+                   ( Concept::SameDimension<itkGetStaticConstMacro(InputImageDimension), 3> ) );
 
   /** Standard New method. */
   itkNewMacro(Self);
@@ -203,20 +203,22 @@ public:
   itkTypeMacro(VectorImageRegisterAffineFilter, ImageToImageFilter);
 
   /* SetInput and GetOutput Macros */
-  itkSetObjectMacro (FixedImage, FixedImageType);
+  itkSetObjectMacro(FixedImage, FixedImageType);
   // itkSetObjectMacro (MovingImage, InputImageType);
-  itkGetObjectMacro (Output, OutputImageType);
+  itkGetObjectMacro(Output, OutputImageType);
 
-  itkSetMacro (NumberOfSpatialSamples, int);
-  itkSetMacro (NumberOfIterations, int);
-  itkSetMacro (TranslationScale, float);
-  itkSetMacro (MaximumStepLength, float);
-  itkSetMacro (MinimumStepLength, float);
-  itkSetMacro (RelaxationFactor, float);
-  itkSetMacro (OutputParameterFile, std::string);
+  itkSetMacro(NumberOfSpatialSamples, int);
+  itkSetMacro(NumberOfIterations, int);
+  itkSetMacro(TranslationScale, float);
+  itkSetMacro(MaximumStepLength, float);
+  itkSetMacro(MinimumStepLength, float);
+  itkSetMacro(RelaxationFactor, float);
+  itkSetMacro(OutputParameterFile, std::string);
 protected:
   VectorImageRegisterAffineFilter();
-  ~VectorImageRegisterAffineFilter() {};
+  ~VectorImageRegisterAffineFilter()
+  {
+  };
 
   void GenerateData();
 
@@ -238,7 +240,7 @@ private:
   int         m_NumberOfSpatialSamples;
   int         m_NumberOfIterations;
   std::string m_OutputParameterFile;
-  }; // end of class
+};   // end of class
 } // end namespace itk
 
 #ifndef ITK_MANUAL_INSTANTIATION

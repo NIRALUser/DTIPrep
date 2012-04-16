@@ -8,18 +8,17 @@
 #include "itkLinearEddyCurrentTransform.h"
 #include "vnl/algo/vnl_matrix_inverse.h"
 
-
 namespace itk
 {
 
 // Constructor with default arguments
-template<class TScalarType, unsigned int NInputDimensions,
-                            unsigned int NOutputDimensions>
+template <class TScalarType, unsigned int NInputDimensions,
+          unsigned int NOutputDimensions>
 LinearEddyCurrentTransform<TScalarType, NInputDimensions, NOutputDimensions>
 ::LinearEddyCurrentTransform()
   : Superclass(OutputSpaceDimension, ParametersDimension)
 {
-  
+
   m_Matrix.SetIdentity();
   m_MatrixMTime.Modified();
   m_Offset.Fill( 0 );
@@ -28,19 +27,16 @@ LinearEddyCurrentTransform<TScalarType, NInputDimensions, NOutputDimensions>
   m_Singular = false;
   m_InverseMatrix.SetIdentity();
   m_InverseMatrixMTime = m_MatrixMTime;
-  this->m_FixedParameters.SetSize ( NInputDimensions );
-  this->m_FixedParameters.Fill ( 0.0 );
+  this->m_FixedParameters.SetSize( NInputDimensions );
+  this->m_FixedParameters.Fill( 0.0 );
 
-  
 }
 
-
 // Constructor with default arguments
-template<class TScalarType, unsigned int NInputDimensions,
-                            unsigned int NOutputDimensions>
+template <class TScalarType, unsigned int NInputDimensions,
+          unsigned int NOutputDimensions>
 LinearEddyCurrentTransform<TScalarType, NInputDimensions, NOutputDimensions>
-::LinearEddyCurrentTransform( unsigned int outputDims, 
-                             unsigned int paramDims   )
+::LinearEddyCurrentTransform( unsigned int outputDims, unsigned int paramDims   )
   : Superclass(outputDims, paramDims)
 {
   m_Matrix.SetIdentity();
@@ -53,58 +49,49 @@ LinearEddyCurrentTransform<TScalarType, NInputDimensions, NOutputDimensions>
   m_InverseMatrixMTime = m_MatrixMTime;
 }
 
-
-
-
 // Constructor with explicit arguments
-template<class TScalarType, unsigned int NInputDimensions,
-                            unsigned int NOutputDimensions>
+template <class TScalarType, unsigned int NInputDimensions,
+          unsigned int NOutputDimensions>
 LinearEddyCurrentTransform<TScalarType, NInputDimensions, NOutputDimensions>
-::LinearEddyCurrentTransform(const MatrixType &matrix,
-                            const OutputVectorType &offset)
+::LinearEddyCurrentTransform(const MatrixType & matrix, const OutputVectorType & offset)
 {
   m_Matrix = matrix;
   m_MatrixMTime.Modified();
   m_Offset = offset;
   m_Center.Fill( 0 );
   m_Translation.Fill(0);
-  for(unsigned int i=0; i<NOutputDimensions; i++)
+  for( unsigned int i = 0; i < NOutputDimensions; i++ )
     {
     m_Translation[i] = offset[i];
     }
   this->ComputeMatrixParameters();
 }
 
-
-
-
 // Destructor
-template<class TScalarType, unsigned int NInputDimensions,
-                            unsigned int NOutputDimensions>
+template <class TScalarType, unsigned int NInputDimensions,
+          unsigned int NOutputDimensions>
 LinearEddyCurrentTransform<TScalarType, NInputDimensions, NOutputDimensions>
 ::~LinearEddyCurrentTransform()
 {
   return;
 }
 
-
-
 // Print self
-template<class TScalarType, unsigned int NInputDimensions,
-                            unsigned int NOutputDimensions>
+template <class TScalarType, unsigned int NInputDimensions,
+          unsigned int NOutputDimensions>
 void
 LinearEddyCurrentTransform<TScalarType, NInputDimensions, NOutputDimensions>
-::PrintSelf(std::ostream &os, Indent indent) const
+::PrintSelf(std::ostream & os, Indent indent) const
 {
-  Superclass::PrintSelf(os,indent);
+  Superclass::PrintSelf(os, indent);
 
   unsigned int i, j;
-  
+
   os << indent << "Matrix: " << std::endl;
-  for (i = 0; i < NInputDimensions; i++) 
+  for( i = 0; i < NInputDimensions; i++ )
     {
     os << indent.GetNextIndent();
-    for (j = 0; j < NOutputDimensions; j++)
+    for( j = 0; j < NOutputDimensions; j++ )
       {
       os << m_Matrix[i][j] << " ";
       }
@@ -116,10 +103,10 @@ LinearEddyCurrentTransform<TScalarType, NInputDimensions, NOutputDimensions>
   os << indent << "Translation: " << m_Translation << std::endl;
 
   os << indent << "Inverse: " << std::endl;
-  for (i = 0; i < NInputDimensions; i++) 
+  for( i = 0; i < NInputDimensions; i++ )
     {
     os << indent.GetNextIndent();
-    for (j = 0; j < NOutputDimensions; j++)
+    for( j = 0; j < NOutputDimensions; j++ )
       {
       os << this->GetInverseMatrix()[i][j] << " ";
       }
@@ -129,8 +116,8 @@ LinearEddyCurrentTransform<TScalarType, NInputDimensions, NOutputDimensions>
 }
 
 // Constructor with explicit arguments
-template<class TScalarType, unsigned int NInputDimensions,
-                            unsigned int NOutputDimensions>
+template <class TScalarType, unsigned int NInputDimensions,
+          unsigned int NOutputDimensions>
 void
 LinearEddyCurrentTransform<TScalarType, NInputDimensions, NOutputDimensions>
 ::SetIdentity( void )
@@ -143,23 +130,22 @@ LinearEddyCurrentTransform<TScalarType, NInputDimensions, NOutputDimensions>
   m_Singular = false;
   m_InverseMatrix.SetIdentity();
   m_InverseMatrixMTime = m_MatrixMTime;
-  this->Modified();  
+  this->Modified();
 }
 
-
 // Compose with another affine transformation
-template<class TScalarType, unsigned int NInputDimensions,
-                            unsigned int NOutputDimensions>
+template <class TScalarType, unsigned int NInputDimensions,
+          unsigned int NOutputDimensions>
 void
 LinearEddyCurrentTransform<TScalarType, NInputDimensions, NOutputDimensions>
 ::Compose(const Self * other, bool pre)
 {
-  if (pre) 
+  if( pre )
     {
     m_Offset = m_Matrix * other->m_Offset + m_Offset;
     m_Matrix = m_Matrix * other->m_Matrix;
     }
-  else 
+  else
     {
     m_Offset = other->m_Matrix * m_Offset + other->m_Offset;
     m_Matrix = other->m_Matrix * m_Matrix;
@@ -174,110 +160,104 @@ LinearEddyCurrentTransform<TScalarType, NInputDimensions, NOutputDimensions>
   return;
 }
 
-
-
 // Transform a point
-template<class TScalarType, unsigned int NInputDimensions,
-                            unsigned int NOutputDimensions>
+template <class TScalarType, unsigned int NInputDimensions,
+          unsigned int NOutputDimensions>
 typename LinearEddyCurrentTransform<TScalarType,
-                               NInputDimensions,
-                               NOutputDimensions>::OutputPointType
+                                    NInputDimensions,
+                                    NOutputDimensions>::OutputPointType
 LinearEddyCurrentTransform<TScalarType, NInputDimensions, NOutputDimensions>
-::TransformPoint(const InputPointType &point) const 
+::TransformPoint(const InputPointType & point) const
 {
   return m_Matrix * point + m_Offset;
 }
 
-
 // Transform a vector
-template<class TScalarType, unsigned int NInputDimensions,
-                            unsigned int NOutputDimensions>
+template <class TScalarType, unsigned int NInputDimensions,
+          unsigned int NOutputDimensions>
 typename LinearEddyCurrentTransform<TScalarType,
-                               NInputDimensions,
-                               NOutputDimensions>::OutputVectorType
+                                    NInputDimensions,
+                                    NOutputDimensions>::OutputVectorType
 LinearEddyCurrentTransform<TScalarType, NInputDimensions, NOutputDimensions>
-::TransformVector(const InputVectorType &vect) const 
+::TransformVector(const InputVectorType & vect) const
 {
   return m_Matrix * vect;
 }
-
 
 // Transform a vnl_vector_fixed
-template<class TScalarType, unsigned int NInputDimensions,
-                            unsigned int NOutputDimensions>
+template <class TScalarType, unsigned int NInputDimensions,
+          unsigned int NOutputDimensions>
 typename LinearEddyCurrentTransform<TScalarType,
-                               NInputDimensions,
-                               NOutputDimensions>::OutputVnlVectorType
+                                    NInputDimensions,
+                                    NOutputDimensions>::OutputVnlVectorType
 LinearEddyCurrentTransform<TScalarType, NInputDimensions, NOutputDimensions>
-::TransformVector(const InputVnlVectorType &vect) const 
+::TransformVector(const InputVnlVectorType & vect) const
 {
   return m_Matrix * vect;
 }
 
-
 // Transform a CovariantVector
-template<class TScalarType, unsigned int NInputDimensions,
-                            unsigned int NOutputDimensions>
+template <class TScalarType, unsigned int NInputDimensions,
+          unsigned int NOutputDimensions>
 typename LinearEddyCurrentTransform<TScalarType,
-                               NInputDimensions,
-                               NOutputDimensions>::OutputCovariantVectorType
+                                    NInputDimensions,
+                                    NOutputDimensions>::OutputCovariantVectorType
 LinearEddyCurrentTransform<TScalarType, NInputDimensions, NOutputDimensions>
-::TransformCovariantVector(const InputCovariantVectorType &vec) const 
+::TransformCovariantVector(const InputCovariantVectorType & vec) const
 {
-  OutputCovariantVectorType  result;    // Converted vector
-
-  for (unsigned int i = 0; i < NOutputDimensions; i++) 
+  OutputCovariantVectorType result;     // Converted vector
+  for( unsigned int i = 0; i < NOutputDimensions; i++ )
     {
     result[i] = NumericTraits<ScalarType>::Zero;
-    for (unsigned int j = 0; j < NInputDimensions; j++) 
+    for( unsigned int j = 0; j < NInputDimensions; j++ )
       {
-      result[i] += this->GetInverseMatrix()[j][i]*vec[j]; // Inverse transposed
+      result[i] += this->GetInverseMatrix()[j][i] * vec[j]; // Inverse transposed
       }
     }
   return result;
 }
 
 // Recompute the inverse matrix (internal)
-template<class TScalarType, unsigned int NInputDimensions,
-                            unsigned int NOutputDimensions>
+template <class TScalarType, unsigned int NInputDimensions,
+          unsigned int NOutputDimensions>
 const typename LinearEddyCurrentTransform<TScalarType,
-                               NInputDimensions,
-                               NOutputDimensions>::InverseMatrixType &
-LinearEddyCurrentTransform<TScalarType, NInputDimensions, NOutputDimensions>
+                                          NInputDimensions,
+                                          NOutputDimensions>::InverseMatrixType
+& LinearEddyCurrentTransform<TScalarType, NInputDimensions, NOutputDimensions>
 ::GetInverseMatrix( void ) const
-{
+  {
   // If the transform has been modified we recompute the inverse
-  if(m_InverseMatrixMTime != m_MatrixMTime)
+  if( m_InverseMatrixMTime != m_MatrixMTime )
     {
     m_Singular = false;
-    try 
+    try
       {
       m_InverseMatrix  = m_Matrix.GetInverse();
       }
-    catch(...) 
+    catch( ... )
       {
       m_Singular = true;
       }
-     m_InverseMatrixMTime = m_MatrixMTime;
+    m_InverseMatrixMTime = m_MatrixMTime;
     }
 
   return m_InverseMatrix;
-}
+  }
 
 // return an inverse transformation
-template<class TScalarType, unsigned int NInputDimensions,
-                            unsigned int NOutputDimensions>
+template <class TScalarType, unsigned int NInputDimensions,
+          unsigned int NOutputDimensions>
 bool
 LinearEddyCurrentTransform<TScalarType, NInputDimensions, NOutputDimensions>
 ::GetInverse( Self * inverse) const
 {
-  if(!inverse)
+  if( !inverse )
     {
     return false;
     }
 
   this->GetInverseMatrix();
-  if(m_Singular)
+  if( m_Singular )
     {
     return false;
     }
@@ -291,98 +271,88 @@ LinearEddyCurrentTransform<TScalarType, NInputDimensions, NOutputDimensions>
   return true;
 }
 
-
 // Get fixed parameters
-template<class TScalarType, unsigned int NInputDimensions,
-                            unsigned int NOutputDimensions>
+template <class TScalarType, unsigned int NInputDimensions,
+          unsigned int NOutputDimensions>
 void
 LinearEddyCurrentTransform<TScalarType, NInputDimensions, NOutputDimensions>
-  ::SetFixedParameters( const ParametersType & fp )
+::SetFixedParameters( const ParametersType & fp )
 {
   this->m_FixedParameters = fp;
   InputPointType c;
-  for ( unsigned int i = 0; i < NInputDimensions; i++ )
+  for( unsigned int i = 0; i < NInputDimensions; i++ )
     {
     c[i] = this->m_FixedParameters[i];
     }
-  this->SetCenter ( c );
+  this->SetCenter( c );
 }
 
 /** Get the Fixed Parameters. */
-template<class TScalarType, unsigned int NInputDimensions,
-                            unsigned int NOutputDimensions>
+template <class TScalarType, unsigned int NInputDimensions,
+          unsigned int NOutputDimensions>
 const typename LinearEddyCurrentTransform<TScalarType,
-                                     NInputDimensions,
-                                     NOutputDimensions>::ParametersType &
-LinearEddyCurrentTransform<TScalarType, NInputDimensions, NOutputDimensions>
-  ::GetFixedParameters(void) const
-{
-  this->m_FixedParameters.SetSize ( NInputDimensions );
-  for ( unsigned int i = 0; i < NInputDimensions; i++ )
+                                          NInputDimensions,
+                                          NOutputDimensions>::ParametersType
+& LinearEddyCurrentTransform<TScalarType, NInputDimensions, NOutputDimensions>
+::GetFixedParameters(void) const
+  {
+  this->m_FixedParameters.SetSize( NInputDimensions );
+  for( unsigned int i = 0; i < NInputDimensions; i++ )
     {
     this->m_FixedParameters[i] = this->m_Center[i];
     }
   return this->m_FixedParameters;
-}
-
-
+  }
 
 // Get parameters
-template<class TScalarType, unsigned int NInputDimensions,
-                            unsigned int NOutputDimensions>
+template <class TScalarType, unsigned int NInputDimensions,
+          unsigned int NOutputDimensions>
 const typename LinearEddyCurrentTransform<TScalarType,
-                                     NInputDimensions,
-                                     NOutputDimensions>::ParametersType &
-LinearEddyCurrentTransform<TScalarType, NInputDimensions, NOutputDimensions>
+                                          NInputDimensions,
+                                          NOutputDimensions>::ParametersType
+& LinearEddyCurrentTransform<TScalarType, NInputDimensions, NOutputDimensions>
 ::GetParameters( void ) const
-{
- 
-  this->m_Parameters[0] = m_Matrix[1][0];  //for X axis shear c1
-  this->m_Parameters[1] = m_Matrix[1][1];  //for Y axis scale c2
-  this->m_Parameters[2] = m_Matrix[1][2];  //for Z axis shear c3
-  this->m_Parameters[3] = m_Translation[1];   //This is for global translation on Y axis c0
+  {
+
+  this->m_Parameters[0] = m_Matrix[1][0];   // for X axis shear c1
+  this->m_Parameters[1] = m_Matrix[1][1];   // for Y axis scale c2
+  this->m_Parameters[2] = m_Matrix[1][2];   // for Z axis shear c3
+  this->m_Parameters[3] = m_Translation[1]; // This is for global translation on Y axis c0
 
   return this->m_Parameters;
-}
-
+  }
 
 // Set parameters
-template<class TScalarType, unsigned int NInputDimensions,
-                            unsigned int NOutputDimensions>
+template <class TScalarType, unsigned int NInputDimensions,
+          unsigned int NOutputDimensions>
 void
 LinearEddyCurrentTransform<TScalarType, NInputDimensions, NOutputDimensions>
 ::SetParameters( const ParametersType & parameters )
 {
 
-  //unsigned int par = 0;
+  // unsigned int par = 0;
 
   this->m_Parameters = parameters;
-
-  for(unsigned int row=0; row<NOutputDimensions; row++) 
+  for( unsigned int row = 0; row < NOutputDimensions; row++ )
     {
-    for(unsigned int col=0; col<NInputDimensions; col++) 
+    for( unsigned int col = 0; col < NInputDimensions; col++ )
       {
       m_Matrix[row][col] = 0.0;
       }
     m_Matrix[row][row] = 1.0;
     }
 
- 
-
-  m_Matrix[1][0] = this->m_Parameters[0];  //for c1
-  m_Matrix[1][1] = this->m_Parameters[1];  //for c2
-  m_Matrix[1][2] = this->m_Parameters[2];  //for c3
-
+  m_Matrix[1][0] = this->m_Parameters[0];  // for c1
+  m_Matrix[1][1] = this->m_Parameters[1];  // for c2
+  m_Matrix[1][2] = this->m_Parameters[2];  // for c3
   // Transfer the constant part
-  for(unsigned int i=0; i<NOutputDimensions; i++) 
+  for( unsigned int i = 0; i < NOutputDimensions; i++ )
     {
     m_Translation[i] = 0.0;
     }
-  m_Translation[1] = this->m_Parameters[3];    //c0
-   
-   
+  m_Translation[1] = this->m_Parameters[3];    // c0
 
-  m_MatrixMTime.Modified(); 
+  m_MatrixMTime.Modified();
 
   this->ComputeMatrix();  // Not necessary since parameters explicitly define
                           //    the matrix
@@ -394,14 +364,13 @@ LinearEddyCurrentTransform<TScalarType, NInputDimensions, NOutputDimensions>
 
 }
 
-
-// Compute the Jacobian in one position 
-template<class TScalarType, unsigned int NInputDimensions,
-                            unsigned int NOutputDimensions>
-const typename LinearEddyCurrentTransform<TScalarType, NInputDimensions, NOutputDimensions>::JacobianType & 
-LinearEddyCurrentTransform<TScalarType, NInputDimensions, NOutputDimensions>
-::GetJacobian( const InputPointType & p ) const
-{
+// Compute the Jacobian in one position
+template <class TScalarType, unsigned int NInputDimensions,
+          unsigned int NOutputDimensions>
+const typename LinearEddyCurrentTransform<TScalarType, NInputDimensions, NOutputDimensions>::JacobianType
+& LinearEddyCurrentTransform<TScalarType, NInputDimensions, NOutputDimensions>
+::GetJacobian( const InputPointType &p ) const
+  {
   // The Jacobian of the affine transform is composed of
   // subblocks of diagonal matrices, each one of them having
   // a constant value in the diagonal.
@@ -410,7 +379,7 @@ LinearEddyCurrentTransform<TScalarType, NInputDimensions, NOutputDimensions>
 
   const InputVectorType v = p - this->GetCenter();
 
-  //Linear correction
+  // Linear correction
   this->m_Jacobian( 1, 0 ) = v[0];
   this->m_Jacobian( 1, 1 ) = v[1];
   this->m_Jacobian( 1, 2 ) = v[2];
@@ -418,74 +387,72 @@ LinearEddyCurrentTransform<TScalarType, NInputDimensions, NOutputDimensions>
 
   return this->m_Jacobian;
 
-}
+  }
 
 // Computes offset based on center, matrix, and translation variables
-template<class TScalarType, unsigned int NInputDimensions,
-                            unsigned int NOutputDimensions>
+template <class TScalarType, unsigned int NInputDimensions,
+          unsigned int NOutputDimensions>
 void
 LinearEddyCurrentTransform<TScalarType, NInputDimensions, NOutputDimensions>
-::ComputeOffset( void ) 
+::ComputeOffset( void )
 {
   const MatrixType & matrix = this->GetMatrix();
-  
+
   OffsetType offset;
-  for(unsigned int i=0; i<NOutputDimensions; i++)
+  for( unsigned int i = 0; i < NOutputDimensions; i++ )
     {
     offset[i] = m_Translation[i] + m_Center[i];
-    for(unsigned int j=0; j<NInputDimensions; j++)
+    for( unsigned int j = 0; j < NInputDimensions; j++ )
       {
       offset[i] -= matrix[i][j] * m_Center[j];
       }
     }
 
-  m_Offset = offset ;
+  m_Offset = offset;
 }
 
 // Computes translation based on offset, matrix, and center
-template<class TScalarType, unsigned int NInputDimensions,
-                            unsigned int NOutputDimensions>
+template <class TScalarType, unsigned int NInputDimensions,
+          unsigned int NOutputDimensions>
 void
 LinearEddyCurrentTransform<TScalarType, NInputDimensions, NOutputDimensions>
-::ComputeTranslation( void ) 
+::ComputeTranslation( void )
 {
   const MatrixType & matrix = this->GetMatrix();
-  
+
   OffsetType translation;
-  for(unsigned int i=0; i<NOutputDimensions; i++)
+  for( unsigned int i = 0; i < NOutputDimensions; i++ )
     {
     translation[i] = m_Offset[i] - m_Center[i];
-    for(unsigned int j=0; j<NInputDimensions; j++)
+    for( unsigned int j = 0; j < NInputDimensions; j++ )
       {
       translation[i] += matrix[i][j] * m_Center[j];
       }
     }
 
-  m_Translation = translation ;
+  m_Translation = translation;
 }
-
 
 // Computes matrix - base class does nothing.  In derived classes is
 //    used to convert, for example, versor into a matrix
-template<class TScalarType, unsigned int NInputDimensions,
-                            unsigned int NOutputDimensions>
+template <class TScalarType, unsigned int NInputDimensions,
+          unsigned int NOutputDimensions>
 void
 LinearEddyCurrentTransform<TScalarType, NInputDimensions, NOutputDimensions>
-::ComputeMatrix( void ) 
+::ComputeMatrix( void )
 {
   // Since parameters explicitly define the matrix in this base class, this
   // function does nothing.  Normally used to compute a matrix when
   // its parameterization (e.g., the class' versor) is modified.
 }
 
-
 // Computes parameters - base class does nothing.  In derived classes is
 //    used to convert, for example, matrix into a versor
-template<class TScalarType, unsigned int NInputDimensions,
-                            unsigned int NOutputDimensions>
+template <class TScalarType, unsigned int NInputDimensions,
+          unsigned int NOutputDimensions>
 void
 LinearEddyCurrentTransform<TScalarType, NInputDimensions, NOutputDimensions>
-::ComputeMatrixParameters( void ) 
+::ComputeMatrixParameters( void )
 {
   // Since parameters explicitly define the matrix in this base class, this
   // function does nothing.  Normally used to update the parameterization
@@ -496,4 +463,3 @@ LinearEddyCurrentTransform<TScalarType, NInputDimensions, NOutputDimensions>
 } // namespace
 
 #endif
-

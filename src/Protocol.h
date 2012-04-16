@@ -5,7 +5,8 @@
 #include "vnl/vnl_vector_fixed.h"
 #include "vnl/vnl_matrix_fixed.h"
 
-struct ImageProtocol {
+struct ImageProtocol
+  {
   bool bCheck;
   int type;
   int space;
@@ -23,9 +24,10 @@ struct ImageProtocol {
 
   bool bQuitOnCheckSpacingFailure;
   bool bQuitOnCheckSizeFailure;
-};
+  };
 
-struct DiffusionProtocol {
+struct DiffusionProtocol
+  {
   bool bCheck;
   double bValue;
   // std::vector< std::vector<double> > gradients;
@@ -39,9 +41,10 @@ struct DiffusionProtocol {
   int reportFileMode; // 0: new   1: append
 
   bool bQuitOnCheckFailure;
-};
+  };
 
-struct DenoisingLMMSE {
+struct DenoisingLMMSE
+  {
 
   bool bCheck;
   std::string LMMSECommand;
@@ -54,11 +57,12 @@ struct DenoisingLMMSE {
   int MinNoiseSTD;
   int MaxNoiseSTD;
   double HistogramResolution;
-  bool AbsoluteValue;  
+  bool AbsoluteValue;
 
-};
+  };
 
-struct DenoisingJointLMMSE{
+struct DenoisingJointLMMSE
+  {
 
   bool bCheck;
   std::string JointLMMSECommand;
@@ -66,9 +70,10 @@ struct DenoisingJointLMMSE{
   int NumNeighborGradients;
   vnl_vector_fixed<int, 3> Est_Radius;
   vnl_vector_fixed<int, 3> Filter_Radius;
-};
+  };
 
-struct SliceCheckProtocol {
+struct SliceCheckProtocol
+  {
   bool bCheck;
 
   int checkTimes;
@@ -85,10 +90,11 @@ struct SliceCheckProtocol {
   int reportFileMode; // 0: new   1: append
 
   std::string excludedDWINrrdFileNameSuffix;
-  bool bQuitOnCheckFailure;       
-};
+  bool bQuitOnCheckFailure;
+  };
 
-struct InterlaceCheckProtocol {
+struct InterlaceCheckProtocol
+  {
   bool bCheck;
 
   double correlationThresholdBaseline;
@@ -104,9 +110,10 @@ struct InterlaceCheckProtocol {
 
   std::string excludedDWINrrdFileNameSuffix;
   bool bQuitOnCheckFailure;
-};
+  };
 
-struct GradientCheckProtocol {
+struct GradientCheckProtocol
+  {
   bool bCheck;
 
   double translationThreshold;
@@ -118,9 +125,10 @@ struct GradientCheckProtocol {
 
   std::string excludedDWINrrdFileNameSuffix;
   bool bQuitOnCheckFailure;
-};
+  };
 
-struct BaselineAverageProtocol {
+struct BaselineAverageProtocol
+  {
   bool bAverage;
 
   int averageMethod;
@@ -129,9 +137,10 @@ struct BaselineAverageProtocol {
   std::string outputDWIFileNameSuffix;
   std::string reportFileNameSuffix;
   int reportFileMode; // 0: new   1: append
-};
+  };
 
-struct EddyMotionCorrectionProtocol {
+struct EddyMotionCorrectionProtocol
+  {
   bool bCorrect;
   // int toolSource; // 0:Utah; 1:IOWA
   int numberOfBins;
@@ -144,9 +153,10 @@ struct EddyMotionCorrectionProtocol {
   std::string outputDWIFileNameSuffix;
   std::string reportFileNameSuffix;
   int reportFileMode; // 0: new   1: append
-};
+  };
 
-struct DTIProtocol {
+struct DTIProtocol
+  {
   bool bCompute;
   std::string dtiestimCommand;
   std::string dtiprocessCommand;
@@ -172,7 +182,7 @@ struct DTIProtocol {
 
   std::string reportFileNameSuffix;
   int reportFileMode; // 0: new   1: append
-};
+  };
 
 class Protocol
 {
@@ -180,19 +190,22 @@ public:
   Protocol(void);
   ~Protocol(void);
 
-  enum {
+  enum
+    {
     REPORT_TYPE_SIMPLE = 0,
     REPORT_TYPE_VERBOSE,
     REPORT_TYPE_EASY_PARSE,
-  };
+    };
 
-  enum {
+  enum
+    {
     TYPE_SHORT = 0,
     TYPE_USHORT,
     TYPE_UNKNOWN,
-  };
+    };
 
-  enum {
+  enum
+    {
     SPACE_LAI = 0,
     SPACE_LAS,
     SPACE_LPI,
@@ -202,18 +215,19 @@ public:
     SPACE_RPI,
     SPACE_RPS,
     SPACE_UNKNOWN,
-  };
+    };
 
   enum {  METHOD_WLS = 0,
-    METHOD_LLS,
-    METHOD_ML,
-    METHOD_NLS,
-    METHOD_UNKNOWN, };
+          METHOD_LLS,
+          METHOD_ML,
+          METHOD_NLS,
+          METHOD_UNKNOWN, };
 
-  struct DiffusionDir {
+  struct DiffusionDir
+    {
     std::vector<double> gradientDir;
     int repetitionNumber;
-  };
+    };
 
   void initProtocols();
 
@@ -232,12 +246,12 @@ public:
   void initBaselineAverageProtocol();
 
   void initEddyMotionCorrectionProtocol();
-  
+
   void initDenoisingJointLMMSE();
 
   void initDTIProtocol();
 
-  //HACK: print functions should be const
+  // HACK: print functions should be const
   void printProtocols();
 
   void printImageProtocol();
@@ -260,7 +274,7 @@ public:
 
   void collectDiffusionStatistics();
 
-  //HACK:  get functions should be const, and should start with capital G
+  // HACK:  get functions should be const, and should start with capital G
   int getBaselineNumber() const
   {
     return baselineNumber;
@@ -281,7 +295,7 @@ public:
     return repetitionNumber;
   }
 
-  //Get functions should be const, returning a reference to the internal
+  // Get functions should be const, returning a reference to the internal
   // class variable breaks encapsulation.
   // PREFER:
   // "const struct ImageProtocol & GetImageProtocol() const"
@@ -344,7 +358,7 @@ public:
 
   void SetQCOutputDirectory( std::string QCDirectory )
   {
-	QCOutputDirectory = QCDirectory;
+    QCOutputDirectory = QCDirectory;
   }
 
   std::string GetQCedDWIFileNameSuffix() const
@@ -372,39 +386,40 @@ public:
     return m_ReportType;
   }
 
-  void SetReportType( const int type) 
+  void SetReportType( const int type)
   {
     m_ReportType = type;
   }
 
   void Save( std::string xml);
 
-  //TODO:  A family of these GetXXXXXReportFileName() functions needs to be written
+  // TODO:  A family of these GetXXXXXReportFileName() functions needs to be written
   // HACK:  These functions should all be const, which means that the functions they depend on
   // also need to be const
   // HACK:  Body of these functions should be moved to the .cpp file
   // HACK:  Common code accross all functions should be refactored into private function
   // to remove as much duplicate code as possible.
-  //std::string GetDiffusionProtocolReportFileName(const std::string referenceDwiFileName) const
+  // std::string GetDiffusionProtocolReportFileName(const std::string referenceDwiFileName) const
   std::string GetDiffusionProtocolReportFileName(const std::string referenceDwiFileName)
   {
     std::string ReportFileName;
-    if ( this->GetImageProtocol().reportFileNameSuffix.length() > 0 )
-    {
-      if ( this->GetQCOutputDirectory().length() > 0 )
+
+    if( this->GetImageProtocol().reportFileNameSuffix.length() > 0 )
       {
-        if ( this->GetQCOutputDirectory().at( this->GetQCOutputDirectory()
-          .length() - 1 ) == '\\'
-          || this->GetQCOutputDirectory().at( this->
-          GetQCOutputDirectory().length() - 1 ) == '/'     )
+      if( this->GetQCOutputDirectory().length() > 0 )
         {
+        if( this->GetQCOutputDirectory().at( this->GetQCOutputDirectory()
+                                             .length() - 1 ) == '\\'
+            || this->GetQCOutputDirectory().at( this->
+                                                GetQCOutputDirectory().length() - 1 ) == '/'     )
+          {
           ReportFileName = this->GetQCOutputDirectory().substr(
-            0, this->GetQCOutputDirectory().find_last_of("/\\") );
-        }
+              0, this->GetQCOutputDirectory().find_last_of("/\\") );
+          }
         else
-        {
+          {
           ReportFileName = this->GetQCOutputDirectory();
-        }
+          }
 
         ReportFileName.append( "/" );
 
@@ -414,26 +429,26 @@ public:
         ReportFileName.append( str );
         ReportFileName.append(
           this->GetDiffusionProtocol().reportFileNameSuffix );
-      }
+        }
       else
-      {
+        {
         ReportFileName = referenceDwiFileName.substr( 0, referenceDwiFileName.find_last_of('.') );
         ReportFileName.append(
           this->GetDiffusionProtocol().reportFileNameSuffix );
+        }
       }
-    }
     return ReportFileName;
   }
 
 private:
 
-  //HACK:  All private member variables should start with "m_" to indicate
+  // HACK:  All private member variables should start with "m_" to indicate
   //       that they are private, and to avoid namespace polution/collision with the class itself
   std::string QCOutputDirectory;
   std::string QCedDWIFileNameSuffix;
   std::string reportFileNameSuffix;
-  double m_BadGradientPercentageTolerance;
-  int m_ReportType; // -1:no; 0:simple, 1:verbose, 2: easy parse
+  double      m_BadGradientPercentageTolerance;
+  int         m_ReportType; // -1:no; 0:simple, 1:verbose, 2: easy parse
 
   int baselineNumber;
   int bValueNumber;
@@ -442,12 +457,12 @@ private:
 
   ImageProtocol                imageProtocol;
   DiffusionProtocol            diffusionProtocol;
-  DenoisingLMMSE	       denoisingLMMSE;
+  DenoisingLMMSE               denoisingLMMSE;
   SliceCheckProtocol           sliceCheckProtocol;
   InterlaceCheckProtocol       interlaceCheckProtocol;
   BaselineAverageProtocol      baselineAverageProtocol;
   EddyMotionCorrectionProtocol eddyMotionCorrectionProtocol;
   GradientCheckProtocol        gradientCheckProtocol;
-  DenoisingJointLMMSE	       denoisingJointLMMSE;
+  DenoisingJointLMMSE          denoisingJointLMMSE;
   DTIProtocol                  dTIProtocol;
 };

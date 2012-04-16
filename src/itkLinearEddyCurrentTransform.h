@@ -19,13 +19,13 @@ template <
 // Number of dimensions in the output space
 class LinearEddyCurrentTransform :
   public Transform<TScalarType, NInputDimensions, NOutputDimensions>
-  {
+{
 public:
   /** Standard typedefs   */
   typedef LinearEddyCurrentTransform Self;
   typedef Transform<TScalarType,
-    NInputDimensions,
-    NOutputDimensions>        Superclass;
+                    NInputDimensions,
+                    NOutputDimensions>        Superclass;
   typedef SmartPointer<Self>       Pointer;
   typedef SmartPointer<const Self> ConstPointer;
 
@@ -40,7 +40,7 @@ public:
   itkStaticConstMacro(OutputSpaceDimension, unsigned int, NOutputDimensions);
 
   itkStaticConstMacro(ParametersDimension, unsigned int,
-    NInputDimensions + 1);
+                      NInputDimensions + 1);
 
   /** Parameters Type   */
   typedef typename Superclass::ParametersType ParametersType;
@@ -53,45 +53,45 @@ public:
 
   /** Standard vector type for this class   */
   typedef Vector<TScalarType,
-    itkGetStaticConstMacro(InputSpaceDimension)>  InputVectorType;
+                 itkGetStaticConstMacro(InputSpaceDimension)>  InputVectorType;
   typedef Vector<TScalarType,
-    itkGetStaticConstMacro(OutputSpaceDimension)> OutputVectorType;
+                 itkGetStaticConstMacro(OutputSpaceDimension)> OutputVectorType;
 
   /** Standard covariant vector type for this class   */
   typedef CovariantVector<TScalarType,
-    itkGetStaticConstMacro(InputSpaceDimension)>
+                          itkGetStaticConstMacro(InputSpaceDimension)>
   InputCovariantVectorType;
   typedef CovariantVector<TScalarType,
-    itkGetStaticConstMacro(OutputSpaceDimension)>
+                          itkGetStaticConstMacro(OutputSpaceDimension)>
   OutputCovariantVectorType;
 
   /** Standard vnl_vector type for this class   */
   typedef vnl_vector_fixed<TScalarType,
-    itkGetStaticConstMacro(InputSpaceDimension)>
+                           itkGetStaticConstMacro(InputSpaceDimension)>
   InputVnlVectorType;
   typedef vnl_vector_fixed<TScalarType,
-    itkGetStaticConstMacro(OutputSpaceDimension)>
+                           itkGetStaticConstMacro(OutputSpaceDimension)>
   OutputVnlVectorType;
 
   /** Standard coordinate point type for this class   */
   typedef Point<TScalarType,
-    itkGetStaticConstMacro(InputSpaceDimension)>
+                itkGetStaticConstMacro(InputSpaceDimension)>
   InputPointType;
   typedef Point<TScalarType,
-    itkGetStaticConstMacro(OutputSpaceDimension)>
+                itkGetStaticConstMacro(OutputSpaceDimension)>
   OutputPointType;
 
   /** Standard matrix type for this class   */
   typedef Matrix<TScalarType, itkGetStaticConstMacro(OutputSpaceDimension),
-    itkGetStaticConstMacro(InputSpaceDimension)>
+                 itkGetStaticConstMacro(InputSpaceDimension)>
   MatrixType;
 
   /** Standard inverse matrix type for this class   */
   typedef Matrix<TScalarType, itkGetStaticConstMacro(InputSpaceDimension),
-    itkGetStaticConstMacro(OutputSpaceDimension)>
+                 itkGetStaticConstMacro(OutputSpaceDimension)>
   InverseMatrixType;
 
-  typedef InputPointType   CenterType;
+  typedef InputPointType CenterType;
 
   typedef OutputVectorType OffsetType;
 
@@ -258,8 +258,7 @@ public:
 
   OutputVnlVectorType TransformVector(const InputVnlVectorType & vector) const;
 
-  OutputCovariantVectorType TransformCovariantVector(
-    const InputCovariantVectorType & vector) const;
+  OutputCovariantVectorType TransformCovariantVector(const InputCovariantVectorType & vector) const;
 
   /** Compute the Jacobian of the transformation
    *
@@ -310,10 +309,8 @@ protected:
    * to values specified by the caller.  If the arguments are
    * omitted, then the LinearEddyCurrentTransform is initialized to an identity
    * transformation in the appropriate number of dimensions.   **/
-  LinearEddyCurrentTransform(const MatrixType & matrix,
-    const OutputVectorType & offset);
-  LinearEddyCurrentTransform(unsigned int outputDims,
-    unsigned int paramDims);
+  LinearEddyCurrentTransform(const MatrixType & matrix, const OutputVectorType & offset);
+  LinearEddyCurrentTransform(unsigned int outputDims, unsigned int paramDims);
   LinearEddyCurrentTransform();
 
   /** Destroy an LinearEddyCurrentTransform object   **/
@@ -334,7 +331,7 @@ protected:
 
   bool InverseMatrixIsOld(void) const
   {
-    if ( m_MatrixMTime != m_InverseMatrixMTime )
+    if( m_MatrixMTime != m_InverseMatrixMTime )
       {
       return true;
       }
@@ -377,34 +374,34 @@ private:
   LinearEddyCurrentTransform(const Self & other);
   const Self & operator=( const Self & );
 
-  MatrixType       m_Matrix;                    // Matrix of the transformation
-  OutputVectorType m_Offset;                    // Offset of the transformation
+  MatrixType                m_Matrix;           // Matrix of the transformation
+  OutputVectorType          m_Offset;           // Offset of the transformation
   mutable InverseMatrixType m_InverseMatrix;    // Inverse of the matrix
-  mutable bool m_Singular;                      // Is m_Inverse singular?
+  mutable bool              m_Singular;         // Is m_Inverse singular?
 
   InputPointType   m_Center;
   OutputVectorType m_Translation;
 
   /** To avoid recomputation of the inverse if not needed */
-  TimeStamp m_MatrixMTime;
+  TimeStamp         m_MatrixMTime;
   mutable TimeStamp m_InverseMatrixMTime;
-  }; // class LinearEddyCurrentTransform
+};   // class LinearEddyCurrentTransform
 }  // namespace itk
 
 // Define instantiation macro for this template.
 #define ITK_TEMPLATE_LinearEddyCurrentTransform(_, EXPORT, x, y) \
   namespace itk { \
-  _( 3 ( class EXPORT LinearEddyCurrentTransform < ITK_TEMPLATE_3 x > ) ) \
-  namespace Templates { typedef LinearEddyCurrentTransform < ITK_TEMPLATE_3 x > \
-                        LinearEddyCurrentTransform ## y; } \
+  _( 3 ( class EXPORT LinearEddyCurrentTransform<ITK_TEMPLATE_3 x> ) ) \
+  namespace Templates { typedef LinearEddyCurrentTransform<ITK_TEMPLATE_3 x> \
+                        LinearEddyCurrentTransform##y; } \
   }
 
 #if ITK_TEMPLATE_EXPLICIT
-# include "Templates/itkLinearEddyCurrentTransform+-.h"
+#include "Templates/itkLinearEddyCurrentTransform+-.h"
 #endif
 
 #if ITK_TEMPLATE_TXX
-# include "itkLinearEddyCurrentTransform.txx"
+#include "itkLinearEddyCurrentTransform.txx"
 #endif
 
 #endif /* __itkLinearEddyCurrentTransform_h */

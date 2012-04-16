@@ -15,8 +15,8 @@ public:
   CThreadIntensityMotionCheck(QObject *parent = 0);
   ~CThreadIntensityMotionCheck();
 
-  CIntensityMotionCheck * m_IntensityMotionCheck;    //pointer to the core function to show its long running for progressBar
-  
+  CIntensityMotionCheck * m_IntensityMotionCheck;    // pointer to the core function to show its long running for
+                                                     // progressBar
 
   void SetDwiFileName(std::string filename)
   {
@@ -37,17 +37,16 @@ public:
   {
     qcResult = r;
   }
- 
-  //void Set_result(unsigned char r)
-  //{
+
+  // void Set_result(unsigned char r)
+  // {
   //  result = r;
-  //} 
+  // }
 
-  //unsigned char & Get_result()
-  //{
+  // unsigned char & Get_result()
+  // {
   //  return result;
-  //}
-
+  // }
 signals:
   void allDone(const QString &);
 
@@ -66,23 +65,24 @@ signals:
   void kkk( int );
 
   void StartProgressSignal();   // Signal for progressBar function
+
   void StopProgressSignal();   // Signal for progressBar function
 
-  void Building_Mapping_XML();		// Signal to create mapping between conformanced gradeints and original gradeints
-  void LoadQCedDWI( QString qcdwiname);
+  void Building_Mapping_XML();    // Signal to create mapping between conformanced gradeints and original gradeints
 
+  void LoadQCedDWI( QString qcdwiname);
 
 protected:
   void run();
-  
+
 private:
   std::string DWINrrdFilename;
   std::string XmlFilename;
 
-  Protocol    *protocol;
-  QCResult    *qcResult;
+  Protocol *protocol;
+  QCResult *qcResult;
 
-  //unsigned char result; // the result of RunPipelineByProtocol
+  // unsigned char result; // the result of RunPipelineByProtocol
 
 };
 

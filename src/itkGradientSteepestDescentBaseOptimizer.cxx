@@ -29,8 +29,8 @@ namespace itk
  * Constructor
  */
 GradientSteepestDescentBaseOptimizer
-  ::GradientSteepestDescentBaseOptimizer()
-  {
+::GradientSteepestDescentBaseOptimizer()
+{
   itkDebugMacro("Constructor");
   m_MaximumStepLength = 1.0;
   m_MinimumStepLength = 1e-3;
@@ -48,14 +48,14 @@ GradientSteepestDescentBaseOptimizer
   m_Gradient.Fill( 0.0f );
   m_PreviousGradient.Fill( 0.0f );
   m_RelaxationFactor = 0.5;
-  }
+}
 
 /**
  * Start the optimization
  */
 void
 GradientSteepestDescentBaseOptimizer
-  ::StartOptimization( void )
+::StartOptimization( void )
 {
   itkDebugMacro("StartOptimization");
 
@@ -67,9 +67,9 @@ GradientSteepestDescentBaseOptimizer
 
   m_Gradient = DerivativeType( spaceDimension );
   m_PreviousGradient = DerivativeType( spaceDimension );
-  m_Position = ParametersType ( spaceDimension );         // add by Ran
-  m_PreviousPosition = ParametersType ( spaceDimension ); // add by Ran
-  m_BestPosition = ParametersType ( spaceDimension );     // add by Ran
+  m_Position = ParametersType( spaceDimension );          // add by Ran
+  m_PreviousPosition = ParametersType( spaceDimension );  // add by Ran
+  m_BestPosition = ParametersType( spaceDimension );      // add by Ran
   m_Gradient.Fill( 0.0f );
   m_PreviousGradient.Fill( 0.0f );
   m_PreviousPosition.Fill( 0.0f );  // add by Ran
@@ -84,7 +84,7 @@ GradientSteepestDescentBaseOptimizer
  */
 void
 GradientSteepestDescentBaseOptimizer
-  ::ResumeOptimization( void )
+::ResumeOptimization( void )
 {
   itkDebugMacro("ResumeOptimization");
 
@@ -92,7 +92,7 @@ GradientSteepestDescentBaseOptimizer
 
   this->InvokeEvent( itk::StartEvent() );
 
-  while ( !m_Stop )
+  while( !m_Stop )
     {
     m_PreviousGradient = m_Gradient;
     m_PreviousValue = m_Value;  // add by Ran
@@ -101,12 +101,12 @@ GradientSteepestDescentBaseOptimizer
       = m_CostFunction->GetNumberOfParameters();
 
     ParametersType currentPosition = this->GetCurrentPosition();
-    for ( unsigned int j = 0; j < spaceDimension; j++ )
+    for( unsigned int j = 0; j < spaceDimension; j++ )
       {
       m_PreviousPosition[j] = currentPosition[j];
       }
 
-    if ( m_Stop )
+    if( m_Stop )
       {
       break;
       }
@@ -116,14 +116,14 @@ GradientSteepestDescentBaseOptimizer
       m_CostFunction->GetValueAndDerivative(
         this->GetCurrentPosition(), m_Value, m_Gradient );
       }
-    catch ( itk::ExceptionObject & excp )
+    catch( itk::ExceptionObject & excp )
       {
       m_StopCondition = CostFunctionError;
       this->StopOptimization();
       throw excp;
       }
 
-    if ( m_Stop )
+    if( m_Stop )
       {
       break;
       }
@@ -132,7 +132,7 @@ GradientSteepestDescentBaseOptimizer
 
     m_CurrentIteration++;
 
-    if ( m_CurrentIteration == m_NumberOfIterations )
+    if( m_CurrentIteration == m_NumberOfIterations )
       {
       m_StopCondition = MaximumNumberOfIterations;
       this->StopOptimization();
@@ -146,7 +146,7 @@ GradientSteepestDescentBaseOptimizer
  */
 void
 GradientSteepestDescentBaseOptimizer
-  ::StopOptimization( void )
+::StopOptimization( void )
 {
   itkDebugMacro("StopOptimization");
 
@@ -159,7 +159,7 @@ GradientSteepestDescentBaseOptimizer
  */
 void
 GradientSteepestDescentBaseOptimizer
-  ::AdvanceOneStep( void )
+::AdvanceOneStep( void )
 {
   itkDebugMacro("AdvanceOneStep");
 
@@ -170,34 +170,33 @@ GradientSteepestDescentBaseOptimizer
   DerivativeType previousTransformedGradient( spaceDimension );
   ScalesType     scales = this->GetScales();
 
-  if ( m_RelaxationFactor < 0.0 )
+  if( m_RelaxationFactor < 0.0 )
     {
     itkExceptionMacro(
-     << "Relaxation factor must be positive. Current value is "
-     << m_RelaxationFactor );
+      << "Relaxation factor must be positive. Current value is "
+      << m_RelaxationFactor );
     return;
     }
 
-  if ( m_RelaxationFactor >= 1.0 )
+  if( m_RelaxationFactor >= 1.0 )
     {
     itkExceptionMacro(
-     << "Relaxation factor must less than 1.0. Current value is "
-     << m_RelaxationFactor );
+      << "Relaxation factor must less than 1.0. Current value is "
+      << m_RelaxationFactor );
     return;
     }
 
   // Make sure the scales have been set properly
-  if ( scales.size() != spaceDimension )
+  if( scales.size() != spaceDimension )
     {
     itkExceptionMacro(<< "The size of Scales is "
                       << scales.size()
                       <<
-      ", but the NumberOfParameters for the CostFunction is "
+                      ", but the NumberOfParameters for the CostFunction is "
                       << spaceDimension
                       << ".");
     }
-
-  for ( unsigned int i = 0;  i < spaceDimension; i++ )
+  for( unsigned int i = 0;  i < spaceDimension; i++ )
     {
     transformedGradient[i]  = m_Gradient[i] / scales[i];
     previousTransformedGradient[i]
@@ -205,7 +204,7 @@ GradientSteepestDescentBaseOptimizer
     }
 
   double magnitudeSquare = 0;
-  for ( unsigned int dim = 0; dim < spaceDimension; dim++ )
+  for( unsigned int dim = 0; dim < spaceDimension; dim++ )
     {
     const double weighted = transformedGradient[dim];
     magnitudeSquare += weighted * weighted;
@@ -213,20 +212,20 @@ GradientSteepestDescentBaseOptimizer
 
   const double gradientMagnitude = vcl_sqrt( magnitudeSquare );
 
-  if ( gradientMagnitude < m_GradientMagnitudeTolerance )
+  if( gradientMagnitude < m_GradientMagnitudeTolerance )
     {
     m_StopCondition = GradientMagnitudeTolerance;
     this->StopOptimization();
     return;
     }
 
-  if ( this->m_Maximize )
+  if( this->m_Maximize )
     {
-    if ( m_BestValue < m_Value )
+    if( m_BestValue < m_Value )
       {
       m_BestValue = m_Value;
       m_Position = this->GetCurrentPosition();
-      for ( unsigned int i = 0; i < spaceDimension; i++ )
+      for( unsigned int i = 0; i < spaceDimension; i++ )
         {
         m_BestPosition[i] = m_Position[i];
         }
@@ -239,11 +238,11 @@ GradientSteepestDescentBaseOptimizer
     }
   else
     {
-    if ( m_BestValue > m_Value )
+    if( m_BestValue > m_Value )
       {
       m_BestValue = m_Value;
       m_Position = this->GetCurrentPosition();
-      for ( unsigned int i = 0; i < spaceDimension; i++ )
+      for( unsigned int i = 0; i < spaceDimension; i++ )
         {
         m_BestPosition[i] = m_Position[i];
         }
@@ -255,7 +254,7 @@ GradientSteepestDescentBaseOptimizer
       }
     }
 
-  if ( m_CurrentStepLength < m_MinimumStepLength )
+  if( m_CurrentStepLength < m_MinimumStepLength )
     {
     m_StopCondition = StepTooSmall;
     this->StopOptimization();
@@ -263,7 +262,7 @@ GradientSteepestDescentBaseOptimizer
     }
 
   double direction;
-  if ( this->m_Maximize )
+  if( this->m_Maximize )
     {
     direction = 1.0;
     }
@@ -284,7 +283,7 @@ GradientSteepestDescentBaseOptimizer
 
 void
 GradientSteepestDescentBaseOptimizer
-  ::PrintSelf( std::ostream & os, itk::Indent indent ) const
+::PrintSelf( std::ostream & os, itk::Indent indent ) const
 {
   Superclass::PrintSelf(os, indent);
   os << indent << "MaximumStepLength: "
@@ -303,7 +302,7 @@ GradientSteepestDescentBaseOptimizer
      << m_Value << std::endl;
   os << indent << "Maximize: "
      << m_Maximize << std::endl;
-  if ( m_CostFunction )
+  if( m_CostFunction )
     {
     os << indent << "CostFunction: "
        << &m_CostFunction << std::endl;
@@ -320,6 +319,7 @@ GradientSteepestDescentBaseOptimizer
   os << indent << "Gradient: "
      << m_Gradient << std::endl;
 }
+
 } // end namespace itk
 
 #endif

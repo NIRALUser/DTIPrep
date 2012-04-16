@@ -32,19 +32,13 @@ class vtkEventQtSlotConnect;
 
 class ImageView2DPanelWithControls : public QDockWidget,
   private Ui_ImageView2DPanelWithControls
-  {
+{
   Q_OBJECT
 public:
   ImageView2DPanelWithControls(QString title, QMainWindow *parent = 0);
   ~ImageView2DPanelWithControls(void);
 
-  void Setup( vtkImageData *image,
-    double ww,
-    double wl,
-    int SliceIndex,
-    int orient,
-    int numGradients,
-    int id);
+  void Setup( vtkImageData *image, double ww, double wl, int SliceIndex, int orient, int numGradients, int id);
 
   void Update();
 
@@ -74,7 +68,8 @@ public:
   }
 
 public:
-  enum {
+  enum
+    {
     ORIENTATION_AXIAL    = 0,
     ORIENTATION_SAGITTAL,
     ORIENTATION_CORONAL,
@@ -106,7 +101,7 @@ public:
   }
 
   QLineEdit * GetLineEdit_Gradient()
-  {  
+  {
     return lineEdit_Gradient;
   }
 
@@ -156,17 +151,9 @@ private slots:
   void on_doubleSpinBox_valueChanged(double value);
 
   // connect with ImagePlaneWidgets in MainWindow
-  void SliceIndexChanged(vtkObject *obj,
-    unsigned long,
-    void *client_data,
-    void *,
-    vtkCommand *command);
+  void SliceIndexChanged(vtkObject *obj, unsigned long, void *client_data, void *, vtkCommand *command);
 
-  void WindowLevelChanged(vtkObject *obj,
-    unsigned long,
-    void *client_data,
-    void *,
-    vtkCommand *command);
+  void WindowLevelChanged(vtkObject *obj, unsigned long, void *client_data, void *, vtkCommand *command);
 
   // syn
   void on_toolButton_windowlevel_Syn_toggled(bool syn);
@@ -180,8 +167,8 @@ private slots:
 private:
   vtkCylinderSource *source;
   vtkPolyDataMapper *mapper;
-  vtkActor          *actor;
-  vtkRenderer       *ren;
+  vtkActor *         actor;
+  vtkRenderer *      ren;
 
   vtkImageViewer2 *ImageViewer2;
 
@@ -189,15 +176,15 @@ private:
   int WindowID;
 
   vtkImageData *vtkImage;
-  //TODO:  m_ImageDimension and m_ImageSpacing should be itk::ImageBase::ImageSpacing types for spacing and dimension
-  int          m_ImageDimension[3];
-  double       m_ImageSpacing[3];
-  int          NumberOfGradients;
+  // TODO:  m_ImageDimension and m_ImageSpacing should be itk::ImageBase::ImageSpacing types for spacing and dimension
+  int    m_ImageDimension[3];
+  double m_ImageSpacing[3];
+  int    NumberOfGradients;
 
   // vtkQtConnection
   vtkEventQtSlotConnect *vtkQtConnections;
 
   bool bSetup;
-  };
+};
 
 #endif // IMAGEVIEW2DPANELWITHCONTROLS_H

@@ -12,7 +12,8 @@ Protocol::Protocol(void)
 }
 
 Protocol::~Protocol(void)
-{}
+{
+}
 
 // init protocols
 void Protocol::initProtocols()
@@ -90,9 +91,10 @@ void Protocol::initDenoisingLMMSE()
 {
 
   denoisingLMMSE.bCheck = false;
-  denoisingLMMSE.ParameterSet = "" ;
+  denoisingLMMSE.ParameterSet = "";
   denoisingLMMSE.NumIter = 1;
-  denoisingLMMSE.LMMSECommand = "/tools/Slicer3/Slicer3-3.6.3-2011-03-04-linux-x86_64/lib/Slicer3/Plugins/dwiNoiseFilter";
+  denoisingLMMSE.LMMSECommand =
+    "/tools/Slicer3/Slicer3-3.6.3-2011-03-04-linux-x86_64/lib/Slicer3/Plugins/dwiNoiseFilter";
   denoisingLMMSE.Est_Radius[0] = 3;
   denoisingLMMSE.Est_Radius[1] = 3;
   denoisingLMMSE.Est_Radius[2] = 0;
@@ -112,9 +114,10 @@ void Protocol::initDenoisingLMMSE()
 void Protocol::initDenoisingJointLMMSE()
 {
   denoisingJointLMMSE.bCheck = false;
-  denoisingJointLMMSE.ParameterSet = "" ;
+  denoisingJointLMMSE.ParameterSet = "";
   denoisingJointLMMSE.NumNeighborGradients = 0;
-  denoisingJointLMMSE.JointLMMSECommand = "/tools/Slicer3/Slicer3-3.6.3-2011-03-04-linux-x86_64/lib/Slicer3/Plugins/jointLMMSE";
+  denoisingJointLMMSE.JointLMMSECommand =
+    "/tools/Slicer3/Slicer3-3.6.3-2011-03-04-linux-x86_64/lib/Slicer3/Plugins/jointLMMSE";
   denoisingJointLMMSE.Est_Radius[0] = 2;
   denoisingJointLMMSE.Est_Radius[1] = 2;
   denoisingJointLMMSE.Est_Radius[2] = 1;
@@ -247,25 +250,25 @@ void Protocol::printProtocols()
 
   std::cout << "\tQCOutputDirectory: " << GetQCOutputDirectory() << std::endl;
   std::cout << "\tQCedDWIFileNameSuffix: " << GetQCedDWIFileNameSuffix()
-    << std::endl;
+            << std::endl;
   std::cout << "\tReportFileNameSuffix: " << GetReportFileNameSuffix()
-    << std::endl;
+            << std::endl;
   std::cout << "\tBadGradientPercentageTolerance: "
-    << GetBadGradientPercentageTolerance() << std::endl;
+            << GetBadGradientPercentageTolerance() << std::endl;
 
-  switch(GetReportType())
-  {
-  case REPORT_TYPE_SIMPLE:
-    std::cout << "\treportType: SIMPLE"<< std::endl;
-    break;
-  case REPORT_TYPE_EASY_PARSE:
-    std::cout << "\treportType: EASY_PARSE"<< std::endl;
-    break;
-  case REPORT_TYPE_VERBOSE:
-  default:
-    std::cout << "\treportType: VERBOSE"<< std::endl;
-    break;
-  }
+  switch( GetReportType() )
+    {
+    case REPORT_TYPE_SIMPLE:
+      std::cout << "\treportType: SIMPLE" << std::endl;
+      break;
+    case REPORT_TYPE_EASY_PARSE:
+      std::cout << "\treportType: EASY_PARSE" << std::endl;
+      break;
+    case REPORT_TYPE_VERBOSE:
+    default:
+      std::cout << "\treportType: VERBOSE" << std::endl;
+      break;
+    }
 
   printImageProtocol();
   printDiffusionProtocol();
@@ -283,128 +286,128 @@ void Protocol::printImageProtocol()
   std::cout << "         Image Protocol         " << std::endl;
   std::cout << "================================" << std::endl;
 
-  if ( GetImageProtocol().bCheck )
-  {
+  if( GetImageProtocol().bCheck )
+    {
     std::cout << "\tbCheck: Yes" << std::endl;
-  }
+    }
   else
-  {
+    {
     std::cout << "\tbCheck: No" << std::endl;
-  }
+    }
 
-  switch ( GetImageProtocol().type )
-  {
-  case Protocol::TYPE_SHORT:
-    std::cout << "\ttype: short" << std::endl;
-    break;
-  case Protocol::TYPE_USHORT:
-    std::cout << "\ttype: unsigned short" << std::endl;
-    break;
-  case Protocol::TYPE_UNKNOWN:
-  default:
-    std::cout << "\ttype: UNKNOWN" << std::endl;
-    break;
-  }
+  switch( GetImageProtocol().type )
+    {
+    case Protocol::TYPE_SHORT:
+      std::cout << "\ttype: short" << std::endl;
+      break;
+    case Protocol::TYPE_USHORT:
+      std::cout << "\ttype: unsigned short" << std::endl;
+      break;
+    case Protocol::TYPE_UNKNOWN:
+    default:
+      std::cout << "\ttype: UNKNOWN" << std::endl;
+      break;
+    }
 
-  switch ( GetImageProtocol().space )
-  {
-  case Protocol::SPACE_LAI:
-    std::cout << "\tspace: left-anterior-inferior" << std::endl;
-    break;
-  case Protocol::SPACE_LAS:
-    std::cout << "\tspace: left-anterior-superior" << std::endl;
-    break;
-  case Protocol::SPACE_LPI:
-    std::cout << "\tspace: left-posterior-inferior" << std::endl;
-    break;
-  case Protocol::SPACE_LPS:
-    std::cout << "\tspace: left-posterior-superior" << std::endl;
-    break;
-  case Protocol::SPACE_RAI:
-    std::cout << "\tspace: right-anterior-inferior" << std::endl;
-    break;
-  case Protocol::SPACE_RAS:
-    std::cout << "\tspace: right-anterior-superior" << std::endl;
-    break;
-  case Protocol::SPACE_RPI:
-    std::cout << "\tspace: right-posterior-inferior" << std::endl;
-    break;
-  case Protocol::SPACE_RPS:
-    std::cout << "\tspace: right-posterior-superior" << std::endl;
-    break;
-  case Protocol::SPACE_UNKNOWN:
-  default:
-    std::cout << "\tspace: UNKNOWN" << std::endl;
-    break;
-  }
+  switch( GetImageProtocol().space )
+    {
+    case Protocol::SPACE_LAI:
+      std::cout << "\tspace: left-anterior-inferior" << std::endl;
+      break;
+    case Protocol::SPACE_LAS:
+      std::cout << "\tspace: left-anterior-superior" << std::endl;
+      break;
+    case Protocol::SPACE_LPI:
+      std::cout << "\tspace: left-posterior-inferior" << std::endl;
+      break;
+    case Protocol::SPACE_LPS:
+      std::cout << "\tspace: left-posterior-superior" << std::endl;
+      break;
+    case Protocol::SPACE_RAI:
+      std::cout << "\tspace: right-anterior-inferior" << std::endl;
+      break;
+    case Protocol::SPACE_RAS:
+      std::cout << "\tspace: right-anterior-superior" << std::endl;
+      break;
+    case Protocol::SPACE_RPI:
+      std::cout << "\tspace: right-posterior-inferior" << std::endl;
+      break;
+    case Protocol::SPACE_RPS:
+      std::cout << "\tspace: right-posterior-superior" << std::endl;
+      break;
+    case Protocol::SPACE_UNKNOWN:
+    default:
+      std::cout << "\tspace: UNKNOWN" << std::endl;
+      break;
+    }
 
   std::cout << "\tspace directions: ";
-  for ( int i = 0; i < 3; i++ )
-  {
-    for ( int j = 0; j < 3; j++ )
+  for( int i = 0; i < 3; i++ )
     {
+    for( int j = 0; j < 3; j++ )
+      {
       std::cout << GetImageProtocol().spacedirection[i][j] << " ";
+      }
     }
-  }
   std::cout << std::endl;
 
   std::cout << "\tdimension: "  << GetImageProtocol().dimension << std::endl;
 
   std::cout << "\tsize: "    << GetImageProtocol().size[0] << " "
-    << GetImageProtocol().size[1] << " "
-    << GetImageProtocol().size[2] << " "
-    << GetImageProtocol().size[3] << std::endl;
+            << GetImageProtocol().size[1] << " "
+            << GetImageProtocol().size[2] << " "
+            << GetImageProtocol().size[3] << std::endl;
 
   std::cout << "\tspacing: "  << GetImageProtocol().spacing[0] << " "
-    << GetImageProtocol().spacing[1] << " "
-    << GetImageProtocol().spacing[2] << std::endl;
+            << GetImageProtocol().spacing[1] << " "
+            << GetImageProtocol().spacing[2] << std::endl;
 
   std::cout << "\torigin: "    << GetImageProtocol().origin[0] << " "
-    << GetImageProtocol().origin[1] << " "
-    << GetImageProtocol().origin[2] << std::endl;
+            << GetImageProtocol().origin[1] << " "
+            << GetImageProtocol().origin[2] << std::endl;
 
-  if ( GetImageProtocol().bCrop )
-  {
+  if( GetImageProtocol().bCrop )
+    {
     std::cout << "\tbCrop: Yes" << std::endl;
-  }
+    }
   else
-  {
+    {
     std::cout << "\tbCrop: No" << std::endl;
-  }
+    }
 
   std::cout << "\tcroppedDWIFileNameSuffix: "
-    <<  GetImageProtocol().croppedDWIFileNameSuffix << std::endl;
+            <<  GetImageProtocol().croppedDWIFileNameSuffix << std::endl;
 
   std::cout << "\treportFileNameSuffix: "
-    <<  GetImageProtocol().reportFileNameSuffix << std::endl;
+            <<  GetImageProtocol().reportFileNameSuffix << std::endl;
 
-  if ( GetImageProtocol().reportFileMode == 0 )
-  {
+  if( GetImageProtocol().reportFileMode == 0 )
+    {
     std::cout << "\treportFileMode: new" << std::endl;
-  }
+    }
 
-  if ( GetImageProtocol().reportFileMode == 1 )
-  {
+  if( GetImageProtocol().reportFileMode == 1 )
+    {
     std::cout << "\treportFileMode: append" << std::endl;
-  }
+    }
 
-  if ( GetImageProtocol().bQuitOnCheckSpacingFailure)
-  {
+  if( GetImageProtocol().bQuitOnCheckSpacingFailure )
+    {
     std::cout << "\tbQuitOnCheckSpacingFailure: true" << std::endl;
-  }
+    }
   else
-  {
+    {
     std::cout << "\tbQuitOnCheckSpacingFailure: false" << std::endl;
-  }
+    }
 
-  if ( GetImageProtocol().bQuitOnCheckSizeFailure)
-  {
+  if( GetImageProtocol().bQuitOnCheckSizeFailure )
+    {
     std::cout << "\tbQuitOnCheckSizeFailure: true" << std::endl;
-  }
+    }
   else
-  {
+    {
     std::cout << "\tbQuitOnCheckSizeFailure: false" << std::endl;
-  } 
+    }
 
   std::cout << std::endl;
 }
@@ -415,82 +418,81 @@ void Protocol::printDiffusionProtocol()
   std::cout << "       Diffusion Protocol       " << std::endl;
   std::cout << "================================" << std::endl;
 
-  if ( GetDiffusionProtocol().bCheck )
-  {
+  if( GetDiffusionProtocol().bCheck )
+    {
     std::cout << "\tbCheck: Yes" << std::endl;
-  }
+    }
   else
-  {
+    {
     std::cout << "\tbCheck: No" << std::endl;
-  }
+    }
 
   std::cout << "\tmeasurementFrame: ";
-  for ( int i = 0; i < 3; i++ )
-  {
-    for ( int j = 0; j < 3; j++ )
+  for( int i = 0; i < 3; i++ )
     {
+    for( int j = 0; j < 3; j++ )
+      {
       std::cout << GetDiffusionProtocol().measurementFrame[i][j] << " ";
+      }
     }
-  }
   std::cout << std::endl;
 
   std::cout << "\tDWMRI_b-value: " << GetDiffusionProtocol().bValue
-    << std::endl;
-
-  for ( unsigned int i = 0; i < GetDiffusionProtocol().gradients.size(); i++ )
-  {
+            << std::endl;
+  for( unsigned int i = 0; i < GetDiffusionProtocol().gradients.size(); i++ )
+    {
     vnl_vector_fixed<double, 3> vect;
     vect  = GetDiffusionProtocol().gradients[i];
     // std::cout<<"\tDWMRI_gradient_"<<i<<": "<<vect[0]<<" "<<vect[1]<<"
     // "<<vect[2]<<std::endl;
 
     std::cout << "\tDWMRI_gradient_" << i << "\t[ "
-      << std::setw(9) << std::setiosflags(std::ios::fixed)
-      << std::setprecision(6) << std::setiosflags(std::ios::right)
-      << vect[0] << ", "
-      << std::setw(9) << std::setiosflags(std::ios::fixed)
-      << std::setprecision(6) << std::setiosflags(std::ios::right)
-      << vect[1] << ", "
-      << std::setw(9) << std::setiosflags(std::ios::fixed)
-      << std::setprecision(6) << std::setiosflags(std::ios::right)
-      << vect[2] << " ]"
-      << std::endl;
-  }
+              << std::setw(9) << std::setiosflags(std::ios::fixed)
+              << std::setprecision(6) << std::setiosflags(std::ios::right)
+              << vect[0] << ", "
+              << std::setw(9) << std::setiosflags(std::ios::fixed)
+              << std::setprecision(6) << std::setiosflags(std::ios::right)
+              << vect[1] << ", "
+              << std::setw(9) << std::setiosflags(std::ios::fixed)
+              << std::setprecision(6) << std::setiosflags(std::ios::right)
+              << vect[2] << " ]"
+              << std::endl;
+    }
 
-  if ( GetDiffusionProtocol().bUseDiffusionProtocol )
-  {
+  if( GetDiffusionProtocol().bUseDiffusionProtocol )
+    {
     std::cout << "\tbuseDiffusionProtocol: Yes" << std::endl;
-  }
+    }
   else
-  {
+    {
     std::cout << "\tuseDiffusionProtocol: No" << std::endl;
-  }
+    }
 
   std::cout << "\tdiffusionReplacedDWIFileNameSuffix: "
-    <<  GetDiffusionProtocol().diffusionReplacedDWIFileNameSuffix
-    << std::endl;
+            <<  GetDiffusionProtocol().diffusionReplacedDWIFileNameSuffix
+            << std::endl;
 
   std::cout << "\treportFileNameSuffix: "
-    <<  GetDiffusionProtocol().reportFileNameSuffix << std::endl;
+            <<  GetDiffusionProtocol().reportFileNameSuffix << std::endl;
 
-  if ( GetDiffusionProtocol().reportFileMode == 0 )
-  {
+  if( GetDiffusionProtocol().reportFileMode == 0 )
+    {
     std::cout << "\treportFileMode: new" << std::endl;
-  }
+    }
 
-  if ( GetDiffusionProtocol().reportFileMode == 1 )
-  {
+  if( GetDiffusionProtocol().reportFileMode == 1 )
+    {
     std::cout << "\treportFileMode: append" << std::endl;
-  }
+    }
 
-  if ( GetDiffusionProtocol().bQuitOnCheckFailure)
-  {
+  if( GetDiffusionProtocol().bQuitOnCheckFailure )
+    {
     std::cout << "\tbQuitOnCheckFailure: true" << std::endl;
-  }
+    }
   else
-  {
+    {
     std::cout << "\tbQuitOnCheckFailure: false" << std::endl;
-  } 
+    }
 
   std::cout << std::endl;
 }
@@ -501,72 +503,72 @@ void Protocol::printSliceCheckProtocol()
   std::cout << "      Slice Check Protocol      " << std::endl;
   std::cout << "================================" << std::endl;
 
-  if ( GetSliceCheckProtocol().bCheck )
-  {
+  if( GetSliceCheckProtocol().bCheck )
+    {
     std::cout << "\tbCheck: Yes" << std::endl;
-  }
+    }
   else
-  {
+    {
     std::cout << "\tbCheck: No" << std::endl;
-  }
+    }
 
-  if ( GetSliceCheckProtocol().bSubregionalCheck )
-  {
+  if( GetSliceCheckProtocol().bSubregionalCheck )
+    {
     std::cout << "\tbSubregionalCheck: Yes" << std::endl;
-  }
+    }
   else
-  {
+    {
     std::cout << "\tbSubregionalCheck: No" << std::endl;
-  }
+    }
 
-  std::cout << "\tsubregionalCheckRelaxationFactor: " 
-    << GetSliceCheckProtocol().subregionalCheckRelaxationFactor
-    << std::endl;
+  std::cout << "\tsubregionalCheckRelaxationFactor: "
+            << GetSliceCheckProtocol().subregionalCheckRelaxationFactor
+            << std::endl;
 
   std::cout << "\tcheckTimes: " << GetSliceCheckProtocol().checkTimes
-    << std::endl;
+            << std::endl;
 
   //   std::cout<<"\tbadGradientPercentageTolerance: "<<
   // GetSliceCheckProtocol().m_BadGradientPercentageTolerance<<std::endl;
 
   std::cout << "\theadSkipSlicePercentage: "
-    << GetSliceCheckProtocol().headSkipSlicePercentage << std::endl;
+            << GetSliceCheckProtocol().headSkipSlicePercentage << std::endl;
   std::cout << "\ttailSkipSlicePercentage: "
-    << GetSliceCheckProtocol().tailSkipSlicePercentage << std::endl;
+            << GetSliceCheckProtocol().tailSkipSlicePercentage << std::endl;
 
   std::cout << "\tcorrelationDeviationThresholdbaseline: "
-    << GetSliceCheckProtocol().correlationDeviationThresholdbaseline
-    << std::endl;
+            << GetSliceCheckProtocol().correlationDeviationThresholdbaseline
+            << std::endl;
   std::cout << "\tcorrelationDeviationThresholdgradient: "
-    << GetSliceCheckProtocol().correlationDeviationThresholdgradient
-    << std::endl;
+            << GetSliceCheckProtocol().correlationDeviationThresholdgradient
+            << std::endl;
 
   std::cout << "\toutputDWIFileNameSuffix: "
-    <<  GetSliceCheckProtocol().outputDWIFileNameSuffix << std::endl;
+            <<  GetSliceCheckProtocol().outputDWIFileNameSuffix << std::endl;
   std::cout << "\treportFileNameSuffix: "
-    <<  GetSliceCheckProtocol().reportFileNameSuffix << std::endl;
+            <<  GetSliceCheckProtocol().reportFileNameSuffix << std::endl;
 
-  if ( GetSliceCheckProtocol().reportFileMode == 0 )
-  {
+  if( GetSliceCheckProtocol().reportFileMode == 0 )
+    {
     std::cout << "\treportFileMode: new" << std::endl;
-  }
+    }
 
-  if ( GetSliceCheckProtocol().reportFileMode == 1 )
-  {
+  if( GetSliceCheckProtocol().reportFileMode == 1 )
+    {
     std::cout << "\treportFileMode: append" << std::endl;
-  }
+    }
 
   std::cout << "\texcludedDWINrrdFileNameSuffix: "
-    <<  GetSliceCheckProtocol().excludedDWINrrdFileNameSuffix << std::endl;
+            <<  GetSliceCheckProtocol().excludedDWINrrdFileNameSuffix << std::endl;
 
-  if ( GetSliceCheckProtocol().bQuitOnCheckFailure)
-  {
+  if( GetSliceCheckProtocol().bQuitOnCheckFailure )
+    {
     std::cout << "\tbQuitOnCheckFailure: true" << std::endl;
-  }
+    }
   else
-  {
+    {
     std::cout << "\tbQuitOnCheckFailure: false" << std::endl;
-  } 
+    }
 
   std::cout << std::endl;
 }
@@ -577,62 +579,62 @@ void Protocol::printInterlaceCheckProtocol()
   std::cout << "    Interlace Check Protocol    " << std::endl;
   std::cout << "================================" << std::endl;
 
-  if ( GetInterlaceCheckProtocol().bCheck )
-  {
+  if( GetInterlaceCheckProtocol().bCheck )
+    {
     std::cout << "\tbCheck: Yes" << std::endl;
-  }
+    }
   else
-  {
+    {
     std::cout << "\tbCheck: No" << std::endl;
-  }
+    }
 
   //   std::cout<<"\tbadGradientPercentageTolerance: "<<
   // GetInterlaceCheckProtocol().m_BadGradientPercentageTolerance<<std::endl;
 
   std::cout << "\tcorrelationThresholdBaseline: "
-    << GetInterlaceCheckProtocol().correlationThresholdBaseline
-    << std::endl;
+            << GetInterlaceCheckProtocol().correlationThresholdBaseline
+            << std::endl;
   std::cout << "\tcorrelationDeviationBaseline: "
-    << GetInterlaceCheckProtocol().correlationDeviationBaseline
-    << std::endl;
+            << GetInterlaceCheckProtocol().correlationDeviationBaseline
+            << std::endl;
   std::cout << "\tcorrelationThresholdGradient: "
-    << GetInterlaceCheckProtocol().correlationThresholdGradient
-    << std::endl;
+            << GetInterlaceCheckProtocol().correlationThresholdGradient
+            << std::endl;
   std::cout << "\tcorrelationDeviationGradient: "
-    << GetInterlaceCheckProtocol().correlationDeviationGradient
-    << std::endl;
+            << GetInterlaceCheckProtocol().correlationDeviationGradient
+            << std::endl;
   std::cout << "\ttranslationThreshold: "
-    << GetInterlaceCheckProtocol().translationThreshold << std::endl;
+            << GetInterlaceCheckProtocol().translationThreshold << std::endl;
   std::cout << "\trotationThreshold: "
-    << GetInterlaceCheckProtocol().rotationThreshold << std::endl;
+            << GetInterlaceCheckProtocol().rotationThreshold << std::endl;
 
   std::cout << "\toutputDWIFileNameSuffix: "
-    <<  GetInterlaceCheckProtocol().outputDWIFileNameSuffix
-    << std::endl;
+            <<  GetInterlaceCheckProtocol().outputDWIFileNameSuffix
+            << std::endl;
   std::cout << "\treportFileNameSuffix: "
-    <<  GetInterlaceCheckProtocol().reportFileNameSuffix << std::endl;
+            <<  GetInterlaceCheckProtocol().reportFileNameSuffix << std::endl;
 
-  if ( GetInterlaceCheckProtocol().reportFileMode == 0 )
-  {
+  if( GetInterlaceCheckProtocol().reportFileMode == 0 )
+    {
     std::cout << "\treportFileMode: new" << std::endl;
-  }
+    }
 
-  if ( GetInterlaceCheckProtocol().reportFileMode == 1 )
-  {
+  if( GetInterlaceCheckProtocol().reportFileMode == 1 )
+    {
     std::cout << "\treportFileMode: append" << std::endl;
-  }
+    }
 
   std::cout << "\texcludedDWINrrdFileNameSuffix: "
-    <<  GetInterlaceCheckProtocol().excludedDWINrrdFileNameSuffix << std::endl;
+            <<  GetInterlaceCheckProtocol().excludedDWINrrdFileNameSuffix << std::endl;
 
-  if ( GetInterlaceCheckProtocol().bQuitOnCheckFailure)
-  {
+  if( GetInterlaceCheckProtocol().bQuitOnCheckFailure )
+    {
     std::cout << "\tbQuitOnCheckFailure: true" << std::endl;
-  }
+    }
   else
-  {
+    {
     std::cout << "\tbQuitOnCheckFailure: false" << std::endl;
-  } 
+    }
 
   std::cout << std::endl;
 }
@@ -643,49 +645,49 @@ void Protocol::printGradientCheckProtocol()
   std::cout << "     Gradient Check Protocol    " << std::endl;
   std::cout << "================================" << std::endl;
 
-  if ( GetGradientCheckProtocol().bCheck )
-  {
+  if( GetGradientCheckProtocol().bCheck )
+    {
     std::cout << "\tbCheck: Yes" << std::endl;
-  }
+    }
   else
-  {
+    {
     std::cout << "\tbCheck: No" << std::endl;
-  }
+    }
 
   //   std::cout<<"\tbadGradientPercentageTolerance: "<<
   // GetGradientCheckProtocol().m_BadGradientPercentageTolerance<<std::endl;
 
   std::cout << "\tgradientTranslationThreshold: "
-    << GetGradientCheckProtocol().translationThreshold << std::endl;
+            << GetGradientCheckProtocol().translationThreshold << std::endl;
   std::cout << "\tgradientRotationThreshold: "
-    << GetGradientCheckProtocol().rotationThreshold << std::endl;
+            << GetGradientCheckProtocol().rotationThreshold << std::endl;
 
   std::cout << "\toutputDWIFileNameSuffix: "
-    <<  GetGradientCheckProtocol().outputDWIFileNameSuffix << std::endl;
+            <<  GetGradientCheckProtocol().outputDWIFileNameSuffix << std::endl;
   std::cout << "\treportFileNameSuffix: "
-    <<  GetGradientCheckProtocol().reportFileNameSuffix << std::endl;
+            <<  GetGradientCheckProtocol().reportFileNameSuffix << std::endl;
 
-  if ( GetGradientCheckProtocol().reportFileMode == 0 )
-  {
+  if( GetGradientCheckProtocol().reportFileMode == 0 )
+    {
     std::cout << "\treportFileMode: new" << std::endl;
-  }
+    }
 
-  if ( GetGradientCheckProtocol().reportFileMode == 1 )
-  {
+  if( GetGradientCheckProtocol().reportFileMode == 1 )
+    {
     std::cout << "\treportFileMode: append" << std::endl;
-  }
+    }
 
   std::cout << "\texcludedDWINrrdFileNameSuffix: "
-    <<  GetGradientCheckProtocol().excludedDWINrrdFileNameSuffix << std::endl;
+            <<  GetGradientCheckProtocol().excludedDWINrrdFileNameSuffix << std::endl;
 
-  if ( GetGradientCheckProtocol().bQuitOnCheckFailure)
-  {
+  if( GetGradientCheckProtocol().bQuitOnCheckFailure )
+    {
     std::cout << "\tbQuitOnCheckFailure: true" << std::endl;
-  }
+    }
   else
-  {
+    {
     std::cout << "\tbQuitOnCheckFailure: false" << std::endl;
-  } 
+    }
 
   std::cout << std::endl;
 }
@@ -696,48 +698,48 @@ void Protocol::printBaselineAverageProtocol()
   std::cout << "    Baseline Average Protocol   " << std::endl;
   std::cout << "================================" << std::endl;
 
-  if ( GetBaselineAverageProtocol().bAverage )
-  {
+  if( GetBaselineAverageProtocol().bAverage )
+    {
     std::cout << "\tbAverage: Yes" << std::endl;
-  }
+    }
   else
-  {
+    {
     std::cout << "\tbAverage: No" << std::endl;
-  }
+    }
 
-  switch ( GetBaselineAverageProtocol().averageMethod )
-  {
-  case 0:
-    std::cout << "\taverageMethod: direct" << std::endl;
-    break;
-  case 1:
-    std::cout << "\taverageMethod: baselines optimized" << std::endl;
-    break;
-  case 2:
-    std::cout << "\taverageMethod: gradients optimized" << std::endl;
-    break;
-  default:
-    break;
-  }
+  switch( GetBaselineAverageProtocol().averageMethod )
+    {
+    case 0:
+      std::cout << "\taverageMethod: direct" << std::endl;
+      break;
+    case 1:
+      std::cout << "\taverageMethod: baselines optimized" << std::endl;
+      break;
+    case 2:
+      std::cout << "\taverageMethod: gradients optimized" << std::endl;
+      break;
+    default:
+      break;
+    }
 
   std::cout << "\tstopThreshold: "
-    << GetBaselineAverageProtocol().stopThreshold << std::endl;
+            << GetBaselineAverageProtocol().stopThreshold << std::endl;
 
   std::cout << "\toutputDWIFileNameSuffix: "
-    <<  GetBaselineAverageProtocol().outputDWIFileNameSuffix
-    << std::endl;
+            <<  GetBaselineAverageProtocol().outputDWIFileNameSuffix
+            << std::endl;
   std::cout << "\treportFileNameSuffix: "
-    <<  GetBaselineAverageProtocol().reportFileNameSuffix << std::endl;
+            <<  GetBaselineAverageProtocol().reportFileNameSuffix << std::endl;
 
-  if ( GetBaselineAverageProtocol().reportFileMode == 0 )
-  {
+  if( GetBaselineAverageProtocol().reportFileMode == 0 )
+    {
     std::cout << "\treportFileMode: new" << std::endl;
-  }
+    }
 
-  if ( GetBaselineAverageProtocol().reportFileMode == 1 )
-  {
+  if( GetBaselineAverageProtocol().reportFileMode == 1 )
+    {
     std::cout << "\treportFileMode: append" << std::endl;
-  }
+    }
 
   std::cout << std::endl;
 }
@@ -748,14 +750,14 @@ void Protocol::printEddyMotionCorrectionProtocol()
   std::cout << " Eddy-Motion Correction Protocol" << std::endl;
   std::cout << "================================" << std::endl;
 
-  if ( GetEddyMotionCorrectionProtocol().bCorrect )
-  {
+  if( GetEddyMotionCorrectionProtocol().bCorrect )
+    {
     std::cout << "\tbCorrect: Yes" << std::endl;
-  }
+    }
   else
-  {
+    {
     std::cout << "\tbCorrect: No" << std::endl;
-  }
+    }
 
   //   std::cout<<"\tEddyCurrentCommand: "<<
   // GetEddyMotionCorrectionProtocol().EddyMotionCommand<< std::endl;
@@ -765,35 +767,35 @@ void Protocol::printEddyMotionCorrectionProtocol()
   // GetEddyMotionCorrectionProtocol().OutputFileName<< std::endl;
 
   std::cout << "\tnumberOfBins: "
-    << GetEddyMotionCorrectionProtocol().numberOfBins << std::endl;
+            << GetEddyMotionCorrectionProtocol().numberOfBins << std::endl;
   std::cout << "\tnumberOfSamples: "
-    << GetEddyMotionCorrectionProtocol().numberOfSamples << std::endl;
+            << GetEddyMotionCorrectionProtocol().numberOfSamples << std::endl;
   std::cout << "\ttranslationScale: "
-    << GetEddyMotionCorrectionProtocol().translationScale << std::endl;
+            << GetEddyMotionCorrectionProtocol().translationScale << std::endl;
   std::cout << "\tstepLength: "
-    << GetEddyMotionCorrectionProtocol().stepLength << std::endl;
+            << GetEddyMotionCorrectionProtocol().stepLength << std::endl;
   std::cout << "\trelaxFactor: "
-    << GetEddyMotionCorrectionProtocol().relaxFactor << std::endl;
+            << GetEddyMotionCorrectionProtocol().relaxFactor << std::endl;
   std::cout << "\tmaxNumberOfIterations: "
-    << GetEddyMotionCorrectionProtocol().maxNumberOfIterations
-    << std::endl;
+            << GetEddyMotionCorrectionProtocol().maxNumberOfIterations
+            << std::endl;
 
   std::cout << "\toutputDWIFileNameSuffix: "
-    <<  GetEddyMotionCorrectionProtocol().outputDWIFileNameSuffix
-    << std::endl;
+            <<  GetEddyMotionCorrectionProtocol().outputDWIFileNameSuffix
+            << std::endl;
   std::cout << "\treportFileNameSuffix: "
-    <<  GetEddyMotionCorrectionProtocol().reportFileNameSuffix
-    << std::endl;
+            <<  GetEddyMotionCorrectionProtocol().reportFileNameSuffix
+            << std::endl;
 
-  if ( GetEddyMotionCorrectionProtocol().reportFileMode == 0 )
-  {
+  if( GetEddyMotionCorrectionProtocol().reportFileMode == 0 )
+    {
     std::cout << "\treportFileMode: new" << std::endl;
-  }
+    }
 
-  if ( GetEddyMotionCorrectionProtocol().reportFileMode == 1 )
-  {
+  if( GetEddyMotionCorrectionProtocol().reportFileMode == 1 )
+    {
     std::cout << "\treportFileMode: append" << std::endl;
-  }
+    }
 
   std::cout << std::endl;
 }
@@ -804,115 +806,115 @@ void Protocol::printDTIProtocol()
   std::cout << "     DTI Computing Protocol     " << std::endl;
   std::cout << "================================" << std::endl;
 
-  if ( GetDTIProtocol().bCompute )
-  {
+  if( GetDTIProtocol().bCompute )
+    {
     std::cout << "\tbCompute: Yes" << std::endl;
-  }
+    }
   else
-  {
+    {
     std::cout << "\tbCompute: No" << std::endl;
-  }
+    }
 
   std::cout << "\tdtiestimCommand: " << GetDTIProtocol().dtiestimCommand
-    << std::endl;
+            << std::endl;
   std::cout << "\tdtiprocessCommand: " << GetDTIProtocol().dtiprocessCommand
-    << std::endl;
+            << std::endl;
 
-  switch ( GetDTIProtocol().method )
-  {
-  case Protocol::METHOD_WLS:
-    std::cout << "\tmethod: wls" << std::endl;
-    break;
-  case Protocol::METHOD_LLS:
-    std::cout << "\tmethod: lls" << std::endl;
-    break;
-  case Protocol::METHOD_ML:
-    std::cout << "\tmethod: ml" << std::endl;
-    break;
-  case Protocol::METHOD_UNKNOWN:
-  default:
-    std::cout << "\tmethod: UNKNOWN" << std::endl;
-    break;
-  }
+  switch( GetDTIProtocol().method )
+    {
+    case Protocol::METHOD_WLS:
+      std::cout << "\tmethod: wls" << std::endl;
+      break;
+    case Protocol::METHOD_LLS:
+      std::cout << "\tmethod: lls" << std::endl;
+      break;
+    case Protocol::METHOD_ML:
+      std::cout << "\tmethod: ml" << std::endl;
+      break;
+    case Protocol::METHOD_UNKNOWN:
+    default:
+      std::cout << "\tmethod: UNKNOWN" << std::endl;
+      break;
+    }
 
   std::cout << "\ttensorSuffix: " << GetDTIProtocol().tensorSuffix << std::endl;
 
   std::cout << "\tbaselineThreshold: " << GetDTIProtocol().baselineThreshold
-    << std::endl;
+            << std::endl;
   std::cout << "\tmask: " << GetDTIProtocol().mask << std::endl;
 
-  if ( GetDTIProtocol().bfa )
-  {
+  if( GetDTIProtocol().bfa )
+    {
     std::cout << "\tbfa: Yes" << std::endl;
-  }
+    }
   else
-  {
+    {
     std::cout << "\tbfa: No" << std::endl;
-  }
+    }
   std::cout << "\tfaSuffix: " << GetDTIProtocol().faSuffix << std::endl;
 
-  if ( GetDTIProtocol().bmd )
-  {
+  if( GetDTIProtocol().bmd )
+    {
     std::cout << "\tbmd: Yes" << std::endl;
-  }
+    }
   else
-  {
+    {
     std::cout << "\tbmd: No" << std::endl;
-  }
+    }
   std::cout << "\tmdSuffix: " << GetDTIProtocol().mdSuffix << std::endl;
 
-  if ( GetDTIProtocol().bcoloredfa )
-  {
+  if( GetDTIProtocol().bcoloredfa )
+    {
     std::cout << "\tbcoloredfa: Yes" << std::endl;
-  }
+    }
   else
-  {
+    {
     std::cout << "\tbcoloredfa: No" << std::endl;
-  }
+    }
   std::cout << "\tcoloredfaSuffix: " << GetDTIProtocol().coloredfaSuffix
-    << std::endl;
+            << std::endl;
 
-  if ( GetDTIProtocol().bbaseline )
-  {
+  if( GetDTIProtocol().bbaseline )
+    {
     std::cout << "\tbbaseline: Yes" << std::endl;
-  }
+    }
   else
-  {
+    {
     std::cout << "\tbbaseline: No" << std::endl;
-  }
+    }
   std::cout << "\tbaselineSuffix: " << GetDTIProtocol().baselineSuffix
-    << std::endl;
+            << std::endl;
 
-  if ( GetDTIProtocol().bfrobeniusnorm )
-  {
+  if( GetDTIProtocol().bfrobeniusnorm )
+    {
     std::cout << "\tbfrobeniusnorm: Yes" << std::endl;
-  }
+    }
   else
-  {
+    {
     std::cout << "\tbfrobeniusnorm: No" << std::endl;
-  }
+    }
   std::cout << "\tfrobeniusnormSuffix: "
-    << GetDTIProtocol().frobeniusnormSuffix << std::endl;
+            << GetDTIProtocol().frobeniusnormSuffix << std::endl;
 
-  if ( GetDTIProtocol().bidwi )
-  {
+  if( GetDTIProtocol().bidwi )
+    {
     std::cout << "\tbidwi: Yes" << std::endl;
-  }
+    }
   else
-  {
+    {
     std::cout << "\tbidwi: No" << std::endl;
-  }
+    }
   std::cout << "\tidwiSuffix: " << GetDTIProtocol().idwiSuffix << std::endl;
 
-  if ( GetDTIProtocol().reportFileMode == 0 )
-  {
+  if( GetDTIProtocol().reportFileMode == 0 )
+    {
     std::cout << "\treportFileMode: new" << std::endl;
-  }
+    }
 
-  if ( GetDTIProtocol().reportFileMode == 1 )
-  {
+  if( GetDTIProtocol().reportFileMode == 1 )
+    {
     std::cout << "\treportFileMode: append" << std::endl;
-  }
+    }
 
   std::cout << std::endl;
 }
@@ -940,29 +942,28 @@ void Protocol::collectDiffusionStatistics()
 {
   std::vector<DiffusionDir> DiffusionDirections;
   DiffusionDirections.clear();
-
-  for ( unsigned int i = 0;
-    i < this->GetDiffusionProtocol().gradients.size();
-    i++ )
-  {
-    if ( DiffusionDirections.size() > 0 )
+  for( unsigned int i = 0;
+       i < this->GetDiffusionProtocol().gradients.size();
+       i++ )
     {
-      bool newDir = true;
-      for ( unsigned int j = 0; j < DiffusionDirections.size(); j++ )
+    if( DiffusionDirections.size() > 0 )
       {
-        if ( this->GetDiffusionProtocol().gradients[i][0] ==
-          DiffusionDirections[j].gradientDir[0]
-        && this->GetDiffusionProtocol().gradients[i][1] ==
-          DiffusionDirections[j].gradientDir[1]
-        && this->GetDiffusionProtocol().gradients[i][2] ==
-          DiffusionDirections[j].gradientDir[2] )
+      bool newDir = true;
+      for( unsigned int j = 0; j < DiffusionDirections.size(); j++ )
         {
+        if( this->GetDiffusionProtocol().gradients[i][0] ==
+            DiffusionDirections[j].gradientDir[0]
+            && this->GetDiffusionProtocol().gradients[i][1] ==
+            DiffusionDirections[j].gradientDir[1]
+            && this->GetDiffusionProtocol().gradients[i][2] ==
+            DiffusionDirections[j].gradientDir[2] )
+          {
           DiffusionDirections[j].repetitionNumber++;
           newDir = false;
+          }
         }
-      }
-      if ( newDir )
-      {
+      if( newDir )
+        {
         std::vector<double> dir;
         dir.push_back(this->GetDiffusionProtocol().gradients[i][0]);
         dir.push_back(this->GetDiffusionProtocol().gradients[i][1]);
@@ -973,10 +974,10 @@ void Protocol::collectDiffusionStatistics()
         diffusionDir.repetitionNumber = 1;
 
         DiffusionDirections.push_back(diffusionDir);
+        }
       }
-    }
     else
-    {
+      {
       std::vector<double> dir;
       dir.push_back(this->GetDiffusionProtocol().gradients[i][0]);
       dir.push_back(this->GetDiffusionProtocol().gradients[i][1]);
@@ -987,56 +988,55 @@ void Protocol::collectDiffusionStatistics()
       diffusionDir.repetitionNumber = 1;
 
       DiffusionDirections.push_back(diffusionDir);
+      }
     }
-  }
 
   std::vector<int> repetNum;
   repetNum.clear();
   std::vector<double> dirMode;
   dirMode.clear();
-
-  for ( unsigned int i = 0; i < DiffusionDirections.size(); i++ )
-  {
-    if ( DiffusionDirections[i].gradientDir[0] == 0.0
-      && DiffusionDirections[i].gradientDir[1] == 0.0
-      && DiffusionDirections[i].gradientDir[2] == 0.0 )
+  for( unsigned int i = 0; i < DiffusionDirections.size(); i++ )
     {
+    if( DiffusionDirections[i].gradientDir[0] == 0.0
+        && DiffusionDirections[i].gradientDir[1] == 0.0
+        && DiffusionDirections[i].gradientDir[2] == 0.0 )
+      {
       this->baselineNumber = DiffusionDirections[i].repetitionNumber;
-    }
+      }
     else
-    {
+      {
       repetNum.push_back(DiffusionDirections[i].repetitionNumber);
 
       double modeSqr =  DiffusionDirections[i].gradientDir[0]
-      * DiffusionDirections[i].gradientDir[0]
-      + DiffusionDirections[i].gradientDir[1]
-      * DiffusionDirections[i].gradientDir[1]
-      + DiffusionDirections[i].gradientDir[2]
-      * DiffusionDirections[i].gradientDir[2];
+        * DiffusionDirections[i].gradientDir[0]
+        + DiffusionDirections[i].gradientDir[1]
+        * DiffusionDirections[i].gradientDir[1]
+        + DiffusionDirections[i].gradientDir[2]
+        * DiffusionDirections[i].gradientDir[2];
 
-      if ( dirMode.size() > 0 )
-      {
-        bool newDirMode = true;
-        for ( unsigned int j = 0; j < dirMode.size(); j++ )
+      if( dirMode.size() > 0 )
         {
-          if ( fabs(modeSqr - dirMode[j]) < 0.001 )   // 1 DIFFERENCE for b
-            // value
+        bool newDirMode = true;
+        for( unsigned int j = 0; j < dirMode.size(); j++ )
           {
+          if( fabs(modeSqr - dirMode[j]) < 0.001 )    // 1 DIFFERENCE for b
+          // value
+            {
             newDirMode = false;
             break;
+            }
+          }
+        if( newDirMode )
+          {
+          dirMode.push_back(  modeSqr);
           }
         }
-        if ( newDirMode )
+      else
         {
-          dirMode.push_back(  modeSqr);
+        dirMode.push_back(  modeSqr);
         }
       }
-      else
-      {
-        dirMode.push_back(  modeSqr);
-      }
     }
-  }
 
   //   std::cout<<" repetNum.size(): " <<  repetNum.size() <<std::endl;
   //   std::cout<<" dirMode.size(): " <<  dirMode.size() <<std::endl;
@@ -1045,17 +1045,17 @@ void Protocol::collectDiffusionStatistics()
   this->bValueNumber = dirMode.size();
 
   repetitionNumber = repetNum[0];
-  for ( unsigned int i = 1; i < repetNum.size(); i++ )
-  {
-    if ( repetNum[i] != repetNum[0] )
+  for( unsigned int i = 1; i < repetNum.size(); i++ )
     {
+    if( repetNum[i] != repetNum[0] )
+      {
       std::cout
-        << "Warning: Not all the gradient directions have same repetition. "
-            << "GradientNumber= " << i << " " << repetNum[i] << " != " << repetNum[0]
-        << std::endl;
+      << "Warning: Not all the gradient directions have same repetition. "
+      << "GradientNumber= " << i << " " << repetNum[i] << " != " << repetNum[0]
+      << std::endl;
       repetitionNumber = -1;
+      }
     }
-  }
 
   //   std::cout<<"Protocol Diffusion: "  <<std::endl;
   //   std::cout<<"  baselineNumber: "  <<baselineNumber  <<std::endl;
@@ -1069,21 +1069,22 @@ void Protocol::collectDiffusionStatistics()
 void Protocol::Save( std::string xml)
 {
 
-  std::string xmlFileName = xml;
+  std::string   xmlFileName = xml;
   std::ofstream outfile;
 
-  if(xmlFileName.rfind('.')!=std::string::npos)
-  {    
-    if( xmlFileName.substr(xmlFileName.rfind('.')+1).compare("xml") !=0 )
+  if( xmlFileName.rfind('.') != std::string::npos )
     {
+    if( xmlFileName.substr(xmlFileName.rfind('.') + 1).compare("xml") != 0 )
+      {
       xmlFileName.append(".xml");
+      }
     }
-  }
   else
-    xmlFileName.append(".xml");  
+    {
+    xmlFileName.append(".xml");
+    }
 
-
-  outfile.open(xmlFileName.c_str());
+  outfile.open(xmlFileName.c_str() );
 
   outfile << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" << std::endl;
   outfile << "<ProtocolSettings>" << std::endl;
@@ -1104,54 +1105,59 @@ void Protocol::Save( std::string xml)
   // image
   outfile << "    <entry parameter=\"IMAGE_bCheck\">" << std::endl;
   if( GetImageProtocol().bCheck )
+    {
     outfile << "        <value>Yes</value>" << std::endl;
+    }
   else
+    {
     outfile << "        <value>No</value>" << std::endl;
+    }
 
   outfile << "        <entry parameter=\"IMAGE_space\">" << std::endl;
-  switch(GetImageProtocol().space)
-  {
-  case SPACE_LAI:
-    outfile << "            <value>left-anterior-inferior</value>" << std::endl;
-    break;
-  case SPACE_LAS:
-    outfile << "            <value>left-anterior-superior</value>" << std::endl;
-    break;
-  case SPACE_LPI:
-    outfile << "            <value>left-posterior-inferior</value>" << std::endl;
-    break;
-  case SPACE_LPS:
-    outfile << "            <value>left-posterior-superior</value>" << std::endl;
-    break;
-  case SPACE_RAI:
-    outfile << "            <value>right-anterior-inferior</value>" << std::endl;
-    break;
-  case SPACE_RAS:
-    outfile << "            <value>right-anterior-superior</value>" << std::endl;
-    break;
-  case SPACE_RPI:
-    outfile << "            <value>right-posterior-inferior</value>" << std::endl;
-    break;
-  case SPACE_RPS:
-    outfile << "            <value>right-posterior-superior</value>" << std::endl;
-    break;
-  }  
+
+  switch( GetImageProtocol().space )
+    {
+    case SPACE_LAI:
+      outfile << "            <value>left-anterior-inferior</value>" << std::endl;
+      break;
+    case SPACE_LAS:
+      outfile << "            <value>left-anterior-superior</value>" << std::endl;
+      break;
+    case SPACE_LPI:
+      outfile << "            <value>left-posterior-inferior</value>" << std::endl;
+      break;
+    case SPACE_LPS:
+      outfile << "            <value>left-posterior-superior</value>" << std::endl;
+      break;
+    case SPACE_RAI:
+      outfile << "            <value>right-anterior-inferior</value>" << std::endl;
+      break;
+    case SPACE_RAS:
+      outfile << "            <value>right-anterior-superior</value>" << std::endl;
+      break;
+    case SPACE_RPI:
+      outfile << "            <value>right-posterior-inferior</value>" << std::endl;
+      break;
+    case SPACE_RPS:
+      outfile << "            <value>right-posterior-superior</value>" << std::endl;
+      break;
+    }
   // JTM - Space directions were being saved in xml file as
   // transpose of space directions in NRRD file. Not transpose now.
   outfile << "        </entry>" << std::endl;
   outfile << "        <entry parameter=\"IMAGE_directions\">" << std::endl;
-  outfile << "            <value>" 
-    << GetImageProtocol().spacedirection[0][0] << " " 
-    << GetImageProtocol().spacedirection[0][1] << " " 
-    << GetImageProtocol().spacedirection[0][2] << "</value>" << std::endl;
   outfile << "            <value>"
-    << GetImageProtocol().spacedirection[1][0] << " " 
-    << GetImageProtocol().spacedirection[1][1] << " " 
-    << GetImageProtocol().spacedirection[1][2] << "</value>" << std::endl;
+          << GetImageProtocol().spacedirection[0][0] << " "
+          << GetImageProtocol().spacedirection[0][1] << " "
+          << GetImageProtocol().spacedirection[0][2] << "</value>" << std::endl;
   outfile << "            <value>"
-    << GetImageProtocol().spacedirection[2][0] << " " 
-    << GetImageProtocol().spacedirection[2][1] << " " 
-    << GetImageProtocol().spacedirection[2][2] << "</value>" << std::endl;
+          << GetImageProtocol().spacedirection[1][0] << " "
+          << GetImageProtocol().spacedirection[1][1] << " "
+          << GetImageProtocol().spacedirection[1][2] << "</value>" << std::endl;
+  outfile << "            <value>"
+          << GetImageProtocol().spacedirection[2][0] << " "
+          << GetImageProtocol().spacedirection[2][1] << " "
+          << GetImageProtocol().spacedirection[2][2] << "</value>" << std::endl;
   outfile << "        </entry>" << std::endl;
   outfile << "        <entry parameter=\"IMAGE_size\">" << std::endl;
   outfile << "            <value>" << GetImageProtocol().size[0] << "</value>" << std::endl;
@@ -1170,9 +1176,13 @@ void Protocol::Save( std::string xml)
   outfile << "        </entry>" << std::endl;
   outfile << "        <entry parameter=\"IMAGE_bCrop\">" << std::endl;
   if( GetImageProtocol().bCrop )
+    {
     outfile << "            <value>Yes</value>" << std::endl;
+    }
   else
+    {
     outfile << "            <value>No</value>" << std::endl;
+    }
 
   outfile << "        </entry>" << std::endl;
   outfile << "        <entry parameter=\"IMAGE_croppedDWIFileNameSuffix\">" << std::endl;
@@ -1186,60 +1196,69 @@ void Protocol::Save( std::string xml)
   outfile << "        </entry>" << std::endl;
   outfile << "        <entry parameter=\"IMAGE_bQuitOnCheckSpacingFailure\">" << std::endl;
   if( GetImageProtocol().bQuitOnCheckSpacingFailure )
+    {
     outfile << "            <value>Yes</value>" << std::endl;
+    }
   else
+    {
     outfile << "            <value>No</value>" << std::endl;
+    }
   outfile << "        </entry>" << std::endl;
   outfile << "        <entry parameter=\"IMAGE_bQuitOnCheckSizeFailure\">" << std::endl;
   if( GetImageProtocol().bQuitOnCheckSizeFailure )
+    {
     outfile << "            <value>Yes</value>" << std::endl;
+    }
   else
+    {
     outfile << "            <value>No</value>" << std::endl;
+    }
   outfile << "        </entry>" << std::endl;
   outfile << "    </entry>" << std::endl;
 
   // diffusion
   outfile << "    <entry parameter=\"DIFFUSION_bCheck\">" << std::endl;
   if( GetDiffusionProtocol().bCheck )
+    {
     outfile << "        <value>Yes</value>" << std::endl;
+    }
   else
+    {
     outfile << "        <value>No</value>" << std::endl;
+    }
 
-  // JTM - Measurement frame were being saved in xml file as 
+  // JTM - Measurement frame were being saved in xml file as
   // transpose of measurement frame in NRRD file. Not transpose now.
   outfile << "        <entry parameter=\"DIFFUSION_measurementFrame\">" << std::endl;
-  outfile << "            <value>" 
-    << GetDiffusionProtocol().measurementFrame[0][0] << " " 
-    << GetDiffusionProtocol().measurementFrame[0][1] << " " 
-    << GetDiffusionProtocol().measurementFrame[0][2] << "</value>" << std::endl;
   outfile << "            <value>"
-    << GetDiffusionProtocol().measurementFrame[1][0] << " " 
-    << GetDiffusionProtocol().measurementFrame[1][1] << " " 
-    << GetDiffusionProtocol().measurementFrame[1][2] << "</value>" << std::endl;
+          << GetDiffusionProtocol().measurementFrame[0][0] << " "
+          << GetDiffusionProtocol().measurementFrame[0][1] << " "
+          << GetDiffusionProtocol().measurementFrame[0][2] << "</value>" << std::endl;
   outfile << "            <value>"
-    << GetDiffusionProtocol().measurementFrame[2][0] << " " 
-    << GetDiffusionProtocol().measurementFrame[2][1] << " " 
-    << GetDiffusionProtocol().measurementFrame[2][2] << "</value>" << std::endl;
+          << GetDiffusionProtocol().measurementFrame[1][0] << " "
+          << GetDiffusionProtocol().measurementFrame[1][1] << " "
+          << GetDiffusionProtocol().measurementFrame[1][2] << "</value>" << std::endl;
+  outfile << "            <value>"
+          << GetDiffusionProtocol().measurementFrame[2][0] << " "
+          << GetDiffusionProtocol().measurementFrame[2][1] << " "
+          << GetDiffusionProtocol().measurementFrame[2][2] << "</value>" << std::endl;
 
   outfile << "        </entry>" << std::endl;
   outfile << "        <entry parameter=\"DIFFUSION_DWMRI_bValue\">" << std::endl;
   outfile << "            <value>" << GetDiffusionProtocol().bValue << "</value>" << std::endl;
   outfile << "        </entry>" << std::endl;
-
-  for(unsigned int i=0; i< GetDiffusionProtocol().gradients.size();i++  )
-  {
-    outfile << "        <entry parameter=\"DIFFUSION_DWMRI_gradient_" 
-      << std::setw(4) << std::setfill('0') << i 
-      << "\">" << std::endl;
-    outfile << "            <value>" 
-      << GetDiffusionProtocol().gradients[i][0] << " "
-      << GetDiffusionProtocol().gradients[i][1] << " "
-      << GetDiffusionProtocol().gradients[i][2]
-    << "</value>" << std::endl;
+  for( unsigned int i = 0; i < GetDiffusionProtocol().gradients.size(); i++  )
+    {
+    outfile << "        <entry parameter=\"DIFFUSION_DWMRI_gradient_"
+            << std::setw(4) << std::setfill('0') << i
+            << "\">" << std::endl;
+    outfile << "            <value>"
+            << GetDiffusionProtocol().gradients[i][0] << " "
+            << GetDiffusionProtocol().gradients[i][1] << " "
+            << GetDiffusionProtocol().gradients[i][2]
+            << "</value>" << std::endl;
     outfile << "        </entry>" << std::endl;
-  }
-
-
+    }
 
   outfile << "        <entry parameter=\"DIFFUSION_bUseDiffusionProtocol\">" << std::endl;
   outfile << "            <value>Yes</value>" << std::endl;
@@ -1412,7 +1431,7 @@ void Protocol::Save( std::string xml)
   outfile << "        <entry parameter=\"DTI_tensor\">" << std::endl;
   outfile << "            <value>_DTI.nhdr</value>" << std::endl;
   outfile << "        </entry>" << std::endl;
-  outfile << "        <entry parameter=\"DTI_baseline\">"<< std::endl;
+  outfile << "        <entry parameter=\"DTI_baseline\">" << std::endl;
   outfile << "            <value>Yes</value>" << std::endl;
   outfile << "            <value>_Baseline.nhdr</value>" << std::endl;
   outfile << "        </entry>" << std::endl;
@@ -1447,4 +1466,3 @@ void Protocol::Save( std::string xml)
 
   outfile.close();
 }
-

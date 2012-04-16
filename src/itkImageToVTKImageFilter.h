@@ -37,7 +37,7 @@ namespace itk
  */
 template <class TInputImage>
 class ITK_EXPORT ImageToVTKImageFilter : public ProcessObject
-  {
+{
 public:
   /** Standard class typedefs. */
   typedef ImageToVTKImageFilter    Self;
@@ -85,8 +85,8 @@ private:
   void operator=(const Self &);        // purposely not implemented
 
   ExporterFilterPointer m_Exporter;
-  vtkImageImport        *m_Importer;
-  };
+  vtkImageImport *      m_Importer;
+};
 } // end namespace itk
 
 #ifndef ITK_MANUAL_INSTANTIATION

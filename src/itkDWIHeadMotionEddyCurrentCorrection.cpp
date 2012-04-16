@@ -3,15 +3,17 @@
 
 #include "itkDWIHeadMotionEddyCurrentCorrection.h"
 
-namespace itk {
+namespace itk
+{
 
-DWIHeadMotionEddyCurrentCorrection::DWIHeadMotionEddyCurrentCorrection(){
-    translationScale = 1e-3;
-    stepLength = 0.1; //default value of initial step size
-    factor = 0.5;//default value of reduction ratio of step size
-    numberOfBins = 24;//default value of histogram_size
-    samples = 0; //default value of samples
-    maxNumberOfIterations = 500;
+DWIHeadMotionEddyCurrentCorrection::DWIHeadMotionEddyCurrentCorrection()
+{
+  translationScale = 1e-3;
+  stepLength = 0.1;  // default value of initial step size
+  factor = 0.5;      // default value of reduction ratio of step size
+  numberOfBins = 24; // default value of histogram_size
+  samples = 0;       // default value of samples
+  maxNumberOfIterations = 500;
 }
 
 VectorImage<float, 3>::Pointer  DWIHeadMotionEddyCurrentCorrection::Registration()
@@ -20,23 +22,22 @@ VectorImage<float, 3>::Pointer  DWIHeadMotionEddyCurrentCorrection::Registration
   std::cout << "staring registration... " << std::endl;
   dwis = VectorImageType::New();
   dwis->CopyInformation(fixedImage);
-  dwis->SetRegions(fixedImage->GetLargestPossibleRegion());
+  dwis->SetRegions(fixedImage->GetLargestPossibleRegion() );
   dwis->Allocate();
-  dwis->SetVectorLength( movingImages.size() + 1 ) ; // grads+b0
+  dwis->SetVectorLength( movingImages.size() + 1 );  // grads+b0
 
   this->m_dwiRegisteredImagesContainer.push_back( fixedImage );
-  //generate target images
-  for(unsigned int i=1; i<=movingImages.size(); i++)
+  // generate target images
+  for( unsigned int i = 1; i <= movingImages.size(); i++ )
     {
     ImageType::Pointer dwi = ImageType::New();
     dwi->CopyInformation(fixedImage);
-    dwi->SetRegions(fixedImage->GetLargestPossibleRegion());
+    dwi->SetRegions(fixedImage->GetLargestPossibleRegion() );
     dwi->Allocate();
     dwi->FillBuffer( 0.0 );
     this->m_dwiRegisteredImagesContainer.push_back( dwi );
     }
-
-  for(unsigned int i=0; i<movingImages.size(); i++)
+  for( unsigned int i = 0; i < movingImages.size(); i++ )
     {
     std::cout << "************************************************" << std::endl;
     std::cout << "registration DWI:" << i << std::endl;
@@ -44,72 +45,76 @@ VectorImage<float, 3>::Pointer  DWIHeadMotionEddyCurrentCorrection::Registration
     /*const bool flag = i*/
     RegistrationSingleDWI( fixedImage, movingImages.at(i), originDirs.at(i), i);
 
-    std::cout<< "origin dir: " << originDirs.at(i) << std::endl;
-    std::cout<< "update dir: " << updateDirs.at(i)<< std::endl;
+    std::cout << "origin dir: " << originDirs.at(i) << std::endl;
+    std::cout << "update dir: " << updateDirs.at(i) << std::endl;
     }
 
-  //header.SetGradContainer( updateDirs );
-  ImageRegionIterator< VectorImageType > out( dwis , dwis->GetLargestPossibleRegion() );
+  // header.SetGradContainer( updateDirs );
+  ImageRegionIterator<VectorImageType> out( dwis, dwis->GetLargestPossibleRegion() );
 
-  typedef ImageRegionIterator< ImageType > IteratorImageType ;
-  std::vector< IteratorImageType > in ;
-  for(unsigned int i = 0 ; i < dwis->GetVectorLength() ; i++ ){
-    IteratorImageType intemp( this->m_dwiRegisteredImagesContainer.at( i ) , this->m_dwiRegisteredImagesContainer.at( i )->GetLargestPossibleRegion() ) ;
+  typedef ImageRegionIterator<ImageType> IteratorImageType;
+  std::vector<IteratorImageType> in;
+  for( unsigned int i = 0; i < dwis->GetVectorLength(); i++ )
+    {
+    IteratorImageType intemp( this->m_dwiRegisteredImagesContainer.at( i ), this->m_dwiRegisteredImagesContainer.at(
+                                i )->GetLargestPossibleRegion() );
     intemp.GoToBegin();
-    in.push_back( intemp ) ;
-  }
-
-  VectorImageType::PixelType value ;
-  value.SetSize( this->m_dwiRegisteredImagesContainer.size() ) ;
-  for( out.GoToBegin() ; !out.IsAtEnd() ; ++out ){
-    for( unsigned int i = 0 ; i < dwis->GetVectorLength() ; i++ ){
-      value.SetElement( i , in.at( i ).Get() ) ;
-      ++in[ i ] ;
+    in.push_back( intemp );
     }
-    out.Set( value ) ;
-  }
+
+  VectorImageType::PixelType value;
+  value.SetSize( this->m_dwiRegisteredImagesContainer.size() );
+  for( out.GoToBegin(); !out.IsAtEnd(); ++out )
+    {
+    for( unsigned int i = 0; i < dwis->GetVectorLength(); i++ )
+      {
+      value.SetElement( i, in.at( i ).Get() );
+      ++in[i];
+      }
+    out.Set( value );
+    }
 
   return dwis;
 }
 
-
 bool DWIHeadMotionEddyCurrentCorrection::RegistrationSingleDWI(
-    ImageType::Pointer fixedImageLocal, ImageType::Pointer movingImageLocal,
-    const GradientType& gradDir, unsigned int no )
+  ImageType::Pointer fixedImageLocal, ImageType::Pointer movingImageLocal,
+  const GradientType& gradDir, unsigned int no )
 {
-  MetricType::Pointer         metric        = MetricType::New();
-  OptimizerType::Pointer      optimizer     = OptimizerType::New();
-  LinearInterpolatorType::Pointer   linearInterpolator  = LinearInterpolatorType::New();
-  RegistrationType::Pointer   registration  = RegistrationType::New();
+  MetricType::Pointer             metric        = MetricType::New();
+  OptimizerType::Pointer          optimizer     = OptimizerType::New();
+  LinearInterpolatorType::Pointer linearInterpolator  = LinearInterpolatorType::New();
+  RegistrationType::Pointer       registration  = RegistrationType::New();
 
   registration->SetMetric(        metric        );
   registration->SetOptimizer(     optimizer     );
   registration->SetInterpolator(  linearInterpolator  );
 
-  TransformType::Pointer  transform = TransformType::New();
+  TransformType::Pointer transform = TransformType::New();
   registration->SetTransform( transform );
 
-  if( samples > 0) {
-  metric->SetNumberOfSpatialSamples( samples );
+  if( samples > 0 )
+    {
+    metric->SetNumberOfSpatialSamples( samples );
     metric->SetUseAllPixels( false );
-        //Ensure the random number generator has the same seed
-  metric->ReinitializeSeed(0);
-  std::cout << std::endl << "Samples Size: " << samples << std::endl;
-  }
-  else {
-  metric->SetUseAllPixels( true );
-  }
+    // Ensure the random number generator has the same seed
+    metric->ReinitializeSeed(0);
+    std::cout << std::endl << "Samples Size: " << samples << std::endl;
+    }
+  else
+    {
+    metric->SetUseAllPixels( true );
+    }
 
-  RescaleFilterType::Pointer    fixedRescaleFilter
-                                                  = RescaleFilterType::New();
+  RescaleFilterType::Pointer fixedRescaleFilter
+    = RescaleFilterType::New();
   fixedRescaleFilter->SetInput(  fixedImageLocal  );
   fixedRescaleFilter->SetOutputMinimum(  0 );
   fixedRescaleFilter->SetOutputMaximum( numberOfBins - 1 );
   fixedRescaleFilter->Update();
 
-
-  RescaleFilterType::Pointer    movingRescaleFilter
-                                                  = RescaleFilterType::New();
+  RescaleFilterType::Pointer movingRescaleFilter
+    = RescaleFilterType::New();
   movingRescaleFilter->SetInput(  movingImageLocal );
   movingRescaleFilter->SetOutputMinimum(  0 );
   movingRescaleFilter->SetOutputMaximum( numberOfBins - 1 );
@@ -119,12 +124,11 @@ bool DWIHeadMotionEddyCurrentCorrection::RegistrationSingleDWI(
   registration->SetMovingImage(   movingRescaleFilter->GetOutput()   );
 
   registration->SetFixedImageRegion(
-        fixedRescaleFilter->GetOutput()->GetBufferedRegion() );
-
+    fixedRescaleFilter->GetOutput()->GetBufferedRegion() );
 
   TransformInitializerType::Pointer initializer = TransformInitializerType::New();
 
-  AffineTransformType::Pointer  affine_transform = AffineTransformType::New();
+  AffineTransformType::Pointer affine_transform = AffineTransformType::New();
 
   initializer->SetTransform( affine_transform );
   initializer->SetFixedImage(  fixedRescaleFilter->GetOutput() );
@@ -133,23 +137,23 @@ bool DWIHeadMotionEddyCurrentCorrection::RegistrationSingleDWI(
   initializer->InitializeTransform();
 
   MetricType::TransformParametersType parameter = transform->GetParameters();
-  //std::cout << "initial parameters: " << parameter << std::endl;
+  // std::cout << "initial parameters: " << parameter << std::endl;
 
-  parameter[0]=0.0; //versor Rx part
-  parameter[1]=0.0; //versor Ry part
-  parameter[2]=0.0; //versor Rz part
-  parameter[3]=0.0; //versor x translation
-  parameter[4]=0.0; //versor y translation
-  parameter[5]=0.0; //versor z translation
+  parameter[0] = 0.0; // versor Rx part
+  parameter[1] = 0.0; // versor Ry part
+  parameter[2] = 0.0; // versor Rz part
+  parameter[3] = 0.0; // versor x translation
+  parameter[4] = 0.0; // versor y translation
+  parameter[5] = 0.0; // versor z translation
 
-  parameter[6]=0.0; //Eddy Shear x
-  parameter[7]=1.0; //Eddy Scale y
-  parameter[8]=0.0; //Eddy Shear z
-  parameter[9]=0.0; //Eddy y global translation
+  parameter[6] = 0.0; // Eddy Shear x
+  parameter[7] = 1.0; // Eddy Scale y
+  parameter[8] = 0.0; // Eddy Shear z
+  parameter[9] = 0.0; // Eddy y global translation
 
   transform->SetParameters(parameter);
   transform->SetCenter( affine_transform->GetCenter() );
-  //std::cout << "initial center:" << transform->GetCenter() << std::endl << std::endl;
+  // std::cout << "initial center:" << transform->GetCenter() << std::endl << std::endl;
 
   registration->SetInitialTransformParameters( parameter );
 
@@ -161,7 +165,7 @@ bool DWIHeadMotionEddyCurrentCorrection::RegistrationSingleDWI(
   optimizerScales[3] =  translationScale;
   optimizerScales[4] =  translationScale;
   optimizerScales[5] =  translationScale;
-  //optimizerScales[5] =  2.5 / 2.0  * translationScale; //Z axis space a little larger
+  // optimizerScales[5] =  2.5 / 2.0  * translationScale; //Z axis space a little larger
   optimizerScales[6] =  1.0;
   optimizerScales[7] =  1.0;
   optimizerScales[8] =  1.0;
@@ -175,26 +179,27 @@ bool DWIHeadMotionEddyCurrentCorrection::RegistrationSingleDWI(
   optimizer->MinimizeOn();
 
   // Create the Command observer and register it with the optimizer.
-  //CommandIterationUpdate::Pointer observer = CommandIterationUpdate::New();
-  //optimizer->AddObserver( itk::IterationEvent(), observer );
+  // CommandIterationUpdate::Pointer observer = CommandIterationUpdate::New();
+  // optimizer->AddObserver( itk::IterationEvent(), observer );
 
-  try  {
-      registration->StartRegistration();
-  }
-  catch( itk::ExceptionObject & err ) {
-      std::cerr << "ExceptionObject caught !" << std::endl;
-      std::cerr << err << std::endl;
-      return EXIT_FAILURE;
-  }
-
+  try
+    {
+    registration->StartRegistration();
+    }
+  catch( itk::ExceptionObject & err )
+    {
+    std::cerr << "ExceptionObject caught !" << std::endl;
+    std::cerr << err << std::endl;
+    return EXIT_FAILURE;
+    }
 
   OptimizerType::ParametersType finalParameters =
-                    optimizer->GetBestPosition();
-  const double finalRotationCenterX = transform->GetCenter()[0];
-  const double finalRotationCenterY = transform->GetCenter()[1];
-  const double finalRotationCenterZ = transform->GetCenter()[2];
+    optimizer->GetBestPosition();
+  const double       finalRotationCenterX = transform->GetCenter()[0];
+  const double       finalRotationCenterY = transform->GetCenter()[1];
+  const double       finalRotationCenterZ = transform->GetCenter()[2];
   const unsigned int numberOfIterations = optimizer->GetCurrentIteration();
-  const double bestValue = optimizer->GetBestValue();
+  const double       bestValue = optimizer->GetBestValue();
 
   // Print out results
 
@@ -208,17 +213,17 @@ bool DWIHeadMotionEddyCurrentCorrection::RegistrationSingleDWI(
   std::cout << " Center Z      = " << finalRotationCenterZ  << std::endl;
   std::cout << " Best parameter = " << finalParameters  << std::endl;
 
-  //std::cout << " Rotation Matrix = " << transform->GetHeadMotionRotationMatrix()  << std::endl;
+  // std::cout << " Rotation Matrix = " << transform->GetHeadMotionRotationMatrix()  << std::endl;
 
-  typedef itk::Matrix< PrecisionType, 3, 3 > MatrixType2D;
+  typedef itk::Matrix<PrecisionType, 3, 3> MatrixType2D;
   MatrixType2D rotation_matrix = transform->GetHeadMotionRotationMatrix();
 
-  //generate output 4*4 matrix
-  //typedef itk::Matrix< double, 4, 4 > MatrixType3D;
+  // generate output 4*4 matrix
+  // typedef itk::Matrix< double, 4, 4 > MatrixType3D;
 
-  vnl_matrix_fixed<PrecisionType,4,4> head_motion_matrix;
-  vnl_matrix_fixed<PrecisionType,4,4> eddy_matrix;
-  vnl_matrix_fixed<PrecisionType,4,4> output_matrix;
+  vnl_matrix_fixed<PrecisionType, 4, 4> head_motion_matrix;
+  vnl_matrix_fixed<PrecisionType, 4, 4> eddy_matrix;
+  vnl_matrix_fixed<PrecisionType, 4, 4> output_matrix;
 
   head_motion_matrix.set_identity();
   eddy_matrix.set_identity();
@@ -244,10 +249,10 @@ bool DWIHeadMotionEddyCurrentCorrection::RegistrationSingleDWI(
   eddy_matrix[1][3] = finalParameters[9];
 
   output_matrix = eddy_matrix * head_motion_matrix;
-  //std::cout << "4 * 4 output matrix: " << output_matrix << std::endl;
+  // std::cout << "4 * 4 output matrix: " << output_matrix << std::endl;
 
-  //The following code is used to rotate the gradient direction
-  vnl_matrix_fixed<PrecisionType,4,4> grad_matrix;
+  // The following code is used to rotate the gradient direction
+  vnl_matrix_fixed<PrecisionType, 4, 4> grad_matrix;
   grad_matrix.set_identity();
 
   grad_matrix[0][0] = rotation_matrix[0][0];
@@ -279,7 +284,7 @@ bool DWIHeadMotionEddyCurrentCorrection::RegistrationSingleDWI(
 
   vnl_vector_fixed<PrecisionType, 4> vec1, vec2;
 
-  //std::cout << "grad: " << gradDir << std::endl;
+  // std::cout << "grad: " << gradDir << std::endl;
 
   vec1[0] = gradDir[0];
   vec1[1] = gradDir[1];
@@ -288,8 +293,8 @@ bool DWIHeadMotionEddyCurrentCorrection::RegistrationSingleDWI(
 
   GradientType updateDir;
 
-  vnl_matrix_fixed<PrecisionType,4,4> T =
-      grad_matrix.transpose();
+  vnl_matrix_fixed<PrecisionType, 4, 4> T =
+    grad_matrix.transpose();
   vec2 = T  * vec1;
 
   updateDir[0] = vec2[0];
@@ -301,21 +306,21 @@ bool DWIHeadMotionEddyCurrentCorrection::RegistrationSingleDWI(
   //  They illustrate the final results of the registration.
   //  We will resample the moving image
 
-  typedef itk::CastImageFilter< ImageType,
-                                ImageType >   CastFilterType;
+  typedef itk::CastImageFilter<ImageType,
+                               ImageType>   CastFilterType;
 
   CastFilterType::Pointer caster = CastFilterType::New();
   caster->SetInput( movingImageLocal );
 
   typedef itk::ResampleImageFilter<
-                            ImageType,
-                            ImageType >    ResampleFilterType;
+    ImageType,
+    ImageType>    ResampleFilterType;
 
   MetricType::TransformParametersType parameter2 = transform->GetParameters();
 
   TransformType::Pointer finalTransform = TransformType::New();
   finalTransform->SetCenter( transform->GetCenter() );
-  //std::cout << "final center:" << transform->GetCenter() << std::endl;
+  // std::cout << "final center:" << transform->GetCenter() << std::endl;
   finalTransform->SetParameters( transform->GetParameters() );
 
   ResampleFilterType::Pointer resampler = ResampleFilterType::New();
@@ -323,26 +328,26 @@ bool DWIHeadMotionEddyCurrentCorrection::RegistrationSingleDWI(
   resampler->SetInput( caster->GetOutput() );
 
 #if 1
-      resampler->SetOutputParametersFromImage( fixedImageLocal );
+  resampler->SetOutputParametersFromImage( fixedImageLocal );
 #else
-      resampler->SetSize(    fixedImageLocal->GetLargestPossibleRegion().GetSize() );
-      resampler->SetOutputOrigin(  fixedImageLocal->GetOrigin() );
-      resampler->SetOutputSpacing( fixedImageLocal->GetSpacing() );
-      //Need to set outputDirection also!
+  resampler->SetSize(    fixedImageLocal->GetLargestPossibleRegion().GetSize() );
+  resampler->SetOutputOrigin(  fixedImageLocal->GetOrigin() );
+  resampler->SetOutputSpacing( fixedImageLocal->GetSpacing() );
+  // Need to set outputDirection also!
 #endif
   resampler->SetDefaultPixelValue( 0 );
-  //TODO:  Resample filter should provide options on the command line
-  //TODO: for selecting INTERPLATOR as windowed sinc, bspline, or linear interpolation
-  //TODO: resampler->SetInterpolator( windowSincInterpoloator );
+  // TODO:  Resample filter should provide options on the command line
+  // TODO: for selecting INTERPLATOR as windowed sinc, bspline, or linear interpolation
+  // TODO: resampler->SetInterpolator( windowSincInterpoloator );
   resampler->SetInterpolator( linearInterpolator );
 
     {
     //
-    //TODO:  Describe what is happening with the ShiftScaleFilter.  I don't understand this.
+    // TODO:  Describe what is happening with the ShiftScaleFilter.  I don't understand this.
     //
-    //Brightness correction factor
+    // Brightness correction factor
     typedef itk::ShiftScaleImageFilter<
-      ImageType, ImageType >  ShiftScaleFilterType;
+      ImageType, ImageType>  ShiftScaleFilterType;
 
     ShiftScaleFilterType::Pointer shiftFilter      = ShiftScaleFilterType::New();
     shiftFilter->SetInput( resampler->GetOutput() );
@@ -350,20 +355,19 @@ bool DWIHeadMotionEddyCurrentCorrection::RegistrationSingleDWI(
     shiftFilter->Update();
 
     ImageRegionIteratorWithIndex<ImageType> itIndex(shiftFilter->GetOutput(),
-      shiftFilter->GetOutput()->GetLargestPossibleRegion());
+                                                    shiftFilter->GetOutput()->GetLargestPossibleRegion() );
 
     ImageRegionIterator<ImageType> it(shiftFilter->GetOutput(),
-      shiftFilter->GetOutput()->GetLargestPossibleRegion());
-
-    for (it.GoToBegin(), itIndex.GoToBegin(); !it.IsAtEnd(); ++it, ++itIndex)
+                                      shiftFilter->GetOutput()->GetLargestPossibleRegion() );
+    for( it.GoToBegin(), itIndex.GoToBegin(); !it.IsAtEnd(); ++it, ++itIndex )
       {
-      PrecisionType b = it.Get() ;
-      this->m_dwiRegisteredImagesContainer.at(no+1)->SetPixel(itIndex.GetIndex(), b);
+      PrecisionType b = it.Get();
+      this->m_dwiRegisteredImagesContainer.at(no + 1)->SetPixel(itIndex.GetIndex(), b);
       }
     }
 
   return true;
 }
-}//End Namespace itk
-#endif
 
+} // End Namespace itk
+#endif

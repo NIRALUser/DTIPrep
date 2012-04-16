@@ -29,7 +29,7 @@ namespace itk
 
 class GradientSteepestDescentBaseOptimizer :
   public SingleValuedNonLinearOptimizer
-  {
+{
 public:
   /** Standard "Self" typedef. */
   typedef GradientSteepestDescentBaseOptimizer Self;
@@ -42,10 +42,11 @@ public:
 
   /** Run-time type information (and related methods). */
   itkTypeMacro( GradientSteepestDescentBaseOptimizer,
-    itk::SingleValuedNonLinearOptimizer );
+                itk::SingleValuedNonLinearOptimizer );
 
   /** Codes of stopping conditions. */
-  typedef enum {
+  typedef enum
+    {
     GradientMagnitudeTolerance = 1,
     StepTooSmall = 2,
     ImageNotAvailable = 3,
@@ -57,7 +58,7 @@ public:
   itkSetMacro( Maximize, bool );
   itkGetConstReferenceMacro( Maximize, bool );
   itkBooleanMacro( Maximize );
-  bool GetMinimize( ) const
+  bool GetMinimize() const
   {
     return !m_Maximize;
   }
@@ -109,7 +110,9 @@ public:
   itkGetConstReferenceMacro( BestPosition,  ParametersType );
 protected:
   GradientSteepestDescentBaseOptimizer();
-  virtual ~GradientSteepestDescentBaseOptimizer() {}
+  virtual ~GradientSteepestDescentBaseOptimizer()
+  {
+  }
   void PrintSelf(std::ostream & os, itk::Indent indent) const;
 
   /** Advance one step following the gradient direction
@@ -137,8 +140,8 @@ private:
   GradientSteepestDescentBaseOptimizer(const Self &); // purposely not
                                                       // implemented
   void operator=(const Self &);                       // purposely not
-                                                      // implemented
 
+  // implemented
 protected:
   DerivativeType m_Gradient;
   DerivativeType m_PreviousGradient;
@@ -159,7 +162,7 @@ protected:
   StopConditionType m_StopCondition;
   unsigned long     m_NumberOfIterations;
   unsigned long     m_CurrentIteration;
-  };
+};
 } // end namespace itk
 
 #endif

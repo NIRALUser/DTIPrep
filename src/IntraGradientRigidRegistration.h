@@ -10,7 +10,8 @@
 #include "itkSubtractImageFilter.h"
 #include "itkRescaleIntensityImageFilter.h"
 
-typedef struct  Results {
+typedef struct  Results
+  {
   bool bRegister;
   double Angle;      // in degrees
   double TranslationX;
@@ -19,15 +20,14 @@ typedef struct  Results {
   } struIntra2DResults,  *pstruIntra2DResults;
 
 class CIntraGradientRigidRegistration
-  {
+{
 public:
   static const unsigned int Dimension = 2;
   typedef  unsigned short                  PixelType;
   typedef itk::Image<PixelType, Dimension> ImageType;
 public:
   // CIntraGradientRigidRegistration( );
-  CIntraGradientRigidRegistration(ImageType::Pointer fixed,
-    ImageType::Pointer moving);
+  CIntraGradientRigidRegistration(ImageType::Pointer fixed, ImageType::Pointer moving);
   ~CIntraGradientRigidRegistration(void);
 public:
 
@@ -37,11 +37,11 @@ public:
   typedef itk::RegularStepGradientDescentOptimizer
   OptimizerType;
   typedef itk::NormalizedCorrelationImageToImageMetric<ImageType,
-    ImageType> MetricType;
+                                                       ImageType> MetricType;
   typedef itk::LinearInterpolateImageFunction<ImageType,
-    double>    InterpolatorType;
+                                              double>    InterpolatorType;
   typedef itk::ImageRegistrationMethod<ImageType,
-    ImageType> RegistrationType;
+                                       ImageType> RegistrationType;
 
   typedef ImageType::SpacingType
   SpacingType;
@@ -72,21 +72,24 @@ private:
 public:
   // double Run();
   struIntra2DResults Run( bool bRegister );
-  };
+
+};
 
 #include "itkCommand.h"
 class CommandIterationUpdate : public itk::Command
-  {
+{
 public:
   typedef  CommandIterationUpdate Self;
   typedef  itk::Command           Superclass;
   typedef itk::SmartPointer<Self> Pointer;
   itkNewMacro( Self );
 protected:
-  CommandIterationUpdate() {}
+  CommandIterationUpdate()
+  {
+  }
 public:
   typedef itk::RegularStepGradientDescentOptimizer OptimizerType;
-  typedef   const OptimizerType                    *OptimizerPointer;
+  typedef   const OptimizerType *                  OptimizerPointer;
 
   void Execute(itk::Object *caller, const itk::EventObject & event)
   {
@@ -98,7 +101,7 @@ public:
     OptimizerPointer optimizer
       = dynamic_cast<OptimizerPointer>( object );
 
-    if ( !itk::IterationEvent().CheckEvent( &event ) )
+    if( !itk::IterationEvent().CheckEvent( &event ) )
       {
       return;
       }
@@ -106,4 +109,5 @@ public:
     std::cout << optimizer->GetValue() << "   ";
     std::cout << optimizer->GetCurrentPosition() << std::endl;
   }
-  };
+
+};

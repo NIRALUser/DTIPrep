@@ -37,13 +37,14 @@
 
 namespace itk
 {
-class DWIHeadMotionEddyCurrentCorrection {
+class DWIHeadMotionEddyCurrentCorrection
+{
 public:
   const static unsigned int Dimension = 3;
 
-  typedef double                      PrecisionType;
-  typedef std::string                 TextType;
-  typedef float                       PixelType;
+  typedef double      PrecisionType;
+  typedef std::string TextType;
+  typedef float       PixelType;
 
   typedef Image<PixelType, Dimension> ImageType;
   typedef ImageType::IndexType        IndexType;
@@ -53,11 +54,11 @@ public:
   typedef vnl_vector_fixed<PrecisionType, Dimension> GradientType;
   typedef std::vector<GradientType>                  GradientContainerType;
 
-  typedef std::vector<ImageType::Pointer>            ImageContainerType;
+  typedef std::vector<ImageType::Pointer> ImageContainerType;
 
-  typedef itk::VectorImage<float, Dimension>         VectorImageType;
-  typedef OrientedImage<PixelType, Dimension>        OrientImageType;
-  typedef std::vector<OrientImageType::Pointer>      OrientImageContainerType;
+  typedef itk::VectorImage<float, Dimension>    VectorImageType;
+  typedef OrientedImage<PixelType, Dimension>   OrientImageType;
+  typedef std::vector<OrientImageType::Pointer> OrientImageContainerType;
 
   DWIHeadMotionEddyCurrentCorrection();
 
@@ -73,12 +74,12 @@ public:
       }
   */
 
-  inline GradientContainerType GetGradients( )
+  inline GradientContainerType GetGradients()
   {
     return this->updateDirs;
   }
 
-  inline void SetGradients ( GradientContainerType grads )
+  inline void SetGradients( GradientContainerType grads )
   {
     this->originDirs = grads;
   }
@@ -135,7 +136,7 @@ public:
   }
 
 private:
-  //HACK:  THese all need to have m_ for their file names.
+  // HACK:  THese all need to have m_ for their file names.
   PrecisionType translationScale;
   PrecisionType stepLength;
   PrecisionType factor;
@@ -162,11 +163,11 @@ private:
 
   VectorImageType::Pointer dwis;
 
-  //TODO:  Need to provide a description of what this funciton does.
+  // TODO:  Need to provide a description of what this funciton does.
   //       What type of registration is this?
-  bool  RegistrationSingleDWI( ImageType::Pointer fixedImage,
-    ImageType::Pointer movingImage,
-    const GradientType & gradDir, unsigned int no);
+  bool  RegistrationSingleDWI( ImageType::Pointer fixedImage, ImageType::Pointer movingImage,
+                               const GradientType & gradDir,
+                               unsigned int no);
 
   typedef itk::AffineTransform<
     PrecisionType,
@@ -182,7 +183,7 @@ private:
     ImageType,
     ImageType>    MetricType;
 
-  typedef itk:: LinearInterpolateImageFunction<
+  typedef itk::LinearInterpolateImageFunction<
     ImageType,
     PrecisionType>    LinearInterpolatorType;
 
@@ -200,17 +201,20 @@ private:
 
   typedef OptimizerType::ScalesType OptimizerScalesType;
 
-  class CommandIterationUpdate : public itk::Command  {
+  class CommandIterationUpdate : public itk::Command
+  {
 public:
     typedef  CommandIterationUpdate Self;
     typedef  itk::Command           Superclass;
     typedef itk::SmartPointer<Self> Pointer;
     itkNewMacro( Self );
 protected:
-    CommandIterationUpdate() {}
+    CommandIterationUpdate()
+    {
+    }
 public:
     typedef itk::GradientSteepestDescentOptimizer OptimizerType;
-    typedef   const OptimizerType                 *OptimizerPointer;
+    typedef   const OptimizerType *               OptimizerPointer;
 
     void Execute(itk::Object *caller, const itk::EventObject & event)
     {
@@ -222,7 +226,7 @@ public:
       OptimizerPointer optimizer
         = dynamic_cast<OptimizerPointer>( object );
 
-      if ( !itk::IterationEvent().CheckEvent( &event ) )
+      if( !itk::IterationEvent().CheckEvent( &event ) )
         {
         return;
         }
@@ -236,8 +240,9 @@ public:
       std::cout << "next para: " << optimizer->GetCurrentPosition()
                 << std::endl;
     }
-    };
+
   };
+};
 
 } // end of namespace
 

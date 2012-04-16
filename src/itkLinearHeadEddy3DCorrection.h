@@ -20,13 +20,13 @@ template <
 // Number of dimensions in the output space
 class LinearHeadEddy3DCorrection :
   public Transform<TScalarType, NInputDimensions, NOutputDimensions>
-  {
+{
 public:
   /** Standard typedefs   */
   typedef LinearHeadEddy3DCorrection Self;
   typedef Transform<TScalarType,
-    NInputDimensions,
-    NOutputDimensions>        Superclass;
+                    NInputDimensions,
+                    NOutputDimensions>        Superclass;
   typedef SmartPointer<Self>       Pointer;
   typedef SmartPointer<const Self> ConstPointer;
 
@@ -41,7 +41,7 @@ public:
   itkStaticConstMacro(OutputSpaceDimension, unsigned int, NOutputDimensions);
 
   itkStaticConstMacro(ParametersDimension, unsigned int,
-    NOutputDimensions * NInputDimensions + 1);                // 10 parameters
+                      NOutputDimensions * NInputDimensions + 1); // 10 parameters
 
   /** Parameters Type   */
   typedef typename Superclass::ParametersType ParametersType;
@@ -54,32 +54,32 @@ public:
 
   /** Standard vector type for this class   */
   typedef Vector<TScalarType,
-    itkGetStaticConstMacro(InputSpaceDimension)>  InputVectorType;
+                 itkGetStaticConstMacro(InputSpaceDimension)>  InputVectorType;
   typedef Vector<TScalarType,
-    itkGetStaticConstMacro(OutputSpaceDimension)> OutputVectorType;
+                 itkGetStaticConstMacro(OutputSpaceDimension)> OutputVectorType;
 
   /** Standard covariant vector type for this class   */
   typedef CovariantVector<TScalarType,
-    itkGetStaticConstMacro(InputSpaceDimension)>
+                          itkGetStaticConstMacro(InputSpaceDimension)>
   InputCovariantVectorType;
   typedef CovariantVector<TScalarType,
-    itkGetStaticConstMacro(OutputSpaceDimension)>
+                          itkGetStaticConstMacro(OutputSpaceDimension)>
   OutputCovariantVectorType;
 
   /** Standard vnl_vector type for this class   */
   typedef vnl_vector_fixed<TScalarType,
-    itkGetStaticConstMacro(InputSpaceDimension)>
+                           itkGetStaticConstMacro(InputSpaceDimension)>
   InputVnlVectorType;
   typedef vnl_vector_fixed<TScalarType,
-    itkGetStaticConstMacro(OutputSpaceDimension)>
+                           itkGetStaticConstMacro(OutputSpaceDimension)>
   OutputVnlVectorType;
 
   /** Standard coordinate point type for this class   */
   typedef Point<TScalarType,
-    itkGetStaticConstMacro(InputSpaceDimension)>
+                itkGetStaticConstMacro(InputSpaceDimension)>
   InputPointType;
   typedef Point<TScalarType,
-    itkGetStaticConstMacro(OutputSpaceDimension)>
+                itkGetStaticConstMacro(OutputSpaceDimension)>
   OutputPointType;
 
   /** VersorRigid3DTransform as Head Motion Transform Type **/
@@ -103,10 +103,10 @@ public:
 
   /** Standard matrix type for this class   */
   typedef Matrix<TScalarType, itkGetStaticConstMacro(OutputSpaceDimension),
-    itkGetStaticConstMacro(InputSpaceDimension)>
+                 itkGetStaticConstMacro(InputSpaceDimension)>
   MatrixType;
 
-  typedef InputPointType   CenterType;
+  typedef InputPointType CenterType;
 
   typedef OutputVectorType TranslationType;
 
@@ -196,23 +196,23 @@ private:
 
   HeadMotionTransformType::Pointer  m_head_motion_transform;
   EddyCurrentTransformType::Pointer m_eddy_current_transform;
-  }; // class LinearHeadEddy3DCorrection
+};   // class LinearHeadEddy3DCorrection
 }  // namespace itk
 
 // Define instantiation macro for this template.
 #define ITK_TEMPLATE_LinearHeadEddy3DCorrection(_, EXPORT, x, y) \
   namespace itk { \
-  _( 3 ( class EXPORT LinearHeadEddy3DCorrection < ITK_TEMPLATE_3 x > ) ) \
-  namespace Templates { typedef LinearHeadEddy3DCorrection < ITK_TEMPLATE_3 x > \
-                        LinearHeadEddy3DCorrection ## y; } \
+  _( 3 ( class EXPORT LinearHeadEddy3DCorrection<ITK_TEMPLATE_3 x> ) ) \
+  namespace Templates { typedef LinearHeadEddy3DCorrection<ITK_TEMPLATE_3 x> \
+                        LinearHeadEddy3DCorrection##y; } \
   }
 
 #if ITK_TEMPLATE_EXPLICIT
-# include "Templates/itkLinearHeadEddy3DCorrection+-.h"
+#include "Templates/itkLinearHeadEddy3DCorrection+-.h"
 #endif
 
 #if ITK_TEMPLATE_TXX
-# include "itkLinearHeadEddy3DCorrection.txx"
+#include "itkLinearHeadEddy3DCorrection.txx"
 #endif
 
 #endif /* __itkLinearHeadEddy3DCorrection_h */

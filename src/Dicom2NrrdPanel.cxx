@@ -1,7 +1,7 @@
 #include "Dicom2NrrdPanel.h"
 #include <QtGui>
 #include <iostream>
-//#include <libgen.h>
+// #include <libgen.h>
 
 #include "itkGDCMSeriesFileNames.h"
 
@@ -9,39 +9,43 @@ Dicom2NrrdPanel::Dicom2NrrdPanel(QMainWindow *parentLocal) : QDockWidget(parentL
 {
   setupUi(this);
   verticalLayout->setContentsMargins(0, 0, 0, 0);
-  
-  //Progress Bar
-  //Setting max and min to zero to behave as a busy indicator
-  this->progressBar->setMinimum(0);  
+
+  // Progress Bar
+  // Setting max and min to zero to behave as a busy indicator
+  this->progressBar->setMinimum(0);
   this->progressBar->setMaximum(0);
   this->progressBar->hide(); // because we only want to show the progressBar when a connection is activated
-  connect(&ThreadDicomToNrrd,SIGNAL(StartProgressSignal_D2N()),this,SLOT(StartProgressSlot_D2N()),Qt::QueuedConnection);
-  connect(&ThreadDicomToNrrd,SIGNAL(StopProgressSignal_D2N()),this,SLOT(StopProgressSlot_D2N()),Qt::QueuedConnection);
+  connect(&ThreadDicomToNrrd, SIGNAL(StartProgressSignal_D2N() ), this, SLOT(
+            StartProgressSlot_D2N() ), Qt::QueuedConnection);
+  connect(&ThreadDicomToNrrd, SIGNAL(StopProgressSignal_D2N() ), this, SLOT(
+            StopProgressSlot_D2N() ), Qt::QueuedConnection);
 
 }
 
-Dicom2NrrdPanel::~Dicom2NrrdPanel(){}
+Dicom2NrrdPanel::~Dicom2NrrdPanel()
+{
+}
 
 void Dicom2NrrdPanel::StartProgressSlot_D2N()
 {
-    this->progressBar->show();    //To show progressBar when StartProgressSignal_D2N emitted
+  this->progressBar->show();      // To show progressBar when StartProgressSignal_D2N emitted
 }
 
 void Dicom2NrrdPanel::StopProgressSlot_D2N()
 {
-    this->progressBar->hide();    //To show progressBar when StartProgressSignal_D2N emitted
+  this->progressBar->hide();      // To show progressBar when StartProgressSignal_D2N emitted
 }
 
-void Dicom2NrrdPanel::on_dicomDirectoryBrowseButton_clicked( )
+void Dicom2NrrdPanel::on_dicomDirectoryBrowseButton_clicked()
 {
   // QString fileName = QFileDialog::getOpenFileName(this, tr("Select the Dicom
   // Directory"),tr("c:\\"), QFileDialog::ShowDirsOnly);
   QString dicomDir
     = QFileDialog::getExistingDirectory(this, tr(
-      "Select the Dicom Directory"),
-    dicomDirectoryEdit->text(), QFileDialog::ShowDirsOnly);
+                                          "Select the Dicom Directory"),
+                                        dicomDirectoryEdit->text(), QFileDialog::ShowDirsOnly);
 
-  if ( !dicomDir.isEmpty() )
+  if( !dicomDir.isEmpty() )
     {
     std::cout << dicomDir.toStdString() << std::endl;
     // dicomDirectory=dicomDir;
@@ -60,10 +64,10 @@ void Dicom2NrrdPanel::on_toolButton_DicomToNrrdConverterCommand_clicked()
 {
   QString DicomToNrrdConverterCommand
     = QFileDialog::getOpenFileName( this, tr(
-      "Set the DicomToNrrdConverter command"),
-    lineEdit_DicomToNrrdConverterCommand->text() );
+                                      "Set the DicomToNrrdConverter command"),
+                                    lineEdit_DicomToNrrdConverterCommand->text() );
 
-  if ( !DicomToNrrdConverterCommand.isEmpty() )
+  if( !DicomToNrrdConverterCommand.isEmpty() )
     {
     std::cout << DicomToNrrdConverterCommand.toStdString() << std::endl;
     // dicomDirectory=dicomDir;
@@ -76,17 +80,18 @@ void Dicom2NrrdPanel::on_toolButton_DicomToNrrdConverterCommand_clicked()
   return;
 }
 
-void Dicom2NrrdPanel::on_nrrdFileBrowseButton_clicked( )
+void Dicom2NrrdPanel::on_nrrdFileBrowseButton_clicked()
 {
-  QString nrrFile = QFileDialog::getSaveFileName ( this, tr(
-      "nrrd File Save As"), nrrdFileName->text(), tr("Image Files (*.nhdr)") );
+  QString nrrFile = QFileDialog::getSaveFileName( this, tr(
+                                                    "nrrd File Save As"), nrrdFileName->text(),
+                                                  tr("Image Files (*.nhdr)") );
 
   // QString nrrFile = QFileDialog::getSaveFileName ( this, tr("nrrd File Save
   // As"), nrrdFileName->text() , tr("Image Files (*.nhdr *.nrrd)") );
   // QString getSaveFileName ( QWidget * parent = 0, const QString & caption =
   // QString(), const QString & dir = QString(), const QString & filter =
   // QString(), QString * selectedFilter = 0, Options options = 0 )
-  if ( !nrrFile.isEmpty() )
+  if( !nrrFile.isEmpty() )
     {
     std::cout << nrrFile.toStdString() << std::endl;
     // nrrdPath=nrrFile;
@@ -97,22 +102,22 @@ void Dicom2NrrdPanel::on_nrrdFileBrowseButton_clicked( )
 
 void Dicom2NrrdPanel::on_pushButton_Convert_clicked()
 {
-  if ( lineEdit_DicomToNrrdConverterCommand->text().isEmpty() )
+  if( lineEdit_DicomToNrrdConverterCommand->text().isEmpty() )
     {
     std::cout
-   << QString( tr("DicomToNrrdConverter Command Empty!") ).toStdString()
-   << std::endl;
+    << QString( tr("DicomToNrrdConverter Command Empty!") ).toStdString()
+    << std::endl;
     return;
     }
 
-  if ( dicomDirectoryEdit->text().isEmpty() )
+  if( dicomDirectoryEdit->text().isEmpty() )
     {
     std::cout << QString( tr("Dicom Directory Empty!") ).toStdString()
               << std::endl;
     return;
     }
 
-  if ( nrrdFileName->text().isEmpty() )
+  if( nrrdFileName->text().isEmpty() )
     {
     std::cout << QString( tr("nrrd File Name Empty!") ).toStdString()
               << std::endl;
@@ -126,29 +131,28 @@ void Dicom2NrrdPanel::on_pushButton_Convert_clicked()
   //
   // QString(tr("/tools/devel/linux/Slicer3_linux/Slicer3-build/lib/Slicer3/Plugins/DicomToNrrdConverter
   // "));
-  
 
   ThreadDicomToNrrd.DicomToNrrdCmd = lineEdit_DicomToNrrdConverterCommand->text();
   ThreadDicomToNrrd.DicomDir = dicomDirectoryEdit->text();
   ThreadDicomToNrrd.NrrdFileName = nrrdFileName->text();
 
-  //QString str;
-  //std::string outputVolumeFullName = std::string(nrrdFileName->text().toStdString() );
-  //std::string outputVolumeName =  basename(const_cast<char *>(outputVolumeFullName.c_str()));
-  //std::string outputDirName =  dirname(const_cast<char *>(outputVolumeFullName.c_str())) ;
+  // QString str;
+  // std::string outputVolumeFullName = std::string(nrrdFileName->text().toStdString() );
+  // std::string outputVolumeName =  basename(const_cast<char *>(outputVolumeFullName.c_str()));
+  // std::string outputDirName =  dirname(const_cast<char *>(outputVolumeFullName.c_str())) ;
 
-  //str.append( lineEdit_DicomToNrrdConverterCommand->text() );
+  // str.append( lineEdit_DicomToNrrdConverterCommand->text() );
 
-  //str.append( QString( tr(" --inputDicomDirectory ") ) );
-  //str.append( dicomDirectoryEdit->text() );
-  //str.append( QString( tr(" --outputVolume ") ) );
-  //str.append( outputVolumeName.c_str() );
-  //str.append( QString( tr("  --outputDirectory ") ) );
-  //str.append( outputDirName.c_str() );
-  //std::cout << str.toStdString() << std::endl;
-  
+  // str.append( QString( tr(" --inputDicomDirectory ") ) );
+  // str.append( dicomDirectoryEdit->text() );
+  // str.append( QString( tr(" --outputVolume ") ) );
+  // str.append( outputVolumeName.c_str() );
+  // str.append( QString( tr("  --outputDirectory ") ) );
+  // str.append( outputDirName.c_str() );
+  // std::cout << str.toStdString() << std::endl;
+
   ThreadDicomToNrrd.start(QThread::LowPriority);
-   
+
 }
 
 /*

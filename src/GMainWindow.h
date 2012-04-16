@@ -7,7 +7,6 @@
 
 #include <QWidget>
 
-
 // Forward class declarations
 class vtkCylinderSource;
 class vtkPolyDataMapper;
@@ -26,7 +25,6 @@ class QActionGroup;
 class QLabel;
 class QMenu;
 class QPushButton;
-
 
 #include <itkImage.h>
 #include <itkImageFileReader.h>
@@ -53,22 +51,27 @@ class vtkObject;
 class vtkCommand;
 
 class GMainWindow : public QMainWindow, private Ui_MainWindow
-  {
+{
   Q_OBJECT
 public:
   GMainWindow();
   ~GMainWindow();
-  
+
   void ChangeStyleTo(QString style);
 
 signals:
 
-void currentGradient_VC_Include( int winID, int gradient );
-void currentGradient_VC_Exclude( int winID, int gradient );
-void VisualCheckingStatus( int index, int status );
-void OpenMappingXML();
-void OpenQCedDWI();
-void Signal_actionOpenDWINrrd_triggered();
+  void currentGradient_VC_Include( int winID, int gradient );
+
+  void currentGradient_VC_Exclude( int winID, int gradient );
+
+  void VisualCheckingStatus( int index, int status );
+
+  void OpenMappingXML();
+
+  void OpenQCedDWI();
+
+  void Signal_actionOpenDWINrrd_triggered();
 
 private slots:
   void save();
@@ -93,7 +96,7 @@ private slots:
 
   void on_actionOpenMappingXML_triggered();
 
-  //void on_actionOpen_QCed_DWI_triggered();
+  // void on_actionOpen_QCed_DWI_triggered();
 
   void on_actionDicom2NrrdPanel_triggered();
 
@@ -105,7 +108,7 @@ private slots:
 
   void on_actionImageView3_triggered();
 
-  //void on_actionOpenQCResult_triggered();
+  // void on_actionOpenQCResult_triggered();
 
   // styles menu
   void on_actionWindows_triggered();
@@ -120,8 +123,6 @@ private slots:
 
   void on_actionCleanlooks_triggered();
 
-  
-
   // When loading QCResult
 
   void LoadQCResult(bool);
@@ -130,7 +131,7 @@ private slots:
   void UpdateProtocolDiffusionVectorActors();
 
   void UpdateOutputDWIDiffusionVectorActors();
-  
+
   void UpdateOutputDWIDiffusionVectorActors_VC();
 
   void on_actionFrom_Protocol_toggled( bool);
@@ -143,7 +144,6 @@ private slots:
 
   void on_actionExit_triggered();
 
-  
   // 2D sliderbar
   void ImageIndexChanged(int winID, int index);
 
@@ -160,7 +160,7 @@ private slots:
   void GradientChanged_VC_Exclude( int WinID, int index);
 
   void GradientUpdate( int index);
-  
+
   void InterpolationChanged(int WinID, int index);
 
   void ContentsChanged(int WinID, int index);
@@ -177,28 +177,18 @@ private slots:
   // Qt-vtk connections
   void BackGroundColor(QAction *);
 
-  void popup(vtkObject *obj,
-    unsigned long,
-    void *client_data,
-    void *,
-    vtkCommand *command);
+  void popup(vtkObject *obj, unsigned long, void *client_data, void *, vtkCommand *command);
 
-  void WindowLevelChanged(vtkObject *obj,
-    unsigned long,
-    void *client_data,
-    void *,
-    vtkCommand *command);
+  void WindowLevelChanged(vtkObject *obj, unsigned long, void *client_data, void *, vtkCommand *command);
 
   //
   void SetAllWindowLevel(double window, double level);
 
- //
+  //
   void SetactionIncluded();  // Activate the "actionIncluded" bottom
 
- //
+  //
   void LoadQCedDWI( QString Qqcdwiname);
-
-      
 
 private:
   bool bDwiLoaded; // =false;
@@ -207,21 +197,19 @@ private:
   bool bContentSyn;        // =true;
   bool bInterpolationSyn;  // =true;
   bool bOrientationSyn;    // =false;
-  bool bQCResultLoad;     
+  bool bQCResultLoad;
 
   // 3D window
-  vtkActor        *actorSphere;
+  vtkActor *       actorSphere;
   vtkPropAssembly *actorDirProtocol;
   vtkPropAssembly *actorDirFile;
   vtkPropAssembly *actorDirInclude;
 
   // docking panels
-  Dicom2NrrdPanel           *dicom2NrrdPanel;
+  Dicom2NrrdPanel *          dicom2NrrdPanel;
   IntensityMotionCheckPanel *DTIPrepPanel;
-  
 
   // Check Box panel
-  
 
   // docking 2D image planes
   //  ImageView2DPanel    *imageView2DPanel1;
@@ -241,17 +229,12 @@ private:
   void createDockPanels_IntensityMotionCheckPanel();
 
   void createDockPanels_Dicom2NrrdPanel();
- 
+
   void createDockPanels_imageView2DPanel1();
 
   void createDockPanels_imageView2DPanel2();
- 
+
   void createDockPanels_imageView2DPanel3();
-
-  
-  
-
-  
 
   QToolBar *panelToolBar;
   QToolBar *cameraToolBar;
@@ -267,12 +250,11 @@ private:
 
   vtkCylinderSource *source;
   vtkPolyDataMapper *mapper;
-  vtkActor          *actor;
-  vtkRenderer       *ren;
+  vtkActor *         actor;
+  vtkRenderer *      ren;
   // vtkRenderer* ren1;
 
   std::vector<vtkRenderer *> renders;
-
 public:
   // ////////////////// nrrd DWI reader
   // /////////////////////////////////////////////////////
@@ -294,7 +276,7 @@ public:
   ItkVtkImageFilterTypeUShort::Pointer gradientConnecter;
 
   typedef itk::VectorIndexSelectionCastImageFilter<DwiImageType,
-    GradientImageType> FilterType;
+                                                   GradientImageType> FilterType;
   FilterType::Pointer componentExtractor;
 
   FilterType::Pointer componentExtractor1;
@@ -306,7 +288,7 @@ public:
   ItkVtkImageFilterTypeUShort::Pointer gradientConnecter3;
 
   // for 3D Image
-  vtkRenderer         *pvtkRenderer;
+  vtkRenderer *        pvtkRenderer;
   vtkImagePlaneWidget *planeWidgetX;
   vtkImagePlaneWidget *planeWidgetY;
   vtkImagePlaneWidget *planeWidgetZ;
@@ -316,9 +298,8 @@ public:
 public:
   bool CreateImagePlaneWidgets( vtkImageData *GradientImage );
 
-  bool CreateImagePlaneWidgets( vtkImageData *GradientImage1,
-    vtkImageData *GradientImage2,
-    vtkImageData *GradientImage3);
+  bool CreateImagePlaneWidgets( vtkImageData *GradientImage1, vtkImageData *GradientImage2,
+                                vtkImageData *GradientImage3);
 
   void UpdateImagePlaneWidgets(int gradient);
 
@@ -326,12 +307,7 @@ public:
 
   void UpdateImageView2DWindows(int gradient, int numbGradients);
 
-  void UpdateImageView2DWindows(int gradient1,
-    int gradient2,
-    int gradient3,
-    int numbGradients);
-
-
+  void UpdateImageView2DWindows(int gradient1, int gradient2, int gradient3, int numbGradients);
 
   vtkRenderer *        GetRenderer()
   {
@@ -360,15 +336,13 @@ public:
   void ReloadQCedDWI( QString Qqcdwiname );
 
   struct VC_STATUS
-  {
+    {
 
-  int index;
-  int VC_status;
-  };
+    int index;
+    int VC_status;
+    };
 
-std::vector<VC_STATUS> VC_Status;
-
-
+  std::vector<VC_STATUS> VC_Status;
 private:
   vtkImageData *image1;
   vtkImageData *image2;
@@ -381,6 +355,7 @@ private:
   int whichWindow[3];
 
   void ProbeWithSplineWidget();
-  };
+
+};
 
 #endif // GMAINWINDOW_H

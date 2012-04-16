@@ -23,9 +23,9 @@
 #include <QtGui/QLineEdit>
 #include <QtGui/QToolButton>
 
-ImageView2DPanelWithControls::ImageView2DPanelWithControls(QString title,
-  QMainWindow *parentLocal) : QDockWidget(title, parentLocal)
-  {
+ImageView2DPanelWithControls::ImageView2DPanelWithControls(QString title, QMainWindow *parentLocal) : QDockWidget(title,
+                                                                                                                  parentLocal)
+{
   setupUi(this);
   this->verticalLayout->setContentsMargins(0, 1, 0, 0);
   this->verticalLayout->setSpacing(1);
@@ -120,20 +120,21 @@ ImageView2DPanelWithControls::ImageView2DPanelWithControls(QString title,
     connecter->SetInput( reader->GetOutput());
 
       */
-  }
+}
 
 ImageView2DPanelWithControls::~ImageView2DPanelWithControls(void)
-     {}
+{
+}
 
 void ImageView2DPanelWithControls::Setup( vtkImageData *image,
-  double ww,
-  double wl,
-  int SliceIndex,
-  int orient,
-  int numGradients,
-  int id)
+                                          double ww,
+                                          double wl,
+                                          int SliceIndex,
+                                          int orient,
+                                          int numGradients,
+                                          int id)
 {
-  if ( id >= 0 && id <= 2 )
+  if( id >= 0 && id <= 2 )
     {
     WindowID = id;
     }
@@ -146,7 +147,8 @@ void ImageView2DPanelWithControls::Setup( vtkImageData *image,
   Orientation = orient;
   NumberOfGradients = numGradients;
 
-  // int this->m_ImageDimension[3];  // I believe that the setup and update functions should modify the class member variable not a private version.
+  // int this->m_ImageDimension[3];  // I believe that the setup and update functions should modify the class member
+  // variable not a private version.
   // double this->m_ImageSpacing[3];
   vtkImage->GetDimensions(this->m_ImageDimension);
   vtkImage->GetSpacing(this->m_ImageSpacing);
@@ -172,16 +174,16 @@ void ImageView2DPanelWithControls::Setup( vtkImageData *image,
   this->lineEdit_Gradient->setText( temp.sprintf("%d", 0) );
   this->horizontalSlider_Gradient->setValue(0);
 
-  switch ( Orientation )
+  switch( Orientation )
     {
     case ORIENTATION_AXIAL:
-      if ( index < 0 )
+      if( index < 0 )
         {
         index = this->m_ImageDimension[2] / 2;
         }
       this->ImageViewer2->GetRenderer()->GetActiveCamera()->SetPosition(0,
-      0,
-      -1);                                                                       //
+                                                                        0,
+                                                                        -1);     //
                                                                                  //
                                                                                  // -1
                                                                                  //
@@ -197,13 +199,13 @@ void ImageView2DPanelWithControls::Setup( vtkImageData *image,
       break;
     case ORIENTATION_SAGITTAL:
       this->ImageViewer2->SetSliceOrientationToYZ();
-      if ( index < 0 )
+      if( index < 0 )
         {
         index = this->m_ImageDimension[0] / 2;
         }
       this->ImageViewer2->GetRenderer()->GetActiveCamera()->SetPosition(-1,
-      0,
-      0);                                                                        //
+                                                                        0,
+                                                                        0);      //
                                                                                  //
                                                                                  // -1
                                                                                  //
@@ -218,13 +220,13 @@ void ImageView2DPanelWithControls::Setup( vtkImageData *image,
       break;
     case ORIENTATION_CORONAL:
       this->ImageViewer2->SetSliceOrientationToXZ();
-      if ( index < 0 )
+      if( index < 0 )
         {
         index = this->m_ImageDimension[1] / 2;
         }
       this->ImageViewer2->GetRenderer()->GetActiveCamera()->SetPosition(0,
-      -1,
-      0);                                                                        //
+                                                                        -1,
+                                                                        0);      //
                                                                                  //
                                                                                  // 1
                                                                                  //
@@ -246,7 +248,7 @@ void ImageView2DPanelWithControls::Setup( vtkImageData *image,
   this->lineEdit_SliceIndex->setText( str.sprintf("%d", index) );
   this->horizontalSlider_SliceIndex->setValue(index);
 
-  if ( ww != 0 && wl != 0 )
+  if( ww != 0 && wl != 0 )
     {
     this->ImageViewer2->SetColorWindow( ww );
     this->ImageViewer2->SetColorLevel( wl );
@@ -258,12 +260,12 @@ void ImageView2DPanelWithControls::Setup( vtkImageData *image,
     this->ImageViewer2->SetColorLevel( 0.5 * ( range[1] + range[0] ) );
     }
   float scale;
-  if ( this->m_ImageDimension[0] != 0 && this->m_ImageDimension[1] != 0 && this->m_ImageDimension[2] !=
-       0 )
+  if( this->m_ImageDimension[0] != 0 && this->m_ImageDimension[1] != 0 && this->m_ImageDimension[2] !=
+      0 )
     {
     float scaleTemp[3];
-    if ( this->m_ImageDimension[0] * this->m_ImageSpacing[0] >= this->m_ImageDimension[1]
-         * this->m_ImageSpacing[1] )
+    if( this->m_ImageDimension[0] * this->m_ImageSpacing[0] >= this->m_ImageDimension[1]
+        * this->m_ImageSpacing[1] )
       {
       scaleTemp[0] = this->m_ImageDimension[0] * this->m_ImageSpacing[0] / 2.0;
       }
@@ -272,8 +274,8 @@ void ImageView2DPanelWithControls::Setup( vtkImageData *image,
       scaleTemp[0] = this->m_ImageDimension[1] * this->m_ImageSpacing[1] / 2.0;
       }
 
-    if ( this->m_ImageDimension[0] * this->m_ImageSpacing[0] >= this->m_ImageDimension[2]
-         * this->m_ImageSpacing[2] )
+    if( this->m_ImageDimension[0] * this->m_ImageSpacing[0] >= this->m_ImageDimension[2]
+        * this->m_ImageSpacing[2] )
       {
       scaleTemp[1] = this->m_ImageDimension[0] * this->m_ImageSpacing[0] / 2.0;
       }
@@ -282,8 +284,8 @@ void ImageView2DPanelWithControls::Setup( vtkImageData *image,
       scaleTemp[1] = this->m_ImageDimension[2] * this->m_ImageSpacing[2] / 2.0;
       }
 
-    if ( this->m_ImageDimension[1] * this->m_ImageSpacing[1] >= this->m_ImageDimension[2]
-         * this->m_ImageSpacing[2] )
+    if( this->m_ImageDimension[1] * this->m_ImageSpacing[1] >= this->m_ImageDimension[2]
+        * this->m_ImageSpacing[2] )
       {
       scaleTemp[2] = this->m_ImageDimension[1] * this->m_ImageSpacing[1] / 2.0;
       }
@@ -292,11 +294,11 @@ void ImageView2DPanelWithControls::Setup( vtkImageData *image,
       scaleTemp[2] = this->m_ImageDimension[2] * this->m_ImageSpacing[2] / 2.0;
       }
 
-    if ( scaleTemp[0] >= scaleTemp[1] && scaleTemp[0] >= scaleTemp[2] )
+    if( scaleTemp[0] >= scaleTemp[1] && scaleTemp[0] >= scaleTemp[2] )
       {
       scale = scaleTemp[0]; // ((float)(this->m_ImageDimension[0]-1))/2.0;
       }
-    else if ( scaleTemp[1] >= scaleTemp[0] && scaleTemp[1] >= scaleTemp[2] )
+    else if( scaleTemp[1] >= scaleTemp[0] && scaleTemp[1] >= scaleTemp[2] )
       {
       scale = scaleTemp[1]; // ((float)(this->m_ImageDimension[1]-1))/2.0;
       }
@@ -333,7 +335,8 @@ void ImageView2DPanelWithControls::Setup( vtkImageData *image,
 
 void ImageView2DPanelWithControls::Update()
 {
-  // int this->m_ImageDimension[3];  // I believe that the setup and update functions should modify the class member variable not a private version.
+  // int this->m_ImageDimension[3];  // I believe that the setup and update functions should modify the class member
+  // variable not a private version.
   // double this->m_ImageSpacing[3];
 
   vtkImage->GetDimensions(this->m_ImageDimension);
@@ -344,10 +347,11 @@ void ImageView2DPanelWithControls::Update()
   std::cout << this->m_ImageSpacing[0] << "   dd " << this->m_ImageSpacing[1] << "  dd   "
             << this->m_ImageSpacing[2] << std::endl;
   int index = 0;
-  switch ( Orientation )
+
+  switch( Orientation )
     {
     case ORIENTATION_AXIAL:
-      if ( index < 1 )
+      if( index < 1 )
         {
         index = this->m_ImageDimension[2] / 2;
         }
@@ -355,13 +359,13 @@ void ImageView2DPanelWithControls::Update()
       break;
     case ORIENTATION_SAGITTAL:
       this->horizontalSlider_SliceIndex->setRange(0, this->m_ImageDimension[0] - 1);
-      if ( index < 1 )
+      if( index < 1 )
         {
         index = this->m_ImageDimension[0] / 2;
         }
       break;
     case ORIENTATION_CORONAL:
-      if ( index < 1 )
+      if( index < 1 )
         {
         index = this->m_ImageDimension[1] / 2;
         }
@@ -388,7 +392,7 @@ void ImageView2DPanelWithControls::on_horizontalSlider_SliceIndex_valueChanged(
 
   // this->lineEdit_SliceIndex->setText(str.sprintf("%d/%d", index,
   // horizontalSlider_SliceIndex->maximum()));
-  if ( this->m_ImageDimension[2] == 0 )
+  if( this->m_ImageDimension[2] == 0 )
     {
     return;
     }
@@ -400,7 +404,7 @@ void ImageView2DPanelWithControls::on_horizontalSlider_SliceIndex_valueChanged(
 
 void ImageView2DPanelWithControls::on_toolButton_Play_clicked()
 {
-  if ( this->m_ImageDimension[2] == 0 )
+  if( this->m_ImageDimension[2] == 0 )
     {
     return;
     }
@@ -408,16 +412,16 @@ void ImageView2DPanelWithControls::on_toolButton_Play_clicked()
   int originalSlice;
   originalSlice = this->horizontalSlider_SliceIndex->value();
 
-  switch ( Orientation )
+  switch( Orientation )
     {
     case ORIENTATION_AXIAL:
-      for ( int i = 0; i < this->m_ImageDimension[2]; i++ )
+      for( int i = 0; i < this->m_ImageDimension[2]; i++ )
         {
         clock_t start;
         start = clock();
-        while ( true )
+        while( true )
           {
-          if ( ( (float)(clock() - start) ) / ( (float)CLOCKS_PER_SEC ) > 0.01 )
+          if( ( (float)(clock() - start) ) / ( (float)CLOCKS_PER_SEC ) > 0.01 )
             {
             this->horizontalSlider_SliceIndex->setValue(i);
             break;
@@ -429,35 +433,37 @@ void ImageView2DPanelWithControls::on_toolButton_Play_clicked()
         }
       break;
     case ORIENTATION_SAGITTAL:
-      for ( int i = 0; i < this->m_ImageDimension[0]; i++ )
+      for( int i = 0; i < this->m_ImageDimension[0]; i++ )
         {
         clock_t start;
         start = clock();
-        while ( true )
+        while( true )
           {
-          if ( ( (float)(clock() - start) ) / ( (float)CLOCKS_PER_SEC ) > 0.01 )
+          if( ( (float)(clock() - start) ) / ( (float)CLOCKS_PER_SEC ) > 0.01 )
             {
             this->horizontalSlider_SliceIndex->setValue(i);
             break;
             }
           }
+
         // for(int j=1;j<1000000;j++){;}
         // this->horizontalSlider_SliceIndex->setValue(i);
         }
       break;
     case ORIENTATION_CORONAL:
-      for ( int i = 0; i < this->m_ImageDimension[1]; i++ )
+      for( int i = 0; i < this->m_ImageDimension[1]; i++ )
         {
         clock_t start;
         start = clock();
-        while ( true )
+        while( true )
           {
-          if ( ( (float)(clock() - start) ) / ( (float)CLOCKS_PER_SEC ) > 0.01 )
+          if( ( (float)(clock() - start) ) / ( (float)CLOCKS_PER_SEC ) > 0.01 )
             {
             this->horizontalSlider_SliceIndex->setValue(i);
             break;
             }
           }
+
         // for(int j=1;j<1000000;j++){;}
         // this->horizontalSlider_SliceIndex->setValue(i);
         }
@@ -471,21 +477,20 @@ void ImageView2DPanelWithControls::on_toolButton_Play_clicked()
 
 void ImageView2DPanelWithControls::on_toolButton_GradientPlay_clicked()
 {
-  if ( NumberOfGradients == 0 )
+  if( NumberOfGradients == 0 )
     {
     return;
     }
 
   int originalGradient;
   originalGradient = this->horizontalSlider_Gradient->value();
-
-  for ( int i = 0; i < NumberOfGradients; i++ )
+  for( int i = 0; i < NumberOfGradients; i++ )
     {
     clock_t start;
     start = clock();
-    while ( true )
+    while( true )
       {
-      if ( ( (float)(clock() - start) ) / ( (float)CLOCKS_PER_SEC ) > 0.05 )
+      if( ( (float)(clock() - start) ) / ( (float)CLOCKS_PER_SEC ) > 0.05 )
         {
         this->horizontalSlider_Gradient->setValue(i);
         break;
@@ -500,11 +505,11 @@ void ImageView2DPanelWithControls::on_toolButton_GradientPlay_clicked()
 void ImageView2DPanelWithControls::on_comboBox_Orientation_currentIndexChanged(
   int indexOrient)
 {
-  if ( Orientation == indexOrient )
+  if( Orientation == indexOrient )
     {
     return;
     }
-  if ( !bSetup )
+  if( !bSetup )
     {
     return;
     }
@@ -514,13 +519,14 @@ void ImageView2DPanelWithControls::on_comboBox_Orientation_currentIndexChanged(
   emit orientationchanged(WindowID, Orientation);
 
   int index = 0;
-  switch ( Orientation )
+
+  switch( Orientation )
     {
     case ORIENTATION_AXIAL:
       this->ImageViewer2->SetSliceOrientationToXY();
       this->ImageViewer2->GetRenderer()->GetActiveCamera()->SetPosition(0,
-      0,
-      -1);                                                                       //
+                                                                        0,
+                                                                        -1);     //
                                                                                  //
                                                                                  // -1
                                                                                  //
@@ -536,8 +542,8 @@ void ImageView2DPanelWithControls::on_comboBox_Orientation_currentIndexChanged(
     case ORIENTATION_SAGITTAL:
       this->ImageViewer2->SetSliceOrientationToYZ();
       this->ImageViewer2->GetRenderer()->GetActiveCamera()->SetPosition(-1,
-      0,
-      0);                                                                        //
+                                                                        0,
+                                                                        0);      //
                                                                                  //
                                                                                  // -1
                                                                                  //
@@ -553,8 +559,8 @@ void ImageView2DPanelWithControls::on_comboBox_Orientation_currentIndexChanged(
     case ORIENTATION_CORONAL:
       this->ImageViewer2->SetSliceOrientationToXZ();
       this->ImageViewer2->GetRenderer()->GetActiveCamera()->SetPosition(0,
-      -1,
-      0);                                                                        //
+                                                                        -1,
+                                                                        0);      //
                                                                                  //
                                                                                  // 1
                                                                                  //
@@ -573,12 +579,12 @@ void ImageView2DPanelWithControls::on_comboBox_Orientation_currentIndexChanged(
     }
 
   float scale;
-  if ( this->m_ImageDimension[0] != 0 && this->m_ImageDimension[1] != 0 && this->m_ImageDimension[2] !=
-       0 )
+  if( this->m_ImageDimension[0] != 0 && this->m_ImageDimension[1] != 0 && this->m_ImageDimension[2] !=
+      0 )
     {
     float scaleTemp[3];
-    if ( this->m_ImageDimension[0] * this->m_ImageSpacing[0] >= this->m_ImageDimension[1]
-         * this->m_ImageSpacing[1] )
+    if( this->m_ImageDimension[0] * this->m_ImageSpacing[0] >= this->m_ImageDimension[1]
+        * this->m_ImageSpacing[1] )
       {
       scaleTemp[0] = this->m_ImageDimension[0] * this->m_ImageSpacing[0] / 2.0;
       }
@@ -587,8 +593,8 @@ void ImageView2DPanelWithControls::on_comboBox_Orientation_currentIndexChanged(
       scaleTemp[0] = this->m_ImageDimension[1] * this->m_ImageSpacing[1] / 2.0;
       }
 
-    if ( this->m_ImageDimension[0] * this->m_ImageSpacing[0] >= this->m_ImageDimension[2]
-         * this->m_ImageSpacing[2] )
+    if( this->m_ImageDimension[0] * this->m_ImageSpacing[0] >= this->m_ImageDimension[2]
+        * this->m_ImageSpacing[2] )
       {
       scaleTemp[1] = this->m_ImageDimension[0] * this->m_ImageSpacing[0] / 2.0;
       }
@@ -597,8 +603,8 @@ void ImageView2DPanelWithControls::on_comboBox_Orientation_currentIndexChanged(
       scaleTemp[1] = this->m_ImageDimension[2] * this->m_ImageSpacing[2] / 2.0;
       }
 
-    if ( this->m_ImageDimension[1] * this->m_ImageSpacing[1] >= this->m_ImageDimension[2]
-         * this->m_ImageSpacing[2] )
+    if( this->m_ImageDimension[1] * this->m_ImageSpacing[1] >= this->m_ImageDimension[2]
+        * this->m_ImageSpacing[2] )
       {
       scaleTemp[2] = this->m_ImageDimension[1] * this->m_ImageSpacing[1] / 2.0;
       }
@@ -607,11 +613,11 @@ void ImageView2DPanelWithControls::on_comboBox_Orientation_currentIndexChanged(
       scaleTemp[2] = this->m_ImageDimension[2] * this->m_ImageSpacing[2] / 2.0;
       }
 
-    if ( scaleTemp[0] >= scaleTemp[1] && scaleTemp[0] >= scaleTemp[2] )
+    if( scaleTemp[0] >= scaleTemp[1] && scaleTemp[0] >= scaleTemp[2] )
       {
       scale = scaleTemp[0]; // ((float)(this->m_ImageDimension[0]-1))/2.0;
       }
-    else if ( scaleTemp[1] >= scaleTemp[0] && scaleTemp[1] >= scaleTemp[2] )
+    else if( scaleTemp[1] >= scaleTemp[0] && scaleTemp[1] >= scaleTemp[2] )
       {
       scale = scaleTemp[1]; // ((float)(this->m_ImageDimension[1]-1))/2.0;
       }
@@ -645,10 +651,9 @@ void ImageView2DPanelWithControls::on_comboBox_Contents_currentIndexChanged(
   emit contentschanged(WindowID, index);
 }
 
-void ImageView2DPanelWithControls::
-  on_comboBox_Interpolation_currentIndexChanged(int index)
+void ImageView2DPanelWithControls::on_comboBox_Interpolation_currentIndexChanged(int index)
 {
-  if ( index > 0 )
+  if( index > 0 )
     {
     ImageViewer2->GetImageActor()->InterpolateOn();
     }
@@ -673,7 +678,7 @@ void ImageView2DPanelWithControls::on_doubleSpinBox_valueChanged(double value)
 void ImageView2DPanelWithControls::on_horizontalSlider_Gradient_valueChanged(
   int index)
 {
-  if ( NumberOfGradients == 0 )
+  if( NumberOfGradients == 0 )
     {
     return;
     }
@@ -686,10 +691,10 @@ void ImageView2DPanelWithControls::on_horizontalSlider_Gradient_valueChanged(
 }
 
 void ImageView2DPanelWithControls::SliceIndexChanged(vtkObject *obj,
-  unsigned long,
-  void *client_data,
-  void *,
-  vtkCommand * /* command */)
+                                                     unsigned long,
+                                                     void *client_data,
+                                                     void *,
+                                                     vtkCommand * /* command */)
 {
   vtkImagePlaneWidget *planeWidget
     = reinterpret_cast<vtkImagePlaneWidget *>( obj );
@@ -711,10 +716,10 @@ void ImageView2DPanelWithControls::SliceIndexChanged(vtkObject *obj,
 }
 
 void ImageView2DPanelWithControls::WindowLevelChanged(vtkObject *obj,
-  unsigned long,
-  void *client_data,
-  void *,
-  vtkCommand * /* command */)
+                                                      unsigned long,
+                                                      void *client_data,
+                                                      void *,
+                                                      vtkCommand * /* command */)
 {
   vtkImagePlaneWidget *planeWidget
     = reinterpret_cast<vtkImagePlaneWidget *>( obj );

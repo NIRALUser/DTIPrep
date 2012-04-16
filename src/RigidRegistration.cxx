@@ -1,32 +1,30 @@
 #include "RigidRegistration.h"
 
-CRigidRegistration::CRigidRegistration(ImageType::Pointer fixed,
-  ImageType::Pointer moving,
-  unsigned int BinsNumber,
-  double SamplesPercent,
-  bool ExplicitPDFDerivatives )
-  {
+CRigidRegistration::CRigidRegistration(ImageType::Pointer fixed, ImageType::Pointer moving, unsigned int BinsNumber,
+                                       double SamplesPercent,
+                                       bool ExplicitPDFDerivatives )
+{
   fixedImage = fixed;
   movingImage = moving;
 
   numberOfBins = BinsNumber;
   percentOfSamples = SamplesPercent; // 1% ~ 20%
   useExplicitPDFDerivatives = ExplicitPDFDerivatives;
-  }
+}
 
-CRigidRegistration::CRigidRegistration(ImageType::Pointer fixed,
-  ImageType::Pointer moving)
-  {
+CRigidRegistration::CRigidRegistration(ImageType::Pointer fixed, ImageType::Pointer moving)
+{
   fixedImage = fixed;
   movingImage = moving;
 
   numberOfBins = 25;
   percentOfSamples = 0.1; // 1% ~ 20%
   useExplicitPDFDerivatives = 1;
-  }
+}
 
 CRigidRegistration::~CRigidRegistration(void)
-     {}
+{
+}
 
 void CRigidRegistration::SetupFramework()
 {
@@ -58,7 +56,7 @@ void CRigidRegistration::SetupParameters()
   registration->SetFixedImageRegion( fixedImage->GetBufferedRegion() );
 
   typedef itk::CenteredTransformInitializer<TransformType, ImageType,
-    ImageType> TransformInitializerType;
+                                            ImageType> TransformInitializerType;
   TransformInitializerType::Pointer initializer = TransformInitializerType::New();
 
   initializer->SetTransform(   transform );
@@ -108,7 +106,7 @@ void CRigidRegistration::SetupParameters()
 
   int SampleSize
     = (int)(fixedImage->GetPixelContainer()->Size() * percentOfSamples);
-  if ( SampleSize > 100000 )
+  if( SampleSize > 100000 )
     {
     metric->SetNumberOfSpatialSamples( SampleSize );
     }
@@ -117,7 +115,7 @@ void CRigidRegistration::SetupParameters()
     metric->UseAllPixelsOn();
     }
   // metric->SetUseExplicitPDFDerivatives( useExplicitPDFDerivatives ); //true
-  // for small # of parameters; false for big # of transform paramrters
+  // for small #of parameters; false for big #of transform paramrters
 }
 
 struInterlaceResults CRigidRegistration::Run(void)
@@ -132,7 +130,7 @@ struInterlaceResults CRigidRegistration::Run(void)
     {
     registration->StartRegistration();
     }
-  catch ( itk::ExceptionObject & err )
+  catch( itk::ExceptionObject & err )
     {
     std::cerr << "ExceptionObject caught !" << std::endl;
     std::cerr << err << std::endl;

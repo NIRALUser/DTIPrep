@@ -5,16 +5,14 @@
 #include "ThreadDicomToNrrd.h"
 
 class Dicom2NrrdPanel : public QDockWidget, private Ui_Dicom2NrrdPanel
-  {
+{
   Q_OBJECT
 public:
   Dicom2NrrdPanel(QMainWindow *parent = 0);
   ~Dicom2NrrdPanel();
 
   CThreadDicomToNrrd ThreadDicomToNrrd;
-
 protected:
-
 private slots:
   void on_dicomDirectoryBrowseButton_clicked();
 
@@ -24,11 +22,10 @@ private slots:
 
   void on_pushButton_Convert_clicked();
 
-  
 public slots:
 
-    void StartProgressSlot_D2N();
-    void StopProgressSlot_D2N();
+  void StartProgressSlot_D2N();
 
+  void StopProgressSlot_D2N();
 
 };

@@ -10,7 +10,8 @@
 #include "itkCenteredTransformInitializer.h"
 #include "itkVersorRigid3DTransformOptimizer.h"
 
-typedef struct  InterlaceResults {
+typedef struct  InterlaceResults
+  {
   bool bRegister;
   double AngleX;      // in degrees
   double AngleY;      // in degrees
@@ -24,17 +25,19 @@ typedef struct  InterlaceResults {
 
 #include "itkCommand.h"
 class CommandIterationUpdate3DRigid : public itk::Command
-  {
+{
 public:
   typedef  CommandIterationUpdate3DRigid Self;
   typedef  itk::Command                  Superclass;
   typedef itk::SmartPointer<Self>        Pointer;
   itkNewMacro( Self );
 protected:
-  CommandIterationUpdate3DRigid() {}
+  CommandIterationUpdate3DRigid()
+  {
+  }
 public:
   typedef itk::VersorRigid3DTransformOptimizer OptimizerType;
-  typedef   const OptimizerType                *OptimizerPointer;
+  typedef   const OptimizerType *              OptimizerPointer;
 
   void Execute(itk::Object *caller, const itk::EventObject & event)
   {
@@ -46,7 +49,7 @@ public:
     OptimizerPointer optimizer
       = dynamic_cast<OptimizerPointer>( object );
 
-    if ( !itk::IterationEvent().CheckEvent( &event ) )
+    if( !itk::IterationEvent().CheckEvent( &event ) )
       {
       return;
       }
@@ -54,19 +57,18 @@ public:
     std::cout << optimizer->GetValue() << "   ";
     std::cout << optimizer->GetCurrentPosition() << std::endl;
   }
-  };
+
+};
 
 class CRigidRegistration
-  {
+{
 public:
   typedef  unsigned short          PixelType;
   typedef itk::Image<PixelType, 3> ImageType;
 
-  CRigidRegistration(ImageType::Pointer fixed,
-    ImageType::Pointer moving,
-    unsigned int BinsNumber,
-    double SamplesPercent,
-    bool ExplicitPDFDerivatives );
+  CRigidRegistration(ImageType::Pointer fixed, ImageType::Pointer moving, unsigned int BinsNumber,
+                     double SamplesPercent,
+                     bool ExplicitPDFDerivatives );
   CRigidRegistration(ImageType::Pointer fixed, ImageType::Pointer moving);
   ~CRigidRegistration(void);
 public:
@@ -76,11 +78,11 @@ public:
   typedef itk::VersorRigid3DTransformOptimizer
   OptimizerType;
   typedef itk::MattesMutualInformationImageToImageMetric<ImageType,
-    ImageType> MetricType;
+                                                         ImageType> MetricType;
   typedef itk::LinearInterpolateImageFunction<ImageType,
-    double>    InterpolatorType;
+                                              double>    InterpolatorType;
   typedef itk::ImageRegistrationMethod<ImageType,
-    ImageType> RegistrationType;
+                                       ImageType> RegistrationType;
 
   typedef ImageType::SpacingType
   SpacingType;
@@ -91,12 +93,12 @@ public:
   typedef ImageType::SizeType
   SizeType;
 private:
-  MetricType::Pointer           metric;
-  OptimizerType::Pointer        optimizer;
-  InterpolatorType::Pointer     interpolator;
-  RegistrationType::Pointer     registration;
+  MetricType::Pointer       metric;
+  OptimizerType::Pointer    optimizer;
+  InterpolatorType::Pointer interpolator;
+  RegistrationType::Pointer registration;
 //  OptimizerType::ParametersType finalParameters;
-  TransformType::Pointer        transform;
+  TransformType::Pointer transform;
 
   ImageType::Pointer fixedImage;
   ImageType::Pointer movingImage;
@@ -113,4 +115,5 @@ public:
   struInterlaceResults Run(void);
 
   OptimizerType::ParametersType GetFinalParameters();
-  };
+
+};

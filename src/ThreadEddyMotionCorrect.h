@@ -4,7 +4,7 @@
 #include <QThread>
 
 class CThreadEddyMotionCorrect : public QThread
-  {
+{
   Q_OBJECT
 public:
   CThreadEddyMotionCorrect(QObject *parent = 0);
@@ -18,6 +18,6 @@ protected:
   void run();
 
 private:
-  };
+};
 
 #endif

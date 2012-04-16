@@ -29,7 +29,7 @@ namespace itk
  */
 class ITK_EXPORT GradientSteepestDescentOptimizer :
   public GradientSteepestDescentBaseOptimizer
-  {
+{
 public:
   /** Standard class typedefs. */
   typedef GradientSteepestDescentOptimizer     Self;
@@ -42,28 +42,31 @@ public:
 
   /** Run-time type information (and related methods). */
   itkTypeMacro( GradientSteepestDescentOptimizer,
-    GradientSteepestDescentBaseOptimizer );
+                GradientSteepestDescentBaseOptimizer );
 
   /** Cost function typedefs. */
   typedef Superclass::CostFunctionType CostFunctionType;
   typedef CostFunctionType::Pointer    CostFunctionPointer;
 protected:
-  GradientSteepestDescentOptimizer() {};
-  virtual ~GradientSteepestDescentOptimizer() {};
+  GradientSteepestDescentOptimizer()
+  {
+  };
+  virtual ~GradientSteepestDescentOptimizer()
+  {
+  };
 
   /** Advance one step along the corrected gradient taking into
    * account the steplength represented by factor.
    * This method is invoked by AdvanceOneStep. It is expected
    * to be overrided by optimization methods in non-vector spaces
    * \sa AdvanceOneStep */
-  virtual void StepAlongGradient(
-    double factor,
-    const DerivativeType & transformedGradient );
+  virtual void StepAlongGradient(double factor, const DerivativeType & transformedGradient );
 
 private:
   GradientSteepestDescentOptimizer(const Self &); // purposely not implemented
   void operator=(const Self &);                   // purposely not implemented
-  };
+
+};
 } // end namespace itk
 
 #endif

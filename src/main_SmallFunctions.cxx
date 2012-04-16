@@ -13,8 +13,8 @@
 // Work-around CMake dependency scanning limitation.  This must
 // duplicate the above list of headers.
 
-// # include "CommandLineArguments.hxx.in"
-// # include "kwsys_ios_iostream.h.in"
+// #include "CommandLineArguments.hxx.in"
+// #include "kwsys_ios_iostream.h.in"
 
 #include <stddef.h> /* size_t */
 #include <string.h> /* strcmp */
@@ -26,20 +26,20 @@ void usage()
   cerr << "Usage: dtiprep  [in] [out] <options>\n" << endl;
   cerr << "-dicom2nrrd directory nrrdfilename \n" << endl;
   cerr
- <<
+  <<
   "-intravolumecheck correctionThreshold RotationThreshold TranslationThreshold \n"
- << endl;
+  << endl;
   cerr << "-intervolumecheck RotationThreshold TranslationThreshold \n" << endl;
   exit(1);
 }
 
 using namespace std;
-int main ( int argc, char **argv )
+int main( int argc, char * *argv )
 {
-  if ( argc == 1 )
+  if( argc == 1 )
     {
-    QApplication app (argc, argv);
-    GMainWindow  *MainWindow = new GMainWindow;
+    QApplication app(argc, argv);
+    GMainWindow *MainWindow = new GMainWindow;
     MainWindow->show();
     return app.exec();
     }
@@ -72,7 +72,7 @@ int main ( int argc, char **argv )
 
     int m = -1;
     list.seekg(0, ios::beg);
-    while ( !list.eof() )
+    while( !list.eof() )
       {
       ++m;
       getline(list, filename);
@@ -83,44 +83,45 @@ int main ( int argc, char **argv )
       path.append(filename);
       cout << path << endl;
 
-      if ( m == 0 )
+      if( m == 0 )
         {
         outfiletemp.open( ( path + string(".txt") ).c_str() );
         outfiletemp << "\t\t" << filename.substr(filename.find_last_of(
-            "\\") + 1, 10) << endl;
+                                                   "\\") + 1, 10) << endl;
 
         infiletemp.open( path.c_str() );
-        if ( infiletemp.is_open() )
+        if( infiletemp.is_open() )
           {
           infiletemp.seekg(0, ios::beg);
           int i = 0;
-          while ( !infiletemp.eof() )
+          while( !infiletemp.eof() )
             {
             infiletemp >> strtemp;
             i++;
 
-            if ( i > 1000000 )
+            if( i > 1000000 )
               {
-              if ( ( i - 1000000 ) % 7 == 1 )
+              if( ( i - 1000000 ) % 7 == 1 )
                 {
                 cout << strtemp << "\t"; outfiletemp << strtemp << "\t";
                 }
-              if ( ( i - 1000000 ) % 7 == 2 )
+              if( ( i - 1000000 ) % 7 == 2 )
                 {
                 cout << strtemp << "\t";
                 }                                           //
                                                             // outfiletemp<<strtemp<<"\t";
                                                             // }
-              if ( ( i - 1000000 ) % 7 == 3 )
+              if( ( i - 1000000 ) % 7 == 3 )
                 {
                 cout << strtemp << endl; outfiletemp << strtemp << endl;
                 }
               }
-            if ( strcmp(strtemp.c_str(), "Lambda3") == 0 )
+            if( strcmp(strtemp.c_str(), "Lambda3") == 0 )
               {
               i = 1000000;
               }
             }
+
           infiletemp.close();
           outfiletemp.close();
           }
@@ -137,20 +138,20 @@ int main ( int argc, char **argv )
         infiletemp.open( path.c_str() );
         outfiletemp.open( ( path + string(".txt") ).c_str() );
 
-        if ( !infiletemp.is_open() )
+        if( !infiletemp.is_open() )
           {
           cout << endl << filename << "Not open" << endl;
           }
-        if ( !infiletemp1.is_open() )
+        if( !infiletemp1.is_open() )
           {
           cout << endl << prefilename + string(".txt") << "Not open" << endl;
           }
-        if ( !outfiletemp.is_open() )
+        if( !outfiletemp.is_open() )
           {
           cout << endl << filename + string(".txt") << "Not open" << endl;
           }
 
-        if ( infiletemp.is_open() && infiletemp1.is_open()
+        if( infiletemp.is_open() && infiletemp1.is_open()
             && outfiletemp.is_open() )
           {
           infiletemp.seekg(0, ios::beg);
@@ -164,33 +165,34 @@ int main ( int argc, char **argv )
 
           int i = 0;
           // cout <<i<<"  ";
-          while ( !infiletemp.eof() )
+          while( !infiletemp.eof() )
             {
             infiletemp >> strtemp;
             i++;
             // cout <<i<<"  ";
-            if ( i > 1000000 )
+            if( i > 1000000 )
               {
-              if ( ( i - 1000000 ) % 7 == 1 )
+              if( ( i - 1000000 ) % 7 == 1 )
                 {
                 cout << strtemp << "\t";
                 }
-              if ( ( i - 1000000 ) % 7 == 2 )
+              if( ( i - 1000000 ) % 7 == 2 )
                 {
                 cout << strtemp << "\t";
                 }
-              if ( ( i - 1000000 ) % 7 == 3 )
+              if( ( i - 1000000 ) % 7 == 3 )
                 {
                 cout << strtemp << endl;  getline(infiletemp1, line1);
                 line1 += "\t"; line1 += strtemp;
                 outfiletemp << line1 << endl;
                 }
               }
-            if ( strcmp(strtemp.c_str(), "Lambda3") == 0 )
+            if( strcmp(strtemp.c_str(), "Lambda3") == 0 )
               {
               i = 1000000;
               }
             }
+
           infiletemp1.close();
           infiletemp.close();
           outfiletemp.close();

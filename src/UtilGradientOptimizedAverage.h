@@ -1,12 +1,13 @@
 #ifndef __UTILGRADIENTOPTIMIZEDAVERAGE_H__
 #define __UTILGRADIENTOPTIMIZEDAVERAGE_H__
-namespace itk {
+namespace itk
+{
 /**
  *
  */
 template <class TImageType>
 void
-  DWIBaselineAverager<TImageType>
+DWIBaselineAverager<TImageType>
 ::GradientOptimizedAverage()
 {
   // 1: create idwi
@@ -34,10 +35,9 @@ void
   // iteratively register each DW gradient onto the idwi
   std::vector<struRigidRegResult> allResults;
   struRigidRegResult              result;
-
-  for ( unsigned int i = 0; i < this->m_GradientDirectionContainer->Size(); i++ )
+  for( unsigned int i = 0; i < this->m_GradientDirectionContainer->Size(); i++ )
     {
-      if ( this->GradientDirectionIsB0Image(i) == false )
+    if( this->GradientDirectionIsB0Image(i) == false )
       {
       allResults.push_back(result);
       }
@@ -46,6 +46,7 @@ void
   bool         bRegister = true;
   unsigned int iterationCount = 0;
   std::cout << "Gradient optimized averaging baseline ...";
+
   do
     {
     iterationCount++;
@@ -61,13 +62,13 @@ void
     double newRotateSum = 0.0;
 
     int gradientNum = 0;
-    for ( unsigned int i = 0;
-      i < this->m_GradientDirectionContainer->Size();
-      i++ )
+    for( unsigned int i = 0;
+         i < this->m_GradientDirectionContainer->Size();
+         i++ )
       {
-      if ( 0.0 !=  this->m_GradientDirectionContainer->ElementAt(i)[0]
-        || 0.0 !=  this->m_GradientDirectionContainer->ElementAt(i)[1]
-        || 0.0 !=  this->m_GradientDirectionContainer->ElementAt(i)[2]    )
+      if( 0.0 !=  this->m_GradientDirectionContainer->ElementAt(i)[0]
+          || 0.0 !=  this->m_GradientDirectionContainer->ElementAt(i)[1]
+          || 0.0 !=  this->m_GradientDirectionContainer->ElementAt(i)[2]    )
         {
         componentExtractor->SetIndex( i );
         componentExtractor->Update();
@@ -76,14 +77,15 @@ void
         //           std::cout<<"Registering DW gradient #: "<<i<<" to current
         // idwi ... ";
         struRigidRegResult resultLocal;
-        exit(-1); //HACK:  Not valid testing yet.
-        typename UnsignedImageType::Pointer dummy=NULL;
-        rigidRegistration<UnsignedImageType,itk::Image<double,3> >( this->idwi,
-          componentExtractor->GetOutput(), 25, 0.1, 1, resultLocal,
-          1 /* DW gradient */,
-          dummy,
-          this->m_tempIDWI
-        );
+        exit(-1); // HACK:  Not valid testing yet.
+        typename UnsignedImageType::Pointer dummy = NULL;
+        rigidRegistration<UnsignedImageType, itk::Image<double, 3> >( this->idwi,
+                                                                      componentExtractor->GetOutput(), 25, 0.1, 1,
+                                                                      resultLocal,
+                                                                      1 /* DW gradient */,
+                                                                      dummy,
+                                                                      this->m_tempIDWI
+                                                                      );
         std::cout << " done " << std::endl;
 
         allResults.at(gradientNum) = resultLocal;
@@ -100,57 +102,56 @@ void
         }
       }
 
-    if ( m_StopCriteria == TotalTransformationBased )
+    if( m_StopCriteria == TotalTransformationBased )
       {
       //         std::cout<<"StopCriteriaEnum:
       // TotalTransformationBased"<<std::endl;
       //         std::cout<<"StopThreshold: "<<m_StopThreshold<<std::endl;
 
-      if ( ( vcl_abs( newTransSum  - oldTransSum  )  < m_StopThreshold )
-        && ( vcl_abs( newRotateSum - oldRotateSum ) < m_StopThreshold ) )                                                          //
-        //
-        // 0.01
+      if( ( vcl_abs( newTransSum  - oldTransSum  )  < m_StopThreshold )
+          && ( vcl_abs( newRotateSum - oldRotateSum ) < m_StopThreshold ) )                                                        //
+      //
+      // 0.01
         {
         bRegister = false;
         }
       }
 
-    if ( m_StopCriteria == MetricSumBased )
+    if( m_StopCriteria == MetricSumBased )
       {
       //         std::cout<<"StopCriteriaEnum: MetricSumBased"<<std::endl;
       //         std::cout<<"StopThreshold: "<<m_StopThreshold<<std::endl;
 
-      if ( vcl_abs(newMISum - oldMISum)  < m_StopThreshold ) // 0.001
+      if( vcl_abs(newMISum - oldMISum)  < m_StopThreshold )  // 0.001
         {
         bRegister = false;
         }
       }
 
-
-    double         meanSquarediff = 0.0;
-    double         meanIntensity = 0.0;
+    double meanSquarediff = 0.0;
+    double meanIntensity = 0.0;
       {
       // compute the idwi with registered DW gradient
       typedef ImageRegionIteratorWithIndex<UnsignedImageType> idwiIterator;
       idwiIterator idwiIt( idwi, idwi->GetLargestPossibleRegion() );
       idwiIt.GoToBegin();
-      while ( !idwiIt.IsAtEnd() )
+      while( !idwiIt.IsAtEnd() )
         {
-        const typename UnsignedImageType::IndexType pixelIndex= idwiIt.GetIndex();
+        const typename UnsignedImageType::IndexType pixelIndex = idwiIt.GetIndex();
         const unsigned short pixelValue = idwiIt.Get();
         meanIntensity += pixelValue;
         idwiIt.Set( vcl_pow( m_tempIDWI->GetPixel(pixelIndex),
-            1.0 / this->getGradientNumber() ) );
+                             1.0 / this->getGradientNumber() ) );
 
-        const double diffToPrevious=( pixelValue - idwiIt.Get() );
-        meanSquarediff += diffToPrevious*diffToPrevious;
+        const double diffToPrevious = ( pixelValue - idwiIt.Get() );
+        meanSquarediff += diffToPrevious * diffToPrevious;
         ++idwiIt;
         }
       }
     m_tempIDWI->FillBuffer(1);
 
-    //const UnsignedImageType::SizeType sizes = m_averagedBaseline->GetLargestPossibleRegion().GetSize();
-    const long voxelCount  =m_averagedBaseline->GetLargestPossibleRegion().GetNumberOfPixels();
+    // const UnsignedImageType::SizeType sizes = m_averagedBaseline->GetLargestPossibleRegion().GetSize();
+    const long voxelCount  = m_averagedBaseline->GetLargestPossibleRegion().GetNumberOfPixels();
     meanSquarediff = vcl_sqrt(meanSquarediff / voxelCount);
     meanIntensity = meanIntensity / voxelCount;
     const double ratio = meanSquarediff / meanIntensity;
@@ -164,18 +165,19 @@ void
     //       std::cout<<"meanVoxelSquareRootDifference/meanVoxelIntensity:
     // "<<ratio<<std::endl;
 
-    if ( m_StopCriteria == IntensityMeanSquareDiffBased )
+    if( m_StopCriteria == IntensityMeanSquareDiffBased )
       {
       //         std::cout<<"StopCriteriaEnum:
       // IntensityMeanSquareDiffBased"<<std::endl;
       //         std::cout<<"StopThreshold: "<<m_StopThreshold<<std::endl;
 
-      if ( ratio < m_StopThreshold )  // 0.02
+      if( ratio < m_StopThreshold )   // 0.02
         {
         bRegister = false;
         }
       }
-    } while ( bRegister && iterationCount <= GetMaxIteration() );
+    }
+  while( bRegister && iterationCount <= GetMaxIteration() );
 
   // registered all the baseline into idwi, then average
   // ////////////////////////////////////////////////////////////////////////
@@ -184,10 +186,9 @@ void
   temporaryDeformedImage->SetRegions( inputPtr->GetLargestPossibleRegion() );
   temporaryDeformedImage->Allocate();
   temporaryDeformedImage->FillBuffer(0);
-
-  for ( unsigned int i = 0; i < this->m_GradientDirectionContainer->Size(); i++ )
+  for( unsigned int i = 0; i < this->m_GradientDirectionContainer->Size(); i++ )
     {
-      if ( this->GradientDirectionIsB0Image(i) == true )
+    if( this->GradientDirectionIsB0Image(i) == true )
       {
       componentExtractor->SetIndex( i );
       componentExtractor->Update();
@@ -196,12 +197,13 @@ void
 
       // register and replace the DW gradient volumes with the idwi
       //         std::cout<<"Registering baseline #: "<<i<<" to idwi ... ";
-      rigidRegistration<UnsignedImageType,itk::Image<double,3> >( this->idwi,
-        componentExtractor->GetOutput(), 25, 0.1, 1, resultLocal,
-        0 /* baseline */,
-        temporaryDeformedImage,
-        NULL
-      );
+      rigidRegistration<UnsignedImageType, itk::Image<double, 3> >( this->idwi,
+                                                                    componentExtractor->GetOutput(), 25, 0.1, 1,
+                                                                    resultLocal,
+                                                                    0 /* baseline */,
+                                                                    temporaryDeformedImage,
+                                                                    NULL
+                                                                    );
       //         std::cout<<" done "<<std::endl;
       }
     }
@@ -211,20 +213,20 @@ void
   averagedBaselineIterator aIt( m_averagedBaseline, m_averagedBaseline->GetLargestPossibleRegion() );
   aIt.GoToBegin();
 
-  while ( !aIt.IsAtEnd() )
+  while( !aIt.IsAtEnd() )
     {
-    const typename UnsignedImageType::IndexType pixelIndex= aIt.GetIndex();
-    //const unsigned short pixelValue = aIt.Get();
+    const typename UnsignedImageType::IndexType pixelIndex = aIt.GetIndex();
+    // const unsigned short pixelValue = aIt.Get();
     aIt.Set( static_cast<unsigned short>(
-        temporaryDeformedImage->GetPixel(pixelIndex)
-        / ( static_cast<double>( this->getGradientNumber() ) ) 
-    )
-    );
+               temporaryDeformedImage->GetPixel(pixelIndex)
+               / ( static_cast<double>( this->getGradientNumber() ) )
+               )
+             );
     ++aIt;
     }
 
   //     std::cout<<"DW gradient based optimized done"<<std::endl;
 }
 
-} //end namespace itk
+} // end namespace itk
 #endif // __UTILGRADIENTOPTIMIZEDAVERAGE_H__

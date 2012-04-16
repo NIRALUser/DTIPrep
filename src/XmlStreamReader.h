@@ -15,14 +15,12 @@ class QTreeWidget;
 class QString;
 class QTreeWidgetItem;
 
-
-
 #include <map>
 #include <string>
 #include <iostream>
 
-
-enum ProtocolStringValue {
+enum ProtocolStringValue
+  {
   // QC overal
   QC_Unknow = 0,
   QC_QCOutputDirectory,
@@ -59,8 +57,8 @@ enum ProtocolStringValue {
   DIFFUSION_reportFileMode,
 
   DIFFUSION_bQuitOnCheckFailure,
-  
-  //Denoising 1
+
+  // Denoising 1
   DENOISING_bCheck,
   DENOISING_Path,
   DENOISING_ParameterSet,
@@ -166,57 +164,58 @@ enum ProtocolStringValue {
   DTI_frobeniusnorm,
   DTI_reportFileNameSuffix,
   DTI_reportFileMode,
-};
+  };
 
-enum QCRESULTStringValue {
+enum QCRESULTStringValue
+  {
 
- INCLUDE = 0,
- BASELINE_AVERAGED,
- EDDY_MOTION_CORRECTED,
- EXCLUDE_SLICECHECK,
- EXCLUDE_INTERLACECHECK,
- EXCLUDE_GRADIENTCHECK,
- EXCLUDE_MANUALLY,
+  INCLUDE = 0,
+  BASELINE_AVERAGED,
+  EDDY_MOTION_CORRECTED,
+  EXCLUDE_SLICECHECK,
+  EXCLUDE_INTERLACECHECK,
+  EXCLUDE_GRADIENTCHECK,
+  EXCLUDE_MANUALLY,
 
- IMG_INFO,
- IMG_ORIGIN,
- IMG_SIZE,
- IMG_SPACE,
- IMG_SPACEDIRECTION,
+  IMG_INFO,
+  IMG_ORIGIN,
+  IMG_SIZE,
+  IMG_SPACE,
+  IMG_SPACEDIRECTION,
 
- DIFF_B,
- DIFF_GRADIENT,
- DIFF_MEASUREMENTFRAME,
+  DIFF_B,
+  DIFF_GRADIENT,
+  DIFF_MEASUREMENTFRAME,
 
- DWI_SWCk,
- DWI_IWCk,
- DWI_GWCk,
+  DWI_SWCk,
+  DWI_IWCk,
+  DWI_GWCk,
 
- DWI_SLICEWISECHECK,
- DWI_SLICE,
- DWI_CORRELATION,
+  DWI_SLICEWISECHECK,
+  DWI_SLICE,
+  DWI_CORRELATION,
 
- DWI_INTERLACEWISECHECK,
- DWI_INTERLACEX,
- DWI_INTERLACEY,
- DWI_INTERLACEZ,
- DWI_INTERLACE_TRX,
- DWI_INTERLACE_TRY,
- DWI_INTERLACE_TRZ,
- DWI_INTERLACE_MI,
- DWI_INTERLACE_CORRELATION,
+  DWI_INTERLACEWISECHECK,
+  DWI_INTERLACEX,
+  DWI_INTERLACEY,
+  DWI_INTERLACEZ,
+  DWI_INTERLACE_TRX,
+  DWI_INTERLACE_TRY,
+  DWI_INTERLACE_TRZ,
+  DWI_INTERLACE_MI,
+  DWI_INTERLACE_CORRELATION,
 
- DWI_GRADIENTWISECHECK,
- DWI_GRADIENTX,
- DWI_GRADIENTY,
- DWI_GRADIENTZ,
- DWI_GRADIENT_TRX,
- DWI_GRADIENT_TRY,
- DWI_GRADIENT_TRz,
- DWI_GRADIENT_TRZ,
- DWI_GRADIENT_MI,
- DWI_QC_Index
-};
+  DWI_GRADIENTWISECHECK,
+  DWI_GRADIENTX,
+  DWI_GRADIENTY,
+  DWI_GRADIENTZ,
+  DWI_GRADIENT_TRX,
+  DWI_GRADIENT_TRY,
+  DWI_GRADIENT_TRz,
+  DWI_GRADIENT_TRZ,
+  DWI_GRADIENT_MI,
+  DWI_QC_Index
+  };
 
 class XmlStreamReader
 {
@@ -248,59 +247,64 @@ public:
 
   bool readFile(const QString & fileName, int mode);
 
-  bool readFile_QCResult(const QString & fileName, int mode);   //Reading QCResult in xml format
+  bool readFile_QCResult(const QString & fileName, int mode);   // Reading QCResult in xml format
 
-  void parseQCResultElement( const QDomElement &element);
-  
-  void GetImgInfoParsing(const QDomElement &element);
- 
-  void parseEntryElement_QCResult_ImgInfo( const QDomElement &element, QTreeWidgetItem *parent);
+  void parseQCResultElement( const QDomElement & element);
 
-  void parseValueElement_QCResult_ImgInfo(const QDomElement &element, QTreeWidgetItem *parent);
+  void GetImgInfoParsing(const QDomElement & element);
+
+  void parseEntryElement_QCResult_ImgInfo( const QDomElement & element, QTreeWidgetItem *parent);
+
+  void parseValueElement_QCResult_ImgInfo(const QDomElement & element, QTreeWidgetItem *parent);
 
   void LoadQCResultFromImgInfoParsing();
 
-  void GetDiffInfoParsing(const QDomElement &element);
+  void GetDiffInfoParsing(const QDomElement & element);
 
   void LoadQCResultFromDiffInfoParsing();
 
   void LoadQCResultFromDWICheckParsing();
 
-  void parseValueElement_QCResult_GradientDWICheck(const QDomElement &element, QTreeWidgetItem *parent);
+  void parseValueElement_QCResult_GradientDWICheck(const QDomElement & element, QTreeWidgetItem *parent);
 
-  void parseEntryElement_QCResult_DWICheck(const QDomNodeList &childList,QTreeWidgetItem *parent);
+  void parseEntryElement_QCResult_DWICheck(const QDomNodeList & childList, QTreeWidgetItem *parent);
 
   void parseEntryElement_QCResult_GradientDWICheck(const QDomElement & element, QTreeWidgetItem *parent);
 
   void LoadQCResultFromDWICheckGradientParsing(int grd_num);
 
-  QDomNodeList GetDWICheckParsing(const QDomNode &element);
+  QDomNodeList GetDWICheckParsing(const QDomNode & element);
 
-  struct ITEM {
+  struct ITEM
+    {
     QString parameter;
     QString value;
-  };
+    };
 
   std::vector<ITEM> paremeters;
   std::vector<ITEM> parametersQCResult;
-  std::vector<ITEM> parametersQCResult_Gradient;  //Contains all information about each the gradient 
-
+  std::vector<ITEM> parametersQCResult_Gradient;  // Contains all information about each the gradient
 private:
   void readProtocolSettingsElement(int mode);
+
   void readElement_QCResult(int mode);
 
   void readEntryElement(QTreeWidgetItem *parent);
+
   void readEntryElement_QCResult(QTreeWidgetItem *parent);
 
-
   void readValueElement(QTreeWidgetItem *parent);
+
   void readValueElement_QCResult(QTreeWidgetItem *parent);
+
   void readProcessingElement_QCResult(QTreeWidgetItem *parent);
+
   void readGreenElement_QCResult(QTreeWidgetItem * parent);
+
   void readRedElement_QCResult(QTreeWidgetItem * parent);
 
   void readEntryElement();
- 
+
   void readEntryElement_QCResult();
 
   void readValueElement();
@@ -313,9 +317,9 @@ private:
 
   void parseXMLParametersToQCResult();
 
-  QTreeWidget      *treeWidget;
+  QTreeWidget *    treeWidget;
   QTreeWidgetItem *tree_item_DWICheck;
-  Protocol         *protocol;
-  QCResult          * QCRESULT;
+  Protocol *       protocol;
+  QCResult *       QCRESULT;
   QXmlStreamReader reader;
 };

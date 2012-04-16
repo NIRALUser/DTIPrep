@@ -15,7 +15,6 @@
 #include "Protocol.h"
 #include "QCResult.h"
 
-
 #include "ThreadIntensityMotionCheck.h"
 #include "FurtherQCThread.h"
 
@@ -28,8 +27,7 @@ public:
   ~IntensityMotionCheckPanel(void);
 
   CThreadIntensityMotionCheck myIntensityThread; // Object of ThreadIntensityMotionCheck class
-  CFurtherQCThread myFurtherQCThread;	// object of FurtherQCThread class
-  
+  CFurtherQCThread            myFurtherQCThread; // object of FurtherQCThread class
 
   void SetFileName(QString nrrd );
 
@@ -37,6 +35,7 @@ public:
 
 signals:
   void status(const QString &);
+
   // void loadProtocol();
   void ProtocolChanged();
 
@@ -54,114 +53,104 @@ signals:
 
   void SignalLoadQCedDWI( QString qcdwiname);
 
-  private slots:
-    // void on_comboBox_Protocol_currentIndexChanged(QString protocolName);
-    void on_treeWidget_itemDoubleClicked(QTreeWidgetItem *item, int column);
+private slots:
+  // void on_comboBox_Protocol_currentIndexChanged(QString protocolName);
+  void on_treeWidget_itemDoubleClicked(QTreeWidgetItem *item, int column);
 
-    void on_treeWidget_itemChanged(QTreeWidgetItem *item, int column);
+  void on_treeWidget_itemChanged(QTreeWidgetItem *item, int column);
 
-    void on_treeWidget_currentItemChanged( QTreeWidgetItem *current,
-      QTreeWidgetItem *previous);
+  void on_treeWidget_currentItemChanged( QTreeWidgetItem *current, QTreeWidgetItem *previous);
 
-    void on_treeWidget_DiffusionInformation_itemClicked( QTreeWidgetItem *item,
-      int column);
+  void on_treeWidget_DiffusionInformation_itemClicked( QTreeWidgetItem *item, int column);
 
-    void on_treeWidget_DiffusionInformation_currentItemChanged(
-      QTreeWidgetItem *current,
-      QTreeWidgetItem *previous);
+  void on_treeWidget_DiffusionInformation_currentItemChanged(QTreeWidgetItem *current, QTreeWidgetItem *previous);
 
-    void on_treeWidget_Results_itemDoubleClicked(QTreeWidgetItem *item,
-      int column);
+  void on_treeWidget_Results_itemDoubleClicked(QTreeWidgetItem *item, int column);
 
-    void on_treeWidget_Results_currentItemChanged( QTreeWidgetItem *current,
-      QTreeWidgetItem *previous);
+  void on_treeWidget_Results_currentItemChanged( QTreeWidgetItem *current, QTreeWidgetItem *previous);
 
-    void on_treeWidget_Results_itemChanged(QTreeWidgetItem *item, int column);
+  void on_treeWidget_Results_itemChanged(QTreeWidgetItem *item, int column);
 
-    //void on_treeWidget_Results_itemClicked( QTreeWidgetItem *item,  int column);
+  // void on_treeWidget_Results_itemClicked( QTreeWidgetItem *item,  int column);
 
-    void on_pushButton_Save_clicked( );
+  void on_pushButton_Save_clicked();
 
-    void on_pushButton_DefaultProtocol_clicked( );
+  void on_pushButton_DefaultProtocol_clicked();
 
-    void on_pushButton_SaveProtocolAs_clicked( );
+  void on_pushButton_SaveProtocolAs_clicked();
 
-    void on_toolButton_ProtocolFileOpen_clicked( );
+  void on_toolButton_ProtocolFileOpen_clicked();
 
-    void on_toolButton_ResultFileOpen_clicked( );
+  void on_toolButton_ResultFileOpen_clicked();
 
-    void on_pushButton_RunPipeline_clicked( );
+  void on_pushButton_RunPipeline_clicked();
 
-    //void on_pushButton_SaveDWIAs_clicked( );
+  // void on_pushButton_SaveDWIAs_clicked( );
 
-    void on_pushButton_DefaultQCResult_clicked( );
+  void on_pushButton_DefaultQCResult_clicked();
 
-    void ResultUpdate();
+  void ResultUpdate();
 
-    void QCedResultUpdate();
+  void QCedResultUpdate();
 
-    void SavingTreeWidgetResult_XmlFile();
+  void SavingTreeWidgetResult_XmlFile();
 
-    void SavingTreeWidgetResult_XmlFile_Default();
+  void SavingTreeWidgetResult_XmlFile_Default();
 
-    void on_pushButton_SaveVisualChecking_clicked();
-
-    
+  void on_pushButton_SaveVisualChecking_clicked();
 
 public slots:
 
-    void StartProgressSlot();
-    void StopProgressSlot();
-    void f_StartProgressSlot();
-    void f_StopProgressSlot();
-    void SetVisualCheckingStatus( int index, int status);
+  void StartProgressSlot();
 
-    bool OpenMappingXML();
-    //bool OpenQCedDWI();
-    void Building_Mapping_XML();
-    void LoadQCedDWI( QString qcdwiname);
-    void Set_VCStatus();
-    void Set_Original_ForcedConformance_Mapping();
-    void Set_QCedDWI();
+  void StopProgressSlot();
 
-	
+  void f_StartProgressSlot();
+
+  void f_StopProgressSlot();
+
+  void SetVisualCheckingStatus( int index, int status);
+
+  bool OpenMappingXML();
+
+  // bool OpenQCedDWI();
+  void Building_Mapping_XML();
+
+  void LoadQCedDWI( QString qcdwiname);
+
+  void Set_VCStatus();
+
+  void Set_Original_ForcedConformance_Mapping();
+
+  void Set_QCedDWI();
 
 public:
 
-  bool GetSliceProtocolParameters(
-    double beginSkip,
-    double endSkip,
-    double & baselineCorrelationThreshold,
-    double & gradientCorrelationThreshold,
-    double & baselineCorrelationDeviationThreshold,
-    double & gradientCorrelationDeviationThreshold
-    );
+  bool GetSliceProtocolParameters(double beginSkip, double endSkip, double & baselineCorrelationThreshold,
+                                  double & gradientCorrelationThreshold, double & baselineCorrelationDeviationThreshold,
+                                  double & gradientCorrelationDeviationThreshold);
 
-  bool GetInterlaceProtocolParameters(
-    double & correlationThresholdBaseline,
-    double & correlationThresholdGradient,
-    double & correlationBaselineDevTimes,
-    double & correlationGradientDevTimes
-    );
+  bool GetInterlaceProtocolParameters(double & correlationThresholdBaseline, double & correlationThresholdGradient,
+                                      double & correlationBaselineDevTimes,
+                                      double & correlationGradientDevTimes);
 
-  
   typedef unsigned short
-    DwiPixelType;
-  typedef itk::Image<DwiPixelType,2>
-    SliceImageType;
+  DwiPixelType;
+  typedef itk::Image<DwiPixelType, 2>
+  SliceImageType;
   typedef itk::Image<DwiPixelType, 3>
-    GradientImageType;
+  GradientImageType;
   typedef itk::VectorImage<DwiPixelType, 3>
-    DwiImageType;
+  DwiImageType;
   typedef itk::ImageFileReader<DwiImageType>
-    DwiReaderType;
+  DwiReaderType;
   typedef itk::ImageFileWriter<DwiImageType>
-    DwiWriterType;
+  DwiWriterType;
 
   typedef itk::DiffusionTensor3DReconstructionImageFilter<DwiPixelType,
-    DwiPixelType, double> TensorReconstructionImageFilterType;
+                                                          DwiPixelType, double> TensorReconstructionImageFilterType;
   typedef  TensorReconstructionImageFilterType::GradientDirectionContainerType
-    GradientDirectionContainerType;
+  GradientDirectionContainerType;
 
   // void SetFileName(std::string filename) {DwiFileName = filename; };
   bool GetGradientDirections( bool bDisplay);
@@ -182,19 +171,19 @@ public:
 
   void SetProcessingQCResult(int & pro, int status)
   {
-      pro = status;
+    pro = status;
   }
 
   QTreeWidget * & GetQTreeWidgetResult()
   {
     return treeWidget_Results;
-  }  
- 
+  }
+
   void SaveVisualCheckingResult();
 
-  void UpdatePanelDWI( );
+  void UpdatePanelDWI();
 
-  void UpdateProtocolToTreeWidget( );
+  void UpdateProtocolToTreeWidget();
 
   void SetDWIImage(DwiImageType::Pointer DWIImage)
   {
@@ -216,20 +205,20 @@ public:
   void GenerateCheckOutputImage( DwiImageType::Pointer dwi, const std::string filename);
 
   void GenerateOutput_VisualCheckingResult( std::string filename );
- 
+
   void GenerateOutput_VisualCheckingResult2( std::string filename );
 
   void GenerateOutput_VisualCheckingResult();
 
   bool Search_index( int index, std::vector<int> list_index );
 
-  void DefaultProcess( );
+  void DefaultProcess();
 
-  void OpenQCReport( );
+  void OpenQCReport();
 
   void OpenXML();
 
-  void OpenXML_ResultFile( );
+  void OpenXML_ResultFile();
 
   void DefaultProtocol();
 
@@ -244,34 +233,32 @@ public:
 
   void f_overallGradientWiseCheck();
 
- 
   void Match_NameDwiQC();
+
   void Match_DwiQC();
 
   void Clear_VC_Status();
 
-struct VC_STATUS
-{
-int index;
-int VC_status;
+  struct VC_STATUS
+    {
+    int index;
+    int VC_status;
 
-};
-std::vector<VC_STATUS> VC_Status;
+    };
+  std::vector<VC_STATUS> VC_Status;
 
-struct m_Original_ForcedConformance_Mapping
-{
-     std::vector<int> index_original;
-     int index_ForcedConformance;
-     
-};
+  struct m_Original_ForcedConformance_Mapping
+    {
+    std::vector<int> index_original;
+    int index_ForcedConformance;
 
-std::vector<m_Original_ForcedConformance_Mapping> t_Original_ForcedConformance_Mapping;
-void set_Original_ForcedConformance_Mapping( std::vector<m_Original_ForcedConformance_Mapping> m_t )
-{
-   t_Original_ForcedConformance_Mapping = m_t;
-}
+    };
 
-
+  std::vector<m_Original_ForcedConformance_Mapping> t_Original_ForcedConformance_Mapping;
+  void set_Original_ForcedConformance_Mapping( std::vector<m_Original_ForcedConformance_Mapping> m_t )
+  {
+    t_Original_ForcedConformance_Mapping = m_t;
+  }
 
 private:
 
@@ -279,15 +266,16 @@ private:
   Protocol protocol;
   QCResult qcResult;
 
-  std::string            DwiFileName;
-  QString                DwiName; // Dwi file name only with no path string
-  QString                DwiFilePath;  // Dwi file name with full path
-  DwiImageType::Pointer  m_DwiOriginalImage;
-  DwiImageType::Pointer  m_DwiOutputImage;   // QCed Dwi image
-  std::string		QCedDwiFileName;	//????
+  std::string           DwiFileName;
+  QString               DwiName;     // Dwi file name only with no path string
+  QString               DwiFilePath; // Dwi file name with full path
+  DwiImageType::Pointer m_DwiOriginalImage;
+  DwiImageType::Pointer m_DwiOutputImage; // QCed Dwi image
+  std::string           QCedDwiFileName;  // ????
 
   bool                                    bDwiLoaded;
-  bool					  bDwi_VisualCheckLoad;		// set true when the new updated dwi after visual checking is created sucessfully 
+  bool                                    bDwi_VisualCheckLoad; // set true when the new updated dwi after visual
+                                                                // checking is created sucessfully
   bool                                    bGetGradientDirections;
   bool                                    readb0;
   double                                  b0;
@@ -297,24 +285,24 @@ private:
   bool bResultTreeEditable;
   bool bProtocolTreeEditable;
 
-  bool bMatchNameQCResult_DwiFile; // This variable is checked when the name of Dwi file and QCResult informatiom are the same
+  bool bMatchNameQCResult_DwiFile; // This variable is checked when the name of Dwi file and QCResult informatiom are
+                                   // the same
 
   bool bLoadDefaultQC;  // Set by default false ans set true when the "Default Result" pushed
-  bool bCancel_QC; 
+  bool bCancel_QC;
   bool bMatch_DwiQC;
 
-  int r_SliceWiseCkeck; // the overall SliceWiseChecking result
+  int r_SliceWiseCkeck;     // the overall SliceWiseChecking result
   int r_InterlaceWiseCheck; // the overall InterlaceWiseChecking result
-  int r_GradWiseCheck; // the overall GradientWiseChecking result
+  int r_GradWiseCheck;      // the overall GradientWiseChecking result
 
   unsigned char result; // the result of RunPipleline
 
-  std::vector< int > index_listVCExcluded;		// contains the VC-excluded gradients id
-  std::vector< int > index_listVCIncluded;		// contains the VC-included gradients id
+  std::vector<int> index_listVCExcluded;      // contains the VC-excluded gradients id
+  std::vector<int> index_listVCIncluded;      // contains the VC-included gradients id
 
   DwiReaderType::Pointer QCedDwiReader;
-  
- 
+
 };
 
 #endif // INTENSITYMOTIONCHECKPANEL_H

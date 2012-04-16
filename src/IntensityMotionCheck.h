@@ -1,7 +1,6 @@
 #ifndef IntensityMotionCheck_H
 #define IntensityMotionCheck_H
 
-
 #include "itkImage.h"
 #include "itkVectorImage.h"
 #include "itkImageFileReader.h"
@@ -11,7 +10,7 @@
 #include "Protocol.h"
 #include "QCResult.h"
 
-//#include "SignalClass.h"
+// #include "SignalClass.h"
 
 #include <iostream>
 #include <string>
@@ -26,29 +25,26 @@
 #include <itksys/Process.h>
 #include <itksys/Glob.hxx>
 
-
 #include "itkDWIEddyCurrentHeadMotionCorrector.h" // eddy-motion Utah
 #include "itkVectorImageRegisterAffineFilter.h"   // eddy-motion IOWA
 
 #include <QObject>
 #include <QProcess>
 
-
-
-class CIntensityMotionCheck //: public QObject
+class CIntensityMotionCheck // : public QObject
 {
- 
-//Q_OBJECT
-  	
+
+// Q_OBJECT
 public:
   CIntensityMotionCheck();
 
   ~CIntensityMotionCheck();
 
-  struct DiffusionDir {
+  struct DiffusionDir
+    {
     std::vector<double> gradientDir;
     int repetitionNumber;
-  };
+    };
 
   typedef unsigned short                     DwiPixelType;
   typedef itk::Image<DwiPixelType, 2>        SliceImageType;
@@ -58,23 +54,23 @@ public:
   typedef itk::ImageFileWriter<DwiImageType> DwiWriterType;
 
   typedef itk::DiffusionTensor3DReconstructionImageFilter<DwiPixelType,
-    DwiPixelType, double> TensorReconstructionImageFilterType;
+                                                          DwiPixelType, double> TensorReconstructionImageFilterType;
   typedef  TensorReconstructionImageFilterType::GradientDirectionContainerType
-    GradientDirectionContainerType;
+  GradientDirectionContainerType;
 
   typedef itk::DWICropper<DwiImageType>            CropperType;
   typedef itk::DWIQCSliceChecker<DwiImageType>     SliceCheckerType;
   typedef itk::DWIQCInterlaceChecker<DwiImageType> InterlaceCheckerType;
   typedef itk::DWIBaselineAverager<DwiImageType>   BaselineAveragerType;
   typedef itk::DWIQCGradientChecker<DwiImageType>  GradientCheckerType;
-  
+
   itksysProcess* m_Process;
 
-  //eddy-motion Utah
+  // eddy-motion Utah
   typedef itk::DWIEddyCurrentHeadMotionCorrector<DwiImageType> EddyMotionCorrectorType;
-  //eddy-motion Iowa
+  // eddy-motion Iowa
   typedef itk::VectorImageRegisterAffineFilter<DwiImageType, DwiImageType>
-    EddyMotionCorrectorTypeIowa;
+  EddyMotionCorrectorTypeIowa;
 
   void GetImagesInformation();
 
@@ -84,40 +80,51 @@ public:
   }
 
   bool GetGradientDirections();
- 
+
   bool GetGradientDirections_FurtherQC();
 
-  bool GetGradientDirections( 
-    DwiImageType::Pointer dwi,
-    double & bValue,
-    GradientDirectionContainerType::Pointer GradDireContainer);
+  bool GetGradientDirections(DwiImageType::Pointer dwi, double & bValue,
+                             GradientDirectionContainerType::Pointer GradDireContainer);
 
-  unsigned char ImageCheck( DwiImageType::Pointer dwi ); 
-  // 0000 0000: ok; 
-  // 0000 0001: size mismatch; 
-  // 0000 0010: spacing mismatch; 
+  unsigned char ImageCheck( DwiImageType::Pointer dwi );
+
+  // 0000 0000: ok;
+  // 0000 0001: size mismatch;
+  // 0000 0010: spacing mismatch;
   // 0000 0100: origins mismatch
   // 0000 0100: Space directions mismatch
   // 0000 0100: Space directions mismatch
 
   bool DiffusionCheck( DwiImageType::Pointer dwi );
+
   bool SliceWiseCheck( DwiImageType::Pointer dwi );
+
   int Denoising( DwiImageType::Pointer dwi );
+
   int JointDenoising( DwiImageType::Pointer dwi );
+
   bool InterlaceWiseCheck( DwiImageType::Pointer dwi );
+
   bool BaselineAverage( DwiImageType::Pointer dwi );
+
   bool EddyMotionCorrect( DwiImageType::Pointer dwi );
+
   bool EddyMotionCorrectIowa( DwiImageType::Pointer dwi );
+
   bool GradientWiseCheck( DwiImageType::Pointer dwi );
+
   bool SaveDwiForcedConformanceImage(void);
+
   bool SaveDwiForcedConformanceImage_FurtherQC(void) const;
 
   bool DTIComputing();
 
   bool dtiprocess();
+
   bool dtiestim();
 
   bool validateDiffusionStatistics();
+
   unsigned char  validateLeftDiffusionStatistics();  // 00000CBA:
 
   inline void SetProtocol(Protocol *p)
@@ -130,13 +137,12 @@ public:
     this->protocol = p;
     protocol_load = true;
   }
-  
+
   inline void SetQCResult(QCResult *r)
   {
     qcResult = r;
   }
 
-  
   inline QCResult * GetQCResult()
   {
     return qcResult;
@@ -192,15 +198,14 @@ public:
     return m_repetitionLeftNumber;
   }
 
-  
-  // A: Gradient direction # is less than 6!
+  // A: Gradient direction #is less than 6!
   // B: Single b-value DWI without a b0/baseline!
   // C: Too many bad gradient directions found!
   // 0: valid
   // ZYXEDCBA:
   // X QC; Too many bad gradient directions found!
   // Y QC; Single b-value DWI without a b0/baseline!
-  // Z QC: Gradient direction # is less than 6!
+  // Z QC: Gradient direction #is less than 6!
   // A:ImageCheck()
   // B:DiffusionCheckInternalDwiImage()
   // C: IntraCheck()
@@ -208,8 +213,8 @@ public:
   // E: InterCheck()
   unsigned char  RunPipelineByProtocol();
 
-  unsigned char  RunPipelineByProtocol_FurtherQC();	// In Further QC step: Runing Baseline Avg, Eddy motion correction, Gradient-wise checking, DWI saving
-
+  unsigned char  RunPipelineByProtocol_FurtherQC(); // In Further QC step: Runing Baseline Avg, Eddy motion correction,
+                                                    // Gradient-wise checking, DWI saving
 
   inline DwiImageType::Pointer GetDwiImage() const
   {
@@ -224,7 +229,7 @@ public:
   inline void Setm_DwiForcedConformanceImage( const DwiImageType::Pointer dwi)
   {
     this->m_DwiForcedConformanceImage = dwi;
-  } 
+  }
 
   inline GradientDirectionContainerType::Pointer GetGradientDirectionContainer() const
   {
@@ -248,32 +253,31 @@ public:
 
   inline void SetDwiFileName(const std::string NewDwiFileName)
   {
-    this->m_DwiFileName=NewDwiFileName;
+    this->m_DwiFileName = NewDwiFileName;
   }
 
   inline void SetXmlFileName(const std::string NewXmlFileName)
   {
-    this->m_XmlFileName=NewXmlFileName;
+    this->m_XmlFileName = NewXmlFileName;
   }
 
   bool LoadDwiImage();
- 
+
   bool LoadDwiImage_FurtherQC( DwiImageType::Pointer  new_dwi );
 
   bool MakeDefaultProtocol( Protocol *protocol);
 
-  //CSignalClass * Signal;
-//signals:
-  //void kkk( int );
-
+  // CSignalClass * Signal;
+// signals:
+// void kkk( int );
 
   struct Original_ForcedConformance_Mapping
-  {
-     std::vector<int> index_original;
-     int index_ForcedConformance;
-     
-  };
-  
+    {
+    std::vector<int> index_original;
+    int index_ForcedConformance;
+
+    };
+
   std::vector<Original_ForcedConformance_Mapping> m_Original_ForcedConformance_Mapping;
 
   inline std::vector<Original_ForcedConformance_Mapping> get_Original_ForcedConformance_Mapping()
@@ -291,20 +295,20 @@ public:
     m_outputDWIFileName = outputDWIFileName;
   }
 
-  std::string m_outputDWIFileName;	// the name of QCed DWI file
-  
+  std::string m_outputDWIFileName;  // the name of QCed DWI file
 private:
   void collectDiffusionStatistics();
-  void collectLeftDiffusionStatistics( DwiImageType::Pointer dwi, std::string reportfilename );
-  vnl_matrix_fixed<double, 3, 3> GetMeasurementFrame(
-    DwiImageType::Pointer DwiImageExtractMF);
 
-  //Code that crops the dwi images
+  void collectLeftDiffusionStatistics( DwiImageType::Pointer dwi, std::string reportfilename );
+
+  vnl_matrix_fixed<double, 3, 3> GetMeasurementFrame(DwiImageType::Pointer DwiImageExtractMF);
+
+  // Code that crops the dwi images
   void ForceCroppingOfImage(const bool bReport, const std::string ImageCheckReportFileName);
 
-  //HACK:  TODO:  Zhexing  private member variables should start with m_ so that it is easy to
-  //distinguish them from local variables in the member functions.
-  //All these variables need to have m_ in front of them.
+  // HACK:  TODO:  Zhexing  private member variables should start with m_ so that it is easy to
+  // distinguish them from local variables in the member functions.
+  // All these variables need to have m_ in front of them.
   bool m_bDwiLoaded;
   bool m_bDwiLoaded_FurtherQC;
 
@@ -314,10 +318,10 @@ private:
   int m_repetitionNumber;
   int m_gradientNumber;
 
-  int m_baselineLeftNumber;
-  int m_bValueLeftNumber;
-  int m_gradientDirLeftNumber;
-  int m_gradientLeftNumber;
+  int              m_baselineLeftNumber;
+  int              m_bValueLeftNumber;
+  int              m_gradientDirLeftNumber;
+  int              m_gradientLeftNumber;
   std::vector<int> m_repetitionLeftNumber;
 
   bool m_bGetGradientDirections;
@@ -325,11 +329,11 @@ private:
 
   std::string m_DwiFileName;
   std::string m_XmlFileName;
-  //std::string m_outputDWIFileName;	// the name of QCed DWI file
+  // std::string m_outputDWIFileName;	// the name of QCed DWI file
   std::string m_GlobalReportFileName;
 
   DwiImageType::Pointer m_DwiForcedConformanceImage;
-  DwiImageType::Pointer  m_DwiOriginalImage;
+  DwiImageType::Pointer m_DwiOriginalImage;
 
   unsigned int m_numGradients;
 
@@ -353,7 +357,6 @@ private:
 
   Protocol *protocol;
   QCResult *qcResult;
-  
 
   bool   m_readb0;
   double m_b0;
@@ -365,9 +368,8 @@ private:
 
   // Log File
   std::string m_output;
-  char m_LogFile[512];
+  char        m_LogFile[512];
 
 };
 
 #endif
-

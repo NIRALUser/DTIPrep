@@ -2,7 +2,8 @@
 
 #include <vector>
 #include <QString>
-struct ImageInformationCheckResult {
+struct ImageInformationCheckResult
+  {
   QString info;
   bool space;
   bool size;
@@ -11,23 +12,25 @@ struct ImageInformationCheckResult {
   bool spacedirection;
   };
 
-struct DiffusionInformationCheckResult {
+struct DiffusionInformationCheckResult
+  {
   bool b;
   bool gradient;
   bool measurementFrame;
   };
 
-struct GradientIntensityMotionCheckResult {
+struct GradientIntensityMotionCheckResult
+  {
   int processing;
   double OriginalDir[3];
   double ReplacedDir[3];
   double CorrectedDir[3];
   int VisualChecking;
-  int QCIndex;		// mapped to the index of QCed gradeint
+  int QCIndex;    // mapped to the index of QCed gradeint
   };
 
-
-struct  InterlaceWiseCheckResult{
+struct  InterlaceWiseCheckResult
+  {
   double AngleX;      // in degrees
   double AngleY;      // in degrees
   double AngleZ;      // in degrees
@@ -36,11 +39,12 @@ struct  InterlaceWiseCheckResult{
   double TranslationZ;
   double Metric;                // MutualInformation;
   double Correlation;           // graylevel correlation
-  //int InterlaceWiseCheckProcessing;  // the result of the InterlaceWiseCheck processing
-};
+  // int InterlaceWiseCheckProcessing;  // the result of the InterlaceWiseCheck processing
+  };
 
-struct  GradientWiseCheckResult {
-  //int GradientWiseCheckProcessing; // the result of the GradientWiseCheck processing
+struct  GradientWiseCheckResult
+  {
+  // int GradientWiseCheckProcessing; // the result of the GradientWiseCheck processing
   double AngleX;      // in degrees
   double AngleY;      // in degrees
   double AngleZ;      // in degrees
@@ -48,35 +52,38 @@ struct  GradientWiseCheckResult {
   double TranslationY;
   double TranslationZ;
   double MutualInformation;      // -Metrix
-};
+  };
 
-struct SliceWiseCheckResult{
+struct SliceWiseCheckResult
+  {
   int GradientNum;
   int SliceNum;
   double Correlation;
-};
-
-struct OverallQCResult{
-  bool SWCk; //SliceWiseCheck 
-  bool IWCk; //InterlaceWiseCheck
-  bool GWCk; //GradientWiseCheck
-
-};
-
-struct Original_ForcedConformance_Map	
-  {
-     std::vector<int> index_original;
-     int index_ForcedConformance;
-     
   };
-  
-class QCResult
+
+struct OverallQCResult
   {
+  bool SWCk; // SliceWiseCheck
+  bool IWCk; // InterlaceWiseCheck
+  bool GWCk; // GradientWiseCheck
+
+  };
+
+struct Original_ForcedConformance_Map
+  {
+  std::vector<int> index_original;
+  int index_ForcedConformance;
+
+  };
+
+class QCResult
+{
 public:
   QCResult(void);
   ~QCResult(void);
 
-  enum {
+  enum
+    {
     GRADIENT_INCLUDE = 0,
     GRADIENT_BASELINE_AVERAGED,
     GRADIENT_EDDY_MOTION_CORRECTED,
@@ -86,7 +93,6 @@ public:
     GRADIENT_EXCLUDE_MANUALLY,
     };
 
-  
   struct ImageInformationCheckResult & GetImageInformationCheckResult()
   {
     return imageInformationCheckResult;
@@ -95,20 +101,19 @@ public:
   struct OverallQCResult & GetOverallQCResult()
   {
     return overallQCResult;
-  } 
+  }
 
   int & getProcessing(int index)
   {
     return GetIntensityMotionCheckResult()[index].processing;
-  }  
+  }
 
   struct DiffusionInformationCheckResult & GetDiffusionInformationCheckResult()
   {
     return diffusionInformationCheckResult;
   }
 
-  std::vector<GradientIntensityMotionCheckResult>   &
-  GetIntensityMotionCheckResult()
+  std::vector<GradientIntensityMotionCheckResult>   & GetIntensityMotionCheckResult()
   {
     return intensityMotionCheckResult;
   }
@@ -122,7 +127,7 @@ public:
   {
     return gradientWiseCheckResult;
   }
-  
+
   std::vector<SliceWiseCheckResult> & GetSliceWiseCheckResult()
   {
     return sliceWiseCheckResult;
@@ -146,7 +151,6 @@ public:
     sliceWiseCheckResult.clear();
     sliceWiseCheckProcessing.clear();
     m_Original_ForcedConformance_Map.clear();
-    
 
     imageInformationCheckResult.origin = true;
     imageInformationCheckResult.size = true;
@@ -160,8 +164,6 @@ public:
 
     result = 0;
 
-
-    
   }
 
   void Set_result( unsigned char r )
@@ -177,25 +179,24 @@ public:
 private:
   ImageInformationCheckResult imageInformationCheckResult;
 
-  DiffusionInformationCheckResult  diffusionInformationCheckResult;
+  DiffusionInformationCheckResult diffusionInformationCheckResult;
 
-  OverallQCResult  overallQCResult;
+  OverallQCResult overallQCResult;
 
   std::vector<GradientIntensityMotionCheckResult> intensityMotionCheckResult;
 
   std::vector<InterlaceWiseCheckResult> interlaceWiseCheckResult;
 
   std::vector<GradientWiseCheckResult> gradientWiseCheckResult;
-  
+
   std::vector<SliceWiseCheckResult> sliceWiseCheckResult;
 
-  std::vector< int > sliceWiseCheckProcessing;  // the result of the SliceWiseCheck processing
+  std::vector<int> sliceWiseCheckProcessing;    // the result of the SliceWiseCheck processing
 
-  std::vector<Original_ForcedConformance_Map> m_Original_ForcedConformance_Map; // showing gradients indices included in the conformance image along their correspondings in the original image. 
+  std::vector<Original_ForcedConformance_Map> m_Original_ForcedConformance_Map; // showing gradients indices included in
+                                                                                // the conformance image along their
+                                                                                // correspondings in the original image.
 
   unsigned char result;
 
-  
-
 };
-  
