@@ -153,22 +153,22 @@ IntensityMotionCheckPanel::~IntensityMotionCheckPanel()
 
 void IntensityMotionCheckPanel::StartProgressSlot()
 {
-  this->progressBar2->show();      // To show progressBar when StartProgressSignal emitted
+  this->progressBar2->show();    // To show progressBar when StartProgressSignal emitted
 }
 
 void IntensityMotionCheckPanel::StopProgressSlot()
 {
-  this->progressBar2->hide();      // To hide progressBar when StopProgressSignal emitted
+  this->progressBar2->hide();    // To hide progressBar when StopProgressSignal emitted
 }
 
 void IntensityMotionCheckPanel::f_StartProgressSlot()
 {
-  this->f_progressBar->show();      // To show progressBar when f_StartProgressSignal emitted
+  this->f_progressBar->show();    // To show progressBar when f_StartProgressSignal emitted
 }
 
 void IntensityMotionCheckPanel::f_StopProgressSlot()
 {
-  this->f_progressBar->hide();      // To hide progressBar when f_StopProgressSignal emitted
+  this->f_progressBar->hide();    // To hide progressBar when f_StopProgressSignal emitted
 }
 
 void IntensityMotionCheckPanel::on_treeWidget_DiffusionInformation_itemClicked(
@@ -943,8 +943,8 @@ void IntensityMotionCheckPanel::UpdatePanelDWI()
     = m_DwiOriginalImage->GetMetaDataDictionary();
   std::vector<std::string> imgMetaKeys
     = imgMetaDictionary.GetKeys();
-  std::vector<std::string>::const_iterator itKey = imgMetaKeys.begin();
-  std::string                              metaString;
+
+  std::string metaString;
 
   //  measurement frame
   if( imgMetaDictionary.HasKey("NRRD_measurement frame") )
@@ -1057,8 +1057,8 @@ void IntensityMotionCheckPanel::DefaultProtocol()
     = m_DwiOriginalImage->GetMetaDataDictionary();
   std::vector<std::string> imgMetaKeys
     = imgMetaDictionary.GetKeys();
-  std::vector<std::string>::const_iterator itKey = imgMetaKeys.begin();
-  std::string                              metaString;
+
+  std::string metaString;
 
   itk::ExposeMetaData<std::string>(imgMetaDictionary, "NRRD_space", metaString);
   if( metaString == "left-anterior-inferior" )
@@ -1553,7 +1553,7 @@ bool IntensityMotionCheckPanel::GetSliceProtocolParameters(
   int sliceNum = m_DwiOriginalImage->GetLargestPossibleRegion().GetSize()[2];
   for( int i = 0 + (int)( sliceNum * beginSkip);
        i < sliceNum - (int)( sliceNum * endSkip);
-       i++ )                                                                            //
+       i++ )                                                                                //
   //
   // for(int
   //
@@ -1672,8 +1672,6 @@ bool IntensityMotionCheckPanel::GetInterlaceProtocolParameters(
     = componentExtractor->GetOutput()->GetLargestPossibleRegion().GetSize()[2]
       / 2;
   region.SetSize( sizeLocal );
-
-  const GradientImageType::SpacingType spacing = componentExtractor->GetOutput()->GetSpacing();
 
   InterlaceOdd->CopyInformation( componentExtractor->GetOutput() );
   InterlaceOdd->SetRegions( region );
@@ -1800,7 +1798,7 @@ bool IntensityMotionCheckPanel::GetInterlaceProtocolParameters(
       += ( baselineCorrelation[i]
            - meanBaselineCorrelation )
         * ( baselineCorrelation[i]
-            - meanBaselineCorrelation ) / baselineCorrelation.size();                                                                                     //
+            - meanBaselineCorrelation ) / baselineCorrelation.size();                                                                                           //
     //
     // meanBaselineCorrelation
     //
@@ -1824,7 +1822,7 @@ bool IntensityMotionCheckPanel::GetInterlaceProtocolParameters(
       += ( gradientCorrelation[i]
            - meanGradientCorrelation )
         * ( gradientCorrelation[i]
-            - meanGradientCorrelation ) / gradientCorrelation.size();                                                                                     //
+            - meanGradientCorrelation ) / gradientCorrelation.size();                                                                                           //
     //
     // meanBaselineCorrelation
     //
@@ -2913,7 +2911,7 @@ void IntensityMotionCheckPanel::f_overallSliceWiseCheck()
   int num_SliceWiseCheckExc = 0;
   int num_InterlaceWiseCheckExc = 0;
   int num_GradientWiseCheckExc = 0;
-  int r_SliceWiseCkeck = 0;
+  int _r_SliceWiseCkeck = 0;
   for( unsigned int i = 0; i < qcResult.GetIntensityMotionCheckResult().size();
        i++ )
     {
@@ -2931,9 +2929,9 @@ void IntensityMotionCheckPanel::f_overallSliceWiseCheck()
       num_GradientWiseCheckExc++;
       }
     }
-  r_SliceWiseCkeck = num_SliceWiseCheckExc / qcResult.GetIntensityMotionCheckResult().size();
+  _r_SliceWiseCkeck = num_SliceWiseCheckExc / qcResult.GetIntensityMotionCheckResult().size();
 
-  if( r_SliceWiseCkeck > this->GetProtocol().GetInterlaceCheckProtocol().correlationThresholdGradient )
+  if( _r_SliceWiseCkeck > this->GetProtocol().GetInterlaceCheckProtocol().correlationThresholdGradient )
     {
     qcResult.GetOverallQCResult(). SWCk = false;
     }
@@ -2950,7 +2948,7 @@ void IntensityMotionCheckPanel::f_overallInterlaceWiseCheck()
   int num_SliceWiseCheckExc = 0;
   int num_InterlaceWiseCheckExc = 0;
   int num_GradientWiseCheckExc = 0;
-  int r_InterlaceWiseCheck = 0;
+  int _r_InterlaceWiseCheck = 0;
   for( unsigned int i = 0; i < qcResult.GetIntensityMotionCheckResult().size();
        i++ )
     {
@@ -2968,9 +2966,9 @@ void IntensityMotionCheckPanel::f_overallInterlaceWiseCheck()
       num_GradientWiseCheckExc++;
       }
     }
-  r_InterlaceWiseCheck = num_InterlaceWiseCheckExc
+  _r_InterlaceWiseCheck = num_InterlaceWiseCheckExc
     / (qcResult.GetIntensityMotionCheckResult().size() - num_SliceWiseCheckExc);
-  if( r_InterlaceWiseCheck > this->GetProtocol().GetInterlaceCheckProtocol().correlationThresholdGradient )
+  if( _r_InterlaceWiseCheck > this->GetProtocol().GetInterlaceCheckProtocol().correlationThresholdGradient )
     {
     qcResult.GetOverallQCResult(). IWCk = false;
     }
@@ -2987,7 +2985,7 @@ void IntensityMotionCheckPanel::f_overallGradientWiseCheck()
   int num_SliceWiseCheckExc = 0;
   int num_InterlaceWiseCheckExc = 0;
   int num_GradientWiseCheckExc = 0;
-  int r_GradWiseCheck = 0;
+  int _r_GradWiseCheck = 0;
   for( unsigned int i = 0; i < qcResult.GetIntensityMotionCheckResult().size();
        i++ )
     {
@@ -3006,10 +3004,10 @@ void IntensityMotionCheckPanel::f_overallGradientWiseCheck()
       }
     }
 
-  r_GradWiseCheck = num_GradientWiseCheckExc
+  _r_GradWiseCheck = num_GradientWiseCheckExc
     / (qcResult.GetIntensityMotionCheckResult().size() - num_SliceWiseCheckExc - num_InterlaceWiseCheckExc);
 
-  if( r_InterlaceWiseCheck > this->GetProtocol().GetInterlaceCheckProtocol().correlationThresholdGradient )
+  if( _r_InterlaceWiseCheck > this->GetProtocol().GetInterlaceCheckProtocol().correlationThresholdGradient )
     {
     qcResult.GetOverallQCResult(). GWCk = false;
     }
@@ -3068,7 +3066,7 @@ void IntensityMotionCheckPanel::Set_Original_ForcedConformance_Mapping()
     std::vector<int> Bing;
     for( unsigned int k = 0; k < qcResult.GetIntensityMotionCheckResult().size(); k++ )
       {
-      if( qcResult.GetIntensityMotionCheckResult()[k].QCIndex == i )
+      if( static_cast<unsigned int>(qcResult.GetIntensityMotionCheckResult()[k].QCIndex) == i )
         {
         Bing.push_back( k );
         // std::cout << "i: " << i << "qcResult.GetIntensityMotionCheckResult()[k].QCIndex" <<
@@ -3141,7 +3139,7 @@ void IntensityMotionCheckPanel::QCedResultUpdate()
                                   'f', 6)
                              );
 
-    QTreeWidgetItem * itemVisualCheck = new QTreeWidgetItem(gradient);   // item for visual gradient checking
+    QTreeWidgetItem * itemVisualCheck = new QTreeWidgetItem(gradient);  // item for visual gradient checking
     itemVisualCheck->setText(0, tr("Visual Check") );
     QTreeWidgetItem * itemVisualCheck_Satus = new QTreeWidgetItem(itemVisualCheck);
     itemVisualCheck_Satus->setText( 0, QString("VC_Status_%1").arg( i, 4, 10, QLatin1Char( '0' ) ) );
@@ -3580,7 +3578,7 @@ void IntensityMotionCheckPanel::ResultUpdate()
           itemSliceWiseCheck->setText( 2, tr("EXCLUDE") );
           for( unsigned int S_index = 0; S_index < qcResult.GetSliceWiseCheckResult().size(); S_index++ )
             {
-            if( i == qcResult.GetSliceWiseCheckResult()[S_index].GradientNum )
+            if( i == static_cast<unsigned int>(qcResult.GetSliceWiseCheckResult()[S_index].GradientNum) )
               {
               QTreeWidgetItem * itemSliceNum = new QTreeWidgetItem(itemSliceWiseCheck);
               itemSliceNum->setText(0, tr("Slice#") );
@@ -4005,10 +4003,10 @@ void IntensityMotionCheckPanel::GenerateCheckOutputImage( DwiImageType::Pointer 
   // wrting MetaDataDictionary of the output dwi image from input metaDataDictionary information
   itk::MetaDataDictionary output_imgMetaDictionary;  // output dwi image dictionary
 
-  itk::MetaDataDictionary                  imgMetaDictionary = dwi->GetMetaDataDictionary();
-  std::vector<std::string>                 imgMetaKeys = imgMetaDictionary.GetKeys();
-  std::vector<std::string>::const_iterator itKey = imgMetaKeys.begin();
-  std::string                              metaString;
+  itk::MetaDataDictionary  imgMetaDictionary = dwi->GetMetaDataDictionary();
+  std::vector<std::string> imgMetaKeys = imgMetaDictionary.GetKeys();
+
+  std::string metaString;
 
   if( imgMetaDictionary.HasKey("NRRD_measurement frame") )
     {
@@ -4224,10 +4222,10 @@ void IntensityMotionCheckPanel::GenerateCheckOutputImage( const std::string file
   // wrting MetaDataDictionary of the output dwi image from input metaDataDictionary information
   itk::MetaDataDictionary output_imgMetaDictionary;  // output dwi image dictionary
 
-  itk::MetaDataDictionary                  imgMetaDictionary = m_DwiOriginalImage->GetMetaDataDictionary();
-  std::vector<std::string>                 imgMetaKeys = imgMetaDictionary.GetKeys();
-  std::vector<std::string>::const_iterator itKey = imgMetaKeys.begin();
-  std::string                              metaString;
+  itk::MetaDataDictionary  imgMetaDictionary = m_DwiOriginalImage->GetMetaDataDictionary();
+  std::vector<std::string> imgMetaKeys = imgMetaDictionary.GetKeys();
+
+  std::string metaString;
 
   if( imgMetaDictionary.HasKey("NRRD_measurement frame") )
     {
@@ -4687,7 +4685,7 @@ void IntensityMotionCheckPanel::GenerateOutput_VisualCheckingResult2( std::strin
       }
     }
 
-  if( num_gradeints_left == GetDwiOutputImage()->GetVectorLength() )
+  if( num_gradeints_left == static_cast<int>(GetDwiOutputImage()->GetVectorLength() ) )
     {
     itk::NrrdImageIO::Pointer myNrrdImageIO = itk::NrrdImageIO::New();
     try
@@ -4747,10 +4745,10 @@ void IntensityMotionCheckPanel::GenerateOutput_VisualCheckingResult2( std::strin
   // wrting MetaDataDictionary of the output dwi image from input metaDataDictionary information
   itk::MetaDataDictionary output_imgMetaDictionary;  // output dwi image dictionary
 
-  itk::MetaDataDictionary                  imgMetaDictionary = GetDwiOutputImage()->GetMetaDataDictionary();
-  std::vector<std::string>                 imgMetaKeys = imgMetaDictionary.GetKeys();
-  std::vector<std::string>::const_iterator itKey = imgMetaKeys.begin();
-  std::string                              metaString;
+  itk::MetaDataDictionary  imgMetaDictionary = GetDwiOutputImage()->GetMetaDataDictionary();
+  std::vector<std::string> imgMetaKeys = imgMetaDictionary.GetKeys();
+
+  std::string metaString;
 
   if( imgMetaDictionary.HasKey("NRRD_measurement frame") )
     {
@@ -5163,10 +5161,8 @@ void IntensityMotionCheckPanel::GenerateOutput_VisualCheckingResult()
            k++ )
         {
         list_index_original.push_back( (myIntensityThread.m_IntensityMotionCheck->
-                                        get_Original_ForcedConformance_Mapping()[j].index_original)[k] );                                       //
-                                                                                                                                                // indices
-                                                                                                                                                // for
-                                                                                                                                                // Baseline
+                                        get_Original_ForcedConformance_Mapping()[j].index_original)[k] );
+        // indices for Baseline
         }
       }
     else
@@ -5268,10 +5264,10 @@ void IntensityMotionCheckPanel::GenerateOutput_VisualCheckingResult()
   // wrting MetaDataDictionary of the output dwi image from input metaDataDictionary information
   itk::MetaDataDictionary output_imgMetaDictionary;  // output dwi image dictionary
 
-  itk::MetaDataDictionary                  imgMetaDictionary = m_DwiOriginalImage->GetMetaDataDictionary();
-  std::vector<std::string>                 imgMetaKeys = imgMetaDictionary.GetKeys();
-  std::vector<std::string>::const_iterator itKey = imgMetaKeys.begin();
-  std::string                              metaString;
+  itk::MetaDataDictionary  imgMetaDictionary = m_DwiOriginalImage->GetMetaDataDictionary();
+  std::vector<std::string> imgMetaKeys = imgMetaDictionary.GetKeys();
+
+  std::string metaString;
 
   if( imgMetaDictionary.HasKey("NRRD_measurement frame") )
     {
@@ -5574,7 +5570,7 @@ bool IntensityMotionCheckPanel::OpenMappingXML()
     n = n.nextSibling();
     conformanced_id++;
     }
-  for( int i = 0; i < t_Original_ForcedConformance_Mapping.size(); i++ )
+  for( unsigned int i = 0; i < t_Original_ForcedConformance_Mapping.size(); i++ )
     {
     // std::cout<< "Testing Mapping XML " << t_Original_ForcedConformance_Mapping[i].index_original[0] << std::endl;
     }

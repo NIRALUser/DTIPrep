@@ -138,8 +138,7 @@ DWIBaselineAverager<TVectorImageType>
     = inputPtr->GetMetaDataDictionary();
   std::vector<std::string> imgMetaKeys
     = imgMetaDictionary.GetKeys();
-  std::vector<std::string>::const_iterator itKey = imgMetaKeys.begin();
-  std::string                              metaString;
+  std::string metaString;
 
   //  measurement frame
   if( imgMetaDictionary.HasKey("NRRD_measurement frame") )
@@ -357,7 +356,6 @@ DWIBaselineAverager<TVectorImageType>
           //  It may be possible to extract the baseline images only once.
           //  This code could be made into a separate function so that it is not replicated.
           // std::cout<<"registering all baseline onto averaged .";
-          InputImageConstPointer inputPtr = this->GetInput();
           // copy baseline images into baselineContainer
           std::vector<floatImageType::Pointer> baselineContainer;
             {
@@ -424,7 +422,6 @@ DWIBaselineAverager<TVectorImageType>
           //  It may be possible to extract the baseline images only once.
           //  This code could be made into a separate function so that it is not replicated.
           // std::cout<<"registering all baseline onto averaged .";
-          InputImageConstPointer inputPtr = this->GetInput();
           // copy baseline images into baselineContainer
           std::vector<UnsignedImageType::Pointer> baselineContainer;
             {

@@ -14,7 +14,11 @@ template <class TScalarType, unsigned int NInputDimensions,
           unsigned int NOutputDimensions>
 LinearHeadEddy3DCorrection<TScalarType, NInputDimensions, NOutputDimensions>
 ::LinearHeadEddy3DCorrection()
+#if (ITK_VERSION_MAJOR < 4)
   : Superclass(OutputSpaceDimension, ParametersDimension)
+#else
+  : Superclass(ParametersDimension)
+#endif
 {
 
   m_Center.Fill( 0 );
@@ -211,7 +215,9 @@ const typename LinearHeadEddy3DCorrection<TScalarType, NInputDimensions, NOutput
 & LinearHeadEddy3DCorrection<TScalarType, NInputDimensions, NOutputDimensions>
 ::GetJacobian( const InputPointType &p ) const
   {
-
+#if (ITK_VERSION_MAJOR > 3)
+#define m_Jacobian m_SharedLocalJacobian
+#endif
   this->m_Jacobian.Fill( 0.0 );
 
   const InputVectorType v0 = p - this->GetCenter(); // v0 is for head motion transformation Jacobian
@@ -298,6 +304,9 @@ const typename LinearHeadEddy3DCorrection<TScalarType, NInputDimensions, NOutput
 
   return this->m_Jacobian;
 
+#if (ITK_VERSION_MAJOR > 3)
+#undef  m_Jacobian
+#endif
   }
 
 } // namespace

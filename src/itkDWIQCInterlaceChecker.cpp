@@ -146,8 +146,7 @@ DWIQCInterlaceChecker<TImageType>
     = inputPtr->GetMetaDataDictionary();
   std::vector<std::string> imgMetaKeys
     = imgMetaDictionary.GetKeys();
-  std::vector<std::string>::const_iterator itKey = imgMetaKeys.begin();
-  std::string                              metaString;
+  std::string metaString;
 
   //  measurement frame
   if( imgMetaDictionary.HasKey("NRRD_measurement frame") )
@@ -596,12 +595,6 @@ DWIQCInterlaceChecker<TImageType>
 
   this->quardraticFittedMeans = 0.0;
   this->quardraticFittedDeviations = 0.0;
-
-  std::vector<double> normalizedMetric;
-  for( unsigned int i = 0; i < this->ResultsContainer.size(); i++ )
-    {
-    normalizedMetric.push_back(-1.0);
-    }
 
   if( getBValueNumber() >= 3 || ( getBValueNumber() == 2 && getBaselineNumber() > 0 ) )
   // ensure a quardratic fit
@@ -1714,8 +1707,7 @@ DWIQCInterlaceChecker<TImageType>
       = inputPtr->GetMetaDataDictionary();
     std::vector<std::string> imgMetaKeys
       = imgMetaDictionary.GetKeys();
-    std::vector<std::string>::const_iterator itKey = imgMetaKeys.begin();
-    std::string                              metaString;
+    std::string metaString;
 
     //  measurement frame
     if( imgMetaDictionary.HasKey("NRRD_measurement frame") )

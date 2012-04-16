@@ -653,7 +653,7 @@ int main( int argc, char * *argv )
               xmlWriter.writeTextElement("processing", "EXCLUDE");
               for( unsigned int S_index = 0; S_index < qcResult.GetSliceWiseCheckResult().size(); S_index++ )
                 {
-                if( i == qcResult.GetSliceWiseCheckResult()[S_index].GradientNum )
+                if( i == static_cast<unsigned int>(qcResult.GetSliceWiseCheckResult()[S_index].GradientNum) )
                   {
                   xmlWriter.writeStartElement("entry");
                   xmlWriter.writeAttribute( "parameter",  "Slice#" );

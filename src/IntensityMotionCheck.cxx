@@ -53,6 +53,19 @@ CIntensityMotionCheck::GetMeasurementFrame(
   return imageMeasurementFrame;
 }
 
+static std::string
+FNameBase(const std::string & fname)
+{
+  std::string rval;
+  std::string Full_path;
+  std::string Dwi_file_name;  // Full name of dwi image
+  size_t      found2 = fname.find_last_of(".");
+
+  Full_path = fname.substr( 0, found2);
+  rval = Full_path.substr(Full_path.find_last_of("/\\") + 1);
+  return rval;
+}
+
 CIntensityMotionCheck::CIntensityMotionCheck()
 {
   m_baselineNumber    = 0;
@@ -528,12 +541,7 @@ unsigned char CIntensityMotionCheck::ImageCheck( DwiImageType::Pointer localDWII
   bool          bReport = false;
   std::string   ImageCheckReportFileName;
 
-  std::string Full_path;
-  std::string Dwi_file_name;  // Full name of dwi image
-  size_t      found2 = m_DwiFileName.find_last_of(".");
-
-  Full_path = m_DwiFileName.substr( 0, found2);
-  Dwi_file_name = Full_path.substr(Full_path.find_last_of("/\\") + 1);
+  std::string Dwi_file_name = FNameBase(this->m_DwiFileName);
 
   if( protocol->GetImageProtocol().reportFileNameSuffix.length() > 0 )
     {
@@ -852,11 +860,7 @@ void CIntensityMotionCheck::ForceCroppingOfImage(const bool bReport, const std::
     try
       {
       std::string CroppedFileName;
-      std::string Full_path;
-      std::string Dwi_file_name;  // Full name of dwi image
-      size_t      found2 = m_DwiFileName.find_last_of(".");
-      Full_path = m_DwiFileName.substr( 0, found2);
-      Dwi_file_name = Full_path.substr(Full_path.find_last_of("/\\") + 1);
+      std::string Dwi_file_name = FNameBase(this->m_DwiFileName);
 
       if( protocol->GetQCOutputDirectory().length() > 0 )
         {
@@ -912,11 +916,7 @@ int CIntensityMotionCheck::Denoising( DwiImageType::Pointer dwi )
     std::string DenoiseInput;
     std::string DenoiseOutput;
 
-    std::string Full_path;
-    std::string Dwi_file_name; // Full name of dwi image
-    size_t      found2 = m_DwiFileName.find_last_of(".");
-    Full_path = m_DwiFileName.substr( 0, found2);
-    Dwi_file_name = Full_path.substr(Full_path.find_last_of("/\\") + 1);
+    std::string Dwi_file_name = FNameBase(this->m_DwiFileName);
 
     if( protocol->GetQCOutputDirectory().length() > 0 )
       {
@@ -1090,11 +1090,7 @@ bool CIntensityMotionCheck::SliceWiseCheck( DwiImageType::Pointer dwi )
     {
     std::string ReportFileName;
 
-    std::string Full_path;
-    std::string Dwi_file_name;  // Full name of dwi image
-    size_t      found2 = m_DwiFileName.find_last_of(".");
-    Full_path = m_DwiFileName.substr( 0, found2);
-    Dwi_file_name = Full_path.substr(Full_path.find_last_of("/\\") + 1);
+    std::string Dwi_file_name = FNameBase(this->m_DwiFileName);
 
     if( protocol->GetSliceCheckProtocol().reportFileNameSuffix.length() > 0 )
       {
@@ -1397,11 +1393,7 @@ bool CIntensityMotionCheck::InterlaceWiseCheck( DwiImageType::Pointer dwi )
     {
     std::string ReportFileName;
 
-    std::string Full_path;
-    std::string Dwi_file_name;  // Full name of dwi image
-    size_t      found2 = m_DwiFileName.find_last_of(".");
-    Full_path = m_DwiFileName.substr( 0, found2);
-    Dwi_file_name = Full_path.substr(Full_path.find_last_of("/\\") + 1);
+    std::string Dwi_file_name = FNameBase(this->m_DwiFileName);
 
     if( protocol->GetInterlaceCheckProtocol().reportFileNameSuffix.length() >
         0 )
@@ -1727,11 +1719,7 @@ bool CIntensityMotionCheck::BaselineAverage( DwiImageType::Pointer dwi )
     {
     std::string ReportFileName;
 
-    std::string Full_path;
-    std::string Dwi_file_name;  // Full name of dwi image
-    size_t      found2 = m_DwiFileName.find_last_of(".");
-    Full_path = m_DwiFileName.substr( 0, found2);
-    Dwi_file_name = Full_path.substr(Full_path.find_last_of("/\\") + 1);
+    std::string Dwi_file_name = FNameBase(this->m_DwiFileName);
 
     if( protocol->GetBaselineAverageProtocol().reportFileNameSuffix.length() >
         0 )
@@ -1918,11 +1906,7 @@ bool CIntensityMotionCheck::EddyMotionCorrectIowa( DwiImageType::Pointer dwi )
 
     std::string ReportFileName;
 
-    std::string Full_path;
-    std::string Dwi_file_name;  // Full name of dwi image
-    size_t      found2 = m_DwiFileName.find_last_of(".");
-    Full_path = m_DwiFileName.substr( 0, found2);
-    Dwi_file_name = Full_path.substr(Full_path.find_last_of("/\\") + 1);
+    std::string Dwi_file_name = FNameBase(this->m_DwiFileName);
 
     if( protocol->GetEddyMotionCorrectionProtocol().reportFileNameSuffix.
         length() > 0 )
@@ -2254,11 +2238,7 @@ bool CIntensityMotionCheck::EddyMotionCorrectIowa( DwiImageType::Pointer dwi )
       {
       std::string outputDWIFileName;
 
-      std::string Full_path;
-      std::string Dwi_file_name;  // Full name of dwi image
-      size_t      found2 = m_DwiFileName.find_last_of(".");
-      Full_path = m_DwiFileName.substr( 0, found2);
-      Dwi_file_name = Full_path.substr(Full_path.find_last_of("/\\") + 1);
+      std::string Dwi_file_name = FNameBase(this->m_DwiFileName);
 
       if( protocol->GetQCOutputDirectory().length() > 0 )
         {
@@ -2317,11 +2297,7 @@ bool CIntensityMotionCheck::EddyMotionCorrect( DwiImageType::Pointer dwi )
     {
     std::string ReportFileName;
 
-    std::string Full_path;
-    std::string Dwi_file_name;  // Full name of dwi image
-    size_t      found2 = m_DwiFileName.find_last_of(".");
-    Full_path = m_DwiFileName.substr( 0, found2);
-    Dwi_file_name = Full_path.substr(Full_path.find_last_of("/\\") + 1);
+    std::string Dwi_file_name = FNameBase(this->m_DwiFileName);
 
     if( protocol->GetEddyMotionCorrectionProtocol().reportFileNameSuffix.
         length() > 0 )
@@ -2451,11 +2427,7 @@ bool CIntensityMotionCheck::EddyMotionCorrect( DwiImageType::Pointer dwi )
       {
       std::string outputDWIFileName;
 
-      std::string Full_path;
-      std::string Dwi_file_name;  // Full name of dwi image
-      size_t      found2 = m_DwiFileName.find_last_of(".");
-      Full_path = m_DwiFileName.substr( 0, found2);
-      Dwi_file_name = Full_path.substr(Full_path.find_last_of("/\\") + 1);
+      std::string Dwi_file_name = FNameBase(this->m_DwiFileName);
 
       if( protocol->GetQCOutputDirectory().length() > 0 )
         {
@@ -2516,11 +2488,7 @@ bool CIntensityMotionCheck::GradientWiseCheck( DwiImageType::Pointer dwi )
     {
     std::string ReportFileName;
 
-    std::string Full_path;
-    std::string Dwi_file_name;  // Full name of dwi image
-    size_t      found2 = m_DwiFileName.find_last_of(".");
-    Full_path = m_DwiFileName.substr( 0, found2);
-    Dwi_file_name = Full_path.substr(Full_path.find_last_of("/\\") + 1);
+    std::string Dwi_file_name = FNameBase(this->m_DwiFileName);
 
     if( protocol->GetGradientCheckProtocol().reportFileNameSuffix.length() > 0 )
       {
@@ -2823,11 +2791,7 @@ int CIntensityMotionCheck::JointDenoising( DwiImageType::Pointer dwi )
     std::string JointDenoiseInput;
     std::string JointDenoiseOutput;
 
-    std::string Full_path;
-    std::string Dwi_file_name;  // Full name of dwi image
-    size_t      found2 = m_DwiFileName.find_last_of(".");
-    Full_path = m_DwiFileName.substr( 0, found2);
-    Dwi_file_name = Full_path.substr(Full_path.find_last_of("/\\") + 1);
+    std::string Dwi_file_name = FNameBase(this->m_DwiFileName);
 
     if( protocol->GetQCOutputDirectory().length() > 0 )
       {
@@ -2971,12 +2935,7 @@ int CIntensityMotionCheck::JointDenoising( DwiImageType::Pointer dwi )
 
 bool CIntensityMotionCheck::SaveDwiForcedConformanceImage(void)
 {
-  std::string Full_path;
-  std::string Dwi_file_name;  // Full name of dwi image
-  size_t      found2 = m_DwiFileName.find_last_of(".");
-
-  Full_path = m_DwiFileName.substr( 0, found2);
-  Dwi_file_name = Full_path.substr(Full_path.find_last_of("/\\") + 1);
+  std::string Dwi_file_name = FNameBase(this->m_DwiFileName);
 
   if( protocol->GetQCedDWIFileNameSuffix().length() > 0 )
     {
@@ -3053,11 +3012,7 @@ bool CIntensityMotionCheck::SaveDwiForcedConformanceImage_FurtherQC( void ) cons
     {
     std::string outputDWIFileName;
 
-    std::string Full_path;
-    std::string Dwi_file_name;  // Full name of dwi image
-    size_t      found2 = m_DwiFileName.find_last_of(".");
-    Full_path = m_DwiFileName.substr( 0, found2);
-    Dwi_file_name = Full_path.substr(Full_path.find_last_of("/\\") + 1);
+    std::string Dwi_file_name = FNameBase(this->m_DwiFileName);
 
     if( protocol->GetQCOutputDirectory().length() > 0 )
       {
@@ -3589,12 +3544,7 @@ unsigned char CIntensityMotionCheck::validateLeftDiffusionStatistics()
   bool        bReport = false;
   std::string ReportFileName;
 
-  std::string Full_path;
-  std::string Dwi_file_name;  // Full name of dwi image
-  size_t      found2 = m_DwiFileName.find_last_of(".");
-
-  Full_path = m_DwiFileName.substr( 0, found2);
-  Dwi_file_name = Full_path.substr(Full_path.find_last_of("/\\") + 1);
+  std::string Dwi_file_name = FNameBase(this->m_DwiFileName);
 
   if( protocol->GetReportFileNameSuffix().length() > 0 )
     {
@@ -4058,11 +4008,7 @@ bool CIntensityMotionCheck::dtiestim()
 
   std::string outputDWIFileName;
 
-  std::string Full_path;
-  std::string Dwi_file_name;  // Full name of dwi image
-  size_t      found2 = m_DwiFileName.find_last_of(".");
-  Full_path = m_DwiFileName.substr( 0, found2);
-  Dwi_file_name = Full_path.substr(Full_path.find_last_of("/\\") + 1);
+  std::string Dwi_file_name = FNameBase(this->m_DwiFileName);
 
   if( protocol->GetQCedDWIFileNameSuffix().length() > 0 )
     {
@@ -4181,11 +4127,7 @@ bool CIntensityMotionCheck::dtiprocess()
   string.append(" ");
 
   std::string outputDWIFileName;
-  std::string Full_path;
-  std::string Dwi_file_name;  // Full name of dwi image
-  size_t      found2 = m_DwiFileName.find_last_of(".");
-  Full_path = m_DwiFileName.substr( 0, found2);
-  Dwi_file_name = Full_path.substr(Full_path.find_last_of("/\\") + 1);
+  std::string Dwi_file_name = FNameBase(this->m_DwiFileName);
 
   if( protocol->GetQCedDWIFileNameSuffix().length() > 0 )
     {
@@ -4290,12 +4232,7 @@ bool CIntensityMotionCheck::DiffusionCheck( DwiImageType::Pointer dwi)
 
   std::string ReportFileName;
 
-  std::string Full_path;
-  std::string Dwi_file_name;  // Full name of dwi image
-  size_t      found2 = m_DwiFileName.find_last_of(".");
-
-  Full_path = m_DwiFileName.substr( 0, found2);
-  Dwi_file_name = Full_path.substr(Full_path.find_last_of("/\\") + 1);
+  std::string Dwi_file_name = FNameBase(this->m_DwiFileName);
 
   if( protocol->GetQCOutputDirectory().length() > 0 )
     {
@@ -4887,11 +4824,7 @@ bool CIntensityMotionCheck::DiffusionCheck( DwiImageType::Pointer dwi)
 
     std::string DWIFileName;
 
-    std::string Full_path;
-    std::string Dwi_file_name;  // Full name of dwi image
-    size_t      found2 = m_DwiFileName.find_last_of(".");
-    Full_path = m_DwiFileName.substr( 0, found2);
-    Dwi_file_name = Full_path.substr(Full_path.find_last_of("/\\") + 1);
+    std::string Dwi_file_name = FNameBase(this->m_DwiFileName);
 
     if( protocol->GetQCOutputDirectory().length() > 0 )
       {

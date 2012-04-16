@@ -1284,9 +1284,9 @@ void GMainWindow::on_actionOpenDWINrrd_triggered()
     }
 }
 
-void GMainWindow::UpdateDWIDiffusionVectorActors( DwiImageType::Pointer DWIImage)
+void GMainWindow::UpdateDWIDiffusionVectorActors( DwiImageType::Pointer _DWIImage)
 {
-  itk::MetaDataDictionary imgMetaDictionary = DWIImage->GetMetaDataDictionary();    //
+  itk::MetaDataDictionary imgMetaDictionary = _DWIImage->GetMetaDataDictionary();    //
 
   std::vector<std::string> imgMetaKeys
     = imgMetaDictionary.GetKeys();
@@ -2220,7 +2220,7 @@ void GMainWindow::GradientUpdate( int index )
 
     std::cout << DTIPrepPanel->GetQCResult().GetIntensityMotionCheckResult()[index].processing << "processingTest"
               << std::endl;
-    int  pro = DTIPrepPanel->GetQCResult().GetIntensityMotionCheckResult()[index].processing;
+    const int  pro = DTIPrepPanel->GetQCResult().GetIntensityMotionCheckResult()[index].processing;
     emit VisualCheckingStatus( index,  QCResult::GRADIENT_INCLUDE );
     }
   if( msgBox.clickedButton() == Exclude )
@@ -2230,7 +2230,7 @@ void GMainWindow::GradientUpdate( int index )
     emit currentGradient_VC_Exclude( 1, index);
     emit currentGradient_VC_Exclude( 2, index);
 
-    int  pro = DTIPrepPanel->GetQCResult().GetIntensityMotionCheckResult()[index].processing;
+    const int  pro = DTIPrepPanel->GetQCResult().GetIntensityMotionCheckResult()[index].processing;
     emit VisualCheckingStatus( index,  QCResult::GRADIENT_EXCLUDE_MANUALLY);
     }
   if( msgBox.clickedButton() == Nochange )

@@ -16,7 +16,11 @@ template <class TScalarType, unsigned int NInputDimensions,
           unsigned int NOutputDimensions>
 LinearEddyCurrentTransform<TScalarType, NInputDimensions, NOutputDimensions>
 ::LinearEddyCurrentTransform()
+#if (ITK_VERSION_MAJOR < 4)
   : Superclass(OutputSpaceDimension, ParametersDimension)
+#else
+  : Superclass(ParametersDimension)
+#endif
 {
 
   m_Matrix.SetIdentity();
@@ -375,6 +379,9 @@ const typename LinearEddyCurrentTransform<TScalarType, NInputDimensions, NOutput
   // subblocks of diagonal matrices, each one of them having
   // a constant value in the diagonal.
 
+#if (ITK_VERSION_MAJOR > 3)
+#define m_Jacobian m_SharedLocalJacobian
+#endif
   this->m_Jacobian.Fill( 0.0 );
 
   const InputVectorType v = p - this->GetCenter();
@@ -384,8 +391,11 @@ const typename LinearEddyCurrentTransform<TScalarType, NInputDimensions, NOutput
   this->m_Jacobian( 1, 1 ) = v[1];
   this->m_Jacobian( 1, 2 ) = v[2];
   this->m_Jacobian( 1, 3 ) = 1.0;
-
   return this->m_Jacobian;
+
+#if (ITK_VERSION_MAJOR > 3)
+#undef  m_Jacobian
+#endif
 
   }
 
