@@ -1,0 +1,8 @@
+## From the git repository, enter the following commands
+## to link to the svn repository.
+
+git svn init https://www.nitrc.org/svn/dtiprep/trunk
+git update-ref refs/remotes/git-svn refs/remotes/origin/master
+git svn rebase
+
+

@@ -1,279 +1,45 @@
-project(DTIPrep)
-set(LOCAL_PROJECT_NAME DTIPrep)
-cmake_minimum_required(VERSION 2.8.2)
-cmake_policy(VERSION 2.8.2)
+cmake_minimum_required(VERSION 2.8.3)
+cmake_policy(VERSION 2.8.3)
+
+set(LOCAL_PROJECT_NAME DTIPrepTools)
+
+## NOTE THERE SHOULD BE NO PROJECT STATEMENT HERE!
+## This file acts as a simple switch to initiate
+## two completely independant CMake build environments.
 
 #-----------------------------------------------------------------------------
-# Git protocole option
-#-----------------------------------------------------------------------------
-option(${CMAKE_PROJECT_NAME}_USE_GIT_PROTOCOL "If behind a firewall turn this off to use http instead." ON)
-set(git_protocol "git")
-if(NOT ${CMAKE_PROJECT_NAME}_USE_GIT_PROTOCOL)
-  set(git_protocol "http")
-endif()
-
-find_package(Git REQUIRED)
-
-set(BRAINS_CMAKE_HELPER_DIR ${CMAKE_CURRENT_SOURCE_DIR}/BuildScripts)
-include(${BRAINS_CMAKE_HELPER_DIR}/PreventInSourceBuilds.cmake)
-
-enable_testing()
-include(Dart)
-include(CPack)
-include(ExternalProject)
-include(${BRAINS_CMAKE_HELPER_DIR}/CMakeBuildMacros.cmake)
-
-###
-SETIFEMPTY(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/lib)
-SETIFEMPTY(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/lib)
-SETIFEMPTY(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/bin)
-SETIFEMPTY(CMAKE_BUNDLE_OUTPUT_DIRECTORY  ${CMAKE_CURRENT_BINARY_DIR}/bin)
-
-set(CMAKE_INSTALL_PREFIX ${CMAKE_CURRENT_BINARY_DIR} CACHE PATH "Install path prefix, prepended onto install directories." FORCE)
-
-option(BUILD_dwiAtlas "Build dwiAtlas or not.  Requires boost." OFF)
-option(BUILD_SHARED_LIBS "Build shared libs or not" OFF)
-
-set(LOCAL_CMAKE_BUILD_OPTIONS
-  -DMAKECOMMAND:STRING=${MAKECOMMAND}
-  -DCMAKE_SKIP_RPATH:BOOL=ON
-  -DCMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
-  -DCMAKE_CXX_FLAGS_RELEASE:STRING=${CMAKE_CXX_FLAGS_RELEASE}
-  -DCMAKE_CXX_FLAGS_DEBUG:STRING=${CMAKE_CXX_FLAGS_DEBUG}
-  -DCMAKE_CXX_FLAGS:STRING=${CMAKE_CXX_FLAGS}
-  -DCMAKE_C_FLAGS_RELEASE:STRING=${CMAKE_C_FLAGS_RELEASE}
-  -DCMAKE_C_FLAGS_DEBUG:STRING=${CMAKE_C_FLAGS_DEBUG}
-  -DCMAKE_C_FLAGS:STRING=${CMAKE_C_FLAGS}
-  -DCMAKE_C_COMPILER:STRING=${CMAKE_C_COMPILER}
-  -DCMAKE_CXX_COMPILER:STRING=${CMAKE_CXX_COMPILER}
-  -DBUILD_EXAMPLES:BOOL=OFF
-  -DBUILD_SHARED_LIBS:BOOL=${BUILD_SHARED_LIBS}
-  -DBUILD_TESTING:BOOL=${BUILD_TESTING}
-  -DCMAKE_GENERATOR:STRING=${CMAKE_GENERATOR}
-  -DCMAKE_EXTRA_GENERATOR:STRING=${CMAKE_EXTRA_GENERATOR}
-  -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_INSTALL_PREFIX}
-  -DCMAKE_LIBRARY_OUTPUT_DIRECTORY:PATH=${CMAKE_LIBRARY_OUTPUT_DIRECTORY}
-  -DCMAKE_ARCHIVE_OUTPUT_DIRECTORY:PATH=${CMAKE_ARCHIVE_OUTPUT_DIRECTORY}
-  -DCMAKE_RUNTIME_OUTPUT_DIRECTORY:PATH=${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
-  -DCMAKE_BUNDLE_OUTPUT_DIRECTORY:PATH=${CMAKE_BUNDLE_OUTPUT_DIRECTORY}
-  -DLIBRARY_OUTPUT_PATH:PATH=${CMAKE_LIBRARY_OUTPUT_DIRECTORY}
-  -DEXECUTABLE_OUTPUT_PATH:PATH=${CMAKE_RUNTIME_OUTPUT_DIRECTORY}
-  -DDART_TESTING_TIMEOUT:STRING=${DART_TESTING_TIMEOUT}
-  -DMEMORYCHECK_COMMAND_OPTIONS:STRING=${MEMORYCHECK_COMMAND_OPTIONS}
-  -DMEMORYCHECK_COMMAND:PATH=${MEMORYCHECK_COMMAND}
-  -DCMAKE_SHARED_LINKER_FLAGS:STRING=${CMAKE_SHARED_LINKER_FLAGS}
-  -DCMAKE_EXE_LINKER_FLAGS:STRING=${CMAKE_EXE_LINKER_FLAGS}
-  -DCMAKE_MODULE_LINKER_FLAGS:STRING=${CMAKE_MODULE_LINKER_FLAGS}
-  -DSITE:STRING=${SITE}
-  -DBUILDNAME:STRING=${BUILDNAME}
-  -DBRAINS_CMAKE_HELPER_DIR:PATH=${BRAINS_CMAKE_HELPER_DIR}
-  -DBUILD_dwiAtlas:bool=${BUILD_dwiAtlas}
-)
-
-# Compute -G arg for configuring external projects with the same CMake generator:
+# Superbuild Option - Enabled by default
+#                   Phase I:  ${LOCAL_PROJECT_NAME}_SUPERBUILD is set to ON, and the
+#                             supporting packages defined in "SuperBuild.cmake"
+#                             are built.  The last package in "SuperBuild.cmake"
+#                             to be built is a recursive call to this
+#                             file with ${LOCAL_PROJECT_NAME}_SUPERBUILD explicitly
+#                             set to "OFF" to initiate Phase II
 #
-if(CMAKE_EXTRA_GENERATOR)
-  set(gen "${CMAKE_EXTRA_GENERATOR} - ${CMAKE_GENERATOR}")
+#                   Phase II: Build the ${LOCAL_PROJECT_NAME}, referencing the support
+#                             packages built in Phase I.
+#-----------------------------------------------------------------------------
+option(${LOCAL_PROJECT_NAME}_SUPERBUILD "Build ${LOCAL_PROJECT_NAME} and the projects it depends on via SuperBuild.cmake." ON)
+mark_as_advanced(${LOCAL_PROJECT_NAME}_SUPERBUILD)
+
+option(${LOCAL_PROJECT_NAME}_USE_QT "Find and use Qt with VTK to build GUI Tools" OFF)
+mark_as_advanced(${LOCAL_PROJECT_NAME}_USE_QT)
+
+option(${LOCAL_PROJECT_NAME}_INSTALL_DEVELOPMENT "Install development support include and libraries for external packages." OFF)
+mark_as_advanced(${LOCAL_PROJECT_NAME}_INSTALL_DEVELOPMENT)
+
+#-----------------------------------------------------------------------------
+# Superbuild script
+#-----------------------------------------------------------------------------
+if(${LOCAL_PROJECT_NAME}_SUPERBUILD)
+  project(SuperBuild_${LOCAL_PROJECT_NAME})
+  include("${CMAKE_CURRENT_SOURCE_DIR}/SuperBuild.cmake")
+  return()
 else()
-  set(gen "${CMAKE_GENERATOR}")
+  project(${LOCAL_PROJECT_NAME})
+  include("${CMAKE_CURRENT_SOURCE_DIR}/${LOCAL_PROJECT_NAME}.cmake")
+  return()
 endif()
 
-include(${BRAINS_CMAKE_HELPER_DIR}/CMakeCommonExternalDefinitions.cmake)
-PACKAGE_NEEDS_ITK                 ("${LOCAL_CMAKE_BUILD_OPTIONS}" "${gen}")
-PACKAGE_NEEDS_VTKWITHQT           ("${LOCAL_CMAKE_BUILD_OPTIONS}" "${gen}")
-PACKAGE_NEEDS_SlicerExecutionModel("${LOCAL_CMAKE_BUILD_OPTIONS}" "${gen}")
-PACKAGE_NEEDS_BRAINSCommonLib     ("${LOCAL_CMAKE_BUILD_OPTIONS}" "${gen}")
-
-### Build DicomToNrrdConverter   http://svn.slicer.org/Slicer3/trunk/Applications/CLI/DicomToNrrdConverter
-set(EXTERNAL_PACKAGES DicomToNrrdConverter)
-foreach(proj ${EXTERNAL_PACKAGES})
-  ExternalProject_Add(${proj}
-    #SVN_REPOSITORY "http://svn.slicer.org/Slicer3/trunk/Applications/CLI/DicomToNrrdConverter"
-    SVN_REPOSITORY "http://svn.slicer.org/Slicer4/trunk/Modules/CLI/DicomToNrrdConverter/"
-    SVN_REVISION -r "19206"
-    SOURCE_DIR ${proj}
-    BINARY_DIR ${proj}-build
-    DEPENDS  ${ITK_DEPEND} SlicerExecutionModel
-    CMAKE_GENERATOR ${gen}
-    CMAKE_ARGS
-      ${LOCAL_CMAKE_BUILD_OPTIONS}
-      ${QT_ARGS}
-      -DGenerateCLP_DIR:PATH=${GenerateCLP_DIR}
-      -DITK_DIR:PATH=${ITK_DIR}
-    INSTALL_COMMAND ""
-    INSTALL_DIR "${CMAKE_INSTALL_PREFIX}"
-  )
-  FORCE_BUILD_CHECK(${proj})
-endforeach()
-
-if(doesnt_work)
-### Build DiffusionApplications   http://svn.slicer.org/Slicer3/trunk/Applications/CLI/DiffusionApplications
-set(EXTERNAL_PACKAGES DiffusionApplications)
-foreach(proj ${EXTERNAL_PACKAGES})
-  ExternalProject_Add(${proj}
-    SVN_REPOSITORY "http://svn.slicer.org/Slicer3/trunk/Applications/CLI/DiffusionApplications"
-    SOURCE_DIR ${proj}
-    BINARY_DIR ${proj}-build
-    DEPENDS  ${ITK_DEPEND} SlicerExecutionModel
-    CMAKE_GENERATOR ${gen}
-    CMAKE_ARGS
-      ${LOCAL_CMAKE_BUILD_OPTIONS}
-      ${QT_ARGS}
-      -DGenerateCLP_DIR:PATH=${GenerateCLP_DIR}
-      -DITK_DIR:PATH=${ITK_DIR}
-      #INSTALL_COMMAND ""
-      INSTALL_DIR "${CMAKE_INSTALL_PREFIX}"
-  )
-  FORCE_BUILD_CHECK(${proj})
-endforeach()
-endif()
-
-### Build DTIProcess             https://www.nitrc.org/svn/dtiprocess/trunk
-set(EXTERNAL_PACKAGES DTIProcess)
-foreach(proj ${EXTERNAL_PACKAGES})
-  ExternalProject_Add(${proj}
-    SVN_REPOSITORY "https://www.nitrc.org/svn/dtiprocess/trunk"
-    SVN_USERNAME "slicerbot"
-    SVN_PASSWORD "slicer"
-    SOURCE_DIR ${proj}
-    BINARY_DIR ${proj}-build
-    DEPENDS  ${VTK_DEPEND} ${ITK_DEPEND} SlicerExecutionModel
-    CMAKE_GENERATOR ${gen}
-    CMAKE_ARGS
-      ${LOCAL_CMAKE_BUILD_OPTIONS}
-      ${QT_ARGS}
-      -DGenerateCLP_DIR:PATH=${GenerateCLP_DIR}
-      -DITK_DIR:PATH=${ITK_DIR}
-      -DVTK_DIR:PATH=${VTK_DIR}
-      -DBUILD_dwiAtlas:bool=${BUILD_dwiAtlas}
-      #INSTALL_COMMAND ""
-      INSTALL_DIR "${CMAKE_INSTALL_PREFIX}"
-  )
-  FORCE_BUILD_CHECK(${proj})
-endforeach()
-
-### Build GTRACT                 https://www.nitrc.org/svn/vmagnotta/GTRACT
-set(EXTERNAL_PACKAGES GTRACTprog)
-foreach(proj ${EXTERNAL_PACKAGES})
-  ExternalProject_Add(${proj}
-    SVN_REPOSITORY "https://www.nitrc.org/svn/vmagnotta/tags/BRAINS3"
-    SVN_REVISION -r "156"
-    SVN_USERNAME "slicerbot"
-    SVN_PASSWORD "slicer"
-    SOURCE_DIR ${proj}
-    BINARY_DIR ${proj}-build
-    DEPENDS  BRAINSCommonLib ${VTK_DEPEND} ${ITK_DEPEND} SlicerExecutionModel
-    CMAKE_GENERATOR ${gen}
-    CMAKE_ARGS
-      ${LOCAL_CMAKE_BUILD_OPTIONS}
-      ${QT_ARGS}
-      -DBRAINSCommonLib_DIR:PATH=${BRAINSCommonLib_DIR}
-      -DGenerateCLP_DIR:PATH=${GenerateCLP_DIR}
-      -DITK_DIR:PATH=${ITK_DIR}
-      -DVTK_DIR:PATH=${VTK_DIR}
-      #INSTALL_COMMAND ""
-      INSTALL_DIR "${CMAKE_INSTALL_PREFIX}"
-  )
-  FORCE_BUILD_CHECK(${proj})
-endforeach()
-
-### Build BRAINSFit https://www.nitrc.org/svn/multimodereg/trunk
-set(EXTERNAL_PACKAGES BRAINSFit)
-foreach(proj ${EXTERNAL_PACKAGES})
-  ExternalProject_Add(${proj}
-    SVN_REPOSITORY "https://www.nitrc.org/svn/multimodereg/trunk"
-    SVN_REVISION -r "506"
-    SVN_USERNAME "slicerbot"
-    SVN_PASSWORD "slicer"
-    SOURCE_DIR ${proj}
-    BINARY_DIR ${proj}-build
-    DEPENDS  BRAINSCommonLib ${VTK_DEPEND} ${ITK_DEPEND} SlicerExecutionModel
-    CMAKE_GENERATOR ${gen}
-    CMAKE_ARGS
-      ${LOCAL_CMAKE_BUILD_OPTIONS}
-      ${QT_ARGS}
-      -DBRAINSCommonLib_DIR:PATH=${BRAINSCommonLib_DIR}
-      -DGenerateCLP_DIR:PATH=${GenerateCLP_DIR}
-      -DITK_DIR:PATH=${ITK_DIR}
-      -DVTK_DIR:PATH=${VTK_DIR}
-      #INSTALL_COMMAND ""
-      INSTALL_DIR "${CMAKE_INSTALL_PREFIX}"
-  )
-  FORCE_BUILD_CHECK(${proj})
-endforeach()
-
-### Build BRAINSResample https://www.nitrc.org/svn/multimodereg/trunk
-set(EXTERNAL_PACKAGES BRAINSResample)
-foreach(proj ${EXTERNAL_PACKAGES})
-  ExternalProject_Add(${proj}
-    SVN_REPOSITORY "https://www.nitrc.org/svn/brains/BRAINS/trunk/BRAINSTools/BRAINSResample"
-    SVN_REVISION -r "13249"
-    SVN_USERNAME "slicerbot"
-    SVN_PASSWORD "slicer"
-    SOURCE_DIR ${proj}
-    BINARY_DIR ${proj}-build
-    DEPENDS  BRAINSCommonLib ${VTK_DEPEND} ${ITK_DEPEND} SlicerExecutionModel
-    CMAKE_GENERATOR ${gen}
-    CMAKE_ARGS
-      ${LOCAL_CMAKE_BUILD_OPTIONS}
-      ${QT_ARGS}
-      -DBRAINSCommonLib_DIR:PATH=${BRAINSCommonLib_DIR}
-      -DGenerateCLP_DIR:PATH=${GenerateCLP_DIR}
-      -DITK_DIR:PATH=${ITK_DIR}
-      -DVTK_DIR:PATH=${VTK_DIR}
-      #INSTALL_COMMAND ""
-      INSTALL_DIR "${CMAKE_INSTALL_PREFIX}"
-  )
-  FORCE_BUILD_CHECK(${proj})
-endforeach()
-
-### Build MultiImageRegistration http://svn.na-mic.org/NAMICSandBox/trunk/MultiImageRegistration
-set(EXTERNAL_PACKAGES MultiImageRegistration)
-foreach(proj ${EXTERNAL_PACKAGES})
-  ExternalProject_Add(${proj}
-    SVN_REPOSITORY "http://svn.na-mic.org/NAMICSandBox/trunk/MultiImageRegistration"
-    SOURCE_DIR ${proj}
-    BINARY_DIR ${proj}-build
-    DEPENDS  BRAINSCommonLib ${VTK_DEPEND} ${ITK_DEPEND} SlicerExecutionModel
-    CMAKE_GENERATOR ${gen}
-    CMAKE_ARGS
-      ${LOCAL_CMAKE_BUILD_OPTIONS}
-      ${QT_ARGS}
-      -DBRAINSCommonLib_DIR:PATH=${BRAINSCommonLib_DIR}
-      -DGenerateCLP_DIR:PATH=${GenerateCLP_DIR}
-      -DITK_DIR:PATH=${ITK_DIR}
-      -DVTK_DIR:PATH=${VTK_DIR}
-      #INSTALL_COMMAND ""
-      INSTALL_DIR "${CMAKE_INSTALL_PREFIX}"
-  )
-  FORCE_BUILD_CHECK(${proj})
-endforeach()
-set(MultiImageRegistration_DIR ${CMAKE_CURRENT_BINARY_DIR}/MultiImageRegistration-build)
-
-### Build DTIPrep
-set(EXTERNAL_PACKAGES src)
-foreach(proj ${EXTERNAL_PACKAGES})
-  ExternalProject_Add(${proj}
-    SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/${proj}
-    DOWNLOAD_COMMAND ""
-    BINARY_DIR ${proj}-build
-    DEPENDS  MultiImageRegistration BRAINSCommonLib ${VTK_DEPEND} ${ITK_DEPEND} SlicerExecutionModel
-    CMAKE_GENERATOR ${gen}
-    CMAKE_ARGS
-      ${LOCAL_CMAKE_BUILD_OPTIONS}
-      ${QT_ARGS}
-      -DBRAINSCommonLib_DIR:PATH=${BRAINSCommonLib_DIR}
-      -DMultiImageRegistration_DIR:PATH=${MultiImageRegistration_DIR}
-      -DGenerateCLP_DIR:PATH=${GenerateCLP_DIR}
-      -DITK_DIR:PATH=${ITK_DIR}
-      -DVTK_DIR:PATH=${VTK_DIR}
-      #INSTALL_COMMAND ""
-      INSTALL_DIR "${CMAKE_INSTALL_PREFIX}"
-  )
-  FORCE_BUILD_CHECK(${proj})
-
-endforeach()
-
-#QuantitativeFiberClustering     https://www.nitrc.org/svn/quantitativedti/QuantitativeDiffusionTools/trunk
-#QuantitativeFiberClusteringDocs https://www.nitrc.org/svn/quantitativedti/QuantitativeDiffusionDocs/trunk
+message(FATAL_ERROR "You should never reach this point !")
 

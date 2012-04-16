@@ -379,39 +379,37 @@ void IntensityMotionCheckPanel::on_toolButton_ResultFileOpen_clicked()
   // emit ProtocolChanged();
 }
 
-void IntensityMotionCheckPanel::SetVisualCheckingStatus( int index, int status )
+void IntensityMotionCheckPanel::SetVisualCheckingStatus( int index, int local_status )
 {
 
   // Set Visual Status with the assumption that user is not able to exclude Baseline
-  int pro =
-    this->GetQCResult().GetIntensityMotionCheckResult()[t_Original_ForcedConformance_Mapping[index].index_original[0]].
-    processing;
+  const int pro = this->GetQCResult().GetIntensityMotionCheckResult()[t_Original_ForcedConformance_Mapping[index].index_original[0]].processing;
   // std::cout << "index: " << index << "pro: " << pro << std::endl;
   for( unsigned int j = 0; j < VC_Status.size(); j++ )
     {
     if( index == VC_Status[j].index )
       {
-      VC_Status[j].VC_status = status;
+      VC_Status[j].VC_status = local_status;
 
       }
 
     }
 
-  if( status == 0 )
+  if( local_status == 0 )
     {
     this->GetQTreeWidgetResult()->topLevelItem(0)->child( index )->setText( 1, tr("INCLUDE_MANUALLY") );
     this->GetQTreeWidgetResult()->topLevelItem(0)->child( index )->child( 1 )->child( 0 )->setText( 1, tr("Include") );
     this->GetQCResult().GetIntensityMotionCheckResult()[t_Original_ForcedConformance_Mapping[index].index_original[0]].
     VisualChecking = 0;
     }
-  if( status == 6 )
+  if( local_status == 6 )
     {
     this->GetQTreeWidgetResult()->topLevelItem(0)->child( index )->setText(1, tr("EXCLUDE_MANUALLY") );
     this->GetQTreeWidgetResult()->topLevelItem(0)->child( index )->child( 1 )->child( 0 )->setText( 1, tr("Exclude") );
     this->GetQCResult().GetIntensityMotionCheckResult()[t_Original_ForcedConformance_Mapping[index].index_original[0]].
     VisualChecking = 6;
     }
-  if( status == -1 )
+  if( local_status == -1 )
     {
     this->GetQTreeWidgetResult()->topLevelItem(0)->child( index )->child( 1 )->child( 0 )->setText( 1, tr("NoChange") );
     this->GetQTreeWidgetResult()->topLevelItem(0)->child( index )->setText(1, tr("") );
@@ -419,18 +417,17 @@ void IntensityMotionCheckPanel::SetVisualCheckingStatus( int index, int status )
     VisualChecking = -1;
     }
 
-  if( pro <= 2 && status >= 3 )
+  if( pro <= 2 && local_status >= 3 )
     {
 
     pushButton_SaveVisualChecking->setEnabled( 1 );
     }
 
-  if( pro >= 3 && status <= 2 && status > -1 )
+  if( pro >= 3 && local_status <= 2 && local_status > -1 )
     {
 
     pushButton_SaveVisualChecking->setEnabled( 1 );
     }
-
 }
 
 void IntensityMotionCheckPanel::OpenXML_ResultFile()
@@ -2985,11 +2982,8 @@ void IntensityMotionCheckPanel::f_overallGradientWiseCheck()
   int num_SliceWiseCheckExc = 0;
   int num_InterlaceWiseCheckExc = 0;
   int num_GradientWiseCheckExc = 0;
-  int _r_GradWiseCheck = 0;
-  for( unsigned int i = 0; i < qcResult.GetIntensityMotionCheckResult().size();
-       i++ )
+  for( unsigned int i = 0; i < qcResult.GetIntensityMotionCheckResult().size(); i++ )
     {
-
     if( qcResult.GetIntensityMotionCheckResult()[i].processing == QCResult::GRADIENT_EXCLUDE_SLICECHECK )
       {
       num_SliceWiseCheckExc++;
@@ -3004,18 +2998,18 @@ void IntensityMotionCheckPanel::f_overallGradientWiseCheck()
       }
     }
 
-  _r_GradWiseCheck = num_GradientWiseCheckExc
+   const double _r_GradWiseCheck = num_GradientWiseCheckExc
     / (qcResult.GetIntensityMotionCheckResult().size() - num_SliceWiseCheckExc - num_InterlaceWiseCheckExc);
 
-  if( _r_InterlaceWiseCheck > this->GetProtocol().GetInterlaceCheckProtocol().correlationThresholdGradient )
+  //HACK:  This cod edoes not make much sense to me  I can't figure out what is supsed to be checked here
+  if( _r_GradWiseCheck > this->GetProtocol().GetInterlaceCheckProtocol().correlationThresholdGradient )
     {
-    qcResult.GetOverallQCResult(). GWCk = false;
+    qcResult.GetOverallQCResult().GWCk = false;
     }
   else
     {
-    qcResult.GetOverallQCResult(). GWCk = true;
+    qcResult.GetOverallQCResult().GWCk = true;
     }
-
 }
 
 void IntensityMotionCheckPanel::Set_VCStatus()
