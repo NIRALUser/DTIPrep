@@ -469,7 +469,7 @@ bool XmlStreamReader::readFile(const QString & fileName, int mode)
   return true;
 }
 
-bool XmlStreamReader::readFile_QCResult(const QString & fileName, int mode)
+bool XmlStreamReader::readFile_QCResult(const QString & fileName, int /* xxmode */)
 {
   QFile file(fileName);
 
@@ -648,7 +648,7 @@ void XmlStreamReader::parseValueElement_QCResult_ImgInfo(const QDomElement & ele
 
 void XmlStreamReader::LoadQCResultFromImgInfoParsing()
 {
-  for( int i = 0; i < parametersQCResult.size(); i++ )
+  for( unsigned int i = 0; i < parametersQCResult.size(); i++ )
     {
 
     switch( s_mapQCRESULTStringValue[parametersQCResult[i].parameter.toStdString()] )
@@ -735,7 +735,7 @@ void XmlStreamReader::GetDiffInfoParsing(const QDomElement & element)
 
 void XmlStreamReader::LoadQCResultFromDiffInfoParsing()
 {
-  for( int i = 0; i < parametersQCResult.size(); i++ )
+  for( unsigned int i = 0; i < parametersQCResult.size(); i++ )
     {
     switch( s_mapQCRESULTStringValue[parametersQCResult[i].parameter.toStdString()] )
       {
@@ -788,9 +788,9 @@ QDomNodeList XmlStreamReader::GetDWICheckParsing(const QDomNode & element)
 {
 
   // DWI Check
-  QTreeWidgetItem * tree_item_DWICheck = new QTreeWidgetItem(treeWidget->invisibleRootItem() );
+  QTreeWidgetItem * _tree_item_DWICheck = new QTreeWidgetItem(treeWidget->invisibleRootItem() );
 
-  tree_item_DWICheck->setText(0, element.toElement().attribute("parameter") );
+  _tree_item_DWICheck->setText(0, element.toElement().attribute("parameter") );
 
   ITEM item;
   item.parameter = element.toElement().attribute("parameter");
@@ -921,7 +921,7 @@ void XmlStreamReader::parseValueElement_QCResult_GradientDWICheck(const QDomElem
 
 void XmlStreamReader::LoadQCResultFromDWICheckParsing()
 {
-  for( int i = 0; i < parametersQCResult.size(); i++ )
+  for(unsigned int i = 0; i < parametersQCResult.size(); i++ )
     {
     switch( s_mapQCRESULTStringValue[parametersQCResult[i].parameter.toStdString()] )
       {
@@ -1000,7 +1000,7 @@ void XmlStreamReader::LoadQCResultFromDWICheckGradientParsing(int Grd_num)
     }
 
   QStringList values;
-  for( int i = 1; i < parametersQCResult_Gradient.size(); i++ )
+  for( unsigned int i = 1; i < parametersQCResult_Gradient.size(); i++ )
     {
     if( parametersQCResult_Gradient[i].parameter.left(11) ==
         QObject::tr("OriginalDir") )

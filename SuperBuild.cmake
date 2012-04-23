@@ -25,6 +25,8 @@ endif()
 
 find_package(Git REQUIRED)
 
+option(${LOCAL_PROJECT_NAME}_USE_QT "Turn on to build packages requiring QT" ON)
+
 # I don't know who removed the Find_Package for QT, but it needs to be here
 # in order to build VTK if ${LOCAL_PROJECT_NAME}_USE_QT is set.
 if(${LOCAL_PROJECT_NAME}_USE_QT)
@@ -212,6 +214,7 @@ list(APPEND ${CMAKE_PROJECT_NAME}_SUPERBUILD_EP_VARS
   ${LOCAL_PROJECT_NAME}_CLI_INSTALL_RUNTIME_DESTINATION:PATH
 
   VTK_DIR:PATH
+  GenerateCLP_DIR:PATH
   SlicerExecutionModel_DIR:PATH
   BRAINSCommonLib_DIR:PATH
 
@@ -259,15 +262,6 @@ endif()
 #------------------------------------------------------------------------------
 # Configure and build
 #------------------------------------------------------------------------------
-message("HACK
-    -DITK_VERSION_MAJOR:STRING=${ITK_VERSION_MAJOR}
-    -DITK_DIR:PATH=${ITK_DIR}
-    -DVTK_DIR:PATH=${VTK_DIR}
-    -DSlicerExecutionModel_DIR:PATH=${SlicerExecutionModel_DIR}
-    -DBRAINSCommonLib_DIR:PATH=${BRAINSCommonLib_DIR}
-    ----
-    ${COMMON_EXTERNAL_PROJECT_ARGS}
-    ")
 set(proj ${LOCAL_PROJECT_NAME})
 ExternalProject_Add(${proj}
   DEPENDS ${${LOCAL_PROJECT_NAME}_DEPENDENCIES}
@@ -291,3 +285,26 @@ ExternalProject_Add_Step(${proj} forcebuild
     DEPENDERS build
     ALWAYS 1
   )
+
+option(USE_DTIReg "Build DTIReg" OFF)
+if(USE_DTIReg)
+  include(${CMAKE_CURRENT_LIST_DIR}/SuperBuild/External_BatchMake.cmake)
+  include(${CMAKE_CURRENT_LIST_DIR}/SuperBuild/External_DTIReg.cmake)
+endif()
+
+option(USE_DTI_Tract_Stat "Build DTI_Tract_Stat" OFF)
+if(USE_DTI_Tract_Stat)
+  include(${CMAKE_CURRENT_LIST_DIR}/SuperBuild/External_DTI_Tract_Stat.cmake)
+endif()
+
+option(USE_FVLight "Build FVLight" OFF)
+if(USE_FVLight)
+  include(${CMAKE_CURRENT_LIST_DIR}/SuperBuild/External_QWT.cmake)
+  include(${CMAKE_CURRENT_LIST_DIR}/SuperBuild/External_FVLight.cmake)
+endif()
+
+option(USE_DTIProcess "Build DTIProcess" OFF)
+if(USE_DTIProcess)
+  include(${CMAKE_CURRENT_LIST_DIR}/SuperBuild/External_Boost.cmake)
+  include(${CMAKE_CURRENT_LIST_DIR}/SuperBuild/External_DTIProcess.cmake)
+endif()

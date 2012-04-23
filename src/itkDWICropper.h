@@ -23,6 +23,11 @@ PURPOSE.  See the above copyright notices for more information.
 #include "vnl/vnl_vector_fixed.h"
 #include "itkVectorImage.h"
 #include "itkVectorContainer.h"
+#if (ITK_VERSION_MAJOR < 3)
+typedef int ThreadIdType;
+#else
+#include "itkIntTypes.h"
+#endif
 
 namespace itk
 {
@@ -125,8 +130,7 @@ protected:
   ~DWICropper();
 
   void PrintSelf(std::ostream & os, Indent indent) const;
-
-  void ThreadedGenerateData(const OutputImageRegionType & outputRegionForThread, int threadId );
+  virtual void ThreadedGenerateData(const OutputImageRegionType & outputRegionForThread, ThreadIdType threadId );
 
 private:
   DWICropper(const Self &);       // purposely not implemented

@@ -1398,7 +1398,7 @@ template <class TImageType>
 void
 DWIQCGradientChecker<TImageType>
 ::ThreadedGenerateData(const OutputImageRegionType & outputRegionForThread,
-                       int threadId )
+                       ThreadIdType threadId )
 {
   itkDebugMacro(<< "Actually executing");
 

@@ -3681,7 +3681,7 @@ template <class TImageType>
 void
 DWIQCSliceChecker<TImageType>
 ::ThreadedGenerateData(const OutputImageRegionType & outputRegionForThread,
-                       int threadId )
+                       ThreadIdType threadId )
 {
   itkDebugMacro(<< "Actually executing");
 

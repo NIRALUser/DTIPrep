@@ -169,9 +169,9 @@ public:
     return protocol;
   }
 
-  void SetProcessingQCResult(int & pro, int status)
+  void SetProcessingQCResult(int & pro, int _status)
   {
-    pro = status;
+    pro = _status;
   }
 
   QTreeWidget * & GetQTreeWidgetResult()

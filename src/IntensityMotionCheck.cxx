@@ -477,8 +477,7 @@ void CIntensityMotionCheck::GetImagesInformation()
     = GradientDirectionContainerType::New();
   GradientContainer->clear();
 
-  DwiImageType::SpacingType   spacing =  m_DwiOriginalImage->GetSpacing();
-  DwiImageType::PointType     origin  =  m_DwiOriginalImage->GetOrigin();
+
   DwiImageType::DirectionType direction = m_DwiOriginalImage->GetDirection();
 
   int space;
@@ -724,7 +723,6 @@ unsigned char CIntensityMotionCheck::ImageCheck( DwiImageType::Pointer localDWII
     // space
     itk::MetaDataDictionary                  imgMetaDictionary = localDWIImageToCheck->GetMetaDataDictionary();
     std::vector<std::string>                 imgMetaKeys = imgMetaDictionary.GetKeys();
-    std::vector<std::string>::const_iterator itKey = imgMetaKeys.begin();
     std::string                              metaString;
 
     itk::ExposeMetaData<std::string>(imgMetaDictionary,
@@ -1493,7 +1491,7 @@ bool CIntensityMotionCheck::InterlaceWiseCheck( DwiImageType::Pointer dwi )
     std::vector<bool> tem_vector = InterlaceChecker->getQCResults();
 
     std::cout << "InterlaceWise_qcResult Size:" << InterlaceChecker->getQCResults().size() << std::endl;
-    for( int jj = 0; jj < InterlaceChecker->getQCResults().size(); jj++ )
+    for(unsigned int jj = 0; jj < InterlaceChecker->getQCResults().size(); jj++ )
       {
       std::cout << "InterlaceWise_qcResult:" << InterlaceChecker->getQCResults()[jj] << std::endl;
       }
@@ -1906,11 +1904,11 @@ bool CIntensityMotionCheck::EddyMotionCorrectIowa( DwiImageType::Pointer dwi )
 
     std::string ReportFileName;
 
-    std::string Dwi_file_name = FNameBase(this->m_DwiFileName);
 
     if( protocol->GetEddyMotionCorrectionProtocol().reportFileNameSuffix.
         length() > 0 )
       {
+      std::string Dwi_file_name = FNameBase(this->m_DwiFileName);
       //       ReportFileName=m_DwiFileName.substr(0,m_DwiFileName.find_last_of('.')
       // );
       //       ReportFileName.append(
@@ -2297,11 +2295,11 @@ bool CIntensityMotionCheck::EddyMotionCorrect( DwiImageType::Pointer dwi )
     {
     std::string ReportFileName;
 
-    std::string Dwi_file_name = FNameBase(this->m_DwiFileName);
 
     if( protocol->GetEddyMotionCorrectionProtocol().reportFileNameSuffix.
         length() > 0 )
       {
+      std::string Dwi_file_name = FNameBase(this->m_DwiFileName);
 
       if( protocol->GetQCOutputDirectory().length() > 0 )
         {
@@ -4018,7 +4016,6 @@ bool CIntensityMotionCheck::dtiestim()
 
       size_t found;
       found = m_DwiFileName.find_last_of("/\\");
-      std::string str;
       str = m_DwiFileName.substr( 0, found ); // str : path of QCed outputs
       str.append( "/" );
       str.append( protocol->GetQCOutputDirectory() );
@@ -4824,7 +4821,7 @@ bool CIntensityMotionCheck::DiffusionCheck( DwiImageType::Pointer dwi)
 
     std::string DWIFileName;
 
-    std::string Dwi_file_name = FNameBase(this->m_DwiFileName);
+    Dwi_file_name = FNameBase(this->m_DwiFileName);
 
     if( protocol->GetQCOutputDirectory().length() > 0 )
       {
@@ -4872,10 +4869,10 @@ bool CIntensityMotionCheck::DiffusionCheck( DwiImageType::Pointer dwi)
   return returnValue;
 }
 
-bool CIntensityMotionCheck::MakeDefaultProtocol( Protocol *protocol )
+bool CIntensityMotionCheck::MakeDefaultProtocol( Protocol *_protocol )
 {
 
-  if( !protocol )
+  if( !_protocol )
     {
     std::cout << "protocol error." << std::endl;
     return false;
@@ -4892,96 +4889,95 @@ bool CIntensityMotionCheck::MakeDefaultProtocol( Protocol *protocol )
     return false;
     }
 
-  protocol->clear();
-  protocol->initDTIProtocol();
+  _protocol->clear();
+  _protocol->initDTIProtocol();
 
-  protocol->GetQCOutputDirectory() = "";
-  protocol->GetQCedDWIFileNameSuffix() = "_QCed.nrrd";
-  protocol->GetReportFileNameSuffix() = "_QCReport.txt";
-  protocol->SetBadGradientPercentageTolerance(0.2);
-  protocol->SetReportType(0);
+  _protocol->GetQCOutputDirectory() = "";
+  _protocol->GetQCedDWIFileNameSuffix() = "_QCed.nrrd";
+  _protocol->GetReportFileNameSuffix() = "_QCReport.txt";
+  _protocol->SetBadGradientPercentageTolerance(0.2);
+  _protocol->SetReportType(0);
 
   // ***** image
-  protocol->GetImageProtocol(). bCheck = true;
+  _protocol->GetImageProtocol(). bCheck = true;
 
   // size
-  protocol->GetImageProtocol(). size[0]
+  _protocol->GetImageProtocol(). size[0]
     = m_DwiOriginalImage->GetLargestPossibleRegion().GetSize()[0];
-  protocol->GetImageProtocol(). size[1]
+  _protocol->GetImageProtocol(). size[1]
     = m_DwiOriginalImage->GetLargestPossibleRegion().GetSize()[1];
-  protocol->GetImageProtocol(). size[2]
+  _protocol->GetImageProtocol(). size[2]
     = m_DwiOriginalImage->GetLargestPossibleRegion().GetSize()[2];
 
   // origin
-  protocol->GetImageProtocol(). origin[0] = m_DwiOriginalImage->GetOrigin()[0];
-  protocol->GetImageProtocol(). origin[1] = m_DwiOriginalImage->GetOrigin()[1];
-  protocol->GetImageProtocol(). origin[2] = m_DwiOriginalImage->GetOrigin()[2];
+  _protocol->GetImageProtocol(). origin[0] = m_DwiOriginalImage->GetOrigin()[0];
+  _protocol->GetImageProtocol(). origin[1] = m_DwiOriginalImage->GetOrigin()[1];
+  _protocol->GetImageProtocol(). origin[2] = m_DwiOriginalImage->GetOrigin()[2];
 
   // spacing
-  protocol->GetImageProtocol(). spacing[0] = m_DwiOriginalImage->GetSpacing()[0];
-  protocol->GetImageProtocol(). spacing[1] = m_DwiOriginalImage->GetSpacing()[1];
-  protocol->GetImageProtocol(). spacing[2] = m_DwiOriginalImage->GetSpacing()[2];
+  _protocol->GetImageProtocol(). spacing[0] = m_DwiOriginalImage->GetSpacing()[0];
+  _protocol->GetImageProtocol(). spacing[1] = m_DwiOriginalImage->GetSpacing()[1];
+  _protocol->GetImageProtocol(). spacing[2] = m_DwiOriginalImage->GetSpacing()[2];
 
   // space
   itk::MetaDataDictionary imgMetaDictionary
     = m_DwiOriginalImage->GetMetaDataDictionary();
   std::vector<std::string> imgMetaKeys
     = imgMetaDictionary.GetKeys();
-  std::vector<std::string>::const_iterator itKey = imgMetaKeys.begin();
   std::string                              metaString;
 
   itk::ExposeMetaData<std::string>(imgMetaDictionary, "NRRD_space", metaString);
   if( metaString == "left-anterior-inferior" )
     {
-    protocol->GetImageProtocol(). space = Protocol::SPACE_LAI;
+    _protocol->GetImageProtocol(). space = Protocol::SPACE_LAI;
     }
   else if( metaString == "left-anterior-superior" )
     {
-    protocol->GetImageProtocol(). space = Protocol::SPACE_LAS;
+    _protocol->GetImageProtocol(). space = Protocol::SPACE_LAS;
     }
   else if( metaString == "left-posterior-inferior" )
     {
-    protocol->GetImageProtocol(). space = Protocol::SPACE_LPI;
+    _protocol->GetImageProtocol(). space = Protocol::SPACE_LPI;
     }
   else if( metaString == "left-posterior-superior" )
     {
-    protocol->GetImageProtocol(). space = Protocol::SPACE_LPS;
+    _protocol->GetImageProtocol(). space = Protocol::SPACE_LPS;
     }
   else if( metaString == "right-anterior-inferior" )
     {
-    protocol->GetImageProtocol(). space = Protocol::SPACE_RAI;
+    _protocol->GetImageProtocol(). space = Protocol::SPACE_RAI;
     }
   else if( metaString == "right-anterior-superior" )
     {
-    protocol->GetImageProtocol(). space = Protocol::SPACE_RAS;
+    _protocol->GetImageProtocol(). space = Protocol::SPACE_RAS;
     }
   else if( metaString == "right-posterior-inferior" )
     {
-    protocol->GetImageProtocol(). space = Protocol::SPACE_RPI;
+    _protocol->GetImageProtocol(). space = Protocol::SPACE_RPI;
     }
   else if( metaString == "right-posterior-superior" )
     {
-    protocol->GetImageProtocol(). space = Protocol::SPACE_RPS;
+    _protocol->GetImageProtocol(). space = Protocol::SPACE_RPS;
     }
   else
     {
-    protocol->GetImageProtocol(). space = Protocol::SPACE_UNKNOWN;
+    _protocol->GetImageProtocol(). space = Protocol::SPACE_UNKNOWN;
     }
 
-  protocol->GetImageProtocol(). bCrop = true;
-  protocol->GetImageProtocol(). croppedDWIFileNameSuffix = "";
+  _protocol->GetImageProtocol(). bCrop = true;
+  _protocol->GetImageProtocol(). croppedDWIFileNameSuffix = "";
 
-  protocol->GetImageProtocol(). reportFileNameSuffix = "_QCReport.txt";
-  protocol->GetImageProtocol(). reportFileMode = 1; // append
+  _protocol->GetImageProtocol(). reportFileNameSuffix = "_QCReport.txt";
+  _protocol->GetImageProtocol(). reportFileMode = 1; // append
 
-  protocol->GetImageProtocol(). bQuitOnCheckSpacingFailure = true;
-  protocol->GetImageProtocol(). bQuitOnCheckSizeFailure = false;
+  _protocol->GetImageProtocol(). bQuitOnCheckSpacingFailure = true;
+  _protocol->GetImageProtocol(). bQuitOnCheckSizeFailure = false;
 
   // ***** diffusion
   GetGradientDirections();
 
-  protocol->GetDiffusionProtocol(). bCheck = true;
-  protocol->GetDiffusionProtocol(). bValue = this->m_b0;
+  _protocol->GetDiffusionProtocol(). bCheck = true;
+  _protocol->GetDiffusionProtocol(). bValue = this->m_b0;
   for( unsigned int i = 0; i < m_GradientDirectionContainer->size(); i++ )
     {
     vnl_vector_fixed<double, 3> vect;
@@ -4989,22 +4985,22 @@ bool CIntensityMotionCheck::MakeDefaultProtocol( Protocol *protocol )
     vect[1] = ( m_GradientDirectionContainer->ElementAt(i)[1] );
     vect[2] = ( m_GradientDirectionContainer->ElementAt(i)[2] );
 
-    protocol->GetDiffusionProtocol(). gradients.push_back(vect);
+    _protocol->GetDiffusionProtocol(). gradients.push_back(vect);
     }
 
   // imaging frame
   vnl_matrix_fixed<double, 3, 3> imgf;
   imgf = m_DwiOriginalImage->GetDirection().GetVnlMatrix();
 
-  protocol->GetImageProtocol(). spacedirection[0][0] = imgf(0, 0);
-  protocol->GetImageProtocol(). spacedirection[0][1] = imgf(0, 1);
-  protocol->GetImageProtocol(). spacedirection[0][2] = imgf(0, 2);
-  protocol->GetImageProtocol(). spacedirection[1][0] = imgf(1, 0);
-  protocol->GetImageProtocol(). spacedirection[1][1] = imgf(1, 1);
-  protocol->GetImageProtocol(). spacedirection[1][2] = imgf(1, 2);
-  protocol->GetImageProtocol(). spacedirection[2][0] = imgf(2, 0);
-  protocol->GetImageProtocol(). spacedirection[2][1] = imgf(2, 1);
-  protocol->GetImageProtocol(). spacedirection[2][2] = imgf(2, 2);
+  _protocol->GetImageProtocol(). spacedirection[0][0] = imgf(0, 0);
+  _protocol->GetImageProtocol(). spacedirection[0][1] = imgf(0, 1);
+  _protocol->GetImageProtocol(). spacedirection[0][2] = imgf(0, 2);
+  _protocol->GetImageProtocol(). spacedirection[1][0] = imgf(1, 0);
+  _protocol->GetImageProtocol(). spacedirection[1][1] = imgf(1, 1);
+  _protocol->GetImageProtocol(). spacedirection[1][2] = imgf(1, 2);
+  _protocol->GetImageProtocol(). spacedirection[2][0] = imgf(2, 0);
+  _protocol->GetImageProtocol(). spacedirection[2][1] = imgf(2, 1);
+  _protocol->GetImageProtocol(). spacedirection[2][2] = imgf(2, 2);
 
   // measurement frame
   std::vector<std::vector<double> > nrrdmf;
@@ -5022,128 +5018,128 @@ bool CIntensityMotionCheck::MakeDefaultProtocol( Protocol *protocol )
       }
     }
 
-  protocol->GetDiffusionProtocol(). measurementFrame[0][0] = mf(0, 0);
-  protocol->GetDiffusionProtocol(). measurementFrame[0][1] = mf(0, 1);
-  protocol->GetDiffusionProtocol(). measurementFrame[0][2] = mf(0, 2);
-  protocol->GetDiffusionProtocol(). measurementFrame[1][0] = mf(1, 0);
-  protocol->GetDiffusionProtocol(). measurementFrame[1][1] = mf(1, 1);
-  protocol->GetDiffusionProtocol(). measurementFrame[1][2] = mf(1, 2);
-  protocol->GetDiffusionProtocol(). measurementFrame[2][0] = mf(2, 0);
-  protocol->GetDiffusionProtocol(). measurementFrame[2][1] = mf(2, 1);
-  protocol->GetDiffusionProtocol(). measurementFrame[2][2] = mf(2, 2);
+  _protocol->GetDiffusionProtocol(). measurementFrame[0][0] = mf(0, 0);
+  _protocol->GetDiffusionProtocol(). measurementFrame[0][1] = mf(0, 1);
+  _protocol->GetDiffusionProtocol(). measurementFrame[0][2] = mf(0, 2);
+  _protocol->GetDiffusionProtocol(). measurementFrame[1][0] = mf(1, 0);
+  _protocol->GetDiffusionProtocol(). measurementFrame[1][1] = mf(1, 1);
+  _protocol->GetDiffusionProtocol(). measurementFrame[1][2] = mf(1, 2);
+  _protocol->GetDiffusionProtocol(). measurementFrame[2][0] = mf(2, 0);
+  _protocol->GetDiffusionProtocol(). measurementFrame[2][1] = mf(2, 1);
+  _protocol->GetDiffusionProtocol(). measurementFrame[2][2] = mf(2, 2);
 
-  protocol->GetDiffusionProtocol(). bUseDiffusionProtocol = true;
-  protocol->GetDiffusionProtocol(). diffusionReplacedDWIFileNameSuffix = "";
+  _protocol->GetDiffusionProtocol(). bUseDiffusionProtocol = true;
+  _protocol->GetDiffusionProtocol(). diffusionReplacedDWIFileNameSuffix = "";
 
-  protocol->GetDiffusionProtocol(). reportFileNameSuffix = "_QCReport.txt";
-  protocol->GetDiffusionProtocol(). reportFileMode = 1;
-  protocol->GetDiffusionProtocol(). bQuitOnCheckFailure = true;
+  _protocol->GetDiffusionProtocol(). reportFileNameSuffix = "_QCReport.txt";
+  _protocol->GetDiffusionProtocol(). reportFileMode = 1;
+  _protocol->GetDiffusionProtocol(). bQuitOnCheckFailure = true;
 
   // ***** slice check
-  protocol->GetSliceCheckProtocol(). bCheck = true;
-  protocol->GetSliceCheckProtocol(). bSubregionalCheck = false;
-  protocol->GetSliceCheckProtocol(). subregionalCheckRelaxationFactor = 1.1;
-  protocol->GetSliceCheckProtocol(). checkTimes = 0;
-  protocol->GetSliceCheckProtocol(). headSkipSlicePercentage = 0.1;
-  protocol->GetSliceCheckProtocol(). tailSkipSlicePercentage = 0.1;
-  protocol->GetSliceCheckProtocol().
+  _protocol->GetSliceCheckProtocol(). bCheck = true;
+  _protocol->GetSliceCheckProtocol(). bSubregionalCheck = false;
+  _protocol->GetSliceCheckProtocol(). subregionalCheckRelaxationFactor = 1.1;
+  _protocol->GetSliceCheckProtocol(). checkTimes = 0;
+  _protocol->GetSliceCheckProtocol(). headSkipSlicePercentage = 0.1;
+  _protocol->GetSliceCheckProtocol(). tailSkipSlicePercentage = 0.1;
+  _protocol->GetSliceCheckProtocol().
   correlationDeviationThresholdbaseline = 3.00;
-  protocol->GetSliceCheckProtocol().
+  _protocol->GetSliceCheckProtocol().
                                      correlationDeviationThresholdgradient = 3.50;
-  protocol->GetSliceCheckProtocol(). outputDWIFileNameSuffix = "";
-  protocol->GetSliceCheckProtocol(). reportFileNameSuffix
+  _protocol->GetSliceCheckProtocol(). outputDWIFileNameSuffix = "";
+  _protocol->GetSliceCheckProtocol(). reportFileNameSuffix
     = "_QCReport.txt";
-  protocol->GetSliceCheckProtocol(). reportFileMode = 1;
-  protocol->GetSliceCheckProtocol(). excludedDWINrrdFileNameSuffix = "";
-  protocol->GetSliceCheckProtocol(). bQuitOnCheckFailure = true;
+  _protocol->GetSliceCheckProtocol(). reportFileMode = 1;
+  _protocol->GetSliceCheckProtocol(). excludedDWINrrdFileNameSuffix = "";
+  _protocol->GetSliceCheckProtocol(). bQuitOnCheckFailure = true;
 
   // ***** interlace check
-  protocol->GetInterlaceCheckProtocol(). bCheck = true;
-  protocol->GetInterlaceCheckProtocol(). correlationThresholdBaseline
+  _protocol->GetInterlaceCheckProtocol(). bCheck = true;
+  _protocol->GetInterlaceCheckProtocol(). correlationThresholdBaseline
     = .85;
-  protocol->GetInterlaceCheckProtocol(). correlationDeviationBaseline
+  _protocol->GetInterlaceCheckProtocol(). correlationDeviationBaseline
     = 2.50;
-  protocol->GetInterlaceCheckProtocol(). correlationThresholdGradient
+  _protocol->GetInterlaceCheckProtocol(). correlationThresholdGradient
     = .85;
-  protocol->GetInterlaceCheckProtocol(). correlationDeviationGradient
+  _protocol->GetInterlaceCheckProtocol(). correlationDeviationGradient
     = 3.00;
-  protocol->GetInterlaceCheckProtocol(). rotationThreshold = 0.5;
-  protocol->GetInterlaceCheckProtocol(). translationThreshold
-    = ( protocol->GetImageProtocol().spacing[0]
-        + protocol->GetImageProtocol().spacing[1]
-        + protocol->GetImageProtocol().spacing[2]   ) * 0.3333333333333;
-  protocol->GetInterlaceCheckProtocol(). outputDWIFileNameSuffix = "";
-  protocol->GetInterlaceCheckProtocol(). reportFileNameSuffix
+  _protocol->GetInterlaceCheckProtocol(). rotationThreshold = 0.5;
+  _protocol->GetInterlaceCheckProtocol(). translationThreshold
+    = ( _protocol->GetImageProtocol().spacing[0]
+        + _protocol->GetImageProtocol().spacing[1]
+        + _protocol->GetImageProtocol().spacing[2]   ) * 0.3333333333333;
+  _protocol->GetInterlaceCheckProtocol(). outputDWIFileNameSuffix = "";
+  _protocol->GetInterlaceCheckProtocol(). reportFileNameSuffix
     = "_QCReport.txt";
-  protocol->GetInterlaceCheckProtocol(). reportFileMode = 1;
-  protocol->GetInterlaceCheckProtocol(). excludedDWINrrdFileNameSuffix = "";
-  protocol->GetInterlaceCheckProtocol(). bQuitOnCheckFailure = true;
+  _protocol->GetInterlaceCheckProtocol(). reportFileMode = 1;
+  _protocol->GetInterlaceCheckProtocol(). excludedDWINrrdFileNameSuffix = "";
+  _protocol->GetInterlaceCheckProtocol(). bQuitOnCheckFailure = true;
 
   // ***** gradient check
-  protocol->GetGradientCheckProtocol(). bCheck = true;
-  protocol->GetGradientCheckProtocol(). rotationThreshold = 0.5; // degree
-  protocol->GetGradientCheckProtocol(). translationThreshold
-    = (  protocol->GetImageProtocol().spacing[0]
-         + protocol->GetImageProtocol().spacing[1]
-         + protocol->GetImageProtocol().spacing[2] ) * 0.3333333333333;
-  protocol->GetGradientCheckProtocol(). outputDWIFileNameSuffix = "";
-  protocol->GetGradientCheckProtocol(). reportFileNameSuffix
+  _protocol->GetGradientCheckProtocol(). bCheck = true;
+  _protocol->GetGradientCheckProtocol(). rotationThreshold = 0.5; // degree
+  _protocol->GetGradientCheckProtocol(). translationThreshold
+    = (  _protocol->GetImageProtocol().spacing[0]
+         + _protocol->GetImageProtocol().spacing[1]
+         + _protocol->GetImageProtocol().spacing[2] ) * 0.3333333333333;
+  _protocol->GetGradientCheckProtocol(). outputDWIFileNameSuffix = "";
+  _protocol->GetGradientCheckProtocol(). reportFileNameSuffix
     = "_QCReport.txt";
-  protocol->GetGradientCheckProtocol(). reportFileMode = 1;
-  protocol->GetGradientCheckProtocol(). excludedDWINrrdFileNameSuffix = "";
-  protocol->GetGradientCheckProtocol(). bQuitOnCheckFailure = true;
+  _protocol->GetGradientCheckProtocol(). reportFileMode = 1;
+  _protocol->GetGradientCheckProtocol(). excludedDWINrrdFileNameSuffix = "";
+  _protocol->GetGradientCheckProtocol(). bQuitOnCheckFailure = true;
 
   // ***** baseline average
-  protocol->GetBaselineAverageProtocol(). bAverage = true;
-  protocol->GetBaselineAverageProtocol(). averageMethod = 1;
-  protocol->GetBaselineAverageProtocol(). stopThreshold = 0.02;
-  protocol->GetBaselineAverageProtocol(). outputDWIFileNameSuffix = "";
-  protocol->GetBaselineAverageProtocol(). reportFileNameSuffix
+  _protocol->GetBaselineAverageProtocol(). bAverage = true;
+  _protocol->GetBaselineAverageProtocol(). averageMethod = 1;
+  _protocol->GetBaselineAverageProtocol(). stopThreshold = 0.02;
+  _protocol->GetBaselineAverageProtocol(). outputDWIFileNameSuffix = "";
+  _protocol->GetBaselineAverageProtocol(). reportFileNameSuffix
     = "_QCReport.txt";
 
   // ***** Eddy motion correction
-  protocol->GetEddyMotionCorrectionProtocol(). bCorrect = true;
-  protocol->GetEddyMotionCorrectionProtocol(). numberOfBins =  24;
-  protocol->GetEddyMotionCorrectionProtocol(). numberOfSamples
+  _protocol->GetEddyMotionCorrectionProtocol(). bCorrect = true;
+  _protocol->GetEddyMotionCorrectionProtocol(). numberOfBins =  24;
+  _protocol->GetEddyMotionCorrectionProtocol(). numberOfSamples
     =  100000;
-  protocol->GetEddyMotionCorrectionProtocol(). translationScale
+  _protocol->GetEddyMotionCorrectionProtocol(). translationScale
     =  0.001;
-  protocol->GetEddyMotionCorrectionProtocol(). stepLength    =  0.1;
-  protocol->GetEddyMotionCorrectionProtocol(). relaxFactor    =  0.5;
-  protocol->GetEddyMotionCorrectionProtocol(). maxNumberOfIterations
+  _protocol->GetEddyMotionCorrectionProtocol(). stepLength    =  0.1;
+  _protocol->GetEddyMotionCorrectionProtocol(). relaxFactor    =  0.5;
+  _protocol->GetEddyMotionCorrectionProtocol(). maxNumberOfIterations
     =  500;
-  protocol->GetEddyMotionCorrectionProtocol(). outputDWIFileNameSuffix
+  _protocol->GetEddyMotionCorrectionProtocol(). outputDWIFileNameSuffix
     = "";
-  protocol->GetEddyMotionCorrectionProtocol(). reportFileNameSuffix
+  _protocol->GetEddyMotionCorrectionProtocol(). reportFileNameSuffix
     = "_QCReport.txt";
-  protocol->GetEddyMotionCorrectionProtocol(). reportFileMode = 1;
+  _protocol->GetEddyMotionCorrectionProtocol(). reportFileMode = 1;
 
   // ***** DTI
-  protocol->GetDTIProtocol(). bCompute = true;
-  protocol->GetDTIProtocol(). dtiestimCommand
+  _protocol->GetDTIProtocol(). bCompute = true;
+  _protocol->GetDTIProtocol(). dtiestimCommand
     = "/tools/bin_linux64/dtiestim";
-  protocol->GetDTIProtocol(). dtiprocessCommand
+  _protocol->GetDTIProtocol(). dtiprocessCommand
     = "/tools/bin_linux64/dtiprocess";
-  protocol->GetDTIProtocol(). method = Protocol::METHOD_WLS;
-  protocol->GetDTIProtocol(). baselineThreshold = 50;
-  protocol->GetDTIProtocol(). mask = "";
-  protocol->GetDTIProtocol(). tensorSuffix = "_DTI.nrrd";
-  protocol->GetDTIProtocol(). bbaseline = true;
-  protocol->GetDTIProtocol(). baselineSuffix = "_Baseline.nrrd";
-  protocol->GetDTIProtocol(). bidwi = true;
-  protocol->GetDTIProtocol(). idwiSuffix = "_IDWI.nrrd";
-  protocol->GetDTIProtocol(). bfa = true;
-  protocol->GetDTIProtocol(). faSuffix = "_FA.nrrd";
-  protocol->GetDTIProtocol(). bmd = true;
-  protocol->GetDTIProtocol(). mdSuffix = "_MD.nrrd";
-  protocol->GetDTIProtocol(). bcoloredfa = true;
-  protocol->GetDTIProtocol(). coloredfaSuffix = "_colorFA.nrrd";
-  protocol->GetDTIProtocol(). bfrobeniusnorm = true;
-  protocol->GetDTIProtocol(). frobeniusnormSuffix
+  _protocol->GetDTIProtocol(). method = Protocol::METHOD_WLS;
+  _protocol->GetDTIProtocol(). baselineThreshold = 50;
+  _protocol->GetDTIProtocol(). mask = "";
+  _protocol->GetDTIProtocol(). tensorSuffix = "_DTI.nrrd";
+  _protocol->GetDTIProtocol(). bbaseline = true;
+  _protocol->GetDTIProtocol(). baselineSuffix = "_Baseline.nrrd";
+  _protocol->GetDTIProtocol(). bidwi = true;
+  _protocol->GetDTIProtocol(). idwiSuffix = "_IDWI.nrrd";
+  _protocol->GetDTIProtocol(). bfa = true;
+  _protocol->GetDTIProtocol(). faSuffix = "_FA.nrrd";
+  _protocol->GetDTIProtocol(). bmd = true;
+  _protocol->GetDTIProtocol(). mdSuffix = "_MD.nrrd";
+  _protocol->GetDTIProtocol(). bcoloredfa = true;
+  _protocol->GetDTIProtocol(). coloredfaSuffix = "_colorFA.nrrd";
+  _protocol->GetDTIProtocol(). bfrobeniusnorm = true;
+  _protocol->GetDTIProtocol(). frobeniusnormSuffix
     = "_frobeniusnorm.nrrd";
 
-  protocol->GetDTIProtocol(). reportFileNameSuffix = "_QCReport.txt";
-  protocol->GetDTIProtocol(). reportFileMode = 1;
+  _protocol->GetDTIProtocol(). reportFileNameSuffix = "_QCReport.txt";
+  _protocol->GetDTIProtocol(). reportFileMode = 1;
 
   return true;
 }

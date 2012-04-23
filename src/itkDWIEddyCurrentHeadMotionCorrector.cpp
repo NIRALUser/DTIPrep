@@ -889,7 +889,7 @@ template <class TImageType>
 void
 DWIEddyCurrentHeadMotionCorrector<TImageType>
 ::ThreadedGenerateData(const OutputImageRegionType & outputRegionForThread,
-                       int threadId )
+                       ThreadIdType threadId )
 {
   itkDebugMacro(<< "Actually executing");
 

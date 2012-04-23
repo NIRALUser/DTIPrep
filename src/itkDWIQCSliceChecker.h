@@ -24,7 +24,11 @@ PURPOSE.  See the above copyright notices for more information.
 #include "vnl/vnl_vector_fixed.h"
 #include "vnl/vnl_matrix_fixed.h"
 #include "itkVectorContainer.h"
-
+#if (ITK_VERSION_MAJOR < 4)
+typedef int ThreadIdType;
+#else
+#include "itkIntTypes.h"
+#endif
 namespace itk
 {
 /** \class DWIQCSliceChecker
@@ -178,7 +182,7 @@ protected:
 
   void PrintSelf(std::ostream & os, Indent indent) const;
 
-  void ThreadedGenerateData(const OutputImageRegionType & outputRegionForThread, int threadId );
+  virtual void ThreadedGenerateData(const OutputImageRegionType & outputRegionForThread, ThreadIdType threadId );
 
 private:
   DWIQCSliceChecker(const Self &);    // purposely not implemented
