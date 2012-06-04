@@ -1,5 +1,5 @@
 ExternalProject_add(QWT
-  SVN_REPOSITORY https://qwt.svn.sourceforge.net/svnroot/qwt/branches/qwt-6.0
+  SVN_REPOSITORY http://qwt.svn.sourceforge.net/svnroot/qwt/branches/qwt-6.0
   SOURCE_DIR QWT
   BINARY_DIR QWT-build
   PATCH_COMMAND ${CMAKE_COMMAND} -E
