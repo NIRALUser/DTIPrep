@@ -2,6 +2,8 @@ ExternalProject_Add(FVLight
   SVN_REPOSITORY https://www.nitrc.org/svn/fvlight/trunk
   SOURCE_DIR FVLight
   BINARY_DIR FVLight-build
+  SVN_USERNAME slicerbot
+  SVN_PASSWORD slicer
   INSTALL_COMMAND ""
   PATCH_COMMAND ${CMAKE_COMMAND}
     -Dfixfile=${CMAKE_CURRENT_BINARY_DIR}/FVLight/CMakeLists.txt

@@ -2,7 +2,9 @@ ExternalProject_Add(DTIReg
   SVN_REPOSITORY https://www.nitrc.org/svn/dtireg/trunk/DTI-Reg
   SVN_REVISION -r "18"
   SOURCE_DIR DTIReg
-  BINARY_DIR DTIReg-build
+  BINARY_DIR DTIReg-build  
+  SVN_USERNAME slicerbot
+  SVN_PASSWORD slicer
   INSTALL_COMMAND ""
   CMAKE_GENERATOR ${gen}
   CMAKE_ARGS
