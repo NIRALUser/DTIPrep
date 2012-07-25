@@ -165,7 +165,7 @@ void VectorImageRegisterAffineFilter<TInputImage, TOutputImage>
     optimizer->SetRelaxationFactor( m_RelaxationFactor );
     optimizer->SetNumberOfIterations( m_NumberOfIterations );
 
-    registration->StartRegistration();
+    registration->Update();
 
     OptimizerParameterType finalParameters = registration->GetLastTransformParameters();
 

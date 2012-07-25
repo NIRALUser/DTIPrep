@@ -188,7 +188,7 @@ struRigidRegResult rigidRegistration(
   //  {
   // intraSubjectRegistrationHelper->PrintCommandLine(true);
   //  }
-  intraSubjectRegistrationHelper->StartRegistration();
+  intraSubjectRegistrationHelper->Update();
   typename itk::VersorRigid3DTransform<double>::Pointer tempInitializerITKTransform
     = dynamic_cast<itk::VersorRigid3DTransform<double> *>(
         intraSubjectRegistrationHelper->GetCurrentGenericTransform().GetPointer() );

@@ -6,13 +6,17 @@ if(OPT_USE_SYSTEM_BatchMake)
 endif(OPT_USE_SYSTEM_BatchMake)
 
 set(proj BatchMake)
+if(NOT DEFINED git_protocol)
+  set(git_protocol "git")
+endif()
+
+#message(STATUS "${__indent}Adding project ${proj}")
 ExternalProject_Add(${proj}
-  GIT_REPOSITORY "git://batchmake.org/BatchMake.git"
+  GIT_REPOSITORY "${git_protocol}://batchmake.org/BatchMake.git"
   GIT_TAG "1f5bf4f92e8678c34dc6f7558be5e6613804d988"
   SOURCE_DIR BatchMake
   BINARY_DIR BatchMake-build
   CMAKE_GENERATOR ${gen}
-  DEPENDS  ${ITK_EXTERNAL_NAME}
   CMAKE_ARGS
   --no-warn-unused-cli
   ${COMMON_EXTERNAL_PROJECT_ARGS}
@@ -20,6 +24,8 @@ ExternalProject_Add(${proj}
   -DGRID_SUPPORT:BOOL=ON
   -DUSE_SPLASHSCREEN:BOOL=OFF
   INSTALL_COMMAND ""
+  DEPENDS
+    ${ITK_EXTERNAL_NAME}
   )
 
 set(BatchMake_DEPEND BatchMake )

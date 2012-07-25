@@ -95,7 +95,7 @@ struIntra2DResults CIntraGradientRigidRegistration::Run( bool bRegister )
 
     try
       {
-      registration->StartRegistration();
+      registration->Update();
       }
     catch( itk::ExceptionObject & err )
       {

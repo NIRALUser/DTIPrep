@@ -128,7 +128,7 @@ struInterlaceResults CRigidRegistration::Run(void)
 
   try
     {
-    registration->StartRegistration();
+    registration->Update();
     }
   catch( itk::ExceptionObject & err )
     {

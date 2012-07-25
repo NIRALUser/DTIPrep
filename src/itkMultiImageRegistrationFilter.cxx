@@ -1,6 +1,7 @@
 
 
 #include "itkMultiImageRegistrationFilter.h"
+#include "itkMinimumMaximumImageCalculator.h"
 
 namespace itk
 {
@@ -195,7 +196,7 @@ MultiImageRegistrationFilter
 
   try
     {
-    m_Registration->StartRegistration();
+    m_Registration->Update();
     }
   catch( ExceptionObject & err )
     {
@@ -280,7 +281,7 @@ MultiImageRegistrationFilter
 
   try
     {
-    m_Registration->StartRegistration();
+    m_Registration->Update();
     }
   catch( ExceptionObject & err )
     {

@@ -365,7 +365,7 @@ DWIQCInterlaceChecker<TImageType>
   // run the registration pipeline
   try
     {
-    registration->StartRegistration();
+    registration->Update();
     }
   catch( itk::ExceptionObject & err )
     {

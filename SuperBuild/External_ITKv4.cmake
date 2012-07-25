@@ -64,7 +64,7 @@ if(NOT DEFINED ${extProjName}_DIR AND NOT ${USE_SYSTEM_${extProjName}})
   string(REPLACE "-fopenmp" "" ITK_CMAKE_CXX_FLAGS "${CMAKE_CX_FLAGS}")
 
   set(${proj}_CMAKE_OPTIONS
-      -DITK_LEGACY_REMOVE:BOOL=ON
+      -DITK_LEGACY_REMOVE:BOOL=OFF
       -DITK_BUILD_ALL_MODULES:BOOL=ON
       -DITK_USE_REVIEW:BOOL=ON
       -DITKV3_COMPATIBILITY:BOOL=ON
@@ -72,9 +72,8 @@ if(NOT DEFINED ${extProjName}_DIR AND NOT ${USE_SYSTEM_${extProjName}})
       -DUSE_WRAP_ITK:BOOL=OFF ## HACK:  QUICK CHANGE
     )
   ### --- End Project specific additions
-  set(${proj}_REPOSITORY ${git_protocol}://itk.org/ITK.git CACHE STRING "" FORCE)
-  #set(${proj}_GIT_TAG v4.1rc04 CACHE STRING "" FORCE)
-  set(${proj}_GIT_TAG v4.2rc01 CACHE STRING "" FORCE)
+  set(${proj}_REPOSITORY ${git_protocol}://itk.org/ITK.git)
+  set(${proj}_GIT_TAG "fd9f4bdf47cf6527ced21d72fa2287cad01a95c6")
   ExternalProject_Add(${proj}
     GIT_REPOSITORY ${${proj}_REPOSITORY}
     GIT_TAG ${${proj}_GIT_TAG}
