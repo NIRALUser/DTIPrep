@@ -20,7 +20,7 @@
 #include <vcl_algorithm.h>
 
 // The version of DTI prep should be incremented with each algorithm changes
-static const std::string DTIPREP_VERSION("1.5");
+static const std::string DTIPREP_VERSION("1.1.6");
 
 vnl_matrix_fixed<double, 3, 3>
 CIntensityMotionCheck::GetMeasurementFrame(
@@ -84,6 +84,7 @@ CIntensityMotionCheck::CIntensityMotionCheck()
 
   m_DwiFileName = "";
   m_XmlFileName = "";
+  ReportFileName = "";
 
   protocol_load = false;
 
@@ -541,33 +542,53 @@ unsigned char CIntensityMotionCheck::ImageCheck( DwiImageType::Pointer localDWII
   std::string   ImageCheckReportFileName;
 
   std::string Dwi_file_name = FNameBase(this->m_DwiFileName);
-
   if( protocol->GetImageProtocol().reportFileNameSuffix.length() > 0 )
     {
 
     if( protocol->GetQCOutputDirectory().length() > 0 )
-      {
+    {
 
-      size_t found;
-      found = m_DwiFileName.find_last_of("/\\");
-      std::string str;
-      str = m_DwiFileName.substr( 0, found ); // str : path of QCed outputs
-      str.append( "/" );
-      str.append( protocol->GetQCOutputDirectory() );
-      if( !itksys::SystemTools::FileIsDirectory( str.c_str() ) )
+      	std::string str_QCOutputDirectory = protocol->GetQCOutputDirectory();
+    	size_t found_SeparateChar = str_QCOutputDirectory.find_first_of("/");
+    	if ( int (found_SeparateChar) == -1 ) // "/" does not exist in the protocol->GetQCOutputDirectory() and interpreted as the relative path and creates the folder
+    	{
+
+	size_t found;
+	found = m_DwiFileName.find_last_of("/\\");
+	std::string str;
+	str = m_DwiFileName.substr( 0, found ); // str : path of QCed outputs
+	str.append( "/" );
+	str.append( protocol->GetQCOutputDirectory() );
+	if( !itksys::SystemTools::FileIsDirectory( str.c_str() ) )
+		{
+		itksys::SystemTools::MakeDirectory( str.c_str() );
+		}
+	str.append( "/" );
+	ImageCheckReportFileName = str;
+	ImageCheckReportFileName.append( Dwi_file_name );
+	ImageCheckReportFileName.append( protocol->GetImageProtocol().reportFileNameSuffix );
+	}
+
+        else // "/" exists in the the protocol->GetQCOutputDirectory() and interpreted as the absolute path
         {
-        itksys::SystemTools::MakeDirectory( str.c_str() );
+	std::string str;
+	str.append( protocol->GetQCOutputDirectory() );
+	if( !itksys::SystemTools::FileIsDirectory( str.c_str() ) )
+			{
+			itksys::SystemTools::MakeDirectory( str.c_str() );
+			}
+	str.append("/");
+	ImageCheckReportFileName = str;
+	ImageCheckReportFileName.append( Dwi_file_name ); 
+	ImageCheckReportFileName.append( protocol->GetImageProtocol().reportFileNameSuffix );	
         }
-      ImageCheckReportFileName = str;
-      ImageCheckReportFileName.append( Dwi_file_name );
-      ImageCheckReportFileName.append( protocol->GetImageProtocol().reportFileNameSuffix );
 
-      }
+    }
     else
-      {
+    {
       ImageCheckReportFileName = m_DwiFileName.substr( 0, m_DwiFileName.find_last_of('.') );
       ImageCheckReportFileName.append( protocol->GetImageProtocol().reportFileNameSuffix );
-      }
+    }
 
     }
 
@@ -863,19 +884,45 @@ void CIntensityMotionCheck::ForceCroppingOfImage(const bool bReport, const std::
       if( protocol->GetQCOutputDirectory().length() > 0 )
         {
 
-        size_t found;
-        found = m_DwiFileName.find_last_of("/\\");
-        std::string str;
-        str = m_DwiFileName.substr( 0, found ); // str : path of QCed outputs
-        str.append( "/" );
-        str.append( protocol->GetQCOutputDirectory() );
-        if( !itksys::SystemTools::FileIsDirectory( str.c_str() ) )
-          {
-          itksys::SystemTools::MakeDirectory( str.c_str() );
-          }
-        CroppedFileName = str;
-        CroppedFileName.append( Dwi_file_name );
-        CroppedFileName.append( protocol->GetImageProtocol().croppedDWIFileNameSuffix );
+		std::string str_QCOutputDirectory = protocol->GetQCOutputDirectory();
+		size_t found_SeparateChar = str_QCOutputDirectory.find_first_of("/");
+		if ( int (found_SeparateChar) == -1 ) // "/" does not exist in the protocol->GetQCOutputDirectory() and interpreted as the relative path and creates the folder
+		{
+		
+	
+		size_t found;
+		found = m_DwiFileName.find_last_of("/\\");
+		std::string str;
+		str = m_DwiFileName.substr( 0, found ); // str : path of QCed outputs
+		str.append( "/" );
+		str.append( protocol->GetQCOutputDirectory() );
+		if( !itksys::SystemTools::FileIsDirectory( str.c_str() ) )
+		{
+		itksys::SystemTools::MakeDirectory( str.c_str() );
+		}
+		str.append( "/" );
+		CroppedFileName = str;
+		CroppedFileName.append( Dwi_file_name );
+		CroppedFileName.append( protocol->GetImageProtocol().croppedDWIFileNameSuffix );
+
+		}
+
+		else // "/" exists in the the protocol->GetQCOutputDirectory() and interpreted as the absolute path
+		{
+			
+			std::string str;
+			str.append( protocol->GetQCOutputDirectory() );
+			if( !itksys::SystemTools::FileIsDirectory( str.c_str() ) )
+			{
+			itksys::SystemTools::MakeDirectory( str.c_str() );
+			}
+			str.append("/");
+			CroppedFileName = str;
+			CroppedFileName.append( Dwi_file_name );
+			CroppedFileName.append( protocol->GetImageProtocol().croppedDWIFileNameSuffix );
+
+			
+		}
 
         }
       else
@@ -919,23 +966,49 @@ int CIntensityMotionCheck::Denoising( DwiImageType::Pointer dwi )
     if( protocol->GetQCOutputDirectory().length() > 0 )
       {
 
-      size_t found;
-      found = m_DwiFileName.find_last_of("/\\");
-      std::string str;
-      str = m_DwiFileName.substr( 0, found ); // str : path of QCed outputs
-      str.append( "/" );
-      str.append( protocol->GetQCOutputDirectory() );
-      if( !itksys::SystemTools::FileIsDirectory( str.c_str() ) )
-        {
-        itksys::SystemTools::MakeDirectory( str.c_str() );
-        }
-      DenoiseInput = str;
-      DenoiseInput.append( Dwi_file_name );
-      DenoiseInput.append( "_DenoiseInput.nrrd");
+	std::string str_QCOutputDirectory = protocol->GetQCOutputDirectory();
+	size_t found_SeparateChar = str_QCOutputDirectory.find_first_of("/");
+	if ( int (found_SeparateChar) == -1 ) // "/" does not exist in the protocol->GetQCOutputDirectory() and interpreted as the relative path and creates the folder
+	{
 
-      DenoiseOutput = str;
-      DenoiseOutput.append( Dwi_file_name );
-      DenoiseOutput.append( "_DenoiseOutput.nrrd");
+		size_t found;
+		found = m_DwiFileName.find_last_of("/\\");
+		std::string str;
+		str = m_DwiFileName.substr( 0, found ); // str : path of QCed outputs
+		str.append( "/" );
+		str.append( protocol->GetQCOutputDirectory() );
+		if( !itksys::SystemTools::FileIsDirectory( str.c_str() ) )
+			{
+			itksys::SystemTools::MakeDirectory( str.c_str() );
+			}
+		str.append( "/" );
+		DenoiseInput = str;
+		DenoiseInput.append( Dwi_file_name );
+		DenoiseInput.append( "_DenoiseInput.nrrd");
+		
+		DenoiseOutput = str;
+		DenoiseOutput.append( Dwi_file_name );
+		DenoiseOutput.append( "_DenoiseOutput.nrrd");
+	}
+
+	else	// "/" exists in the the protocol->GetQCOutputDirectory() and interpreted as the absolute path
+	{
+		std::string str;
+		str.append( protocol->GetQCOutputDirectory() );
+		if( !itksys::SystemTools::FileIsDirectory( str.c_str() ) )
+			{
+			itksys::SystemTools::MakeDirectory( str.c_str() );
+			}
+		str.append("/");
+		DenoiseInput = str;
+		DenoiseInput.append( Dwi_file_name );
+		DenoiseInput.append( "_DenoiseInput.nrrd");
+		
+		DenoiseOutput = str;
+		DenoiseOutput.append( Dwi_file_name );
+		DenoiseOutput.append( "_DenoiseOutput.nrrd");		
+
+	}
 
       }
     else
@@ -1096,19 +1169,41 @@ bool CIntensityMotionCheck::SliceWiseCheck( DwiImageType::Pointer dwi )
       if( protocol->GetQCOutputDirectory().length() > 0 )
         {
 
-        size_t found;
-        found = m_DwiFileName.find_last_of("/\\");
-        std::string str;
-        str = m_DwiFileName.substr( 0, found ); // str : path of QCed outputs
-        str.append( "/" );
-        str.append( protocol->GetQCOutputDirectory() );
-        if( !itksys::SystemTools::FileIsDirectory( str.c_str() ) )
-          {
-          itksys::SystemTools::MakeDirectory( str.c_str() );
-          }
-        ReportFileName = str;
-        ReportFileName.append( Dwi_file_name );
-        ReportFileName.append( protocol->GetSliceCheckProtocol().reportFileNameSuffix );
+		std::string str_QCOutputDirectory = protocol->GetQCOutputDirectory();
+		size_t found_SeparateChar = str_QCOutputDirectory.find_first_of("/");
+		if ( int (found_SeparateChar) == -1 ) // "/" does not exist in the protocol->GetQCOutputDirectory() and interpreted as the relative path and creates the folder
+		{
+	
+			size_t found;
+			found = m_DwiFileName.find_last_of("/\\");
+			std::string str;
+			str = m_DwiFileName.substr( 0, found ); // str : path of QCed outputs
+			str.append( "/" );
+			str.append( protocol->GetQCOutputDirectory() );
+			if( !itksys::SystemTools::FileIsDirectory( str.c_str() ) )
+			{
+			itksys::SystemTools::MakeDirectory( str.c_str() );
+			}
+			str.append( "/" );
+			ReportFileName = str;
+			ReportFileName.append( Dwi_file_name );
+			ReportFileName.append( protocol->GetSliceCheckProtocol().reportFileNameSuffix );
+		}
+	
+		else	// "/" exists in the the protocol->GetQCOutputDirectory() and interpreted as the absolute path
+		{
+			std::string str;
+			str.append(protocol->GetQCOutputDirectory());
+			if( !itksys::SystemTools::FileIsDirectory( str.c_str() ) )
+			{
+			itksys::SystemTools::MakeDirectory( str.c_str() );
+			}
+			str.append("/");
+			ReportFileName = str;
+			ReportFileName.append( Dwi_file_name );
+			ReportFileName.append( protocol->GetSliceCheckProtocol().reportFileNameSuffix );
+			
+		}
 
         }
       else
@@ -1248,19 +1343,39 @@ bool CIntensityMotionCheck::SliceWiseCheck( DwiImageType::Pointer dwi )
       if( protocol->GetQCOutputDirectory().length() > 0 )
         {
 
-        size_t found;
-        found = m_DwiFileName.find_last_of("/\\");
-        std::string str;
-        str = m_DwiFileName.substr( 0, found ); // str : path of QCed outputs
-        str.append( "/" );
-        str.append( protocol->GetQCOutputDirectory() );
-        if( !itksys::SystemTools::FileIsDirectory( str.c_str() ) )
-          {
-          itksys::SystemTools::MakeDirectory( str.c_str() );
-          }
-        SliceWiseOutput = str;
-        SliceWiseOutput.append( Dwi_file_name );
-        SliceWiseOutput.append( protocol->GetSliceCheckProtocol().outputDWIFileNameSuffix );
+		std::string str_QCOutputDirectory = protocol->GetQCOutputDirectory();
+		size_t found_SeparateChar = str_QCOutputDirectory.find_first_of("/");
+		if ( int (found_SeparateChar) == -1 ) // "/" does not exist in the protocol->GetQCOutputDirectory() and interpreted as the relative path and creates the folder
+		{
+	
+			size_t found;
+			found = m_DwiFileName.find_last_of("/\\");
+			std::string str;
+			str = m_DwiFileName.substr( 0, found ); // str : path of QCed outputs
+			str.append( "/" );
+			str.append( protocol->GetQCOutputDirectory() );
+			if( !itksys::SystemTools::FileIsDirectory( str.c_str() ) )
+			{
+			itksys::SystemTools::MakeDirectory( str.c_str() );
+			}
+			str.append( "/" );
+			SliceWiseOutput = str;
+			SliceWiseOutput.append( Dwi_file_name );
+			SliceWiseOutput.append( protocol->GetSliceCheckProtocol().outputDWIFileNameSuffix );
+		}
+		else	// "/" exists in the the protocol->GetQCOutputDirectory() and interpreted as the absolute path
+		{
+			std::string str;
+			str.append(protocol->GetQCOutputDirectory());
+			if( !itksys::SystemTools::FileIsDirectory( str.c_str() ) )
+			{
+			itksys::SystemTools::MakeDirectory( str.c_str() );
+			}
+			str.append("/");
+			SliceWiseOutput = str;
+			SliceWiseOutput.append( Dwi_file_name );
+			SliceWiseOutput.append( protocol->GetSliceCheckProtocol().outputDWIFileNameSuffix );
+		}
 
         }
       else
@@ -1302,19 +1417,40 @@ bool CIntensityMotionCheck::SliceWiseCheck( DwiImageType::Pointer dwi )
         if( protocol->GetQCOutputDirectory().length() > 0 )
           {
 
-          size_t found;
-          found = m_DwiFileName.find_last_of("/\\");
-          std::string str;
-          str = m_DwiFileName.substr( 0, found ); // str : path of QCed outputs
-          str.append( "/" );
-          str.append( protocol->GetQCOutputDirectory() );
-          if( !itksys::SystemTools::FileIsDirectory( str.c_str() ) )
-            {
-            itksys::SystemTools::MakeDirectory( str.c_str() );
-            }
-          SliceWiseExcludeOutput = str;
-          SliceWiseExcludeOutput.append( Dwi_file_name );
-          SliceWiseExcludeOutput.append( protocol->GetSliceCheckProtocol().excludedDWINrrdFileNameSuffix );
+		std::string str_QCOutputDirectory = protocol->GetQCOutputDirectory();
+		size_t found_SeparateChar = str_QCOutputDirectory.find_first_of("/");
+		if ( int (found_SeparateChar) == -1 ) // "/" does not exist in the protocol->GetQCOutputDirectory() and interpreted as the relative path and creates the folder
+		{
+
+			size_t found;
+			found = m_DwiFileName.find_last_of("/\\");
+			std::string str;
+			str = m_DwiFileName.substr( 0, found ); // str : path of QCed outputs
+			str.append( "/" );
+			str.append( protocol->GetQCOutputDirectory() );
+			if( !itksys::SystemTools::FileIsDirectory( str.c_str() ) )
+			{
+			itksys::SystemTools::MakeDirectory( str.c_str() );
+			}
+			str.append( "/" );
+			SliceWiseExcludeOutput = str;
+			SliceWiseExcludeOutput.append( Dwi_file_name );
+			SliceWiseExcludeOutput.append( protocol->GetSliceCheckProtocol().excludedDWINrrdFileNameSuffix );
+
+		}
+		else	// "/" exists in the the protocol->GetQCOutputDirectory() and interpreted as the absolute path
+		{
+			std::string str;
+			str.append(protocol->GetQCOutputDirectory());
+			if( !itksys::SystemTools::FileIsDirectory( str.c_str() ) )
+			{
+			itksys::SystemTools::MakeDirectory( str.c_str() );
+			}
+			str.append("/");
+			SliceWiseExcludeOutput = str;
+			SliceWiseExcludeOutput.append( Dwi_file_name );
+			SliceWiseExcludeOutput.append( protocol->GetSliceCheckProtocol().excludedDWINrrdFileNameSuffix );
+		}
 
           }
         else
@@ -1400,19 +1536,40 @@ bool CIntensityMotionCheck::InterlaceWiseCheck( DwiImageType::Pointer dwi )
       if( protocol->GetQCOutputDirectory().length() > 0 )
         {
 
-        size_t found;
-        found = m_DwiFileName.find_last_of("/\\");
-        std::string str;
-        str = m_DwiFileName.substr( 0, found ); // str : path of QCed outputs
-        str.append( "/" );
-        str.append( protocol->GetQCOutputDirectory() );
-        if( !itksys::SystemTools::FileIsDirectory( str.c_str() ) )
-          {
-          itksys::SystemTools::MakeDirectory( str.c_str() );
-          }
-        ReportFileName = str;
-        ReportFileName.append( Dwi_file_name );
-        ReportFileName.append( protocol->GetInterlaceCheckProtocol().reportFileNameSuffix );
+	std::string str_QCOutputDirectory = protocol->GetQCOutputDirectory();
+	size_t found_SeparateChar = str_QCOutputDirectory.find_first_of("/");
+	if ( int (found_SeparateChar) == -1 ) // "/" does not exist in the protocol->GetQCOutputDirectory() and interpreted as the relative path and creates the folder
+	{
+
+		size_t found;
+		found = m_DwiFileName.find_last_of("/\\");
+		std::string str;
+		str = m_DwiFileName.substr( 0, found ); // str : path of QCed outputs
+		str.append( "/" );
+		str.append( protocol->GetQCOutputDirectory() );
+		if( !itksys::SystemTools::FileIsDirectory( str.c_str() ) )
+		{
+		itksys::SystemTools::MakeDirectory( str.c_str() );
+		}
+		str.append( "/" );
+		ReportFileName = str;
+		ReportFileName.append( Dwi_file_name );
+		ReportFileName.append( protocol->GetInterlaceCheckProtocol().reportFileNameSuffix );
+
+	}
+	else	// "/" exists in the the protocol->GetQCOutputDirectory() and interpreted as the absolute path
+	{
+		std::string str;
+		str.append(protocol->GetQCOutputDirectory());
+		if( !itksys::SystemTools::FileIsDirectory( str.c_str() ) )
+			{
+			itksys::SystemTools::MakeDirectory( str.c_str() );
+			}
+		str.append("/");
+		ReportFileName = str;
+		ReportFileName.append( Dwi_file_name );
+		ReportFileName.append( protocol->GetInterlaceCheckProtocol().reportFileNameSuffix );
+	}
 
         }
       else
@@ -1574,20 +1731,41 @@ bool CIntensityMotionCheck::InterlaceWiseCheck( DwiImageType::Pointer dwi )
 
       if( protocol->GetQCOutputDirectory().length() > 0 )
         {
+	
+	std::string str_QCOutputDirectory = protocol->GetQCOutputDirectory();
+	size_t found_SeparateChar = str_QCOutputDirectory.find_first_of("/");
+	if ( int (found_SeparateChar) == -1 ) // "/" does not exist in the protocol->GetQCOutputDirectory() and interpreted as the relative path and creates the folder
+	{
 
-        size_t found;
-        found = m_DwiFileName.find_last_of("/\\");
-        std::string str;
-        str = m_DwiFileName.substr( 0, found ); // str : path of QCed outputs
-        str.append( "/" );
-        str.append( protocol->GetQCOutputDirectory() );
-        if( !itksys::SystemTools::FileIsDirectory( str.c_str() ) )
-          {
-          itksys::SystemTools::MakeDirectory( str.c_str() );
-          }
-        outputDWIFileName = str;
-        outputDWIFileName.append( Dwi_file_name );
-        outputDWIFileName.append( protocol->GetInterlaceCheckProtocol().outputDWIFileNameSuffix );
+		size_t found;
+		found = m_DwiFileName.find_last_of("/\\");
+		std::string str;
+		str = m_DwiFileName.substr( 0, found ); // str : path of QCed outputs
+		str.append( "/" );
+		str.append( protocol->GetQCOutputDirectory() );
+		if( !itksys::SystemTools::FileIsDirectory( str.c_str() ) )
+		{
+		itksys::SystemTools::MakeDirectory( str.c_str() );
+		}
+		str.append( "/" );
+		outputDWIFileName = str;
+		outputDWIFileName.append( Dwi_file_name );
+		outputDWIFileName.append( protocol->GetInterlaceCheckProtocol().outputDWIFileNameSuffix );
+	}
+
+	else	// "/" exists in the the protocol->GetQCOutputDirectory() and interpreted as the absolute path
+	{
+		std::string str;
+		str.append(protocol->GetQCOutputDirectory());
+		if( !itksys::SystemTools::FileIsDirectory( str.c_str() ) )
+			{
+			itksys::SystemTools::MakeDirectory( str.c_str() );
+			}
+		str.append("/");
+		outputDWIFileName = str;
+		outputDWIFileName.append( Dwi_file_name );
+		outputDWIFileName.append( protocol->GetInterlaceCheckProtocol().outputDWIFileNameSuffix );
+	}
 
         }
       else
@@ -1630,19 +1808,40 @@ bool CIntensityMotionCheck::InterlaceWiseCheck( DwiImageType::Pointer dwi )
         if( protocol->GetQCOutputDirectory().length() > 0 )
           {
 
-          size_t found;
-          found = m_DwiFileName.find_last_of("/\\");
-          std::string str;
-          str = m_DwiFileName.substr( 0, found ); // str : path of QCed outputs
-          str.append( "/" );
-          str.append( protocol->GetQCOutputDirectory() );
-          if( !itksys::SystemTools::FileIsDirectory( str.c_str() ) )
-            {
-            itksys::SystemTools::MakeDirectory( str.c_str() );
-            }
-          InterlaceWiseExcludeOutput = str;
-          InterlaceWiseExcludeOutput.append( Dwi_file_name );
-          InterlaceWiseExcludeOutput.append( protocol->GetInterlaceCheckProtocol().excludedDWINrrdFileNameSuffix );
+		std::string str_QCOutputDirectory = protocol->GetQCOutputDirectory();
+		size_t found_SeparateChar = str_QCOutputDirectory.find_first_of("/");
+		if ( int (found_SeparateChar) == -1 ) // "/" does not exist in the protocol->GetQCOutputDirectory() and interpreted as the relative path and creates the folder
+		{
+			size_t found;
+			found = m_DwiFileName.find_last_of("/\\");
+			std::string str;
+			str = m_DwiFileName.substr( 0, found ); // str : path of QCed outputs
+			str.append( "/" );
+			str.append( protocol->GetQCOutputDirectory() );
+			if( !itksys::SystemTools::FileIsDirectory( str.c_str() ) )
+			{
+			itksys::SystemTools::MakeDirectory( str.c_str() );
+			}
+			str.append( "/" );
+			InterlaceWiseExcludeOutput = str;
+			InterlaceWiseExcludeOutput.append( Dwi_file_name );
+			InterlaceWiseExcludeOutput.append( protocol->GetInterlaceCheckProtocol().excludedDWINrrdFileNameSuffix );
+
+		}
+
+		else	// "/" exists in the the protocol->GetQCOutputDirectory() and interpreted as the absolute path
+		{
+			std::string str;
+			str.append(protocol->GetQCOutputDirectory());
+			if( !itksys::SystemTools::FileIsDirectory( str.c_str() ) )
+			{
+			itksys::SystemTools::MakeDirectory( str.c_str() );
+			}
+			str.append( "/" );
+			InterlaceWiseExcludeOutput = str;
+			InterlaceWiseExcludeOutput.append( Dwi_file_name );
+			InterlaceWiseExcludeOutput.append( protocol->GetInterlaceCheckProtocol().excludedDWINrrdFileNameSuffix );
+		}
 
           }
         else
@@ -1726,19 +1925,42 @@ bool CIntensityMotionCheck::BaselineAverage( DwiImageType::Pointer dwi )
       if( protocol->GetQCOutputDirectory().length() > 0 )
         {
 
-        size_t found;
-        found = m_DwiFileName.find_last_of("/\\");
-        std::string str;
-        str = m_DwiFileName.substr( 0, found ); // str : path of QCed outputs
-        str.append( "/" );
-        str.append( protocol->GetQCOutputDirectory() );
-        if( !itksys::SystemTools::FileIsDirectory( str.c_str() ) )
-          {
-          itksys::SystemTools::MakeDirectory( str.c_str() );
-          }
-        ReportFileName = str;
-        ReportFileName.append( Dwi_file_name );
-        ReportFileName.append( protocol->GetBaselineAverageProtocol().reportFileNameSuffix );
+		std::string str_QCOutputDirectory = protocol->GetQCOutputDirectory();
+		size_t found_SeparateChar = str_QCOutputDirectory.find_first_of("/");
+		if ( int (found_SeparateChar) == -1 ) // "/" does not exist in the protocol->GetQCOutputDirectory() and interpreted as the relative path and creates the folder
+		{
+	
+			size_t found;
+			found = m_DwiFileName.find_last_of("/\\");
+			std::string str;
+			str = m_DwiFileName.substr( 0, found ); // str : path of QCed outputs
+			str.append( "/" );
+			str.append( protocol->GetQCOutputDirectory() );
+			if( !itksys::SystemTools::FileIsDirectory( str.c_str() ) )
+			{
+			itksys::SystemTools::MakeDirectory( str.c_str() );
+			}
+			str.append( "/" );
+			ReportFileName = str;
+			ReportFileName.append( Dwi_file_name );
+			ReportFileName.append( protocol->GetBaselineAverageProtocol().reportFileNameSuffix );
+	
+		}
+	
+		else	// "/" exists in the the protocol->GetQCOutputDirectory() and interpreted as the absolute path
+		{
+			std::string str;
+			str.append( protocol->GetQCOutputDirectory() );
+			if( !itksys::SystemTools::FileIsDirectory( str.c_str() ) )
+			{
+			itksys::SystemTools::MakeDirectory( str.c_str() );
+			}
+			str.append( "/" );
+			ReportFileName = str;
+			ReportFileName.append( Dwi_file_name );
+			ReportFileName.append( protocol->GetBaselineAverageProtocol().reportFileNameSuffix );
+	
+		}
 
         }
       else
@@ -1846,19 +2068,42 @@ bool CIntensityMotionCheck::BaselineAverage( DwiImageType::Pointer dwi )
       if( protocol->GetQCOutputDirectory().length() > 0 )
         {
 
-        size_t found;
-        found = m_DwiFileName.find_last_of("/\\");
-        std::string str;
-        str = m_DwiFileName.substr( 0, found ); // str : path of QCed outputs
-        str.append( "/" );
-        str.append( protocol->GetQCOutputDirectory() );
-        if( !itksys::SystemTools::FileIsDirectory( str.c_str() ) )
-          {
-          itksys::SystemTools::MakeDirectory( str.c_str() );
-          }
-        outputDWIFileName = str;
-        outputDWIFileName.append( Dwi_file_name );
-        outputDWIFileName.append( protocol->GetBaselineAverageProtocol().outputDWIFileNameSuffix );
+	std::string str_QCOutputDirectory = protocol->GetQCOutputDirectory();
+	size_t found_SeparateChar = str_QCOutputDirectory.find_first_of("/");
+	if ( int (found_SeparateChar) == -1 ) // "/" does not exist in the protocol->GetQCOutputDirectory() and interpreted as the relative path and creates the folder
+	{
+
+		size_t found;
+		found = m_DwiFileName.find_last_of("/\\");
+		std::string str;
+		str = m_DwiFileName.substr( 0, found ); // str : path of QCed outputs
+		str.append( "/" );
+		str.append( protocol->GetQCOutputDirectory() );
+		if( !itksys::SystemTools::FileIsDirectory( str.c_str() ) )
+		{
+		itksys::SystemTools::MakeDirectory( str.c_str() );
+		}
+		str.append( "/" );
+		outputDWIFileName = str;
+		outputDWIFileName.append( Dwi_file_name );
+		outputDWIFileName.append( protocol->GetBaselineAverageProtocol().outputDWIFileNameSuffix );
+
+	}
+
+	else	// "/" exists in the the protocol->GetQCOutputDirectory() and interpreted as the absolute path
+	{
+		std::string str;
+		str.append(protocol->GetQCOutputDirectory());
+		if( !itksys::SystemTools::FileIsDirectory( str.c_str() ) )
+			{
+			itksys::SystemTools::MakeDirectory( str.c_str() );
+			}
+		str.append( "/" );
+		outputDWIFileName = str;
+		outputDWIFileName.append( Dwi_file_name );
+		outputDWIFileName.append( protocol->GetBaselineAverageProtocol().outputDWIFileNameSuffix );
+		
+	}
 
         }
       else
@@ -1917,19 +2162,40 @@ bool CIntensityMotionCheck::EddyMotionCorrectIowa( DwiImageType::Pointer dwi )
       if( protocol->GetQCOutputDirectory().length() > 0 )
         {
 
-        size_t found;
-        found = m_DwiFileName.find_last_of("/\\");
-        std::string str;
-        str = m_DwiFileName.substr( 0, found ); // str : path of QCed outputs
-        str.append( "/" );
-        str.append( protocol->GetQCOutputDirectory() );
-        if( !itksys::SystemTools::FileIsDirectory( str.c_str() ) )
-          {
-          itksys::SystemTools::MakeDirectory( str.c_str() );
-          }
-        ReportFileName = str;
-        ReportFileName.append( Dwi_file_name );
-        ReportFileName.append( protocol->GetEddyMotionCorrectionProtocol().reportFileNameSuffix );
+	std::string str_QCOutputDirectory = protocol->GetQCOutputDirectory();
+	size_t found_SeparateChar = str_QCOutputDirectory.find_first_of("/");
+	if ( int (found_SeparateChar) == -1 ) // "/" does not exist in the protocol->GetQCOutputDirectory() and interpreted as the relative path and creates the folder
+	{
+
+		size_t found;
+		found = m_DwiFileName.find_last_of("/\\");
+		std::string str;
+		str = m_DwiFileName.substr( 0, found ); // str : path of QCed outputs
+		str.append( "/" );
+		str.append( protocol->GetQCOutputDirectory() );
+		if( !itksys::SystemTools::FileIsDirectory( str.c_str() ) )
+		{
+		itksys::SystemTools::MakeDirectory( str.c_str() );
+		}
+		str.append( "/" );
+		ReportFileName = str;
+		ReportFileName.append( Dwi_file_name );
+		ReportFileName.append( protocol->GetEddyMotionCorrectionProtocol().reportFileNameSuffix );
+
+	}
+	else	// "/" exists in the the protocol->GetQCOutputDirectory() and interpreted as the absolute path
+	{
+		std::string str;
+		str.append(protocol->GetQCOutputDirectory());
+		if( !itksys::SystemTools::FileIsDirectory( str.c_str() ) )
+			{
+			itksys::SystemTools::MakeDirectory( str.c_str() );
+			}
+		str.append( "/" );
+		ReportFileName = str;
+		ReportFileName.append( Dwi_file_name );
+		ReportFileName.append( protocol->GetEddyMotionCorrectionProtocol().reportFileNameSuffix );
+	}
 
         }
       else
@@ -2241,19 +2507,41 @@ bool CIntensityMotionCheck::EddyMotionCorrectIowa( DwiImageType::Pointer dwi )
       if( protocol->GetQCOutputDirectory().length() > 0 )
         {
 
-        size_t found;
-        found = m_DwiFileName.find_last_of("/\\");
-        std::string str;
-        str = m_DwiFileName.substr( 0, found ); // str : path of QCed outputs
-        str.append( "/" );
-        str.append( protocol->GetQCOutputDirectory() );
-        if( !itksys::SystemTools::FileIsDirectory( str.c_str() ) )
-          {
-          itksys::SystemTools::MakeDirectory( str.c_str() );
-          }
-        outputDWIFileName = str;
-        outputDWIFileName.append( Dwi_file_name );
-        outputDWIFileName.append( protocol->GetEddyMotionCorrectionProtocol().outputDWIFileNameSuffix );
+	std::string str_QCOutputDirectory = protocol->GetQCOutputDirectory();
+	size_t found_SeparateChar = str_QCOutputDirectory.find_first_of("/");
+	if ( int (found_SeparateChar) == -1 ) // "/" does not exist in the protocol->GetQCOutputDirectory() and interpreted as the relative path and creates the folder
+	{
+
+		size_t found;
+		found = m_DwiFileName.find_last_of("/\\");
+		std::string str;
+		str = m_DwiFileName.substr( 0, found ); // str : path of QCed outputs
+		str.append( "/" );
+		str.append( protocol->GetQCOutputDirectory() );
+		if( !itksys::SystemTools::FileIsDirectory( str.c_str() ) )
+		{
+		itksys::SystemTools::MakeDirectory( str.c_str() );
+		}
+		str.append( "/" );
+		outputDWIFileName = str;
+		outputDWIFileName.append( Dwi_file_name );
+		outputDWIFileName.append( protocol->GetEddyMotionCorrectionProtocol().outputDWIFileNameSuffix );
+
+	}
+
+	else	// "/" exists in the the protocol->GetQCOutputDirectory() and interpreted as the absolute path
+	{
+		std::string str;
+		str.append(protocol->GetQCOutputDirectory());
+		if( !itksys::SystemTools::FileIsDirectory( str.c_str() ) )
+			{
+			itksys::SystemTools::MakeDirectory( str.c_str() );
+			}
+		str.append( "/" );
+		outputDWIFileName = str;
+		outputDWIFileName.append( Dwi_file_name );
+		outputDWIFileName.append( protocol->GetEddyMotionCorrectionProtocol().outputDWIFileNameSuffix );
+	}
 
         }
       else
@@ -2304,19 +2592,40 @@ bool CIntensityMotionCheck::EddyMotionCorrect( DwiImageType::Pointer dwi )
       if( protocol->GetQCOutputDirectory().length() > 0 )
         {
 
-        size_t found;
-        found = m_DwiFileName.find_last_of("/\\");
-        std::string str;
-        str = m_DwiFileName.substr( 0, found ); // str : path of QCed outputs
-        str.append( "/" );
-        str.append( protocol->GetQCOutputDirectory() );
-        if( !itksys::SystemTools::FileIsDirectory( str.c_str() ) )
-          {
-          itksys::SystemTools::MakeDirectory( str.c_str() );
-          }
-        ReportFileName = str;
-        ReportFileName.append( Dwi_file_name );
-        ReportFileName.append( protocol->GetEddyMotionCorrectionProtocol().reportFileNameSuffix );
+	std::string str_QCOutputDirectory = protocol->GetQCOutputDirectory();
+	size_t found_SeparateChar = str_QCOutputDirectory.find_first_of("/");
+	if ( int (found_SeparateChar) == -1 ) // "/" does not exist in the protocol->GetQCOutputDirectory() and interpreted as the relative path and creates the folder
+	{
+
+		size_t found;
+		found = m_DwiFileName.find_last_of("/\\");
+		std::string str;
+		str = m_DwiFileName.substr( 0, found ); // str : path of QCed outputs
+		str.append( "/" );
+		str.append( protocol->GetQCOutputDirectory() );
+		if( !itksys::SystemTools::FileIsDirectory( str.c_str() ) )
+		{
+		itksys::SystemTools::MakeDirectory( str.c_str() );
+		}
+		str.append( "/" );
+		ReportFileName = str;
+		ReportFileName.append( Dwi_file_name );
+		ReportFileName.append( protocol->GetEddyMotionCorrectionProtocol().reportFileNameSuffix );
+	}
+
+	else	// "/" exists in the the protocol->GetQCOutputDirectory() and interpreted as the absolute path
+	{
+		std::string str;
+		str.append(protocol->GetQCOutputDirectory());
+		if( !itksys::SystemTools::FileIsDirectory( str.c_str() ) )
+			{
+			itksys::SystemTools::MakeDirectory( str.c_str() );
+			}
+		str.append( "/" );
+		ReportFileName = str;
+		ReportFileName.append( Dwi_file_name );
+		ReportFileName.append( protocol->GetEddyMotionCorrectionProtocol().reportFileNameSuffix );
+	}
 
         }
       else
@@ -2429,20 +2738,41 @@ bool CIntensityMotionCheck::EddyMotionCorrect( DwiImageType::Pointer dwi )
 
       if( protocol->GetQCOutputDirectory().length() > 0 )
         {
+	
+	std::string str_QCOutputDirectory = protocol->GetQCOutputDirectory();
+	size_t found_SeparateChar = str_QCOutputDirectory.find_first_of("/");
+	if ( int (found_SeparateChar) == -1 ) // "/" does not exist in the protocol->GetQCOutputDirectory() and interpreted as the relative path and creates the folder
+	{
 
-        size_t found;
-        found = m_DwiFileName.find_last_of("/\\");
-        std::string str;
-        str = m_DwiFileName.substr( 0, found ); // str : path of QCed outputs
-        str.append( "/" );
-        str.append( protocol->GetQCOutputDirectory() );
-        if( !itksys::SystemTools::FileIsDirectory( str.c_str() ) )
-          {
-          itksys::SystemTools::MakeDirectory( str.c_str() );
-          }
-        outputDWIFileName = str;
-        outputDWIFileName.append( Dwi_file_name );
-        outputDWIFileName.append( protocol->GetEddyMotionCorrectionProtocol().outputDWIFileNameSuffix );
+		size_t found;
+		found = m_DwiFileName.find_last_of("/\\");
+		std::string str;
+		str = m_DwiFileName.substr( 0, found ); // str : path of QCed outputs
+		str.append( "/" );
+		str.append( protocol->GetQCOutputDirectory() );
+		if( !itksys::SystemTools::FileIsDirectory( str.c_str() ) )
+		{
+		itksys::SystemTools::MakeDirectory( str.c_str() );
+		}
+		str.append( "/" );
+		outputDWIFileName = str;
+		outputDWIFileName.append( Dwi_file_name );
+		outputDWIFileName.append( protocol->GetEddyMotionCorrectionProtocol().outputDWIFileNameSuffix );
+	}
+
+	else	// "/" exists in the the protocol->GetQCOutputDirectory() and interpreted as the absolute path
+	{
+		std::string str;
+		str.append(protocol->GetQCOutputDirectory());
+		if( !itksys::SystemTools::FileIsDirectory( str.c_str() ) )
+			{
+			itksys::SystemTools::MakeDirectory( str.c_str() );
+			}
+		str.append( "/" );
+		outputDWIFileName = str;
+		outputDWIFileName.append( Dwi_file_name );
+		outputDWIFileName.append( protocol->GetEddyMotionCorrectionProtocol().outputDWIFileNameSuffix );
+	}
 
         }
       else
@@ -2494,19 +2824,41 @@ bool CIntensityMotionCheck::GradientWiseCheck( DwiImageType::Pointer dwi )
       if( protocol->GetQCOutputDirectory().length() > 0 )
         {
 
-        size_t found;
-        found = m_DwiFileName.find_last_of("/\\");
-        std::string str;
-        str = m_DwiFileName.substr( 0, found ); // str : path of QCed outputs
-        str.append( "/" );
-        str.append( protocol->GetQCOutputDirectory() );
-        if( !itksys::SystemTools::FileIsDirectory( str.c_str() ) )
-          {
-          itksys::SystemTools::MakeDirectory( str.c_str() );
-          }
-        ReportFileName = str;
-        ReportFileName.append( Dwi_file_name );
-        ReportFileName.append( protocol->GetGradientCheckProtocol().reportFileNameSuffix  );
+	std::string str_QCOutputDirectory = protocol->GetQCOutputDirectory();
+	size_t found_SeparateChar = str_QCOutputDirectory.find_first_of("/");
+	if ( int (found_SeparateChar) == -1 ) // "/" does not exist in the protocol->GetQCOutputDirectory() and interpreted as the relative path and creates the folder
+	{
+
+		size_t found;
+		found = m_DwiFileName.find_last_of("/\\");
+		std::string str;
+		str = m_DwiFileName.substr( 0, found ); // str : path of QCed outputs
+		str.append( "/" );
+		str.append( protocol->GetQCOutputDirectory() );
+		if( !itksys::SystemTools::FileIsDirectory( str.c_str() ) )
+		{
+		itksys::SystemTools::MakeDirectory( str.c_str() );
+		}
+		str.append( "/" );
+		ReportFileName = str;
+		ReportFileName.append( Dwi_file_name );
+		ReportFileName.append( protocol->GetGradientCheckProtocol().reportFileNameSuffix  );
+
+	}
+
+	else	// "/" exists in the the protocol->GetQCOutputDirectory() and interpreted as the absolute path
+	{
+		std::string str;
+		str.append(protocol->GetQCOutputDirectory());
+		if( !itksys::SystemTools::FileIsDirectory( str.c_str() ) )
+			{
+			itksys::SystemTools::MakeDirectory( str.c_str() );
+			}
+		str.append( "/" );
+		ReportFileName = str;
+		ReportFileName.append( Dwi_file_name );
+		ReportFileName.append( protocol->GetGradientCheckProtocol().reportFileNameSuffix  );
+	}
 
         }
       else
@@ -2642,20 +2994,44 @@ bool CIntensityMotionCheck::GradientWiseCheck( DwiImageType::Pointer dwi )
 
       if( protocol->GetQCOutputDirectory().length() > 0 )
         {
+	
+		std::string str_QCOutputDirectory = protocol->GetQCOutputDirectory();
+		size_t found_SeparateChar = str_QCOutputDirectory.find_first_of("/");
+		if ( int (found_SeparateChar) == -1 ) // "/" does not exist in the protocol->GetQCOutputDirectory() and interpreted as the relative path and creates the folder
+		{
+	
+		size_t found;
+		found = m_DwiFileName.find_last_of("/\\");
+		std::string str;
+		str = m_DwiFileName.substr( 0, found ); // str : path of QCed outputs
+		str.append( "/" );
+		str.append( protocol->GetQCOutputDirectory() );
+		if( !itksys::SystemTools::FileIsDirectory( str.c_str() ) )
+		{
+		itksys::SystemTools::MakeDirectory( str.c_str() );
+		}
+		str.append( "/" );
+		outputDWIFileName = str;
+		outputDWIFileName.append( Dwi_file_name );
+		outputDWIFileName.append( protocol->GetGradientCheckProtocol().outputDWIFileNameSuffix );
 
-        size_t found;
-        found = m_DwiFileName.find_last_of("/\\");
-        std::string str;
-        str = m_DwiFileName.substr( 0, found ); // str : path of QCed outputs
-        str.append( "/" );
-        str.append( protocol->GetQCOutputDirectory() );
-        if( !itksys::SystemTools::FileIsDirectory( str.c_str() ) )
-          {
-          itksys::SystemTools::MakeDirectory( str.c_str() );
-          }
-        outputDWIFileName = str;
-        outputDWIFileName.append( Dwi_file_name );
-        outputDWIFileName.append( protocol->GetGradientCheckProtocol().outputDWIFileNameSuffix );
+	}
+
+	else	// "/" exists in the the protocol->GetQCOutputDirectory() and interpreted as the absolute path
+	{
+		std::string str;
+		str.append(protocol->GetQCOutputDirectory());
+		if( !itksys::SystemTools::FileIsDirectory( str.c_str() ) )
+			{
+			itksys::SystemTools::MakeDirectory( str.c_str() );
+			}
+		str.append( "/" );
+		outputDWIFileName = str;
+		outputDWIFileName.append( Dwi_file_name );
+		outputDWIFileName.append( protocol->GetGradientCheckProtocol().outputDWIFileNameSuffix );
+
+		
+	}
 
         }
       else
@@ -2698,19 +3074,41 @@ bool CIntensityMotionCheck::GradientWiseCheck( DwiImageType::Pointer dwi )
         if( protocol->GetQCOutputDirectory().length() > 0 )
           {
 
-          size_t found;
-          found = m_DwiFileName.find_last_of("/\\");
-          std::string str;
-          str = m_DwiFileName.substr( 0, found ); // str : path of QCed outputs
-          str.append( "/" );
-          str.append( protocol->GetQCOutputDirectory() );
-          if( !itksys::SystemTools::FileIsDirectory( str.c_str() ) )
-            {
-            itksys::SystemTools::MakeDirectory( str.c_str() );
-            }
-          GradientWiseExcludeOutput = str;
-          GradientWiseExcludeOutput.append( Dwi_file_name );
-          GradientWiseExcludeOutput.append( protocol->GetGradientCheckProtocol().excludedDWINrrdFileNameSuffix );
+		std::string str_QCOutputDirectory = protocol->GetQCOutputDirectory();
+		size_t found_SeparateChar = str_QCOutputDirectory.find_first_of("/");
+		if ( int (found_SeparateChar) == -1 ) // "/" does not exist in the protocol->GetQCOutputDirectory() and interpreted as the relative path and creates the folder
+		{
+
+			size_t found;
+			found = m_DwiFileName.find_last_of("/\\");
+			std::string str;
+			str = m_DwiFileName.substr( 0, found ); // str : path of QCed outputs
+			str.append( "/" );
+			str.append( protocol->GetQCOutputDirectory() );
+			if( !itksys::SystemTools::FileIsDirectory( str.c_str() ) )
+			{
+			itksys::SystemTools::MakeDirectory( str.c_str() );
+			}
+			str.append( "/" );
+			GradientWiseExcludeOutput = str;
+			GradientWiseExcludeOutput.append( Dwi_file_name );
+			GradientWiseExcludeOutput.append( protocol->GetGradientCheckProtocol().excludedDWINrrdFileNameSuffix );
+
+		}
+
+		else	// "/" exists in the the protocol->GetQCOutputDirectory() and interpreted as the absolute path
+		{
+			std::string str;
+			str.append( protocol->GetQCOutputDirectory() );
+			if( !itksys::SystemTools::FileIsDirectory( str.c_str() ) )
+			{
+			itksys::SystemTools::MakeDirectory( str.c_str() );
+			}
+			str.append( "/" );
+			GradientWiseExcludeOutput = str;
+			GradientWiseExcludeOutput.append( Dwi_file_name );
+			GradientWiseExcludeOutput.append( protocol->GetGradientCheckProtocol().excludedDWINrrdFileNameSuffix );
+		}
 
           }
         else
@@ -2794,23 +3192,50 @@ int CIntensityMotionCheck::JointDenoising( DwiImageType::Pointer dwi )
     if( protocol->GetQCOutputDirectory().length() > 0 )
       {
 
-      size_t found;
-      found = m_DwiFileName.find_last_of("/\\");
-      std::string str;
-      str = m_DwiFileName.substr( 0, found ); // str : path of QCed outputs
-      str.append( "/" );
-      str.append( protocol->GetQCOutputDirectory() );
-      if( !itksys::SystemTools::FileIsDirectory( str.c_str() ) )
-        {
-        itksys::SystemTools::MakeDirectory( str.c_str() );
-        }
-      JointDenoiseInput = str;
-      JointDenoiseInput.append( Dwi_file_name );
-      JointDenoiseInput.append( "_JointDenoiseInput.nrrd");
+	std::string str_QCOutputDirectory = protocol->GetQCOutputDirectory();
+	size_t found_SeparateChar = str_QCOutputDirectory.find_first_of("/");
+	if ( int (found_SeparateChar) == -1 ) // "/" does not exist in the protocol->GetQCOutputDirectory() and interpreted as the relative path and creates the folder
+	{
 
-      JointDenoiseOutput = str;
-      JointDenoiseOutput.append( Dwi_file_name );
-      JointDenoiseOutput.append( "_JointDenoiseOutput.nrrd");
+		size_t found;
+		found = m_DwiFileName.find_last_of("/\\");
+		std::string str;
+		str = m_DwiFileName.substr( 0, found ); // str : path of QCed outputs
+		str.append( "/" );
+		str.append( protocol->GetQCOutputDirectory() );
+		if( !itksys::SystemTools::FileIsDirectory( str.c_str() ) )
+			{
+			itksys::SystemTools::MakeDirectory( str.c_str() );
+			}
+		str.append( "/" );
+		JointDenoiseInput = str;
+		JointDenoiseInput.append( Dwi_file_name );
+		JointDenoiseInput.append( "_JointDenoiseInput.nrrd");
+		
+		JointDenoiseOutput = str;
+		JointDenoiseOutput.append( Dwi_file_name );
+		JointDenoiseOutput.append( "_JointDenoiseOutput.nrrd");
+
+	}
+
+	else	// "/" exists in the the protocol->GetQCOutputDirectory() and interpreted as the absolute path
+	{
+		std::string str;
+		str.append(protocol->GetQCOutputDirectory());
+		if( !itksys::SystemTools::FileIsDirectory( str.c_str() ) )
+			{
+			itksys::SystemTools::MakeDirectory( str.c_str() );
+			}
+		str.append( "/" );
+		JointDenoiseInput = str;
+		JointDenoiseInput.append( Dwi_file_name );
+		JointDenoiseInput.append( "_JointDenoiseInput.nrrd");
+		
+		JointDenoiseOutput = str;
+		JointDenoiseOutput.append( Dwi_file_name );
+		JointDenoiseOutput.append( "_JointDenoiseOutput.nrrd");
+		
+	}
 
       }
     else
@@ -2965,17 +3390,38 @@ bool CIntensityMotionCheck::SaveDwiForcedConformanceImage(void)
     if( protocol->GetQCOutputDirectory().length() > 0 )
       {
 
-      size_t found;
-      found = m_DwiFileName.find_last_of("/\\");
-      std::string str;
-      str = m_DwiFileName.substr( 0, found ); // str : path of QCed outputs
-      str.append( "/" );
-      str.append( protocol->GetQCOutputDirectory() );
-      itksys::SystemTools::MakeDirectory( str.c_str() );
+	std::string str_QCOutputDirectory = protocol->GetQCOutputDirectory();
+	size_t found_SeparateChar = str_QCOutputDirectory.find_first_of("/");
+	if ( int (found_SeparateChar) == -1 ) // "/" does not exist in the protocol->GetQCOutputDirectory() and interpreted as the relative path and creates the folder
+	{
 
-      m_outputDWIFileName = str;
-      m_outputDWIFileName.append( Dwi_file_name );
-      m_outputDWIFileName.append( protocol->GetQCedDWIFileNameSuffix() );
+		size_t found;
+		found = m_DwiFileName.find_last_of("/\\");
+		std::string str;
+		str = m_DwiFileName.substr( 0, found ); // str : path of QCed outputs
+		str.append( "/" );
+		str.append( protocol->GetQCOutputDirectory() );
+		itksys::SystemTools::MakeDirectory( str.c_str() );
+		str.append( "/" );
+		m_outputDWIFileName = str;
+		m_outputDWIFileName.append( Dwi_file_name );
+		m_outputDWIFileName.append( protocol->GetQCedDWIFileNameSuffix() );
+
+	}
+
+	else	// "/" exists in the the protocol->GetQCOutputDirectory() and interpreted as the absolute path
+	{
+		std::string str;
+		str.append(protocol->GetQCOutputDirectory());
+		if( !itksys::SystemTools::FileIsDirectory( str.c_str() ) )
+			{
+			itksys::SystemTools::MakeDirectory( str.c_str() );
+			}
+		str.append( "/" );
+		m_outputDWIFileName = str;
+		m_outputDWIFileName.append( Dwi_file_name );
+		m_outputDWIFileName.append( protocol->GetQCedDWIFileNameSuffix() );
+	}
 
       }
     else
@@ -3011,23 +3457,44 @@ bool CIntensityMotionCheck::SaveDwiForcedConformanceImage_FurtherQC( void ) cons
     std::string outputDWIFileName;
 
     std::string Dwi_file_name = FNameBase(this->m_DwiFileName);
-
     if( protocol->GetQCOutputDirectory().length() > 0 )
       {
 
-      size_t found;
-      found = m_DwiFileName.find_last_of("/\\");
-      std::string str;
-      str = m_DwiFileName.substr( 0, found ); // str : path of QCed outputs
-      str.append( "/" );
-      str.append( protocol->GetQCOutputDirectory() );
-      if( !itksys::SystemTools::FileIsDirectory( str.c_str() ) )
-        {
-        itksys::SystemTools::MakeDirectory( str.c_str() );
-        }
-      outputDWIFileName = str;
-      outputDWIFileName.append( Dwi_file_name );
-      outputDWIFileName.append( protocol->GetQCedDWIFileNameSuffix() );
+	std::string str_QCOutputDirectory = protocol->GetQCOutputDirectory();
+	size_t found_SeparateChar = str_QCOutputDirectory.find_first_of("/");
+	if ( int (found_SeparateChar) == -1 ) // "/" does not exist in the protocol->GetQCOutputDirectory() and interpreted as the relative path and creates the folder
+	{
+
+		size_t found;
+		found = m_DwiFileName.find_last_of("/\\");
+		std::string str;
+		str = m_DwiFileName.substr( 0, found ); // str : path of QCed outputs
+		str.append( "/" );
+		str.append( protocol->GetQCOutputDirectory() );
+		if( !itksys::SystemTools::FileIsDirectory( str.c_str() ) )
+			{
+			itksys::SystemTools::MakeDirectory( str.c_str() );
+			}
+		str.append( "/" );
+		outputDWIFileName = str;
+		outputDWIFileName.append( Dwi_file_name );
+		outputDWIFileName.append( protocol->GetQCedDWIFileNameSuffix() );
+
+	}
+
+	else	// "/" exists in the the protocol->GetQCOutputDirectory() and interpreted as the absolute path
+	{
+		std::string str;
+		str.append(protocol->GetQCOutputDirectory());
+		if( !itksys::SystemTools::FileIsDirectory( str.c_str() ) )
+			{
+			itksys::SystemTools::MakeDirectory( str.c_str() );
+			}
+		str.append( "/" );
+		outputDWIFileName = str;
+		outputDWIFileName.append( Dwi_file_name );
+		outputDWIFileName.append( protocol->GetQCedDWIFileNameSuffix() );
+	}
 
       }
     else
@@ -3234,7 +3701,7 @@ unsigned char CIntensityMotionCheck::RunPipelineByProtocol()
   bool          bReport = false;
   std::ofstream outfile;
 
-  std::string ReportFileName;
+  //std::string ReportFileName;
 
   std::string Full_path;
   std::string Dwi_file_name;  // Full name of dwi image
@@ -3245,16 +3712,39 @@ unsigned char CIntensityMotionCheck::RunPipelineByProtocol()
   if( protocol->GetQCOutputDirectory().length() > 0 )
     {
 
-    size_t found;
-    found = m_DwiFileName.find_last_of("/\\");
-    std::string str;
-    str = m_DwiFileName.substr( 0, found ); // str : path of QCed outputs
-    str.append( "/" );
-    str.append( protocol->GetQCOutputDirectory() );
-    itksys::SystemTools::MakeDirectory( str.c_str() );
+    std::string str_QCOutputDirectory = protocol->GetQCOutputDirectory();
+    size_t found_SeparateChar = str_QCOutputDirectory.find_first_of("/");
+    if ( int (found_SeparateChar) == -1 ) // "/" does not exist in the protocol->GetQCOutputDirectory() and interpreted as the relative path and creates the folder
+    {
+    
 
-    ReportFileName = str;
-    ReportFileName.append( Dwi_file_name );
+
+	size_t found;
+	found = m_DwiFileName.find_last_of("/\\");
+	
+	std::string str;
+	str = m_DwiFileName.substr( 0, found ); // str : path of QCed outputs
+	str.append( "/" );
+	str.append( protocol->GetQCOutputDirectory() );
+	itksys::SystemTools::MakeDirectory( str.c_str() );
+	str.append( "/" );
+	ReportFileName = str;
+	ReportFileName.append( Dwi_file_name );
+     }
+
+     else	// "/" exists in the the protocol->GetQCOutputDirectory() and interpreted as the absolute path
+     {
+	std::string str;
+	str.append( protocol->GetQCOutputDirectory() );
+	if( !itksys::SystemTools::FileIsDirectory( str.c_str() ) )
+			{
+			itksys::SystemTools::MakeDirectory( str.c_str() );
+			}
+	str.append("/");
+	ReportFileName = str;
+	ReportFileName.append( Dwi_file_name ); 
+	
+      }
 
     if( protocol->GetReportFileNameSuffix().length() > 0 )
       {
@@ -3262,7 +3752,7 @@ unsigned char CIntensityMotionCheck::RunPipelineByProtocol()
       }
     else
       {
-      ReportFileName.append( "_QC_CheckReports.txt");
+      ReportFileName.append( "_QCReport.txt");
       }
 
     }
@@ -3275,7 +3765,7 @@ unsigned char CIntensityMotionCheck::RunPipelineByProtocol()
       }
     else
       {
-      ReportFileName.append( "_QC_CheckReports.txt");
+      ReportFileName.append( "_QCReport.txt");
       }
     }
 
@@ -3550,19 +4040,40 @@ unsigned char CIntensityMotionCheck::validateLeftDiffusionStatistics()
     if( protocol->GetQCOutputDirectory().length() > 0 )
       {
 
-      size_t found;
-      found = m_DwiFileName.find_last_of("/\\");
-      std::string str;
-      str = m_DwiFileName.substr( 0, found ); // str : path of QCed outputs
-      str.append( "/" );
-      str.append( protocol->GetQCOutputDirectory() );
-      if( !itksys::SystemTools::FileIsDirectory( str.c_str() ) )
-        {
-        itksys::SystemTools::MakeDirectory( str.c_str() );
-        }
-      ReportFileName = str;
-      ReportFileName.append( Dwi_file_name );
-      ReportFileName.append( protocol->GetReportFileNameSuffix() );
+	std::string str_QCOutputDirectory = protocol->GetQCOutputDirectory();
+	size_t found_SeparateChar = str_QCOutputDirectory.find_first_of("/");
+	if ( int (found_SeparateChar) == -1 ) // "/" does not exist in the protocol->GetQCOutputDirectory() and interpreted as the relative path and creates the folder
+	{
+
+		size_t found;
+		found = m_DwiFileName.find_last_of("/\\");
+		std::string str;
+		str = m_DwiFileName.substr( 0, found ); // str : path of QCed outputs
+		str.append( "/" );
+		str.append( protocol->GetQCOutputDirectory() );
+		if( !itksys::SystemTools::FileIsDirectory( str.c_str() ) )
+			{
+			itksys::SystemTools::MakeDirectory( str.c_str() );
+			}
+		str.append( "/" );
+		ReportFileName = str;
+		ReportFileName.append( Dwi_file_name );
+		ReportFileName.append( protocol->GetReportFileNameSuffix() );
+	}
+
+	else	// "/" exists in the the protocol->GetQCOutputDirectory() and interpreted as the absolute path
+	{
+		std::string str;
+		str.append(protocol->GetQCOutputDirectory());
+		str.append( "/" );
+		if( !itksys::SystemTools::FileIsDirectory( str.c_str() ) )
+			{
+			itksys::SystemTools::MakeDirectory( str.c_str() );
+			}
+		ReportFileName = str;
+		ReportFileName.append( Dwi_file_name );
+		ReportFileName.append( protocol->GetReportFileNameSuffix() );
+	}
 
       }
     else
@@ -4014,18 +4525,40 @@ bool CIntensityMotionCheck::dtiestim()
     if( protocol->GetQCOutputDirectory().length() > 0 )
       {
 
-      size_t found;
-      found = m_DwiFileName.find_last_of("/\\");
-      str = m_DwiFileName.substr( 0, found ); // str : path of QCed outputs
-      str.append( "/" );
-      str.append( protocol->GetQCOutputDirectory() );
-      if( !itksys::SystemTools::FileIsDirectory( str.c_str() ) )
-        {
-        itksys::SystemTools::MakeDirectory( str.c_str() );
-        }
-      outputDWIFileName = str;
-      outputDWIFileName.append( Dwi_file_name );
-      outputDWIFileName.append( protocol->GetQCedDWIFileNameSuffix() );
+	std::string str_QCOutputDirectory = protocol->GetQCOutputDirectory();
+	size_t found_SeparateChar = str_QCOutputDirectory.find_first_of("/");
+	if ( int (found_SeparateChar) == -1 ) // "/" does not exist in the protocol->GetQCOutputDirectory() and interpreted as the relative path and creates the folder
+	{
+
+		size_t found;
+		found = m_DwiFileName.find_last_of("/\\");
+		str = m_DwiFileName.substr( 0, found ); // str : path of QCed outputs
+		str.append( "/" );
+		str.append( protocol->GetQCOutputDirectory() );
+		if( !itksys::SystemTools::FileIsDirectory( str.c_str() ) )
+			{
+			itksys::SystemTools::MakeDirectory( str.c_str() );
+			}
+		str.append( "/" );
+		outputDWIFileName = str;
+		outputDWIFileName.append( Dwi_file_name );
+		outputDWIFileName.append( protocol->GetQCedDWIFileNameSuffix() );
+
+	}
+
+	else	// "/" exists in the the protocol->GetQCOutputDirectory() and interpreted as the absolute path
+	{
+		str.append( protocol->GetQCOutputDirectory() );
+		str.append( "/" );
+		if( !itksys::SystemTools::FileIsDirectory( str.c_str() ) )
+			{
+			itksys::SystemTools::MakeDirectory( str.c_str() );
+			}
+		outputDWIFileName = str;
+		outputDWIFileName.append( Dwi_file_name );
+		outputDWIFileName.append( protocol->GetQCedDWIFileNameSuffix() );
+		
+	}
 
       }
     else
@@ -4132,19 +4665,41 @@ bool CIntensityMotionCheck::dtiprocess()
     if( protocol->GetQCOutputDirectory().length() > 0 )
       {
 
-      size_t found;
-      found = m_DwiFileName.find_last_of("/\\");
-      std::string str;
-      str = m_DwiFileName.substr( 0, found ); // str : path of QCed outputs
-      str.append( "/" );
-      str.append( protocol->GetQCOutputDirectory() );
-      if( !itksys::SystemTools::FileIsDirectory( str.c_str() ) )
-        {
-        itksys::SystemTools::MakeDirectory( str.c_str() );
-        }
-      outputDWIFileName = str;
-      outputDWIFileName.append( Dwi_file_name );
-      outputDWIFileName.append( protocol->GetQCedDWIFileNameSuffix()  );
+	std::string str_QCOutputDirectory = protocol->GetQCOutputDirectory();
+	size_t found_SeparateChar = str_QCOutputDirectory.find_first_of("/");
+	if ( int (found_SeparateChar) == -1 ) // "/" does not exist in the protocol->GetQCOutputDirectory() and interpreted as the relative path and creates the folder
+	{
+		size_t found;
+		found = m_DwiFileName.find_last_of("/\\");
+		std::string str;
+		str = m_DwiFileName.substr( 0, found ); // str : path of QCed outputs
+		str.append( "/" );
+		str.append( protocol->GetQCOutputDirectory() );
+		if( !itksys::SystemTools::FileIsDirectory( str.c_str() ) )
+			{
+			itksys::SystemTools::MakeDirectory( str.c_str() );
+			}
+		str.append( "/" );
+		outputDWIFileName = str;
+		outputDWIFileName.append( Dwi_file_name );
+		outputDWIFileName.append( protocol->GetQCedDWIFileNameSuffix()  );
+
+	}
+
+	else	// "/" exists in the the protocol->GetQCOutputDirectory() and interpreted as the absolute path
+	{	
+		std::string str;
+		str.append(protocol->GetQCOutputDirectory());
+		if( !itksys::SystemTools::FileIsDirectory( str.c_str() ) )
+			{
+			itksys::SystemTools::MakeDirectory( str.c_str() );
+			}
+		str.append( "/" );
+		outputDWIFileName = str;
+		outputDWIFileName.append( Dwi_file_name );
+		outputDWIFileName.append( protocol->GetQCedDWIFileNameSuffix()  );
+		
+	}
 
       }
     else
@@ -4233,20 +4788,41 @@ bool CIntensityMotionCheck::DiffusionCheck( DwiImageType::Pointer dwi)
 
   if( protocol->GetQCOutputDirectory().length() > 0 )
     {
+	std::string str_QCOutputDirectory = protocol->GetQCOutputDirectory();
+	size_t found_SeparateChar = str_QCOutputDirectory.find_first_of("/");
+	if ( int (found_SeparateChar) == -1 ) // "/" does not exist in the protocol->GetQCOutputDirectory() and interpreted as the relative path and creates the folder
+	{
 
-    size_t found;
-    found = m_DwiFileName.find_last_of("/\\");
-    std::string str;
-    str = m_DwiFileName.substr( 0, found ); // str : path of QCed outputs
-    str.append( "/" );
-    str.append( protocol->GetQCOutputDirectory() );
-    if( !itksys::SystemTools::FileIsDirectory( str.c_str() ) )
-      {
-      itksys::SystemTools::MakeDirectory( str.c_str() );
-      }
-    ReportFileName = str;
-    ReportFileName.append( Dwi_file_name );
-    ReportFileName.append( protocol->GetDiffusionProtocol().reportFileNameSuffix );
+		size_t found;
+		found = m_DwiFileName.find_last_of("/\\");
+		std::string str;
+		str = m_DwiFileName.substr( 0, found ); // str : path of QCed outputs
+		str.append( "/" );
+		str.append( protocol->GetQCOutputDirectory() );
+		if( !itksys::SystemTools::FileIsDirectory( str.c_str() ) )
+		{
+		itksys::SystemTools::MakeDirectory( str.c_str() );
+		}
+		str.append( "/" );
+		ReportFileName = str;
+		ReportFileName.append( Dwi_file_name );
+		ReportFileName.append( protocol->GetDiffusionProtocol().reportFileNameSuffix );
+
+	}
+
+	else	// "/" exists in the the protocol->GetQCOutputDirectory() and interpreted as the absolute path
+	{
+		std::string str;
+		str.append(protocol->GetQCOutputDirectory());
+		if( !itksys::SystemTools::FileIsDirectory( str.c_str() ) )
+			{
+			itksys::SystemTools::MakeDirectory( str.c_str() );
+			}
+		str.append( "/" );
+		ReportFileName = str;
+		ReportFileName.append( Dwi_file_name );
+		ReportFileName.append( protocol->GetDiffusionProtocol().reportFileNameSuffix );
+	}
 
     }
   else
@@ -4826,19 +5402,40 @@ bool CIntensityMotionCheck::DiffusionCheck( DwiImageType::Pointer dwi)
     if( protocol->GetQCOutputDirectory().length() > 0 )
       {
 
-      size_t found;
-      found = m_DwiFileName.find_last_of("/\\");
-      std::string str;
-      str = m_DwiFileName.substr( 0, found ); // str : path of QCed outputs
-      str.append( "/" );
-      str.append( protocol->GetQCOutputDirectory() );
-      if( !itksys::SystemTools::FileIsDirectory( str.c_str() ) )
-        {
-        itksys::SystemTools::MakeDirectory( str.c_str() );
-        }
-      DWIFileName = str;
-      DWIFileName.append( Dwi_file_name );
-      DWIFileName.append( protocol->GetDiffusionProtocol().diffusionReplacedDWIFileNameSuffix  );
+	std::string str_QCOutputDirectory = protocol->GetQCOutputDirectory();
+	size_t found_SeparateChar = str_QCOutputDirectory.find_first_of("/");
+	if ( int (found_SeparateChar) == -1 ) // "/" does not exist in the protocol->GetQCOutputDirectory() and interpreted as the relative path and creates the folder
+	{
+
+		size_t found;
+		found = m_DwiFileName.find_last_of("/\\");
+		std::string str;
+		str = m_DwiFileName.substr( 0, found ); // str : path of QCed outputs
+		str.append( "/" );
+		str.append( protocol->GetQCOutputDirectory() );
+		if( !itksys::SystemTools::FileIsDirectory( str.c_str() ) )
+			{
+			itksys::SystemTools::MakeDirectory( str.c_str() );
+			}
+		str.append( "/" );
+		DWIFileName = str;
+		DWIFileName.append( Dwi_file_name );
+		DWIFileName.append( protocol->GetDiffusionProtocol().diffusionReplacedDWIFileNameSuffix  );
+
+	}
+	else	// "/" exists in the the protocol->GetQCOutputDirectory() and interpreted as the absolute path
+	{
+		std::string str;
+		str.append(protocol->GetQCOutputDirectory());
+		if( !itksys::SystemTools::FileIsDirectory( str.c_str() ) )
+			{
+			itksys::SystemTools::MakeDirectory( str.c_str() );
+			}
+		str.append( "/" );
+		DWIFileName = str;
+		DWIFileName.append( Dwi_file_name );
+		DWIFileName.append( protocol->GetDiffusionProtocol().diffusionReplacedDWIFileNameSuffix  );
+	}
 
       }
     else

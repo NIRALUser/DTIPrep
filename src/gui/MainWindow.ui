@@ -29,6 +29,26 @@
   <widget class="QWidget" name="centralwidget">
    <layout class="QVBoxLayout" name="verticalLayout">
     <item>
+     <widget class="QLabel" name="label">
+      <property name="text">
+       <string>Sphere Radius</string>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QDoubleSpinBox" name="doubleSpinBox_SphereRadius"/>
+    </item>
+    <item>
+     <widget class="QLabel" name="label_2">
+      <property name="text">
+       <string>Sphere Opacity</string>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QDoubleSpinBox" name="doubleSpinBox_SphereOpacity"/>
+    </item>
+    <item>
      <widget class="QTabWidget" name="tabWidget">
       <property name="contextMenuPolicy">
        <enum>Qt::DefaultContextMenu</enum>
@@ -46,7 +66,7 @@
        <enum>QTabWidget::Rounded</enum>
       </property>
       <property name="currentIndex">
-       <number>0</number>
+       <number>1</number>
       </property>
       <property name="elideMode">
        <enum>Qt::ElideNone</enum>

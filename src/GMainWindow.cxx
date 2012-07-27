@@ -78,7 +78,7 @@ GMainWindow::GMainWindow()
 
   verticalLayout->setContentsMargins(0, 0, 0, 0);
   verticalLayout_2->setContentsMargins(0, 0, 0, 0);
-  verticalLayout_3->setContentsMargins(0, 0, 0, 0);
+  //verticalLayout_3->setContentsMargins(0, 0, 0, 0);
   //  verticalLayout_3->setSpacing(2);
   tabWidget->setCurrentIndex(0);
 
@@ -103,11 +103,19 @@ GMainWindow::GMainWindow()
   actorDirFile   = vtkPropAssembly::New();
   actorDirInclude  = vtkPropAssembly::New();
 
-  vtkSphereSource *SphereSource  =  vtkSphereSource::New();
+  //vtkSphereSource *SphereSource  =  vtkSphereSource::New();
+  SphereSource  =  vtkSphereSource::New();
   SphereSource->SetRadius(1.0);
   SphereSource->SetThetaResolution(50);
   SphereSource->SetPhiResolution(50);
   SphereSource->SetCenter(0.0, 0.0, 0.0);
+  min_length_vec = 1;
+
+  this->doubleSpinBox_SphereRadius->setMinimum(0);
+  this->doubleSpinBox_SphereRadius->setMaximum(1);
+
+  this->doubleSpinBox_SphereOpacity->setMinimum(0);
+  this->doubleSpinBox_SphereOpacity->setMaximum(1);
 
   vtkPolyDataMapper *mapperSphere = vtkPolyDataMapper::New();
   mapperSphere->SetInput( SphereSource->GetOutput() );
@@ -115,8 +123,10 @@ GMainWindow::GMainWindow()
   actorSphere  = vtkActor::New();
   actorSphere->SetMapper(mapperSphere);
   actorSphere->GetProperty()->SetColor(0.5, 0.3, 0.3);
-  actorSphere->GetProperty()->SetOpacity(1.0);
+  actorSphere->GetProperty()->SetOpacity(0.5);
   actorSphere->SetVisibility(0);
+
+  //this->horizontalSlider_SphereRadius->setRange(0.01, 2);
 
   pvtkRenderer_3DView->AddActor(actorSphere);
 
@@ -364,6 +374,12 @@ GMainWindow::GMainWindow()
   connect( this,
            SIGNAL( Signal_actionOpenDWINrrd_triggered() ),
            this, SLOT( on_actionOpenDWINrrd_triggered() ) );
+
+  connect( this->doubleSpinBox_SphereRadius, SIGNAL (valueChanged( double )),
+	   this, SLOT( doubleSpinBox_SphereRadiusValueChanged( double ) ) );
+
+  connect( this->doubleSpinBox_SphereOpacity, SIGNAL (valueChanged( double )),
+	   this, SLOT( doubleSpinBox_SphereOpacityValueChanged( double ) ) );
 
 }
 
@@ -904,6 +920,20 @@ void GMainWindow::on_actionExit_triggered()
   qApp->quit();
 }
 
+void GMainWindow::doubleSpinBox_SphereOpacityValueChanged( double opacity)
+{
+
+  this->actorSphere->GetProperty()->SetOpacity(opacity);
+
+}
+
+void GMainWindow::doubleSpinBox_SphereRadiusValueChanged( double radius )
+{
+
+  this->SphereSource->SetRadius(radius);
+
+}
+
 void GMainWindow::ReloadQCedDWI( QString Qqcdwiname )
 {
   // Load QCed DWI newly in DTIPrep which can be used for new running or visual checking
@@ -1297,6 +1327,8 @@ void GMainWindow::UpdateDWIDiffusionVectorActors( DwiImageType::Pointer _DWIImag
 
   actorDirFile->GetParts()->RemoveAllItems();
   float vect3d[3];
+  double length = 0;
+  min_length_vec = 1;
   for( ; itKey != imgMetaKeys.end(); itKey++ )
     {
     // double x,y,z;
@@ -1313,8 +1345,14 @@ void GMainWindow::UpdateDWIDiffusionVectorActors( DwiImageType::Pointer _DWIImag
 
       vtkLineSource *LineSource    =  vtkLineSource::New();
       // LineSource->SetPoint1(0.0, 0.0, 0.0);
+      
       LineSource->SetPoint1(-vect3d[0], -vect3d[1], -vect3d[2]);
       LineSource->SetPoint2(vect3d[0], vect3d[1], vect3d[2]);
+
+      length = double (sqrt(vect3d[0]*vect3d[0]+vect3d[1]*vect3d[1]+vect3d[2]*vect3d[2]));
+      //std::cout << "length vect " << length << std::endl;
+      if (length <= min_length_vec)
+		min_length_vec = length; 
 
       vtkTubeFilter *TubeFilter = vtkTubeFilter::New();
       TubeFilter->SetInput( LineSource->GetOutput() );
@@ -1335,6 +1373,10 @@ void GMainWindow::UpdateDWIDiffusionVectorActors( DwiImageType::Pointer _DWIImag
       }
     }
   pvtkRenderer_3DView->AddActor(actorDirFile);
+  //std::cout << "min_length_vec " << min_length_vec << std::endl;
+
+  this->doubleSpinBox_SphereRadius->setMinimum(min_length_vec);
+  SphereSource->SetRadius(min_length_vec);
   actorDirFile->SetVisibility(1);
   pvtkRenderer_3DView->ResetCamera();
   actorDirFile->SetVisibility( actionFrom_DWI->isChecked() );
@@ -1421,6 +1463,8 @@ void GMainWindow::UpdateOutputDWIDiffusionVectorActors()
       // std::cout<<"IncludeDirTest"<<std::endl;
       vtkLineSource *LineSource    =  vtkLineSource::New();
 
+     
+
       LineSource->SetPoint1(
         DTIPrepPanel->GetQCResult().GetIntensityMotionCheckResult()[i].
         CorrectedDir[0],
@@ -1493,6 +1537,7 @@ void GMainWindow::UpdateOutputDWIDiffusionVectorActors_VC()
 
       vtkLineSource *LineSource    =  vtkLineSource::New();
 
+      
       LineSource->SetPoint1(
         DTIPrepPanel->GetQCResult().GetIntensityMotionCheckResult()[i].
         CorrectedDir[0],

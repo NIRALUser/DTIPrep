@@ -2906,8 +2906,6 @@ void IntensityMotionCheckPanel::f_overallSliceWiseCheck()
 {
   // computing the overall results of the SliceWise check
   int num_SliceWiseCheckExc = 0;
-  int num_InterlaceWiseCheckExc = 0;
-  int num_GradientWiseCheckExc = 0;
   int _r_SliceWiseCkeck = 0;
   for( unsigned int i = 0; i < qcResult.GetIntensityMotionCheckResult().size();
        i++ )
@@ -2917,18 +2915,10 @@ void IntensityMotionCheckPanel::f_overallSliceWiseCheck()
       {
       num_SliceWiseCheckExc++;
       }
-    if( qcResult.GetIntensityMotionCheckResult()[i].processing == QCResult::GRADIENT_EXCLUDE_INTERLACECHECK )
-      {
-      num_InterlaceWiseCheckExc++;
-      }
-    if( qcResult.GetIntensityMotionCheckResult()[i].processing == QCResult::GRADIENT_EXCLUDE_GRADIENTCHECK )
-      {
-      num_GradientWiseCheckExc++;
-      }
     }
   _r_SliceWiseCkeck = num_SliceWiseCheckExc / qcResult.GetIntensityMotionCheckResult().size();
 
-  if( _r_SliceWiseCkeck > this->GetProtocol().GetInterlaceCheckProtocol().correlationThresholdGradient )
+  if( _r_SliceWiseCkeck > this->GetProtocol().GetBadGradientPercentageTolerance())
     {
     qcResult.GetOverallQCResult(). SWCk = false;
     }
@@ -2944,7 +2934,6 @@ void IntensityMotionCheckPanel::f_overallInterlaceWiseCheck()
   // computing the overall results of the InterlaceWise check
   int num_SliceWiseCheckExc = 0;
   int num_InterlaceWiseCheckExc = 0;
-  int num_GradientWiseCheckExc = 0;
   int _r_InterlaceWiseCheck = 0;
   for( unsigned int i = 0; i < qcResult.GetIntensityMotionCheckResult().size();
        i++ )
@@ -2958,14 +2947,10 @@ void IntensityMotionCheckPanel::f_overallInterlaceWiseCheck()
       {
       num_InterlaceWiseCheckExc++;
       }
-    if( qcResult.GetIntensityMotionCheckResult()[i].processing == QCResult::GRADIENT_EXCLUDE_GRADIENTCHECK )
-      {
-      num_GradientWiseCheckExc++;
-      }
     }
-  _r_InterlaceWiseCheck = num_InterlaceWiseCheckExc
-    / (qcResult.GetIntensityMotionCheckResult().size() - num_SliceWiseCheckExc);
-  if( _r_InterlaceWiseCheck > this->GetProtocol().GetInterlaceCheckProtocol().correlationThresholdGradient )
+  _r_InterlaceWiseCheck = (num_InterlaceWiseCheckExc + num_SliceWiseCheckExc)
+    / qcResult.GetIntensityMotionCheckResult().size();
+  if( _r_InterlaceWiseCheck > this->GetProtocol().GetBadGradientPercentageTolerance())
     {
     qcResult.GetOverallQCResult(). IWCk = false;
     }
@@ -2998,11 +2983,12 @@ void IntensityMotionCheckPanel::f_overallGradientWiseCheck()
       }
     }
 
-   const double _r_GradWiseCheck = num_GradientWiseCheckExc
-    / (qcResult.GetIntensityMotionCheckResult().size() - num_SliceWiseCheckExc - num_InterlaceWiseCheckExc);
+   //const double _r_GradWiseCheck = (num_GradientWiseCheckExc + num_SliceWiseCheckExc + num_InterlaceWiseCheckExc + B0BadAvreage)/ qcResult.GetIntensityMotionCheckResult().size();
 
-  //HACK:  This cod edoes not make much sense to me  I can't figure out what is supsed to be checked here
-  if( _r_GradWiseCheck > this->GetProtocol().GetInterlaceCheckProtocol().correlationThresholdGradient )
+   const double _r_GradWiseCheck = (num_GradientWiseCheckExc + num_SliceWiseCheckExc + num_InterlaceWiseCheckExc)
+    / qcResult.GetIntensityMotionCheckResult().size();
+
+  if( _r_GradWiseCheck > this->GetProtocol().GetBadGradientPercentageTolerance())
     {
     qcResult.GetOverallQCResult().GWCk = false;
     }
@@ -3083,7 +3069,7 @@ void IntensityMotionCheckPanel::Set_QCedDWI()
 void IntensityMotionCheckPanel::QCedResultUpdate()
 {
 
-  // creating QCResult tree include "gradeints info + visual checking process" :"
+  // creating QCResult tree include "gradients info + visual checking process" :"
   std::cout << "Signal QCedResultUpdate" << std::endl;
   treeWidget_Results->clear();
 
@@ -3091,16 +3077,23 @@ void IntensityMotionCheckPanel::QCedResultUpdate()
   QTreeWidgetItem *itemIntensityMotionInformation = new QTreeWidgetItem( treeWidget_Results );
   itemIntensityMotionInformation->setText( 0, tr("DWI Check") );
 
-  // Obtaing directions of gradeints of QCed dwi
+  // Obtaing directions of gradients of QCed dwi
   // ..............................................................................................................................................
   itk::MetaDataDictionary                  imgMetaDictionary = GetDwiOutputImage()->GetMetaDataDictionary();
   std::vector<std::string>                 imgMetaKeys = imgMetaDictionary.GetKeys();
   std::vector<std::string>::const_iterator itKey = imgMetaKeys.begin();
   std::string                              metaString;
 
+  std::ofstream outfile;
+  outfile.open( myIntensityThread.m_IntensityMotionCheck->GetReportFileName().c_str(), std::ios_base::app | std::ios_base::out);
+  outfile << "================================" << std::endl;
+  outfile << "Included gradients" << std::endl;
+  outfile << "================================" << std::endl;
+
   // gradient vectors
   TensorReconstructionImageFilterType::GradientDirectionType vect3d_T;
   GradientDirectionContainer_ConformanceImg = GradientDirectionContainerType::New();
+  int index_included_dwi = 0;
   for( ; itKey != imgMetaKeys.end(); itKey++ )
     {
     // double x,y,z;
@@ -3109,7 +3102,9 @@ void IntensityMotionCheckPanel::QCedResultUpdate()
       {
       std::istringstream iss(metaString);
       iss >> vect3d_T[0] >> vect3d_T[1] >> vect3d_T[2];
-      std::cout << "gradeints dir: " << vect3d_T[0] << " " << vect3d_T[1] << " " << vect3d_T[2] << std::endl;
+      std::cout << "gradients dir: " << vect3d_T[0] << " " << vect3d_T[1] << " " << vect3d_T[2] << std::endl;
+      outfile << "gradients " << index_included_dwi << ": " << vect3d_T[0] << " " << vect3d_T[1] << " " << vect3d_T[2] << std::endl;
+      index_included_dwi++;
       GradientDirectionContainer_ConformanceImg->push_back(vect3d_T);
       }
     }
@@ -3187,6 +3182,8 @@ void IntensityMotionCheckPanel::QCedResultUpdate()
       }
 
     }
+
+    outfile.close();
 }
 
 void IntensityMotionCheckPanel::ResultUpdate()
@@ -3809,18 +3806,38 @@ void IntensityMotionCheckPanel::SavingTreeWidgetResult_XmlFile_Default()     // 
 
   if( protocol.GetQCOutputDirectory().length() > 0 )
     {
-    QString Full_path = DwiFilePath;
-    QString Full_name = DwiFilePath.section('/', -1);
-    Full_path.remove(Full_name);
-    Full_path.append( "/" );
-    Full_path.append( QString( protocol.GetQCOutputDirectory().c_str() ) );
-    if( !QDir( Full_path ).exists() )
-      {
-      QDir().mkdir( Full_path );
-      }
-    Full_path.append( Full_name.section('.', -2, 0) );
-    Full_path.append(QString(tr("_XMLQCResult_Default.xml") ) );
-    Result_xmlFile = Full_path;
+	QString str_QCOutputDirectory = QString( protocol.GetQCOutputDirectory().c_str() );
+	bool found_SeparateChar = str_QCOutputDirectory.contains("/");
+	if ( !found_SeparateChar ) // "/" does not exist in the protocol->GetQCOutputDirectory() and interpreted as the relative path and creates the folder
+	{
+		QString Full_path = DwiFilePath;
+		QString Full_name = DwiFilePath.section('/', -1);
+		Full_path.remove(Full_name);
+		Full_path.append( "/" );
+		Full_path.append( QString( protocol.GetQCOutputDirectory().c_str() ) );
+		if( !QDir( Full_path ).exists() )
+		{
+		QDir().mkdir( Full_path );
+		}
+		Full_path.append( "/" );
+		Full_path.append( Full_name.section('.', -2, 0) );
+		Full_path.append(QString(tr("_XMLQCResult_Default.xml") ) );
+		Result_xmlFile = Full_path;
+	}
+	else
+	{
+		QString Full_name = DwiFilePath.section('/', -1);
+		QString Full_path;
+		Full_path.append( QString( protocol.GetQCOutputDirectory().c_str() ) );
+		if( !QDir( Full_path ).exists() )
+		{
+		QDir().mkdir( Full_path );
+		}
+		Full_path.append( "/" );
+		Full_path.append( Full_name );
+		Full_path.append(QString(tr("_XMLQCResult_Default.xml") ) );
+		Result_xmlFile = Full_path;
+	}
     }
 
   else
@@ -3849,21 +3866,46 @@ void IntensityMotionCheckPanel::SavingTreeWidgetResult_XmlFile()     // Saving t
 
   if( protocol.GetQCOutputDirectory().length() > 0 )
     {
-    QString Full_path = DwiFilePath;
-    QString Full_name = DwiFilePath.section('/', -1);
 
-    Full_path.remove(Full_name);
-    Full_path.append( "/" );
-    Full_path.append( QString( protocol.GetQCOutputDirectory().c_str() ) );
+	QString str_QCOutputDirectory = QString (protocol.GetQCOutputDirectory().c_str());
+	bool found_SeparateChar = str_QCOutputDirectory.contains("/");
+	if ( !found_SeparateChar ) // "/" does not exist in the protocol->GetQCOutputDirectory() and interpreted as the relative path and creates the folder
+	{
 
-    if( !QDir( Full_path ).exists() )
-      {
-      QDir().mkdir( Full_path );
-      }
 
-    Full_path.append( Full_name.section('.', -2, 0) );
-    Full_path.append(QString(tr("_XMLQCResult.xml") ) );
-    Result_xmlFile = Full_path;
+		QString Full_path = DwiFilePath;
+		QString Full_name = DwiFilePath.section('/', -1);
+		
+		Full_path.remove(Full_name);
+		Full_path.append( "/" );
+		Full_path.append( QString( protocol.GetQCOutputDirectory().c_str() ) );
+		
+		if( !QDir( Full_path ).exists() )
+		{
+		QDir().mkdir( Full_path );
+		}
+		Full_path.append( "/" );
+		Full_path.append( Full_name.section('.', -2, 0) );
+		Full_path.append(QString(tr("_XMLQCResult.xml") ) );
+		Result_xmlFile = Full_path;
+
+	}
+
+	else
+	{
+		QString Full_name = DwiFilePath.section('/', -1);
+		QString Full_path;
+		Full_path.append( QString( protocol.GetQCOutputDirectory().c_str() ) );
+		if( !QDir( Full_path ).exists() )
+		{
+		QDir().mkdir( Full_path );
+		}
+		Full_path.append( "/" );
+		Full_path.append( Full_name.section('.', -2, 0) );
+		Full_path.append(QString(tr("_XMLQCResult.xml") ) );
+		Result_xmlFile = Full_path;
+		
+	}
     }
 
   else
@@ -4595,50 +4637,100 @@ void IntensityMotionCheckPanel::SaveVisualCheckingResult()
   pushButton_SaveVisualChecking->setEnabled( 1 );
   // Saving QC Result in associated xml file
   ResultUpdate();
-  QCedResultUpdate();
-  // if (bLoadDefaultQC)
-  // {
+  QCedResultUpdate();  
+  //if (bLoadDefaultQC)
+  //{
   //   SavingTreeWidgetResult_XmlFile_Default();
-  // }
-  // else
-  // {
-  //     SavingTreeWidgetResult_XmlFile();
-  // }
-
+  //}
+  //else 
+  //{
+  //     SavingTreeWidgetResult_XmlFile();  
+  //}
+  
   // Saving Output
-  QString VisualChecking_DwiFileName = DwiFilePath.section('.', -2, 0);
-  VisualChecking_DwiFileName.remove( "_QCed");
-  VisualChecking_DwiFileName.append(QString(tr("_VC.nrrd") ) );
+
+
+  QString VisualChecking_DwiFileName;
+  if ( protocol.GetQCOutputDirectory().length() > 0 )
+  {
+
+	QString str_QCOutputDirectory = QString (protocol.GetQCOutputDirectory().c_str() );
+	bool found_SeparateChar = str_QCOutputDirectory.contains("/");
+	if ( !found_SeparateChar ) // "/" does not exist in the protocol->GetQCOutputDirectory() and interpreted as the relative path and creates the folder
+	{
+		QString Full_path = DwiFilePath;
+		QString Full_name = DwiFilePath.section('/',-1);
+		
+		Full_path.remove(Full_name);
+		Full_path.append( "/" );
+		Full_path.append( QString ( protocol.GetQCOutputDirectory().c_str() ) );
+		
+		if ( !QDir( Full_path ).exists() )
+			QDir().mkdir( Full_path );
+		
+		Full_path.append( "/" );
+		Full_path.append ( Full_name.section('.',-2,0) );
+		Full_path.remove("_QCed");
+		Full_path.append(QString(tr("_VC.nrrd")));
+		VisualChecking_DwiFileName = Full_path;
+	}
+	else
+	{
+		QString Full_name = DwiFilePath.section('/', -1);
+		QString Full_path;
+		Full_path.append( QString( protocol.GetQCOutputDirectory().c_str() ) );
+		if( !QDir( Full_path ).exists() )
+		{
+		QDir().mkdir( Full_path );
+		}
+		Full_path.append( "/" );
+		Full_path.append( Full_name );
+		Full_path.remove("_QCed");
+		Full_path.append(QString(tr("_VC.nrrd") ) );
+		VisualChecking_DwiFileName = Full_path;
+		
+	}
+  }
+
+  else
+  {
+	VisualChecking_DwiFileName = DwiFilePath.section('.',-2,0);
+  	VisualChecking_DwiFileName.remove("_QCed");
+  	VisualChecking_DwiFileName.append(QString(tr("_VC.nrrd")));
+  }
+
+
+
 
   QString DWIFile = QFileDialog::getSaveFileName( this, tr(
-                                                    "Save Visual Checking DWI File As"), VisualChecking_DwiFileName,
-                                                  tr("nrrd Files (*.nrrd)") );
+    "Save Visual Checking DWI File As"), VisualChecking_DwiFileName,
+    tr("nrrd Files (*.nrrd)") );
 
-  if( DWIFile.length() > 0 )
-    {
-    std::cout << "Save Visual Checking DWI into file: " << DWIFile.toStdString() << std::endl;
-    }
+  if ( DWIFile.length() > 0 )
+  {
+     std::cout << "Save Visual Checking DWI into file: " << DWIFile.toStdString() << std::endl;
+  }
   else
-    {
+  {
     std::cout << "Visual Checking DWI file name NOT set" << std::endl;
-    }
-
+  }
+  
   GenerateOutput_VisualCheckingResult2( DWIFile.toStdString() );
 
-  // VC_Status.clear();
+  //VC_Status.clear();
   emit UpdateOutputDWIDiffusionVectorActors();
 
 }
 
 bool IntensityMotionCheckPanel::Search_index( int index, std::vector<int> list_index )
 {
-  for( unsigned int i = 0; i < list_index.size(); i++ )
-    {
-    if( index == list_index[i] )
-      {
-      return true;
-      }
-    }
+  for ( unsigned int i =0; i< list_index.size() ; i++ )
+  {
+	if ( index == list_index[i] )
+	{
+		return true;
+	}
+  }
   return false;
 }
 
@@ -4656,7 +4748,7 @@ void IntensityMotionCheckPanel::GenerateOutput_VisualCheckingResult2( std::strin
 
     }
 
-  std::cout << "num_gradeints_left: " << num_gradeints_left << std::endl;
+  std::cout << "num_gradients_left: " << num_gradeints_left << std::endl;
 
   // Check wether the number of excluded gradeints does not exceed the threshold mentioned in protocol
   if( bProtocol )

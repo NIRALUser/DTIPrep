@@ -295,7 +295,15 @@ public:
     m_outputDWIFileName = outputDWIFileName;
   }
 
+  std::string & GetReportFileName()
+  {
+
+	return ReportFileName;
+  }
+
   std::string m_outputDWIFileName;  // the name of QCed DWI file
+  std::string  ReportFileName;
+
 private:
   void collectDiffusionStatistics();
 

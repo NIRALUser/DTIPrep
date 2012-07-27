@@ -115,12 +115,19 @@ int main( int argc, char * *argv )
                                true);
 
     // result folder
-    command.SetOption(      "outputFolder", "f", false, "output folder name");
+    command.SetOption(      "outputFolder", "f", false, "output folder name, can be either absolute path or relative path ( starting character should not be '/').");
     command.SetOptionLongTag(  "outputFolder", "outputFolder");
     command.AddOptionField(    "outputFolder",
                                "OutputFolder",
                                MetaCommand::STRING,
                                true);
+    // result folder
+    //command.SetOption(      "OutputFolder", "P", false, "output folder path.");
+    //command.SetOptionLongTag(  "OutputFolder", "OutputFolder");
+    //command.AddOptionField(    "OutputFolder",
+                               //"OUTPUTFolder",
+                               //MetaCommand::STRING,
+                               //true);
 
     if( !command.Parse(argc, argv) )
       {
@@ -147,6 +154,7 @@ int main( int argc, char * *argv )
       protocol.clear();
 
       protocol.GetQCOutputDirectory() = resultFolder;
+      std::cout << "GetQCOutputDirectory" << protocol.GetQCOutputDirectory() << std::endl;
 
       // if ( resultXMLFile.length() <= 0 )
       // {
@@ -160,19 +168,42 @@ int main( int argc, char * *argv )
       if( protocol.GetQCOutputDirectory().length() > 0 )
         {
 
-        size_t found;
-        found = DWIFileName.find_last_of("/\\");
-        std::string str;
-        str = DWIFileName.substr( 0, found ); // str : path of QCed outputs
-        str.append( "/" );
-        str.append( protocol.GetQCOutputDirectory() );
-        if( !itksys::SystemTools::FileIsDirectory( str.c_str() ) )
-          {
-          itksys::SystemTools::MakeDirectory( str.c_str() );
-          }
-        resultXMLFile = str;
-        resultXMLFile.append( Dwi_file_name );
-        resultXMLFile.append( "_XMLQCResult.xml" );
+		std::string str_QCOutputDirectory = protocol.GetQCOutputDirectory();
+    		size_t found_SeparateChar = str_QCOutputDirectory.find_first_of("/");
+    		if ( int (found_SeparateChar) == -1 ) // "/" does not exist in the protocol->GetQCOutputDirectory() and interpreted as the relative path and creates the folder
+    		{
+
+			size_t found;
+			found = DWIFileName.find_last_of("/\\");
+			std::string str;
+			str = DWIFileName.substr( 0, found ); // str : path of QCed outputs
+			str.append( "/" );
+			str.append( protocol.GetQCOutputDirectory() );
+			if( !itksys::SystemTools::FileIsDirectory( str.c_str() ) )
+			{
+			itksys::SystemTools::MakeDirectory( str.c_str() );
+			}
+			str.append( "/" );
+			resultXMLFile = str;
+			resultXMLFile.append( Dwi_file_name );
+			resultXMLFile.append( "_XMLQCResult.xml" );
+		}
+
+		else	// "/" exists in the the protocol->GetQCOutputDirectory() and interpreted as the absolute path
+		{
+			std::string str;
+			str.append(protocol.GetQCOutputDirectory());
+			if( !itksys::SystemTools::FileIsDirectory( str.c_str() ) )
+			{
+			itksys::SystemTools::MakeDirectory( str.c_str() );
+			}
+			str.append( "/" );
+			resultXMLFile = str;
+			resultXMLFile.append( Dwi_file_name );
+			resultXMLFile.append( "_XMLQCResult.xml" );
+			std::cout << "Mehdi " << resultXMLFile << std::endl;
+			
+		}
 
         }
       else

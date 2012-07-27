@@ -190,6 +190,12 @@ private slots:
   //
   void LoadQCedDWI( QString Qqcdwiname);
 
+  //
+
+  void doubleSpinBox_SphereRadiusValueChanged( double radius );
+
+  void doubleSpinBox_SphereOpacityValueChanged( double opacity);
+
 private:
   bool bDwiLoaded; // =false;
 
@@ -295,6 +301,8 @@ public:
 
   // for 3D view
   vtkRenderer *pvtkRenderer_3DView;
+  vtkSphereSource *SphereSource;
+  double min_length_vec;
 public:
   bool CreateImagePlaneWidgets( vtkImageData *GradientImage );
 
