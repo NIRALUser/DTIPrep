@@ -3977,7 +3977,7 @@ unsigned char CIntensityMotionCheck::RunPipelineByProtocol()
   // Denoising ( Joint LMMSE ) Filter
   std::cout << "=====================" << std::endl;
   std::cout << "Denoising Joint LMMSE... " << std::endl;
-  JointDenoising( m_DwiForcedConformanceImage );
+  std::cout << "HACK:  SKIPPING JointDenoising( m_DwiForcedConformanceImage );"  << __FILE__ << " " << __LINE__ << std::endl;
   std::cout << "Denoising Joint LMMSE DONE " << std::endl;
 
   // Save QC'ed DWI
