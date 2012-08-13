@@ -1329,6 +1329,9 @@ void IntensityMotionCheckPanel::DefaultProtocol()
 
   // Denoising JointLMMSE
   this->GetProtocol().initDenoisingJointLMMSE();
+  
+  // Dominant directional artifact detector ( entropy tool )
+  this->GetProtocol().initDominantDirectional_Detector();
 
   // ***** DTI
   this->GetProtocol().GetDTIProtocol().bCompute = true;
@@ -2743,6 +2746,25 @@ void IntensityMotionCheckPanel::UpdateProtocolToTreeWidget()
                                                                               10 ).arg( this->GetProtocol().
                                                                                         GetDenoisingJointLMMSE().
                                                                                         Filter_Radius[2], 0, 10 ) );
+  
+  // Dominant directional artifact checking
+  QTreeWidgetItem * item_dominantDirectional = new QTreeWidgetItem(treeWidget);
+  item_dominantDirectional->setText( 0, tr("DominantDirectionalArtifact_bCheck") );
+  if( this->GetProtocol().GetDominantDirectional_Detector().bCheck )
+  {
+	  item_dominantDirectional->setText( 1, tr("Yes") );
+  }
+  else
+  {
+	  item_dominantDirectional->setText( 1, tr("No") );
+  }
+  
+  QTreeWidgetItem * item_dominantDirectional_mean = new QTreeWidgetItem(item_dominantDirectional);
+  item_dominantDirectional->setText( 0, tr("AverageEntropysOfArtifactFrees") );
+  item_dominantDirectional->setText( 1, QString("%1").arg( this->GetProtocol().GetDominantDirectional_Detector().
+		                                Mean, 0, 'f', 6 ));
+  
+
 
   // DTI Computing
   QTreeWidgetItem *itemDTIComputing = new QTreeWidgetItem(treeWidget);

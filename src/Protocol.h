@@ -72,6 +72,15 @@ struct DenoisingJointLMMSE
   vnl_vector_fixed<int, 3> Filter_Radius;
   };
 
+struct DominantDirectional_Detector
+{
+	bool bCheck;
+	double Mean;
+	double Std_Deviation;
+	double Threshold_acceptance;
+	double Threshold_suspicious;
+};
+
 struct SliceCheckProtocol
   {
   bool bCheck;
@@ -248,6 +257,8 @@ public:
   void initEddyMotionCorrectionProtocol();
 
   void initDenoisingJointLMMSE();
+  
+  void initDominantDirectional_Detector();
 
   void initDTIProtocol();
 
@@ -314,6 +325,11 @@ public:
   struct DenoisingJointLMMSE & GetDenoisingJointLMMSE()
   {
     return denoisingJointLMMSE;
+  }
+  
+  struct DominantDirectional_Detector & GetDominantDirectional_Detector()
+  {
+	  return dominantDirectional_Detector;
   }
 
   struct DiffusionProtocol & GetDiffusionProtocol()
@@ -464,5 +480,6 @@ private:
   EddyMotionCorrectionProtocol eddyMotionCorrectionProtocol;
   GradientCheckProtocol        gradientCheckProtocol;
   DenoisingJointLMMSE          denoisingJointLMMSE;
+  DominantDirectional_Detector			   dominantDirectional_Detector;
   DTIProtocol                  dTIProtocol;
 };
