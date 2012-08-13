@@ -15,7 +15,6 @@
 #include <string.h> /* strcmp */
 #include <iostream>
 
-#include "metaCommand.h"
 #include "IntensityMotionCheck.h"
 
 #include <itksys/SystemTools.hxx>
@@ -23,6 +22,8 @@
 #include "Protocol.h"
 #include "XmlStreamReader.h"
 #include "XmlStreamWriter.h"
+#include "DTIPrepCLP.h"
+
 
 // Defining Checking bits
 #define ImageCheckBit 1
@@ -40,6 +41,7 @@ int r_GradWiseCheck;      // the overall GradientWiseChecking result
 
 int main( int argc, char * *argv )
 {
+  PARSE_ARGS ;
 // BUG: When loading the DTIPrep GUI, the following error would appear: "Qt internal error: qt_menu.nib could not be
 // loaded. The .nib file should be placed in QtGui.framework/Versions/Current/Resources/ or in the resources directory
 // of your applicaiton bundle." Qt is aware of this problem (http://bugreports.qt.nokia.com/browse/QTBUG-5952) and has
@@ -69,83 +71,11 @@ int main( int argc, char * *argv )
   else
     {
 
-    MetaCommand command;
-
-    command.SetCategory("Diffusion");
-    command.SetName("DTIPrep");
-    // DWI filename
-    command.SetOption(
-      "DWIFileName",
-      "w",
-      true,
-      "DWI file name to convert dicom image series into or to be checked (nhdr)");
-    command.SetOptionLongTag(  "DWIFileName", "DWINrrdFile");
-    command.AddOptionField(    "DWIFileName",
-                               "DWIFileName",
-                               MetaCommand::STRING,
-                               true);
-    // protocol file name
-    command.SetOption(      "xmlSetting", "p", true,
-                            "protocol xml file containing all the parameters");
-    command.SetOptionLongTag(  "xmlSetting", "xmlProtocol");
-    command.AddOptionField(    "xmlSetting",
-                               "xmlFileName",
-                               MetaCommand::STRING,
-                               true);
-    // result QC XML
-    // command.SetOption(      "resultXML", "q", false, "QCresult XML file");
-    // command.SetOptionLongTag(  "resultXML", "resultXMLFile");
-    // command.AddOptionField(    "resultXML",
-    // "xmlQCFile",
-    // MetaCommand::STRING,
-    // true);
-    // to create a default protocol
-    command.SetOption(      "createDefaultProtocol", "d", false, "create default protocol xml file");
-    command.SetOptionLongTag(  "createDefaultProtocol", "default");
-    // to check by the protocol
-    command.SetOption(      "checkByProtocol", "c", false, "check by protocol xml file. Default operatoin.");
-    command.SetOptionLongTag(  "checkByProtocol", "check");
-
-    // result notes
-    command.SetOption(      "resultNotes", "n", false, "result notes");
-    command.SetOptionLongTag(  "resultNotes", "resultNotesFile");
-    command.AddOptionField(    "resultNotes",
-                               "NotesFile",
-                               MetaCommand::STRING,
-                               true);
-
-    // result folder
-    command.SetOption(      "outputFolder", "f", false, "output folder name, can be either absolute path or relative path ( starting character should not be '/').");
-    command.SetOptionLongTag(  "outputFolder", "outputFolder");
-    command.AddOptionField(    "outputFolder",
-                               "OutputFolder",
-                               MetaCommand::STRING,
-                               true);
-    // result folder
-    //command.SetOption(      "OutputFolder", "P", false, "output folder path.");
-    //command.SetOptionLongTag(  "OutputFolder", "OutputFolder");
-    //command.AddOptionField(    "OutputFolder",
-                               //"OUTPUTFolder",
-                               //MetaCommand::STRING,
-                               //true);
-
-    if( !command.Parse(argc, argv) )
-      {
-      return EXIT_FAILURE;
-      }
-
-    string DWIFileName  = command.GetValueAsString("DWIFileName", "DWIFileName");
-    string xmlFileName  = command.GetValueAsString("xmlSetting", "xmlFileName");
-    string resultNotes  = command.GetValueAsString("resultNotes", "NotesFile");
-    string resultFolder = command.GetValueAsString("outputFolder", "OutputFolder");
-    // string resultXMLFile = command.GetValueAsString("resultXML","xmlQCFile");
     string resultXMLFile;
-
-    bool bCreateDefaultProtocol = command.GetOptionWasSet("createDefaultProtocol");
-    bool bcheckByProtocol       = command.GetOptionWasSet("checkByProtocol");
-
+    
+    
     // check with  xml
-    if( command.GetOptionWasSet("xmlSetting") && xmlFileName.length() > 0 )
+    if( !xmlFileName.empty() )
       {
 
       Protocol protocol;
@@ -244,9 +174,14 @@ int main( int argc, char * *argv )
       if( bCreateDefaultProtocol || !xmlFile.exists() )
         {
         IntensityMotionCheck.MakeDefaultProtocol( &protocol );
+        protocol.GetQCOutputDirectory() = resultFolder;
         protocol.Save( xmlFileName.c_str() );
         }
 
+      
+      std::cout << " Mehdi bCreateDefaultProtocol " << bCreateDefaultProtocol << std::endl;
+      std::cout << "Mehdi bcheckByProtocol " << bcheckByProtocol << std::endl;
+      
       if( bcheckByProtocol || ( !bCreateDefaultProtocol && !bcheckByProtocol ) )
         {
         if( !bCreateDefaultProtocol && !bcheckByProtocol )
@@ -1297,6 +1232,8 @@ int main( int argc, char * *argv )
         return result;
         }
       }
+    else
+    	std::cout << "No protocol is loaded." << std::endl;
     return 0;
     }
 }

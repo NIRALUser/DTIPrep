@@ -1299,6 +1299,8 @@ void IntensityMotionCheckPanel::DefaultProtocol()
     = "";
   this->GetProtocol().GetBaselineAverageProtocol().reportFileNameSuffix
     = "_QCReport.txt";
+  
+  this->GetProtocol().GetBaselineAverageProtocol().reportFileMode = 1;
 
   // ***** Eddy motion correction
   this->GetProtocol().GetEddyMotionCorrectionProtocol().bCorrect = true;

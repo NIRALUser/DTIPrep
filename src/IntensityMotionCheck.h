@@ -85,6 +85,12 @@ public:
 
   bool GetGradientDirections(DwiImageType::Pointer dwi, double & bValue,
                              GradientDirectionContainerType::Pointer GradDireContainer);
+  bool GetInterlaceProtocolParameters_B(
+    double & correlationThresholdBaseline,
+    double & correlationThresholdGradient,
+    double & correlationBaselineDevTimes,
+    double & correlationGradientDevTimes
+    );
 
   unsigned char ImageCheck( DwiImageType::Pointer dwi );
 

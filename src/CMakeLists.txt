@@ -1,6 +1,11 @@
 #ADD_SUBDIRECTORY(src)
 #ADD_SUBDIRECTORY(gui)
 
+find_package(GenerateCLP REQUIRED)
+if(GenerateCLP_FOUND)
+  include(${GenerateCLP_USE_FILE})
+endif(GenerateCLP_FOUND)
+
 include_directories(${CMAKE_BINARY_DIR}/src)
 link_directories(${CMAKE_LIBRARY_OUTPUT_DIRECTORY})
 
@@ -43,6 +48,8 @@ SET( DTIPrep_SRCS
  GradientDescentLineSearchOptimizer.cxx
 )
 
+generateclp(DTIPrep_SRCS DTIPrep.xml )
+
 SET( DTIPrep_HRDS
   GMainWindow.h
   Dicom2NrrdPanel.h
@@ -84,6 +91,7 @@ ADD_EXECUTABLE( DTIPrep
 )
 
 TARGET_LINK_LIBRARIES( DTIPrep
+  ModuleDescriptionParser
   QVTK
   ${QT_LIBRARIES}
   ${QT_QTDBUS_LIBRARY}

@@ -4525,40 +4525,42 @@ bool CIntensityMotionCheck::dtiestim()
     if( protocol->GetQCOutputDirectory().length() > 0 )
       {
 
-	std::string str_QCOutputDirectory = protocol->GetQCOutputDirectory();
-	size_t found_SeparateChar = str_QCOutputDirectory.find_first_of("/");
-	if ( int (found_SeparateChar) == -1 ) // "/" does not exist in the protocol->GetQCOutputDirectory() and interpreted as the relative path and creates the folder
-	{
+    		std::string str_QCOutputDirectory = protocol->GetQCOutputDirectory();
+    		size_t found_SeparateChar = str_QCOutputDirectory.find_first_of("/");
+    		if ( int (found_SeparateChar) == -1 ) // "/" does not exist in the protocol->GetQCOutputDirectory() and interpreted as the relative path and creates the folder
+    		{
+    			
+    			std::string str3;
+				size_t found;
+				found = m_DwiFileName.find_last_of("/\\");
+				str3 = m_DwiFileName.substr( 0, found ); // str : path of QCed outputs
+				str3.append( "/" );
+				str3.append( protocol->GetQCOutputDirectory() );
+				if( !itksys::SystemTools::FileIsDirectory( str3.c_str() ) )
+				{
+					itksys::SystemTools::MakeDirectory( str3.c_str() );
+				}
+				str3.append( "/" );
+				outputDWIFileName = str3;
+				outputDWIFileName.append( Dwi_file_name );
+				outputDWIFileName.append( protocol->GetQCedDWIFileNameSuffix() );
 
-		size_t found;
-		found = m_DwiFileName.find_last_of("/\\");
-		str = m_DwiFileName.substr( 0, found ); // str : path of QCed outputs
-		str.append( "/" );
-		str.append( protocol->GetQCOutputDirectory() );
-		if( !itksys::SystemTools::FileIsDirectory( str.c_str() ) )
-			{
-			itksys::SystemTools::MakeDirectory( str.c_str() );
-			}
-		str.append( "/" );
-		outputDWIFileName = str;
-		outputDWIFileName.append( Dwi_file_name );
-		outputDWIFileName.append( protocol->GetQCedDWIFileNameSuffix() );
+    		}
 
-	}
-
-	else	// "/" exists in the the protocol->GetQCOutputDirectory() and interpreted as the absolute path
-	{
-		str.append( protocol->GetQCOutputDirectory() );
-		str.append( "/" );
-		if( !itksys::SystemTools::FileIsDirectory( str.c_str() ) )
-			{
-			itksys::SystemTools::MakeDirectory( str.c_str() );
-			}
-		outputDWIFileName = str;
-		outputDWIFileName.append( Dwi_file_name );
-		outputDWIFileName.append( protocol->GetQCedDWIFileNameSuffix() );
-		
-	}
+    		else	// "/" exists in the the protocol->GetQCOutputDirectory() and interpreted as the absolute path
+    		{
+    			std::string str2;
+				str2.append( protocol->GetQCOutputDirectory() );
+				str2.append( "/" );
+				if( !itksys::SystemTools::FileIsDirectory( str2.c_str() ) )
+					{
+					itksys::SystemTools::MakeDirectory( str2.c_str() );
+					}
+				outputDWIFileName = str2;
+				outputDWIFileName.append( Dwi_file_name );
+				outputDWIFileName.append( protocol->GetQCedDWIFileNameSuffix() );
+				
+    		}
 
       }
     else
@@ -4573,7 +4575,10 @@ bool CIntensityMotionCheck::dtiestim()
     outputDWIFileName = m_DwiFileName.substr( 0, m_DwiFileName.find_last_of('.') );
     outputDWIFileName.append( protocol->GetQCedDWIFileNameSuffix() );
     }
+  
+  
   str.append(outputDWIFileName);
+  
   str.append(" ");
 
   std::string OutputTensor;
@@ -4583,6 +4588,7 @@ bool CIntensityMotionCheck::dtiestim()
   str.append("--tensor_output");
   str.append(" ");
   str.append(OutputTensor);
+  
 
   if( protocol->GetDTIProtocol().method == Protocol::METHOD_WLS )
     {
@@ -5562,12 +5568,12 @@ bool CIntensityMotionCheck::MakeDefaultProtocol( Protocol *_protocol )
     }
 
   _protocol->GetImageProtocol(). bCrop = true;
-  _protocol->GetImageProtocol(). croppedDWIFileNameSuffix = "";
+  _protocol->GetImageProtocol(). croppedDWIFileNameSuffix = "_CroppedDWI.nrrd";
 
   _protocol->GetImageProtocol(). reportFileNameSuffix = "_QCReport.txt";
   _protocol->GetImageProtocol(). reportFileMode = 1; // append
 
-  _protocol->GetImageProtocol(). bQuitOnCheckSpacingFailure = true;
+  _protocol->GetImageProtocol(). bQuitOnCheckSpacingFailure = false;
   _protocol->GetImageProtocol(). bQuitOnCheckSizeFailure = false;
 
   // ***** diffusion
@@ -5625,14 +5631,19 @@ bool CIntensityMotionCheck::MakeDefaultProtocol( Protocol *_protocol )
   _protocol->GetDiffusionProtocol(). measurementFrame[2][1] = mf(2, 1);
   _protocol->GetDiffusionProtocol(). measurementFrame[2][2] = mf(2, 2);
 
-  _protocol->GetDiffusionProtocol(). bUseDiffusionProtocol = true;
-  _protocol->GetDiffusionProtocol(). diffusionReplacedDWIFileNameSuffix = "";
+  _protocol->GetDiffusionProtocol(). bUseDiffusionProtocol = false;
+  _protocol->GetDiffusionProtocol(). diffusionReplacedDWIFileNameSuffix = "_DiffusionReplaced.nrrd";
 
   _protocol->GetDiffusionProtocol(). reportFileNameSuffix = "_QCReport.txt";
   _protocol->GetDiffusionProtocol(). reportFileMode = 1;
-  _protocol->GetDiffusionProtocol(). bQuitOnCheckFailure = true;
+  _protocol->GetDiffusionProtocol(). bQuitOnCheckFailure = false;
+  
+  // ***** Denoising
+
+  _protocol->initDenoisingLMMSE();
 
   // ***** slice check
+   std::cout << "Estimating protocol parameter  ..." << std::endl;
   _protocol->GetSliceCheckProtocol(). bCheck = true;
   _protocol->GetSliceCheckProtocol(). bSubregionalCheck = false;
   _protocol->GetSliceCheckProtocol(). subregionalCheckRelaxationFactor = 1.1;
@@ -5648,10 +5659,10 @@ bool CIntensityMotionCheck::MakeDefaultProtocol( Protocol *_protocol )
     = "_QCReport.txt";
   _protocol->GetSliceCheckProtocol(). reportFileMode = 1;
   _protocol->GetSliceCheckProtocol(). excludedDWINrrdFileNameSuffix = "";
-  _protocol->GetSliceCheckProtocol(). bQuitOnCheckFailure = true;
+  _protocol->GetSliceCheckProtocol(). bQuitOnCheckFailure = false;
 
   // ***** interlace check
-  _protocol->GetInterlaceCheckProtocol(). bCheck = true;
+  /*_protocol->GetInterlaceCheckProtocol(). bCheck = true;
   _protocol->GetInterlaceCheckProtocol(). correlationThresholdBaseline
     = .85;
   _protocol->GetInterlaceCheckProtocol(). correlationDeviationBaseline
@@ -5671,6 +5682,53 @@ bool CIntensityMotionCheck::MakeDefaultProtocol( Protocol *_protocol )
   _protocol->GetInterlaceCheckProtocol(). reportFileMode = 1;
   _protocol->GetInterlaceCheckProtocol(). excludedDWINrrdFileNameSuffix = "";
   _protocol->GetInterlaceCheckProtocol(). bQuitOnCheckFailure = true;
+  */
+  
+  double interlaceBaselineThreshold, interlaceGradientThreshold,
+      interlaceBaselineDev, interlaceGradientDev;
+  GetInterlaceProtocolParameters_B(
+      interlaceBaselineThreshold,
+      interlaceGradientThreshold,
+      interlaceBaselineDev,
+      interlaceGradientDev
+      );
+    //  std::cout << "interlaceBaselineThreshold:
+    // "<<interlaceBaselineThreshold<<std::endl;
+    //  std::cout << "interlaceGradientThreshold:
+    // "<<interlaceGradientThreshold<<std::endl;
+    //  std::cout << "interlaceBaselineDev: "<<interlaceBaselineDev<<std::endl;
+    //  std::cout << "interlaceGradientDev: "<<interlaceGradientDev<<std::endl;
+
+    _protocol->GetInterlaceCheckProtocol().bCheck = true;
+    //
+    //
+    //
+    //
+    // this->GetProtocol().GetInterlaceCheckProtocol().badGradientPercentageTolerance
+    // = 0.2;
+    _protocol->GetInterlaceCheckProtocol().correlationThresholdBaseline
+      = interlaceBaselineThreshold * 0.95;
+    _protocol->GetInterlaceCheckProtocol().correlationDeviationBaseline
+      = 2.50;
+    _protocol->GetInterlaceCheckProtocol().correlationThresholdGradient
+      = interlaceGradientThreshold * 0.95;
+    _protocol->GetInterlaceCheckProtocol().correlationDeviationGradient
+      = 3.00;
+    _protocol->GetInterlaceCheckProtocol().rotationThreshold = 0.5; //
+    //
+    // degree
+    _protocol->GetInterlaceCheckProtocol().translationThreshold
+      = ( _protocol->GetImageProtocol().spacing[0]
+          +
+          _protocol->GetImageProtocol().spacing[1]
+          +
+          _protocol->GetImageProtocol().spacing[2]   ) * 0.3333333333333;
+    _protocol->GetInterlaceCheckProtocol().outputDWIFileNameSuffix = "";
+    _protocol->GetInterlaceCheckProtocol().reportFileNameSuffix
+      = "_QCReport.txt";
+    _protocol->GetInterlaceCheckProtocol().reportFileMode = 1;
+    _protocol->GetInterlaceCheckProtocol().excludedDWINrrdFileNameSuffix = "";
+    _protocol->GetInterlaceCheckProtocol().bQuitOnCheckFailure = false;
 
   // ***** gradient check
   _protocol->GetGradientCheckProtocol(). bCheck = true;
@@ -5684,7 +5742,7 @@ bool CIntensityMotionCheck::MakeDefaultProtocol( Protocol *_protocol )
     = "_QCReport.txt";
   _protocol->GetGradientCheckProtocol(). reportFileMode = 1;
   _protocol->GetGradientCheckProtocol(). excludedDWINrrdFileNameSuffix = "";
-  _protocol->GetGradientCheckProtocol(). bQuitOnCheckFailure = true;
+  _protocol->GetGradientCheckProtocol(). bQuitOnCheckFailure = false;
 
   // ***** baseline average
   _protocol->GetBaselineAverageProtocol(). bAverage = true;
@@ -5693,6 +5751,7 @@ bool CIntensityMotionCheck::MakeDefaultProtocol( Protocol *_protocol )
   _protocol->GetBaselineAverageProtocol(). outputDWIFileNameSuffix = "";
   _protocol->GetBaselineAverageProtocol(). reportFileNameSuffix
     = "_QCReport.txt";
+  _protocol->GetBaselineAverageProtocol().reportFileMode = 1;
 
   // ***** Eddy motion correction
   _protocol->GetEddyMotionCorrectionProtocol(). bCorrect = true;
@@ -5710,6 +5769,9 @@ bool CIntensityMotionCheck::MakeDefaultProtocol( Protocol *_protocol )
   _protocol->GetEddyMotionCorrectionProtocol(). reportFileNameSuffix
     = "_QCReport.txt";
   _protocol->GetEddyMotionCorrectionProtocol(). reportFileMode = 1;
+  
+  // Denoising JointLMMSE
+  _protocol->initDenoisingJointLMMSE();
 
   // ***** DTI
   _protocol->GetDTIProtocol(). bCompute = true;
@@ -5740,3 +5802,242 @@ bool CIntensityMotionCheck::MakeDefaultProtocol( Protocol *_protocol )
 
   return true;
 }
+
+bool CIntensityMotionCheck::GetInterlaceProtocolParameters_B(
+  double & correlationThresholdBaseline,
+  double & correlationThresholdGradient,
+  double & correlationBaselineDevTimes,
+  double & correlationGradientDevTimes
+  )
+{
+  if( !m_bDwiLoaded )
+    {
+    LoadDwiImage();
+    }
+  if( !m_bDwiLoaded )
+    {
+    std::cout << "DWI load error, no Gradient Images got" << std::endl;
+    return false;
+    }
+
+  GetGradientDirections();
+
+  std::vector<double> baselineCorrelation;
+  std::vector<double> gradientCorrelation;
+
+  typedef itk::VectorIndexSelectionCastImageFilter<DwiImageType,
+                                                   GradientImageType> FilterType;
+  FilterType::Pointer componentExtractor = FilterType::New();
+
+  componentExtractor->SetInput(m_DwiOriginalImage);
+
+  GradientImageType::Pointer InterlaceOdd  = GradientImageType::New();
+  GradientImageType::Pointer InterlaceEven = GradientImageType::New();
+
+  componentExtractor->SetIndex( 0 );
+  componentExtractor->Update();
+
+  GradientImageType::RegionType region;
+  GradientImageType::SizeType   sizeLocal;
+  sizeLocal[0]
+    = componentExtractor->GetOutput()->GetLargestPossibleRegion().GetSize()[0];
+  sizeLocal[1]
+    = componentExtractor->GetOutput()->GetLargestPossibleRegion().GetSize()[1];
+  sizeLocal[2]
+    = componentExtractor->GetOutput()->GetLargestPossibleRegion().GetSize()[2]
+      / 2;
+  region.SetSize( sizeLocal );
+
+  InterlaceOdd->CopyInformation( componentExtractor->GetOutput() );
+  InterlaceOdd->SetRegions( region );
+  InterlaceOdd->Allocate();
+
+  InterlaceEven->CopyInformation( componentExtractor->GetOutput() );
+  InterlaceEven->SetRegions( region );
+  InterlaceEven->Allocate();
+
+  typedef itk::ImageRegionIteratorWithIndex<GradientImageType> IteratorType;
+  IteratorType iterateOdd( InterlaceOdd, InterlaceOdd->GetLargestPossibleRegion() );
+  IteratorType iterateEven( InterlaceEven,
+                            InterlaceEven->GetLargestPossibleRegion() );
+  for( unsigned int j = 0; j < m_DwiOriginalImage->GetVectorLength(); j++ )
+    {
+    componentExtractor->SetIndex( j );
+    componentExtractor->Update();
+
+    typedef itk::ImageRegionIteratorWithIndex<GradientImageType> IteratorType;
+    IteratorType iterateGradient(
+      componentExtractor->GetOutput(),
+      componentExtractor->GetOutput()->GetLargestPossibleRegion() );
+
+    iterateGradient.GoToBegin();
+    iterateOdd.GoToBegin();
+    iterateEven.GoToBegin();
+
+    unsigned long count = 0;
+    while( !iterateGradient.IsAtEnd() )
+      {
+      if( count < sizeLocal[0] * sizeLocal[1] * sizeLocal[2] * 2 )
+        {
+        if( ( count / ( sizeLocal[0] * sizeLocal[1] ) ) % 2 == 0 )
+          {
+          iterateEven.Set( iterateGradient.Get() );
+          ++iterateEven;
+          }
+        if( ( count / ( sizeLocal[0] * sizeLocal[1] ) ) % 2 == 1 )
+          {
+          iterateOdd.Set( iterateGradient.Get() );
+          ++iterateOdd;
+          }
+        }
+      ++iterateGradient;
+      ++count;
+      }
+
+    typedef itk::ImageRegionConstIterator<GradientImageType> citType;
+    citType cit1( InterlaceOdd, InterlaceOdd->GetBufferedRegion() );
+    citType cit2( InterlaceEven, InterlaceEven->GetBufferedRegion() );
+
+    cit1.GoToBegin();
+    cit2.GoToBegin();
+
+    double Correlation;
+    double sAB = 0.0, sA2 = 0.0, sB2 = 0.0;
+    while( !cit1.IsAtEnd() )
+      {
+      sAB += cit1.Get() * cit2.Get();
+      sA2 += cit1.Get() * cit1.Get();
+      sB2 += cit2.Get() * cit2.Get();
+      ++cit1;
+      ++cit2;
+      }
+
+    Correlation = sAB / sqrt(sA2 * sB2);
+
+    if( m_GradientDirectionContainer->at(j)[0] == 0.0
+        && m_GradientDirectionContainer->at(j)[1] == 0.0
+        && m_GradientDirectionContainer->at(j)[2] == 0.0 )
+      {
+      baselineCorrelation.push_back(Correlation);
+      }
+    else
+      {
+      gradientCorrelation.push_back(Correlation);
+      }
+
+    //     std::cout<<"Correlation: " << Correlation<< std::endl;:837: error: expected `;' before ��this��
+
+    }
+
+  int DWICount, BaselineCount;
+
+  DWICount = 0;
+  BaselineCount = 0;
+  for( unsigned int i = 0; i < m_GradientDirectionContainer->size(); i++ )
+    {
+    if( m_GradientDirectionContainer->ElementAt(i)[0] == 0.0
+        && m_GradientDirectionContainer->ElementAt(i)[1] == 0.0
+        && m_GradientDirectionContainer->ElementAt(i)[2] == 0.0 )
+      {
+      BaselineCount++;
+      }
+    else
+      {
+      DWICount++;
+      }
+    }
+
+  std::cout << "BaselineCount: " << BaselineCount << std::endl;
+  std::cout << "DWICount: " << DWICount << std::endl;
+
+  double minBaselineCorrelation = 1.0;
+  double minGradientCorrelation = 1.0;
+
+  double meanBaselineCorrelation = 0.0;
+  double meanGradientCorrelation = 0.0;
+
+  double baselineCorrelationDev = 0.0;
+  double gradientCorrelationDev = 0.0;
+  for( unsigned int i = 0; i < baselineCorrelation.size(); i++ )
+    {
+    if( baselineCorrelation[i] < minBaselineCorrelation )
+      {
+      minBaselineCorrelation = baselineCorrelation[i];
+      }
+    meanBaselineCorrelation += baselineCorrelation[i]
+      / baselineCorrelation.size();
+    }
+  for( unsigned int i = 0; i < baselineCorrelation.size(); i++ )
+    {
+    baselineCorrelationDev
+      += ( baselineCorrelation[i]
+           - meanBaselineCorrelation )
+        * ( baselineCorrelation[i]
+            - meanBaselineCorrelation ) / baselineCorrelation.size();                                                                                           //
+    //
+    // meanBaselineCorrelation
+    //
+    // +=
+    //
+    // baselineCorrelation[i]/baselineCorrelation.size();
+    }
+  baselineCorrelationDev = sqrt(baselineCorrelationDev);
+  for( unsigned int i = 0; i < gradientCorrelation.size(); i++ )
+    {
+    if( gradientCorrelation[i] < minGradientCorrelation )
+      {
+      minGradientCorrelation = gradientCorrelation[i];
+      }
+    meanGradientCorrelation += gradientCorrelation[i]
+      / gradientCorrelation.size();
+    }
+  for( unsigned int i = 0; i < gradientCorrelation.size(); i++ )
+    {
+    gradientCorrelationDev
+      += ( gradientCorrelation[i]
+           - meanGradientCorrelation )
+        * ( gradientCorrelation[i]
+            - meanGradientCorrelation ) / gradientCorrelation.size();                                                                                           //
+    //
+    // meanBaselineCorrelation
+    //
+    // +=
+    //
+    // baselineCorrelation[i]/baselineCorrelation.size();
+    }
+  gradientCorrelationDev = sqrt(gradientCorrelationDev);
+
+  // return values
+  correlationThresholdBaseline = minBaselineCorrelation;
+  correlationThresholdGradient = minGradientCorrelation;
+
+  double maxBaselineCorrelationDevTimes;
+  double maxGradientCorrelationDevTimes;
+
+  maxBaselineCorrelationDevTimes
+    = ( meanBaselineCorrelation
+        - minBaselineCorrelation ) / baselineCorrelationDev;
+  maxGradientCorrelationDevTimes
+    = ( meanGradientCorrelation
+        - minGradientCorrelation ) / gradientCorrelationDev;
+  // return values
+
+  correlationBaselineDevTimes = maxBaselineCorrelationDevTimes;
+  correlationGradientDevTimes = maxGradientCorrelationDevTimes;
+
+  std::cout << "minBaselineCorrelation: " << minBaselineCorrelation
+            << std::endl;
+  std::cout << "minGradientCorrelation: " << minGradientCorrelation
+            << std::endl;
+  std::cout << "baselineCorrelationDev: " << baselineCorrelationDev
+            << std::endl;
+  std::cout << "gradientCorrelationDev: " << gradientCorrelationDev
+            << std::endl;
+  std::cout << "maxBaselineCorrelationDevTimes: "
+            << maxBaselineCorrelationDevTimes << std::endl;
+  std::cout << "maxGradientCorrelationDevTimes: "
+            << maxGradientCorrelationDevTimes << std::endl;
+
+  return true;
+}
+
