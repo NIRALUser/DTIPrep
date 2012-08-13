@@ -1331,7 +1331,7 @@ void IntensityMotionCheckPanel::DefaultProtocol()
   this->GetProtocol().initDenoisingJointLMMSE();
   
   // Dominant directional artifact detector ( entropy tool )
-  this->GetProtocol().initDominantDirectional_Detector();
+  //this->GetProtocol().initDominantDirectional_Detector();
 
   // ***** DTI
   this->GetProtocol().GetDTIProtocol().bCompute = true;
@@ -2748,7 +2748,7 @@ void IntensityMotionCheckPanel::UpdateProtocolToTreeWidget()
                                                                                         Filter_Radius[2], 0, 10 ) );
   
   // Dominant directional artifact checking
-  QTreeWidgetItem * item_dominantDirectional = new QTreeWidgetItem(treeWidget);
+  /*QTreeWidgetItem * item_dominantDirectional = new QTreeWidgetItem(treeWidget);
   item_dominantDirectional->setText( 0, tr("DominantDirectionalArtifact_bCheck") );
   if( this->GetProtocol().GetDominantDirectional_Detector().bCheck )
   {
@@ -2763,6 +2763,16 @@ void IntensityMotionCheckPanel::UpdateProtocolToTreeWidget()
   item_dominantDirectional->setText( 0, tr("AverageEntropysOfArtifactFrees") );
   item_dominantDirectional->setText( 1, QString("%1").arg( this->GetProtocol().GetDominantDirectional_Detector().
 		                                Mean, 0, 'f', 6 ));
+  QTreeWidgetItem * item_dominantDirectional_std = new QTreeWidgetItem(item_dominantDirectional);
+  item_dominantDirectional->setText( 0, tr("AverageEntropysOfArtifactFrees") );
+  item_dominantDirectional->setText( 1, QString("%1").arg( this->GetProtocol().GetDominantDirectional_Detector().
+  		                                Mean, 0, 'f', 6 ));
+  item_dominantDirectional->setText( 1, QString("%1").arg( this->GetProtocol().GetDominantDirectional_Detector().
+  		                                Mean, 0, 'f', 6 ));
+  item_dominantDirectional->setText( 1, QString("%1").arg( this->GetProtocol().GetDominantDirectional_Detector().
+  		                                Mean, 0, 'f', 6 ));
+  item_dominantDirectional->setText( 1, QString("%1").arg( this->GetProtocol().GetDominantDirectional_Detector().
+  		                                Mean, 0, 'f', 6 ));*/
   
 
 

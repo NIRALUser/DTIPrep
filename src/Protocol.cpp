@@ -128,7 +128,7 @@ void Protocol::initDenoisingJointLMMSE()
 
 }
 
-void Protocol::initDominantDirectional_Detector()
+/*void Protocol::initDominantDirectional_Detector()
 {
 	dominantDirectional_Detector.bCheck = false;
 	dominantDirectional_Detector.Mean = 6.5;	// average of entropy value of artifact-free scans over training step
@@ -137,7 +137,7 @@ void Protocol::initDominantDirectional_Detector()
 	dominantDirectional_Detector.Threshold_suspicious = 2.58;	// z-score threshold of suspicious and unacceptance
 	
 	
-}
+}*/
 
 void Protocol::initSliceCheckProtocol()
 {
