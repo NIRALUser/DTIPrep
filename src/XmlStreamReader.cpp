@@ -788,9 +788,9 @@ QDomNodeList XmlStreamReader::GetDWICheckParsing(const QDomNode & element)
 {
 
   // DWI Check
-  QTreeWidgetItem * _tree_item_DWICheck = new QTreeWidgetItem(treeWidget->invisibleRootItem() );
+  this->m_tree_item_DWICheck = new QTreeWidgetItem(treeWidget->invisibleRootItem() );
 
-  _tree_item_DWICheck->setText(0, element.toElement().attribute("parameter") );
+  this->m_tree_item_DWICheck->setText(0, element.toElement().attribute("parameter") );
 
   ITEM item;
   item.parameter = element.toElement().attribute("parameter");
@@ -799,7 +799,7 @@ QDomNodeList XmlStreamReader::GetDWICheckParsing(const QDomNode & element)
   QDomNodeList childList = element.childNodes();   // gets all direct childs of DWICheck element
   if( element.toElement().tagName() == "entry" )
     {
-    parseEntryElement_QCResult_DWICheck( childList, tree_item_DWICheck);
+    parseEntryElement_QCResult_DWICheck( childList, this->m_tree_item_DWICheck);
     }
   else
     {

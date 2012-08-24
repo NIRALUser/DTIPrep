@@ -318,7 +318,7 @@ private:
   void parseXMLParametersToQCResult();
 
   QTreeWidget *    treeWidget;
-  QTreeWidgetItem *tree_item_DWICheck;
+  QTreeWidgetItem * m_tree_item_DWICheck;
   Protocol *       protocol;
   QCResult *       QCRESULT;
   QXmlStreamReader reader;
