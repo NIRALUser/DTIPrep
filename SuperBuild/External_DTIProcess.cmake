@@ -17,7 +17,7 @@ ExternalProject_Add(DTIProcess
   -DBOOST_INCLUDE_DIR:PATH=${BOOST_INCLUDE_DIR}
   -DBOOST_INCLUDEDIR:PATH=${BOOST_INCLUDE_DIR}
   -DBUILD_dwiAtlas:BOOL=ON
-  UPDATE_COMMAND ""
+  "${cmakeversion_external_update}"
   INSTALL_COMMAND ""
   )
 

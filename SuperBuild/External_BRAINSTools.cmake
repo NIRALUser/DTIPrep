@@ -32,7 +32,7 @@ if(NOT DEFINED BRAINSTools_SOURCE_DIR)
 if(${ITK_VERSION_MAJOR} STREQUAL "3")
   set(GIT_TAG "03ce71cca9bbfb1f0da0040b139011211694b1c6")
 else()
-  set(GIT_TAG "ddbc8c8142205b98c9fc937b1b4f699f07c2b24f")
+  set(GIT_TAG "c1f2cd71c33c62d8931029f18aab01960a0b9dbc")
 endif()
 
   if(NOT DEFINED git_protocol)
@@ -48,6 +48,7 @@ endif()
     SOURCE_DIR ${proj}
     BINARY_DIR ${proj}-build
     CMAKE_GENERATOR ${gen}
+    "${cmakeversion_external_update}"
     CMAKE_ARGS
       ${CMAKE_OSX_EXTERNAL_PROJECT_ARGS}
       ${COMMON_EXTERNAL_PROJECT_ARGS}

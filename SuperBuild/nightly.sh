@@ -43,6 +43,8 @@ do
     case "$1" in
         coverage)
             coverage=1 ;;
+        valgrind)
+            doValgrind=1 ;;
         CC=*)
           echo Override C Compiler ; CCOverride=`echo $1 | sed -e 's/^CC=//'` ;;
         CXX=*)
@@ -61,8 +63,12 @@ else
     which gcc > /dev/null 2>&1
     if [ $? == 0 ] ; then
         Compiler=gcc-`gcc -dumpversion`-`gcc -dumpmachine`
+        export CC=`which gcc`
+        export CXX=`which g++`
     else
         Compiler=unknown
+        export CC=`which cc`
+        export CXX=`which cxx`
     fi
 fi
 
@@ -132,6 +138,11 @@ do
 	CFLAGS="${CFLAGS} -g -O0 -Wall -W -fprofile-arcs -ftest-coverage"
 	LDFLAGS="${LDFLAGS} -fprofile-arcs -ftest-coverage"
     fi
+    if [ "$BUILD_TYPE" = "Debug" -a "$doValgrind" = "1" ] ; then
+        VALGRINDFLAGS=-DMEMORYCHECK_COMMAND:FILEPATH=`which valgrind`
+    else
+        VALGRINDFLAGS=""
+    fi
     mkdir -p ${B3Build}
     cd ${B3Build}
     rm -f CMakeCache.txt
@@ -151,16 +162,25 @@ do
 	-DBUILDNAME:STRING="${OsName}-${Compiler}-${BUILD_TYPE}" \
         -DBUILD_SHARED_LIBS:BOOL=Off \
 	-DCMAKE_BUILD_TYPE:STRING=${BUILD_TYPE} \
+        ${VALGRINDFLAGS} \
         ${top}/BRAINSStandAlone
     echo "Building in `pwd`"
     scriptname=`basename $0`
     make -j ${NPROCS}
     cd BRAINSTools-build
     make clean
-    if [ $scriptname = "nightly.sh" ] ; then
-	ctest -j ${NPROCS} -D Nightly
+    if [ "$doValGrind" != "1" ] ; then
+        if [ $scriptname = "nightly.sh" ] ; then
+	    ctest -j ${NPROCS} -D Nightly
+        else
+	    ctest -j ${NPROCS} -D Experimental
+        fi
     else
-	ctest -j ${NPROCS} -D Experimental
+        if [ $scriptname = "nightly.sh" ] ; then
+	    ctest -j ${NPROCS} -D NightlyMemoryCheck
+        else
+	    ctest -j ${NPROCS} -D ExperimentalMemoryCheck
+        fi
     fi
     cd ..
 done

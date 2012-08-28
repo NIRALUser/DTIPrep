@@ -40,9 +40,10 @@ if(NOT DEFINED ITK_DIR AND NOT ${USE_SYSTEM_ITK})
   ExternalProject_Add(${proj}
     GIT_REPOSITORY ${ITKv3_REPOSITORY}
     GIT_TAG ${ITKv3_GIT_TAG}
-    UPDATE_COMMAND ""
+    "${cmakeversion_external_update}"
     SOURCE_DIR ${proj}
     BINARY_DIR ${proj}-build
+    "${cmakeversion_external_update}"
     CMAKE_GENERATOR ${gen}
     CMAKE_ARGS
       ${CMAKE_OSX_EXTERNAL_PROJECT_ARGS}

@@ -5,6 +5,7 @@ ExternalProject_Add(DTIReg
   BINARY_DIR DTIReg-build  
   SVN_USERNAME slicerbot
   SVN_PASSWORD slicer
+  "${cmakeversion_external_update}"
   INSTALL_COMMAND ""
   CMAKE_GENERATOR ${gen}
   CMAKE_ARGS
