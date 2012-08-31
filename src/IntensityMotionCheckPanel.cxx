@@ -451,15 +451,22 @@ void IntensityMotionCheckPanel::OpenXML_ResultFile()
   // std::cerr << "No QCed XML File Loaded." << std::endl;
   // return;
   // }
+
   treeWidget_Results->clear();
+  
+
   qcResult.Clear();
 
+
   XmlStreamReader XmlReader(treeWidget_Results);
+  
+
   XmlReader.setQCRESULT( &qcResult);
+  
+  
   // XmlReader.readFile_QCResult(xmlResultFile, XmlStreamReader::TreeWise);
   XmlReader.readFile_QCResult(xmlResultFile, XmlStreamReader::QCResultlWise);
 
-  std::cout << " ***** " << std::endl;
   // std::cout << " this->GetQCResult().GetIntensityMotionCheckResult().size()" <<
   // this->GetQCResult().GetIntensityMotionCheckResult().size() << std::endl;
 
@@ -478,16 +485,16 @@ void IntensityMotionCheckPanel::OpenXML_ResultFile()
   msgBox.exec();
 
   if( msgBox.clickedButton() == Cancel )
-    {
+  {
     emit UpdateOutputDWIDiffusionVectorActors();
     emit LoadQCResult(true);
 
     emit SignalActivateSphere(); // Activate "actionIncluded" bottom
     return;
-    }
+  }
 
   if( msgBox.clickedButton() == Passed_QCedResult )
-    {
+  {
     // ............................................................................................................................................
     // loading Original_ForcedConformance_Mapping
     // ............................................................................................................................................
@@ -547,12 +554,13 @@ void IntensityMotionCheckPanel::OpenXML_ResultFile()
     emit SignalActivateSphere(); // Activate "actionIncluded" bottom
 
     return;
-    }
+  }
   // std::cout<<qcResult.GetSliceWiseCheckResult()[1].GradientNum<<"GradientNum"<<std::endl;
   // std::cout<<qcResult.GetSliceWiseCheckResult()[1].SliceNum<<"SliceNum"<<std::endl;
   // std::cout<<qcResult.GetSliceWiseCheckResult()[1].Correlation<<"Correlation"<<std::endl;
   // std::cout<<qcResult.GetSliceWiseCheckProcessing()[50]<<"GradientWiseCheck"<<std::endl;
 
+  //HACK Mahshid: Unused code
   emit UpdateOutputDWIDiffusionVectorActors();
 
   emit LoadQCResult(true);
@@ -566,6 +574,7 @@ void IntensityMotionCheckPanel::OpenXML_ResultFile()
       }
     bMatchNameQCResult_DwiFile = true;
     }
+  //
 
 }
 
@@ -1311,15 +1320,16 @@ void IntensityMotionCheckPanel::DefaultProtocol()
   //  this->GetProtocol().GetEddyMotionCorrectionProtocol().OutputFileName =
   // "_EddyMotion_Output.nrrd";
 
-  this->GetProtocol().GetEddyMotionCorrectionProtocol().numberOfBins    =  24;
+  this->GetProtocol().GetEddyMotionCorrectionProtocol().numberOfIterations    =  1000;
   this->GetProtocol().GetEddyMotionCorrectionProtocol().numberOfSamples
     =  100000;
   this->GetProtocol().GetEddyMotionCorrectionProtocol().translationScale
-    =  0.001;
-  this->GetProtocol().GetEddyMotionCorrectionProtocol().stepLength    =  0.1;
+    =  1000.0;
+  this->GetProtocol().GetEddyMotionCorrectionProtocol().maxStepLength    =  0.2;
+  this->GetProtocol().GetEddyMotionCorrectionProtocol().minStepLength    =  0.0001;
   this->GetProtocol().GetEddyMotionCorrectionProtocol().relaxFactor    =  0.5;
-  this->GetProtocol().GetEddyMotionCorrectionProtocol().maxNumberOfIterations
-    =  500;
+  //this->GetProtocol().GetEddyMotionCorrectionProtocol().maxNumberOfIterations
+  //  =  500;
 
   this->GetProtocol().GetEddyMotionCorrectionProtocol().outputDWIFileNameSuffix
     = "";
@@ -1331,7 +1341,7 @@ void IntensityMotionCheckPanel::DefaultProtocol()
   this->GetProtocol().initDenoisingJointLMMSE();
   
   // Dominant directional artifact detector ( entropy tool )
-  //this->GetProtocol().initDominantDirectional_Detector();
+  this->GetProtocol().initDominantDirectional_Detector();
 
   // ***** DTI
   this->GetProtocol().GetDTIProtocol().bCompute = true;
@@ -2546,10 +2556,10 @@ void IntensityMotionCheckPanel::UpdateProtocolToTreeWidget()
 
   QTreeWidgetItem *itemNumberOfBins = new QTreeWidgetItem(
       itemEddyMotionCorrection);
-  itemNumberOfBins->setText( 0, tr("EDDYMOTION_numberOfBins") );
+  itemNumberOfBins->setText( 0, tr("EDDYMOTION_numberOfIterations") );
   itemNumberOfBins->setText( 1,
                              QString("%1").arg(this->GetProtocol().GetEddyMotionCorrectionProtocol().
-                                               numberOfBins,  0, 10) );
+                            		 numberOfIterations,  0, 10) );
 
   QTreeWidgetItem *itemNumberOfSamples = new QTreeWidgetItem(
       itemEddyMotionCorrection);
@@ -2565,12 +2575,19 @@ void IntensityMotionCheckPanel::UpdateProtocolToTreeWidget()
                                  QString::number(this->GetProtocol().GetEddyMotionCorrectionProtocol().
                                                  translationScale,  'f', 4) );
 
-  QTreeWidgetItem *itemStepLength = new QTreeWidgetItem(
+  QTreeWidgetItem *itemMaxStepLength = new QTreeWidgetItem(
       itemEddyMotionCorrection);
-  itemStepLength->setText( 0, tr("EDDYMOTION_stepLength") );
-  itemStepLength->setText( 1,
+  itemMaxStepLength->setText( 0, tr("EDDYMOTION_maxStepLength") );
+  itemMaxStepLength->setText( 1,
                            QString::number(this->GetProtocol().GetEddyMotionCorrectionProtocol().
-                                           stepLength,  'f', 4) );
+                        		   maxStepLength,  'f', 5) );
+  
+  QTreeWidgetItem *itemMinStepLength = new QTreeWidgetItem(
+        itemEddyMotionCorrection);
+  itemMinStepLength->setText( 0, tr("EDDYMOTION_minStepLength") );
+  itemMinStepLength->setText( 1,
+                             QString::number(this->GetProtocol().GetEddyMotionCorrectionProtocol().
+                          		   minStepLength,  'f', 5) );
 
   QTreeWidgetItem *itemRelaxFactor = new QTreeWidgetItem(
       itemEddyMotionCorrection);
@@ -2579,12 +2596,12 @@ void IntensityMotionCheckPanel::UpdateProtocolToTreeWidget()
                             QString::number(this->GetProtocol().GetEddyMotionCorrectionProtocol().
                                             relaxFactor,  'f', 4) );
 
-  QTreeWidgetItem *itemMaxNumberOfIterations = new QTreeWidgetItem(
-      itemEddyMotionCorrection);
-  itemMaxNumberOfIterations->setText( 0, tr("EDDYMOTION_maxNumberOfIterations") );
-  itemMaxNumberOfIterations->setText( 1,
-                                      QString("%1").arg(this->GetProtocol().GetEddyMotionCorrectionProtocol().
-                                                        maxNumberOfIterations,  0, 10) );
+ // QTreeWidgetItem *itemMaxNumberOfIterations = new QTreeWidgetItem(
+ //     itemEddyMotionCorrection);
+//  itemMaxNumberOfIterations->setText( 0, tr("EDDYMOTION_maxNumberOfIterations") );
+ // itemMaxNumberOfIterations->setText( 1,
+                                    //  QString("%1").arg(this->GetProtocol().GetEddyMotionCorrectionProtocol().
+                                                     //   maxNumberOfIterations,  0, 10) );
   // ////////////////////////////////////////////////////////////////////////
 
   QTreeWidgetItem *itemEddyMotionOutputDWIFileNameSuffix = new QTreeWidgetItem(
@@ -2748,8 +2765,8 @@ void IntensityMotionCheckPanel::UpdateProtocolToTreeWidget()
                                                                                         Filter_Radius[2], 0, 10 ) );
   
   // Dominant directional artifact checking
-  /*QTreeWidgetItem * item_dominantDirectional = new QTreeWidgetItem(treeWidget);
-  item_dominantDirectional->setText( 0, tr("DominantDirectionalArtifact_bCheck") );
+  QTreeWidgetItem * item_dominantDirectional = new QTreeWidgetItem(treeWidget);
+  item_dominantDirectional->setText( 0, tr("DOMINANTDIRECTION_bCheck") );
   if( this->GetProtocol().GetDominantDirectional_Detector().bCheck )
   {
 	  item_dominantDirectional->setText( 1, tr("Yes") );
@@ -2760,19 +2777,26 @@ void IntensityMotionCheckPanel::UpdateProtocolToTreeWidget()
   }
   
   QTreeWidgetItem * item_dominantDirectional_mean = new QTreeWidgetItem(item_dominantDirectional);
-  item_dominantDirectional->setText( 0, tr("AverageEntropysOfArtifactFrees") );
-  item_dominantDirectional->setText( 1, QString("%1").arg( this->GetProtocol().GetDominantDirectional_Detector().
+  item_dominantDirectional_mean->setText( 0, tr("DOMINANTDIRECTION_Mean") );
+  item_dominantDirectional_mean->setText( 1, QString("%1").arg( this->GetProtocol().GetDominantDirectional_Detector().
 		                                Mean, 0, 'f', 6 ));
+  
   QTreeWidgetItem * item_dominantDirectional_std = new QTreeWidgetItem(item_dominantDirectional);
-  item_dominantDirectional->setText( 0, tr("AverageEntropysOfArtifactFrees") );
-  item_dominantDirectional->setText( 1, QString("%1").arg( this->GetProtocol().GetDominantDirectional_Detector().
-  		                                Mean, 0, 'f', 6 ));
-  item_dominantDirectional->setText( 1, QString("%1").arg( this->GetProtocol().GetDominantDirectional_Detector().
-  		                                Mean, 0, 'f', 6 ));
-  item_dominantDirectional->setText( 1, QString("%1").arg( this->GetProtocol().GetDominantDirectional_Detector().
-  		                                Mean, 0, 'f', 6 ));
-  item_dominantDirectional->setText( 1, QString("%1").arg( this->GetProtocol().GetDominantDirectional_Detector().
-  		                                Mean, 0, 'f', 6 ));*/
+  item_dominantDirectional_std->setText( 0, tr("DOMINANTDIRECTION_Deviation") );
+  item_dominantDirectional_std->setText( 1, QString("%1").arg( this->GetProtocol().GetDominantDirectional_Detector().
+		  Deviation, 0, 'f', 6 ));
+  
+  QTreeWidgetItem * item_dominantDirectional_threshold1 = new QTreeWidgetItem(item_dominantDirectional);
+  item_dominantDirectional_threshold1->setText( 0, tr("DOMINANTDIRECTION_z-Threshold1") );
+  item_dominantDirectional_threshold1->setText( 1, QString("%1").arg( this->GetProtocol().GetDominantDirectional_Detector().
+		  Threshold_Acceptance, 0, 'f', 6 ));
+  
+  QTreeWidgetItem * item_dominantDirectional_threshold2 = new QTreeWidgetItem(item_dominantDirectional);
+  item_dominantDirectional_threshold2->setText( 0, tr("DOMINANTDIRECTION_z-Threshold2") );
+  item_dominantDirectional_threshold2->setText( 1, QString("%1").arg( this->GetProtocol().GetDominantDirectional_Detector().
+		  Threshold_Suspicion_Unacceptance, 0, 'f', 6 ));
+  
+ 
   
 
 
@@ -3121,25 +3145,38 @@ void IntensityMotionCheckPanel::QCedResultUpdate()
   std::ofstream outfile;
   outfile.open( myIntensityThread.m_IntensityMotionCheck->GetReportFileName().c_str(), std::ios_base::app | std::ios_base::out);
   outfile << "================================" << std::endl;
-  outfile << "Included gradients" << std::endl;
+  outfile << "Included Gradients" << std::endl;
   outfile << "================================" << std::endl;
 
   // gradient vectors
   TensorReconstructionImageFilterType::GradientDirectionType vect3d_T;
   GradientDirectionContainer_ConformanceImg = GradientDirectionContainerType::New();
   int index_included_dwi = 0;
+  
+  outfile << std::endl << "\t#" << "\tDirVector" << std::endl;
+  
   for( ; itKey != imgMetaKeys.end(); itKey++ )
     {
     // double x,y,z;
     itk::ExposeMetaData<std::string>(imgMetaDictionary, *itKey, metaString);
     if( itKey->find("DWMRI_gradient") != std::string::npos )
       {
-      std::istringstream iss(metaString);
-      iss >> vect3d_T[0] >> vect3d_T[1] >> vect3d_T[2];
-      std::cout << "gradients dir: " << vect3d_T[0] << " " << vect3d_T[1] << " " << vect3d_T[2] << std::endl;
-      outfile << "gradients " << index_included_dwi << ": " << vect3d_T[0] << " " << vect3d_T[1] << " " << vect3d_T[2] << std::endl;
-      index_included_dwi++;
-      GradientDirectionContainer_ConformanceImg->push_back(vect3d_T);
+    	std::istringstream iss(metaString);
+    	iss >> vect3d_T[0] >> vect3d_T[1] >> vect3d_T[2];
+    	outfile << "\t" << index_included_dwi << "\t[ "
+    	                << std::setw(9) << std::setiosflags(std::ios::fixed)
+    	                << std::setprecision(6) << std::setiosflags(std::ios::right)
+    	                << vect3d_T[0] << ", "
+    	                << std::setw(9) << std::setiosflags(std::ios::fixed)
+    	                << std::setprecision(6) << std::setiosflags(std::ios::right)
+    	                << vect3d_T[1] << ", "
+    	                << std::setw(9) << std::setiosflags(std::ios::fixed)
+    	                << std::setprecision(6) << std::setiosflags(std::ios::right)
+    	                << vect3d_T[2] << " ]"
+    	                << std::endl;
+    	std::cout << "gradients dir: " << vect3d_T[0] << " " << vect3d_T[1] << " " << vect3d_T[2] << std::endl;
+        index_included_dwi++;
+        GradientDirectionContainer_ConformanceImg->push_back(vect3d_T);
       }
     }
   // ..................................................................................................................................................

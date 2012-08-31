@@ -128,16 +128,16 @@ void Protocol::initDenoisingJointLMMSE()
 
 }
 
-/*void Protocol::initDominantDirectional_Detector()
+void Protocol::initDominantDirectional_Detector()
 {
 	dominantDirectional_Detector.bCheck = false;
 	dominantDirectional_Detector.Mean = 6.5;	// average of entropy value of artifact-free scans over training step
-	dominantDirectional_Detector.Std_Deviation = 0.01;	// standard deviation of entropy value  of artifact-free scans over training step
-	dominantDirectional_Detector.Threshold_acceptance = 1.64;	// z-score threshold of acceptance
-	dominantDirectional_Detector.Threshold_suspicious = 2.58;	// z-score threshold of suspicious and unacceptance
+	dominantDirectional_Detector.Deviation = 0.01;	// standard deviation of entropy value  of artifact-free scans over training step
+	dominantDirectional_Detector.Threshold_Acceptance = 1.64;	// z-score threshold of acceptance	z<1.64 --> acceptable
+	dominantDirectional_Detector.Threshold_Suspicion_Unacceptance = 2.58;	// z-score threshold of suspicious and unacceptance 1.64<z<2.58 --> suspicious and z> 2.58 -->Unacceptable
 	
 	
-}*/
+}
 
 void Protocol::initSliceCheckProtocol()
 {
@@ -210,12 +210,12 @@ void Protocol::initEddyMotionCorrectionProtocol()
 {
   eddyMotionCorrectionProtocol.bCorrect = true;
 
-  eddyMotionCorrectionProtocol.numberOfBins    = 24;
+  eddyMotionCorrectionProtocol.numberOfIterations    = 1000;
   eddyMotionCorrectionProtocol.numberOfSamples  = 100000;
-  eddyMotionCorrectionProtocol.translationScale  = 0.001;
-  eddyMotionCorrectionProtocol.stepLength      = 0.1;
-  eddyMotionCorrectionProtocol.relaxFactor    = 0.5;
-  eddyMotionCorrectionProtocol.maxNumberOfIterations  = 500;
+  eddyMotionCorrectionProtocol.translationScale  = 1000.0;
+  eddyMotionCorrectionProtocol.maxStepLength      = 0.2;
+  eddyMotionCorrectionProtocol.minStepLength      = 0.0001;
+  eddyMotionCorrectionProtocol.relaxFactor    = 0.5; 
 
   eddyMotionCorrectionProtocol.outputDWIFileNameSuffix = "";
   eddyMotionCorrectionProtocol.reportFileNameSuffix = "_Report.txt";
@@ -777,19 +777,21 @@ void Protocol::printEddyMotionCorrectionProtocol()
   //  std::cout<<"\tOutputFileName: "<<
   // GetEddyMotionCorrectionProtocol().OutputFileName<< std::endl;
 
-  std::cout << "\tnumberOfBins: "
-            << GetEddyMotionCorrectionProtocol().numberOfBins << std::endl;
+  std::cout << "\tnumberOfIterations: "
+            << GetEddyMotionCorrectionProtocol().numberOfIterations << std::endl;
   std::cout << "\tnumberOfSamples: "
             << GetEddyMotionCorrectionProtocol().numberOfSamples << std::endl;
   std::cout << "\ttranslationScale: "
             << GetEddyMotionCorrectionProtocol().translationScale << std::endl;
-  std::cout << "\tstepLength: "
-            << GetEddyMotionCorrectionProtocol().stepLength << std::endl;
+  std::cout << "\tmaxStepLength: "
+            << GetEddyMotionCorrectionProtocol().maxStepLength << std::endl;
+  std::cout << "\tminStepLength: "
+              << GetEddyMotionCorrectionProtocol().minStepLength << std::endl;
   std::cout << "\trelaxFactor: "
             << GetEddyMotionCorrectionProtocol().relaxFactor << std::endl;
-  std::cout << "\tmaxNumberOfIterations: "
-            << GetEddyMotionCorrectionProtocol().maxNumberOfIterations
-            << std::endl;
+  //std::cout << "\tmaxNumberOfIterations: "
+            //<< GetEddyMotionCorrectionProtocol().maxNumberOfIterations
+            //<< std::endl;
 
   std::cout << "\toutputDWIFileNameSuffix: "
             <<  GetEddyMotionCorrectionProtocol().outputDWIFileNameSuffix
@@ -1488,8 +1490,8 @@ void Protocol::Save( std::string xml)
   }
   else
 	  outfile << "        <value>No</value>" << std::endl;
-  outfile << "        <entry parameter=\"EDDYMOTION_numberOfBins\">" << std::endl;
-  outfile << "            <value>" << GetEddyMotionCorrectionProtocol(). numberOfBins << "</value>" << std::endl;
+  outfile << "        <entry parameter=\"EDDYMOTION_numberOfIterations\">" << std::endl;
+  outfile << "            <value>" << GetEddyMotionCorrectionProtocol(). numberOfIterations << "</value>" << std::endl;
   outfile << "        </entry>" << std::endl;
   outfile << "        <entry parameter=\"EDDYMOTION_numberOfSamples\">" << std::endl;
   outfile << "            <value>" << GetEddyMotionCorrectionProtocol(). numberOfSamples << "</value>" << std::endl;
@@ -1497,15 +1499,18 @@ void Protocol::Save( std::string xml)
   outfile << "        <entry parameter=\"EDDYMOTION_translationScale\">" << std::endl;
   outfile << "            <value>" << GetEddyMotionCorrectionProtocol(). translationScale << "</value>" << std::endl;
   outfile << "        </entry>" << std::endl;
-  outfile << "        <entry parameter=\"EDDYMOTION_stepLength\">" << std::endl;
-  outfile << "            <value>" << GetEddyMotionCorrectionProtocol(). stepLength << "</value>" << std::endl;
+  outfile << "        <entry parameter=\"EDDYMOTION_maxStepLength\">" << std::endl;
+  outfile << "            <value>" << GetEddyMotionCorrectionProtocol(). maxStepLength << "</value>" << std::endl;
   outfile << "        </entry>" << std::endl;
+  outfile << "        <entry parameter=\"EDDYMOTION_minStepLength\">" << std::endl;
+    outfile << "            <value>" << GetEddyMotionCorrectionProtocol(). minStepLength << "</value>" << std::endl;
+    outfile << "        </entry>" << std::endl;
   outfile << "        <entry parameter=\"EDDYMOTION_relaxFactor\">" << std::endl;
   outfile << "            <value>" << GetEddyMotionCorrectionProtocol(). relaxFactor << "</value>" << std::endl;
   outfile << "        </entry>" << std::endl;
-  outfile << "        <entry parameter=\"EDDYMOTION_maxNumberOfIterations\">" << std::endl;
-  outfile << "            <value>" << GetEddyMotionCorrectionProtocol(). maxNumberOfIterations << "</value>" << std::endl;
-  outfile << "        </entry>" << std::endl;
+  //outfile << "        <entry parameter=\"EDDYMOTION_maxNumberOfIterations\">" << std::endl;
+  //outfile << "            <value>" << GetEddyMotionCorrectionProtocol(). maxNumberOfIterations << "</value>" << std::endl;
+  //outfile << "        </entry>" << std::endl;
   outfile << "        <entry parameter=\"EDDYMOTION_outputDWIFileNameSuffix\">" << std::endl;
   outfile << "            <value>" << GetEddyMotionCorrectionProtocol(). outputDWIFileNameSuffix << "</value>" << std::endl;
   outfile << "        </entry>" << std::endl;

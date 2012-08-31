@@ -214,6 +214,7 @@ public:
   itkSetMacro(MinimumStepLength, float);
   itkSetMacro(RelaxationFactor, float);
   itkSetMacro(OutputParameterFile, std::string);
+  
 protected:
   VectorImageRegisterAffineFilter();
   ~VectorImageRegisterAffineFilter()

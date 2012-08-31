@@ -46,6 +46,12 @@ SET( DTIPrep_SRCS
 # MIT
  itkMultiImageRegistrationFilter.cxx
  GradientDescentLineSearchOptimizer.cxx
+ #DominantDirectional_Detector.cxx
+ #Counter.cc
+ #Point.cc
+ #Sphere.cc
+ #Triangle.cc
+ #Vector.cc
 )
 
 generateclp(DTIPrep_SRCS DTIPrep.xml )
@@ -60,6 +66,13 @@ SET( DTIPrep_HRDS
   ThreadDicomToNrrd.h
   ThreadDicomSeriesRead.h
   FurtherQCThread.h
+  #DominantDirectional_Detector.h
+  #Counter.h
+  #SphereIkosahedron.h
+  #Point.h
+  #Sphere.h
+  #Triangle.h
+  #Vector.h
 )
 
 SET( DTIPrep_UIS

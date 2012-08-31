@@ -11,6 +11,7 @@
 #include "itkImageRegionIterator.h"
 #include "vnl/vnl_inverse.h"
 
+
 #include <iomanip>
 #include <iostream>
 #include <fstream>
@@ -1250,6 +1251,9 @@ bool CIntensityMotionCheck::SliceWiseCheck( DwiImageType::Pointer dwi )
       }
 
     m_DwiForcedConformanceImage = SliceChecker->GetOutput();
+    
+    
+     
 
     // .......Mapping between input gradeints and DWIForcedComformance gradeints
     // New : 16 Jun 2011:
@@ -2315,17 +2319,15 @@ bool CIntensityMotionCheck::EddyMotionCorrectIowa( DwiImageType::Pointer dwi )
       EddyMotionCorrectorIowa->SetFixedImage(fixed);
       }
 
-    //
-    // EddyMotionCorrectorIowa->SetNumberOfBins(protocol->GetEddyMotionCorrectionProtocol().numberOfBins
-    // );
+    //EddyMotionCorrectorIowa->SetNumberOfBins(protocol->GetEddyMotionCorrectionProtocol().numberOfBins);
     //     EddyMotionCorrectorIowa->SetSamples(
     // protocol->GetEddyMotionCorrectionProtocol().numberOfSamples );
     //     EddyMotionCorrectorIowa->SetTranslationScale(
     // protocol->GetEddyMotionCorrectionProtocol().translationScale );
-    //
+    
     // EddyMotionCorrectorIowa->SetStepLength(protocol->GetEddyMotionCorrectionProtocol().stepLength
     // );
-    //     EddyMotionCorrectorIowa->SetFactor(
+    //    EddyMotionCorrectorIowa->SetFactor(
     // protocol->GetEddyMotionCorrectionProtocol().relaxFactor );
     //     EddyMotionCorrectorIowa->SetMaxNumberOfIterations(
     // protocol->GetEddyMotionCorrectionProtocol().maxNumberOfIterations );
@@ -2337,6 +2339,25 @@ bool CIntensityMotionCheck::EddyMotionCorrectIowa( DwiImageType::Pointer dwi )
     //     int   m_NumberOfSpatialSamples;
     //     int   m_NumberOfIterations;
     //     std::string m_OutputParameterFile;
+    
+    
+    
+    // ...................................................................................................
+    // 29 Aug 2012 : To apply changes of protocol patameters into  EddyMotionCorrectorIowa structure
+    
+    EddyMotionCorrectorIowa->SetNumberOfSpatialSamples(protocol->GetEddyMotionCorrectionProtocol().numberOfSamples );
+    EddyMotionCorrectorIowa->SetNumberOfIterations(protocol->GetEddyMotionCorrectionProtocol().numberOfIterations);
+    std::cout << "protocol->GetEddyMotionCorrectionProtocol().numberOfIterations " << protocol->GetEddyMotionCorrectionProtocol().numberOfIterations << std::endl;
+    EddyMotionCorrectorIowa->SetTranslationScale(protocol->GetEddyMotionCorrectionProtocol().translationScale );
+    EddyMotionCorrectorIowa->SetMaximumStepLength(protocol->GetEddyMotionCorrectionProtocol().maxStepLength );
+    EddyMotionCorrectorIowa->SetMinimumStepLength(protocol->GetEddyMotionCorrectionProtocol().minStepLength );
+    //EddyMotionCorrectorIowa->SetStepLength(protocol->GetEddyMotionCorrectionProtocol().stepLength );
+    EddyMotionCorrectorIowa->SetRelaxationFactor( protocol->GetEddyMotionCorrectionProtocol().relaxFactor );
+    EddyMotionCorrectorIowa->SetOutputParameterFile( protocol->GetEddyMotionCorrectionProtocol().outputDWIFileNameSuffix );
+    
+    
+    //.....................................................................................................
+
 
     try
       {
@@ -2449,26 +2470,25 @@ bool CIntensityMotionCheck::EddyMotionCorrectIowa( DwiImageType::Pointer dwi )
         continue;
         }
       }
-    for( unsigned int i = 0; i < inputGradDirContainer->size(); i++ )
+    /*for( unsigned int i = 0; i < inputGradDirContainer->size(); i++ )
       {
-      // std::cout << "Gradient Input Iowa No " << i << " : " << inputGradDirContainer->at(i)[0] << "," <<
-      // inputGradDirContainer->at(i)[1] << "," << inputGradDirContainer->at(i)[2] << std:: endl;
-      }
-    for( unsigned int j = 0;
+       std::cout << "Gradient Input Iowa No " << i << " : " << inputGradDirContainer->at(i)[0] << "," <<
+       inputGradDirContainer->at(i)[1] << "," << inputGradDirContainer->at(i)[2] << std:: endl;
+      }*/
+    /*for( unsigned int j = 0;
          j < this->qcResult->GetIntensityMotionCheckResult().size();
          j++ )
       {
-      // std::cout << "Gradient QC replaced dir " << j << " : " <<
-      // this->qcResult->GetIntensityMotionCheckResult()[j].ReplacedDir[0] << "," <<
-      // this->qcResult->GetIntensityMotionCheckResult()[j].ReplacedDir[1] << "," <<
-      // this->qcResult->GetIntensityMotionCheckResult()[j].ReplacedDir[2] << std:: endl;
-      }
+       std::cout << "Gradient QC replaced dir " << j << " : " <<
+       this->qcResult->GetIntensityMotionCheckResult()[j].ReplacedDir[0] << "," <<
+       this->qcResult->GetIntensityMotionCheckResult()[j].ReplacedDir[1] << "," <<
+       this->qcResult->GetIntensityMotionCheckResult()[j].ReplacedDir[2] << std:: endl;
+       std::cout << "Status QC gradients " << this->qcResult->GetIntensityMotionCheckResult()[j].processing << std::endl;
+      }*/
     for( unsigned int i = 0; i < inputGradDirContainer->size(); i++ )
       {
       bool gradientFound = false;
-      for( unsigned int j = 0;
-           j < this->qcResult->GetIntensityMotionCheckResult().size() && !gradientFound;
-           j++ )
+      for( unsigned int j = 0;j < this->qcResult->GetIntensityMotionCheckResult().size() && !gradientFound;j++ )
         {
         if( inputGradDirContainer->at(i)[0] ==
             this->qcResult->GetIntensityMotionCheckResult()[j].ReplacedDir[0]
@@ -2477,13 +2497,17 @@ bool CIntensityMotionCheck::EddyMotionCorrectIowa( DwiImageType::Pointer dwi )
             && inputGradDirContainer->at(i)[2] ==
             this->qcResult->GetIntensityMotionCheckResult()[j].ReplacedDir[2]  )
           {
-          if( this->qcResult->GetIntensityMotionCheckResult()[j].processing !=
+        	/* This condition is wrong when muliple scans is used
+            if( this->qcResult->GetIntensityMotionCheckResult()[j].processing !=
               QCResult::GRADIENT_EDDY_MOTION_CORRECTED &&
               this->qcResult->GetIntensityMotionCheckResult()[j].processing !=
-              QCResult::GRADIENT_BASELINE_AVERAGED )
+              QCResult::GRADIENT_BASELINE_AVERAGED )*/
+        	if( this->qcResult->GetIntensityMotionCheckResult()[j].processing ==
+              QCResult::GRADIENT_INCLUDE )
             {
             this->qcResult->GetIntensityMotionCheckResult()[j].processing
               = QCResult::GRADIENT_EDDY_MOTION_CORRECTED;
+                                             
             this->qcResult->GetIntensityMotionCheckResult()[j].CorrectedDir[0]
               = outputGradDirContainer->at(i)[0];
             this->qcResult->GetIntensityMotionCheckResult()[j].CorrectedDir[1]
@@ -2644,18 +2668,19 @@ bool CIntensityMotionCheck::EddyMotionCorrect( DwiImageType::Pointer dwi )
     EddyMotionCorrector->SetReportFileMode(
       protocol->GetEddyMotionCorrectionProtocol().reportFileMode );
 
-    EddyMotionCorrector->SetNumberOfBins(
-      protocol->GetEddyMotionCorrectionProtocol().numberOfBins );
-    EddyMotionCorrector->SetSamples(
-      protocol->GetEddyMotionCorrectionProtocol().numberOfSamples );
-    EddyMotionCorrector->SetTranslationScale(
-      protocol->GetEddyMotionCorrectionProtocol().translationScale );
-    EddyMotionCorrector->SetStepLength(
-      protocol->GetEddyMotionCorrectionProtocol().stepLength );
-    EddyMotionCorrector->SetFactor(
-      protocol->GetEddyMotionCorrectionProtocol().relaxFactor );
-    EddyMotionCorrector->SetMaxNumberOfIterations(
-      protocol->GetEddyMotionCorrectionProtocol().maxNumberOfIterations );
+    // 29 Aug 2012: Activating EddymotionCorrectionIowa and disactivating EddymotionCorrectionUtah
+    //EddyMotionCorrector->SetNumberOfBins(
+      //protocol->GetEddyMotionCorrectionProtocol().numberOfBins );
+    //EddyMotionCorrector->SetSamples(
+      //protocol->GetEddyMotionCorrectionProtocol().numberOfSamples );
+    //EddyMotionCorrector->SetTranslationScale(
+      //protocol->GetEddyMotionCorrectionProtocol().translationScale );
+    //EddyMotionCorrector->SetStepLength(
+      //protocol->GetEddyMotionCorrectionProtocol().stepLength );
+    //EddyMotionCorrector->SetFactor(
+      //protocol->GetEddyMotionCorrectionProtocol().relaxFactor );
+    //EddyMotionCorrector->SetMaxNumberOfIterations(
+      //protocol->GetEddyMotionCorrectionProtocol().maxNumberOfIterations );
 
     try
       {
@@ -3356,6 +3381,80 @@ int CIntensityMotionCheck::JointDenoising( DwiImageType::Pointer dwi )
   return true;
 }
 
+// Dominant directional artifact detector ( entropy tool )
+
+bool CIntensityMotionCheck::DominantDirectionalCheck()
+{
+	int ret = 0;
+	
+	std::string Entropy_Report;
+	
+	std::cout << "protocol->GetDominantDirectional_Detector().bCheck" << protocol->GetDominantDirectional_Detector().bCheck << std::endl;
+
+	  if( protocol->GetDominantDirectional_Detector().bCheck )
+	    {
+
+	    std::string Dwi_file_name = FNameBase(this->m_DwiFileName);
+
+	    if( protocol->GetQCOutputDirectory().length() > 0 )
+	    {
+
+		std::string str_QCOutputDirectory = protocol->GetQCOutputDirectory();
+		size_t found_SeparateChar = str_QCOutputDirectory.find_first_of("/");
+			if ( int (found_SeparateChar) == -1 ) // "/" does not exist in the protocol->GetQCOutputDirectory() and interpreted as the relative path and creates the folder
+			{
+
+				size_t found;
+				found = m_DwiFileName.find_last_of("/\\");
+				std::string str;
+				str = m_DwiFileName.substr( 0, found ); // str : path of QCed outputs
+				str.append( "/" );
+				str.append( protocol->GetQCOutputDirectory() );
+				if( !itksys::SystemTools::FileIsDirectory( str.c_str() ) )
+					{
+					itksys::SystemTools::MakeDirectory( str.c_str() );
+					}
+				str.append( "/" );
+				Entropy_Report = str;
+				Entropy_Report.append( Dwi_file_name );
+				Entropy_Report.append( "_EntropyReport.txt");
+				
+			}
+
+			else	// "/" exists in the the protocol->GetQCOutputDirectory() and interpreted as the absolute path
+			{
+				std::string str;
+				str.append(protocol->GetQCOutputDirectory());
+				if( !itksys::SystemTools::FileIsDirectory( str.c_str() ) )
+					{
+					itksys::SystemTools::MakeDirectory( str.c_str() );
+					}
+				str.append( "/" );
+				Entropy_Report = str;
+				Entropy_Report.append( Dwi_file_name );
+				Entropy_Report.append( "_EntropyReport.txt");
+			}
+
+	    }
+	    else
+	    {
+	    	Entropy_Report = m_DwiFileName.substr( 0, m_DwiFileName.find_last_of('.') );
+	    	Entropy_Report.append( "_EntropyReport.txt");
+	    }
+	    
+	   // DiffusionTensorEstimation m_DominantDirectionDetector;
+	  
+	   // this->qcResult->GetDominantDirection_Detector().entropy_value = m_DominantDirectionDetector.EstimateTensor_Whitematter_GrayMatter("", m_outputDWIFileName, Entropy_Report, "");
+	    
+	    }
+	  else
+	  {
+	    std::cout << " Dominant directional artifact detector check NOT set." << std::endl;
+	  }
+	 
+	  return true;
+}
+
 bool CIntensityMotionCheck::SaveDwiForcedConformanceImage(void)
 {
   std::string Dwi_file_name = FNameBase(this->m_DwiFileName);
@@ -3442,6 +3541,8 @@ bool CIntensityMotionCheck::SaveDwiForcedConformanceImage(void)
       }
     catch( itk::ExceptionObject & e )
       {
+    	
+      	
       std::cout << e.GetDescription() << std::endl;
       return false;
       }
@@ -3639,7 +3740,9 @@ unsigned char CIntensityMotionCheck::RunPipelineByProtocol_FurtherQC()
   // EddyMotionCorrect
   std::cout << "=====================" << std::endl;
   std::cout << "EddyCurrentHeadMotionCorrectIowa in Further QC... " << std::endl;
-
+  
+  
+  
   EddyMotionCorrectIowa(m_DwiForcedConformanceImage);
   std::cout << "EddyCurrentHeadMotionCorrect DONE " << std::endl;
 
@@ -3917,6 +4020,7 @@ unsigned char CIntensityMotionCheck::RunPipelineByProtocol()
   // EddyMotionCorrect( m_DwiForcedConformanceImage );
   std::cout << "EddyCurrentHeadMotionCorrectIowa ... " << std::endl;
 
+  
   EddyMotionCorrectIowa(m_DwiForcedConformanceImage);
   std::cout << "EddyCurrentHeadMotionCorrect DONE " << std::endl;
 
@@ -3979,13 +4083,21 @@ unsigned char CIntensityMotionCheck::RunPipelineByProtocol()
   std::cout << "Denoising Joint LMMSE... " << std::endl;
   std::cout << "HACK:  SKIPPING JointDenoising( m_DwiForcedConformanceImage );"  << __FILE__ << " " << __LINE__ << std::endl;
   std::cout << "Denoising Joint LMMSE DONE " << std::endl;
-
+    
+    
   // Save QC'ed DWI
   std::cout << "=====================" << std::endl;
   std::cout << "Save QC'ed DWI ... ";
   SaveDwiForcedConformanceImage();
 
   std::cout << "DONE" << std::endl;
+  
+  // Dominant directional artifact detector ( entropy tool )
+    
+    std::cout << "=====================" << std::endl;
+    std::cout << "Dominant directional artifact detector... " << std::endl;
+    DominantDirectionalCheck();
+    std::cout << "Dominant directional artifact detector DONE " << std::endl;
 
   // DTIComputing
   std::cout << "=====================" << std::endl;
@@ -5755,15 +5867,16 @@ bool CIntensityMotionCheck::MakeDefaultProtocol( Protocol *_protocol )
 
   // ***** Eddy motion correction
   _protocol->GetEddyMotionCorrectionProtocol(). bCorrect = true;
-  _protocol->GetEddyMotionCorrectionProtocol(). numberOfBins =  24;
+  _protocol->GetEddyMotionCorrectionProtocol(). numberOfIterations =  1000;
   _protocol->GetEddyMotionCorrectionProtocol(). numberOfSamples
     =  100000;
   _protocol->GetEddyMotionCorrectionProtocol(). translationScale
-    =  0.001;
-  _protocol->GetEddyMotionCorrectionProtocol(). stepLength    =  0.1;
+    =  1000.0;
+  _protocol->GetEddyMotionCorrectionProtocol(). maxStepLength    =  0.2;
+  _protocol->GetEddyMotionCorrectionProtocol(). minStepLength    =  0.0001;
   _protocol->GetEddyMotionCorrectionProtocol(). relaxFactor    =  0.5;
-  _protocol->GetEddyMotionCorrectionProtocol(). maxNumberOfIterations
-    =  500;
+  //_protocol->GetEddyMotionCorrectionProtocol(). maxNumberOfIterations
+  //  =  500;
   _protocol->GetEddyMotionCorrectionProtocol(). outputDWIFileNameSuffix
     = "";
   _protocol->GetEddyMotionCorrectionProtocol(). reportFileNameSuffix

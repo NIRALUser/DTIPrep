@@ -76,6 +76,12 @@ struct Original_ForcedConformance_Map
 
   };
 
+struct DominantDirection_Detector
+  {
+	double z_score;
+	double entropy_value;
+  };
+
 class QCResult
 {
 public:
@@ -98,6 +104,11 @@ public:
     return imageInformationCheckResult;
   }
 
+  struct DominantDirection_Detector & GetDominantDirection_Detector()
+  {
+	  return dominantDirection_Detector;
+  }
+  
   struct OverallQCResult & GetOverallQCResult()
   {
     return overallQCResult;
@@ -157,6 +168,9 @@ public:
     imageInformationCheckResult.space = true;
     imageInformationCheckResult.spacedirection = true;
     imageInformationCheckResult.spacing = true;
+    
+    dominantDirection_Detector.z_score = 0;
+    dominantDirection_Detector.entropy_value = 0;
 
     diffusionInformationCheckResult.b = true;
     diffusionInformationCheckResult.gradient = true;
@@ -178,7 +192,9 @@ public:
 
 private:
   ImageInformationCheckResult imageInformationCheckResult;
-
+  
+  DominantDirection_Detector dominantDirection_Detector;
+  
   DiffusionInformationCheckResult diffusionInformationCheckResult;
 
   OverallQCResult overallQCResult;

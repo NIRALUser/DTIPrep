@@ -116,6 +116,18 @@ void XmlStreamReader::InitializeProtocolStringValues()
     = JOINDENOISING_Est_Radius;
   s_mapProtocolStringValues["JOINDENOISING_Filter_Radius"]
     = JOINDENOISING_Filter_Radius;
+  
+  // Dominant Directional Artifact
+   s_mapProtocolStringValues["DOMINANTDIRECTIONAL_bCheck"]
+                             = DOMINANTDIRECTIONAL_bCheck;
+   s_mapProtocolStringValues["DOMINANTDIRECTIONAL_Mean"]
+                               = DOMINANTDIRECTIONAL_Mean;
+   s_mapProtocolStringValues["DOMINANTDIRECTIONAL_Deviation"]
+                               = DOMINANTDIRECTIONAL_Deviation;
+   s_mapProtocolStringValues["DOMINANTDIRECTIONAL_Threshold1"]
+                               = DOMINANTDIRECTIONAL_Threshold1;
+   s_mapProtocolStringValues["DOMINANTDIRECTIONAL_Threshold2"]
+                               = DOMINANTDIRECTIONAL_Threshold2;
 
   // slice check
   s_mapProtocolStringValues["SLICE_bCheck"]
@@ -220,18 +232,20 @@ void XmlStreamReader::InitializeProtocolStringValues()
   //   s_mapProtocolStringValues["EDDYMOTION_outputFileName"]          =
   // EDDYMOTION_outputFileName;
 
-  s_mapProtocolStringValues["EDDYMOTION_numberOfBins"]
-    = EDDYMOTION_numberOfBins;
+  s_mapProtocolStringValues["EDDYMOTION_numberOfIterations"]
+    = EDDYMOTION_numberOfIterations;
   s_mapProtocolStringValues["EDDYMOTION_numberOfSamples"]
     = EDDYMOTION_numberOfSamples;
   s_mapProtocolStringValues["EDDYMOTION_translationScale"]
     = EDDYMOTION_translationScale;
-  s_mapProtocolStringValues["EDDYMOTION_stepLength"]
-    = EDDYMOTION_stepLength;
+  s_mapProtocolStringValues["EDDYMOTION_maxStepLength"]
+    = EDDYMOTION_maxStepLength;
+  s_mapProtocolStringValues["EDDYMOTION_minStepLength"]
+      = EDDYMOTION_minStepLength;
   s_mapProtocolStringValues["EDDYMOTION_relaxFactor"]
     = EDDYMOTION_relaxFactor;
-  s_mapProtocolStringValues["EDDYMOTION_maxNumberOfIterations"]
-    = EDDYMOTION_maxNumberOfIterations;
+  //s_mapProtocolStringValues["EDDYMOTION_maxNumberOfIterations"]
+    //= EDDYMOTION_maxNumberOfIterations;
 
   s_mapProtocolStringValues["EDDYMOTION_outputDWIFileNameSuffix"]
     = EDDYMOTION_outputDWIFileNameSuffix;
@@ -1865,8 +1879,8 @@ void XmlStreamReader::parseXMLParametersToProtocol()
         // paremeters[i].value.toStdString();
         //         break;
 
-        case EDDYMOTION_numberOfBins:
-          protocol->GetEddyMotionCorrectionProtocol().numberOfBins
+        case EDDYMOTION_numberOfIterations:
+          protocol->GetEddyMotionCorrectionProtocol().numberOfIterations
             =  paremeters[i].value.toInt();
           break;
         case EDDYMOTION_numberOfSamples:
@@ -1877,19 +1891,22 @@ void XmlStreamReader::parseXMLParametersToProtocol()
           protocol->GetEddyMotionCorrectionProtocol().translationScale
             =  paremeters[i].value.toFloat();
           break;
-        case EDDYMOTION_stepLength:
-          protocol->GetEddyMotionCorrectionProtocol().stepLength
+        case EDDYMOTION_maxStepLength:
+          protocol->GetEddyMotionCorrectionProtocol().maxStepLength
+            =  paremeters[i].value.toFloat();
+          break;
+        case EDDYMOTION_minStepLength:
+          protocol->GetEddyMotionCorrectionProtocol().minStepLength
             =  paremeters[i].value.toFloat();
           break;
         case EDDYMOTION_relaxFactor:
           protocol->GetEddyMotionCorrectionProtocol().relaxFactor
             =  paremeters[i].value.toFloat();
           break;
-        case EDDYMOTION_maxNumberOfIterations:
-          protocol->GetEddyMotionCorrectionProtocol().maxNumberOfIterations
-            =  paremeters[i].value.toInt();
-          break;
-
+        //case EDDYMOTION_maxNumberOfIterations:
+          //protocol->GetEddyMotionCorrectionProtocol().maxNumberOfIterations
+          //  =  paremeters[i].value.toInt();
+          //break;
         case EDDYMOTION_outputDWIFileNameSuffix:
           protocol->GetEddyMotionCorrectionProtocol().outputDWIFileNameSuffix
             =  paremeters[i].value.toStdString();
@@ -1924,6 +1941,33 @@ void XmlStreamReader::parseXMLParametersToProtocol()
         case JOINDENOISING_ParameterSet:
           protocol->GetDenoisingJointLMMSE().ParameterSet = paremeters[i].value.toStdString();
           break;
+          
+          
+        // Dominant directional artifact detector (entropy tool)
+        case DOMINANTDIRECTIONAL_bCheck:
+        	if ( paremeters[i].value.toLower().toStdString() == "yes" )
+            {
+        		protocol->GetDominantDirectional_Detector().bCheck = true;
+            }
+            else
+            {
+              	protocol->GetDominantDirectional_Detector().bCheck = false;
+            }
+            break;
+       case DOMINANTDIRECTIONAL_Mean:
+    	   protocol->GetDominantDirectional_Detector().Mean = paremeters[i].value.toDouble();
+           break;
+       case DOMINANTDIRECTIONAL_Deviation:
+           protocol->GetDominantDirectional_Detector().Deviation = paremeters[i].value.toDouble();
+           break;
+       case DOMINANTDIRECTIONAL_Threshold1:
+           protocol->GetDominantDirectional_Detector().Threshold_Acceptance = paremeters[i].value.toDouble();
+           break;
+       case DOMINANTDIRECTIONAL_Threshold2:
+           protocol->GetDominantDirectional_Detector().Threshold_Suspicion_Unacceptance = paremeters[i].value.toDouble();
+           break;  
+           
+           
 
         //  DTI
         case DTI_bCompute:

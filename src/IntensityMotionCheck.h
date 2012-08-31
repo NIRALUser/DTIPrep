@@ -25,6 +25,9 @@
 #include <itksys/Process.h>
 #include <itksys/Glob.hxx>
 
+//#include "DominantDirectional_Detector.h"
+
+
 #include "itkDWIEddyCurrentHeadMotionCorrector.h" // eddy-motion Utah
 #include "itkVectorImageRegisterAffineFilter.h"   // eddy-motion IOWA
 
@@ -63,7 +66,8 @@ public:
   typedef itk::DWIQCInterlaceChecker<DwiImageType> InterlaceCheckerType;
   typedef itk::DWIBaselineAverager<DwiImageType>   BaselineAveragerType;
   typedef itk::DWIQCGradientChecker<DwiImageType>  GradientCheckerType;
-
+  
+  
   itksysProcess* m_Process;
 
   // eddy-motion Utah
@@ -118,6 +122,8 @@ public:
   bool EddyMotionCorrectIowa( DwiImageType::Pointer dwi );
 
   bool GradientWiseCheck( DwiImageType::Pointer dwi );
+  
+  bool DominantDirectionalCheck();
 
   bool SaveDwiForcedConformanceImage(void);
 
@@ -311,6 +317,10 @@ public:
   std::string  ReportFileName;
 
 private:
+  
+ // DiffusionTensorEstimation	m_DominantDirectionDetector;
+
+  
   void collectDiffusionStatistics();
 
   void collectLeftDiffusionStatistics( DwiImageType::Pointer dwi, std::string reportfilename );

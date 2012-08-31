@@ -122,6 +122,14 @@ enum ProtocolStringValue
   JOINDENOISING_NumNeighborGradients,
   JOINDENOISING_Est_Radius,
   JOINDENOISING_Filter_Radius,
+  
+  
+  // Dominant Directional Artifact
+    DOMINANTDIRECTIONAL_bCheck,
+    DOMINANTDIRECTIONAL_Mean,
+    DOMINANTDIRECTIONAL_Deviation,
+    DOMINANTDIRECTIONAL_Threshold1,
+    DOMINANTDIRECTIONAL_Threshold2,
 
   // baseline average
   BASELINE_bAverage,
@@ -137,12 +145,13 @@ enum ProtocolStringValue
   //   EDDYMOTION_inputFileName,
   //   EDDYMOTION_outputFileName,
 
-  EDDYMOTION_numberOfBins,
+  EDDYMOTION_numberOfIterations,
   EDDYMOTION_numberOfSamples,
   EDDYMOTION_translationScale,
-  EDDYMOTION_stepLength,
+  EDDYMOTION_maxStepLength,
+  EDDYMOTION_minStepLength,
   EDDYMOTION_relaxFactor,
-  EDDYMOTION_maxNumberOfIterations,
+  //EDDYMOTION_maxNumberOfIterations,
 
   EDDYMOTION_outputDWIFileNameSuffix,
   EDDYMOTION_reportFileNameSuffix,
