@@ -25,7 +25,7 @@
 #include <itksys/Process.h>
 #include <itksys/Glob.hxx>
 
-//#include "DominantDirectional_Detector.h"
+#include "DominantDirectional/DominantDirectional_Detector.h"
 
 
 #include "itkDWIEddyCurrentHeadMotionCorrector.h" // eddy-motion Utah

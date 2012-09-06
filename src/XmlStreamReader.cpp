@@ -118,16 +118,16 @@ void XmlStreamReader::InitializeProtocolStringValues()
     = JOINDENOISING_Filter_Radius;
   
   // Dominant Directional Artifact
-   s_mapProtocolStringValues["DOMINANTDIRECTIONAL_bCheck"]
-                             = DOMINANTDIRECTIONAL_bCheck;
-   s_mapProtocolStringValues["DOMINANTDIRECTIONAL_Mean"]
-                               = DOMINANTDIRECTIONAL_Mean;
-   s_mapProtocolStringValues["DOMINANTDIRECTIONAL_Deviation"]
-                               = DOMINANTDIRECTIONAL_Deviation;
-   s_mapProtocolStringValues["DOMINANTDIRECTIONAL_Threshold1"]
-                               = DOMINANTDIRECTIONAL_Threshold1;
-   s_mapProtocolStringValues["DOMINANTDIRECTIONAL_Threshold2"]
-                               = DOMINANTDIRECTIONAL_Threshold2;
+   s_mapProtocolStringValues["DOMINANTDIRECTION_bCheck"]
+                             = DOMINANTDIRECTION_bCheck;
+   s_mapProtocolStringValues["DOMINANTDIRECTION_Mean"]
+                               = DOMINANTDIRECTION_Mean;
+   s_mapProtocolStringValues["DOMINANTDIRECTION_Deviation"]
+                               = DOMINANTDIRECTION_Deviation;
+   s_mapProtocolStringValues["DOMINANTDIRECTION_Threshold1"]
+                               = DOMINANTDIRECTION_Threshold1;
+   s_mapProtocolStringValues["DOMINANTDIRECTION_Threshold2"]
+                               = DOMINANTDIRECTION_Threshold2;
 
   // slice check
   s_mapProtocolStringValues["SLICE_bCheck"]
@@ -1442,6 +1442,7 @@ void XmlStreamReader::parseXMLParametersToProtocol()
               {
               protocol->GetImageProtocol(). spacedirection[temp / 3][temp % 3] // row dominant
                 = subvalue.toDouble();
+              
               temp++;
               }
             }
@@ -1944,7 +1945,7 @@ void XmlStreamReader::parseXMLParametersToProtocol()
           
           
         // Dominant directional artifact detector (entropy tool)
-        case DOMINANTDIRECTIONAL_bCheck:
+        case DOMINANTDIRECTION_bCheck:
         	if ( paremeters[i].value.toLower().toStdString() == "yes" )
             {
         		protocol->GetDominantDirectional_Detector().bCheck = true;
@@ -1954,16 +1955,16 @@ void XmlStreamReader::parseXMLParametersToProtocol()
               	protocol->GetDominantDirectional_Detector().bCheck = false;
             }
             break;
-       case DOMINANTDIRECTIONAL_Mean:
+       case DOMINANTDIRECTION_Mean:
     	   protocol->GetDominantDirectional_Detector().Mean = paremeters[i].value.toDouble();
            break;
-       case DOMINANTDIRECTIONAL_Deviation:
+       case DOMINANTDIRECTION_Deviation:
            protocol->GetDominantDirectional_Detector().Deviation = paremeters[i].value.toDouble();
            break;
-       case DOMINANTDIRECTIONAL_Threshold1:
+       case DOMINANTDIRECTION_Threshold1:
            protocol->GetDominantDirectional_Detector().Threshold_Acceptance = paremeters[i].value.toDouble();
            break;
-       case DOMINANTDIRECTIONAL_Threshold2:
+       case DOMINANTDIRECTION_Threshold2:
            protocol->GetDominantDirectional_Detector().Threshold_Suspicion_Unacceptance = paremeters[i].value.toDouble();
            break;  
            

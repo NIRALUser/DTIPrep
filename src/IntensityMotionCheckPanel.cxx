@@ -1964,13 +1964,13 @@ void IntensityMotionCheckPanel::UpdateProtocolToTreeWidget()
   itemSpaceDirections->setText( 0, tr("IMAGE_directions") );
   itemSpaceDirections->setText(1, QString("%1 %2 %3, %4 %5 %6, %7 %8 %9")
                                .arg(this->GetProtocol().GetImageProtocol().spacedirection[0][0], 0, 'f', 6)
-                               .arg(this->GetProtocol().GetImageProtocol().spacedirection[1][0], 0, 'f', 6)
-                               .arg(this->GetProtocol().GetImageProtocol().spacedirection[2][0], 0, 'f', 6)
                                .arg(this->GetProtocol().GetImageProtocol().spacedirection[0][1], 0, 'f', 6)
-                               .arg(this->GetProtocol().GetImageProtocol().spacedirection[1][1], 0, 'f', 6)
-                               .arg(this->GetProtocol().GetImageProtocol().spacedirection[2][1], 0, 'f', 6)
                                .arg(this->GetProtocol().GetImageProtocol().spacedirection[0][2], 0, 'f', 6)
+                               .arg(this->GetProtocol().GetImageProtocol().spacedirection[1][0], 0, 'f', 6)
+                               .arg(this->GetProtocol().GetImageProtocol().spacedirection[1][1], 0, 'f', 6)
                                .arg(this->GetProtocol().GetImageProtocol().spacedirection[1][2], 0, 'f', 6)
+                               .arg(this->GetProtocol().GetImageProtocol().spacedirection[2][0], 0, 'f', 6)
+                               .arg(this->GetProtocol().GetImageProtocol().spacedirection[2][1], 0, 'f', 6)
                                .arg(this->GetProtocol().GetImageProtocol().spacedirection[2][2], 0, 'f', 6)
                                );
 

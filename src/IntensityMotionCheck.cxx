@@ -3442,9 +3442,14 @@ bool CIntensityMotionCheck::DominantDirectionalCheck()
 	    	Entropy_Report.append( "_EntropyReport.txt");
 	    }
 	    
-	   // DiffusionTensorEstimation m_DominantDirectionDetector;
+	   DiffusionTensorEstimation m_DominantDirectionDetector;
+	   
+	   std::string str_mask = "/biomed-resimg/work/mahshid/Data/Entropy/Autism/189601/V12/mri/native/DTI/Mask/189601V12_WholeBrain.nrrd";
 	  
-	   // this->qcResult->GetDominantDirection_Detector().entropy_value = m_DominantDirectionDetector.EstimateTensor_Whitematter_GrayMatter("", m_outputDWIFileName, Entropy_Report, "");
+	   this->qcResult->GetDominantDirection_Detector().entropy_value = m_DominantDirectionDetector.EstimateTensor_Whitematter_GrayMatter(str_mask, m_outputDWIFileName, Entropy_Report, "");
+	   
+	   std::cout << "Entropy value: " << this->qcResult->GetDominantDirection_Detector().entropy_value << std::endl;
+	   
 	    
 	    }
 	  else
@@ -5704,10 +5709,10 @@ bool CIntensityMotionCheck::MakeDefaultProtocol( Protocol *_protocol )
     }
 
   // imaging frame
-  vnl_matrix_fixed<double, 3, 3> imgf;
-  imgf = m_DwiOriginalImage->GetDirection().GetVnlMatrix();
+  const vnl_matrix_fixed<double, 3, 3> & imgf = m_DwiOriginalImage->GetDirection().GetVnlMatrix();
 
   _protocol->GetImageProtocol(). spacedirection[0][0] = imgf(0, 0);
+  
   _protocol->GetImageProtocol(). spacedirection[0][1] = imgf(0, 1);
   _protocol->GetImageProtocol(). spacedirection[0][2] = imgf(0, 2);
   _protocol->GetImageProtocol(). spacedirection[1][0] = imgf(1, 0);

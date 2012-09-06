@@ -131,7 +131,7 @@ int main( int argc, char * *argv )
 			resultXMLFile = str;
 			resultXMLFile.append( Dwi_file_name );
 			resultXMLFile.append( "_XMLQCResult.xml" );
-			std::cout << "Mehdi " << resultXMLFile << std::endl;
+			
 			
 		}
 
@@ -179,8 +179,8 @@ int main( int argc, char * *argv )
         }
 
       
-      std::cout << " Mehdi bCreateDefaultProtocol " << bCreateDefaultProtocol << std::endl;
-      std::cout << "Mehdi bcheckByProtocol " << bcheckByProtocol << std::endl;
+      
+      
       
       if( bcheckByProtocol || ( !bCreateDefaultProtocol && !bcheckByProtocol ) )
         {

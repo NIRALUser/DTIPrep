@@ -125,11 +125,11 @@ enum ProtocolStringValue
   
   
   // Dominant Directional Artifact
-    DOMINANTDIRECTIONAL_bCheck,
-    DOMINANTDIRECTIONAL_Mean,
-    DOMINANTDIRECTIONAL_Deviation,
-    DOMINANTDIRECTIONAL_Threshold1,
-    DOMINANTDIRECTIONAL_Threshold2,
+    DOMINANTDIRECTION_bCheck,
+    DOMINANTDIRECTION_Mean,
+    DOMINANTDIRECTION_Deviation,
+    DOMINANTDIRECTION_Threshold1,
+    DOMINANTDIRECTION_Threshold2,
 
   // baseline average
   BASELINE_bAverage,
