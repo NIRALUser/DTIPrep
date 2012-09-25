@@ -340,7 +340,7 @@ public:
 } // end namespace itk
 
 #ifndef ITK_MANUAL_INSTANTIATION
-#include "itkDWIQCInterlaceChecker.cpp"
+#include "itkDWIQCInterlaceChecker.hxx"
 #endif
 
 #endif

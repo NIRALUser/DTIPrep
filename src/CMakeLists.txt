@@ -24,36 +24,27 @@ set( DTIPrep_SRCS
   ThreadDicomToNrrd.cxx
   ThreadDicomSeriesRead.cxx
   FurtherQCThread.cxx
-  XmlStreamReader.cpp
-  XmlStreamWriter.cpp
-  Protocol.cpp
-  QCResult.cpp
-# new itk Classes
-  itkDWICropper.cpp
-  itkDWIBaselineAverager.cpp
-  itkDWIQCSliceChecker.cpp
-  itkDWIQCInterlaceChecker.cpp
-  itkDWIQCGradientChecker.cpp
-  itkDWIEddyCurrentHeadMotionCorrector.cpp
+  XmlStreamReader.cxx
+  XmlStreamWriter.cxx
+  Protocol.cxx
+  QCResult.cxx
 # Utah
-#  itkDWIHeadMotionEddyCurrentCorrection.txx
-  itkDWIHeadMotionEddyCurrentCorrection.cpp
+  itkDWIHeadMotionEddyCurrentCorrection.cxx
   itkGradientSteepestDescentBaseOptimizer.cxx
   itkGradientSteepestDescentOptimizer.cxx
 # Iowa
   itkVectorImageRegisterAffineFilter.h
-  itkVectorImageRegisterAffineFilter.txx
 # MIT
  itkMultiImageRegistrationFilter.cxx
  GradientDescentLineSearchOptimizer.cxx
  DominantDirectional/DominantDirectional_Detector.cxx
- DominantDirectional/Counter.cc
- DominantDirectional/Point.cc
- DominantDirectional/Sphere.cc
+ DominantDirectional/Counter.cxx
+ DominantDirectional/Point.cxx
+ DominantDirectional/Sphere.cxx
  DominantDirectional/SphereIkosahedron.cxx
- DominantDirectional/Triangle.cc
- DominantDirectional/Vector.cc
- DominantDirectional/Geometry_Common.cc
+ DominantDirectional/Triangle.cxx
+ DominantDirectional/Vector.cxx
+ DominantDirectional/Geometry_Common.cxx
 )
 
 generateclp(DTIPrep_SRCS DTIPrep.xml )

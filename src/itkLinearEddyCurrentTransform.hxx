@@ -1,8 +1,8 @@
 
 /** For Linear Eddy Current Transformation **/
 
-#ifndef _itkLinearEddyCurrentTransform_txx
-#define _itkLinearEddyCurrentTransform_txx
+#ifndef _itkLinearEddyCurrentTransform_hxx
+#define _itkLinearEddyCurrentTransform_hxx
 
 #include "itkNumericTraits.h"
 #include "itkLinearEddyCurrentTransform.h"

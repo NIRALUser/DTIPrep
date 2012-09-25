@@ -1,7 +1,7 @@
 /*=========================================================================
 
   Program:   Insight Segmentation & Registration Toolkit
-  Module:    $RCSfile: itkMutualInformationImageToImageMetric.txx,v $
+  Module:    $RCSfile: itkMutualInformationImageToImageMetric.hxx,v $
   Language:  C++
   Date:      $Date: 2006/03/19 04:36:55 $
   Version:   $Revision: 1.60 $

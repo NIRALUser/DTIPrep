@@ -303,7 +303,7 @@ private:
 } // end namespace itk
 
 #ifndef ITK_MANUAL_INSTANTIATION
-#include "itkDWIEddyCurrentHeadMotionCorrector.cpp"
+#include "itkDWIEddyCurrentHeadMotionCorrector.hxx"
 #endif
 
 #endif

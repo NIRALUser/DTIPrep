@@ -405,7 +405,7 @@ private:
 #endif
 
 #if ITK_TEMPLATE_TXX
-#include "itkLinearEddyCurrentTransform.txx"
+#include "itkLinearEddyCurrentTransform.hxx"
 #endif
 
 #endif /* __itkLinearEddyCurrentTransform_h */

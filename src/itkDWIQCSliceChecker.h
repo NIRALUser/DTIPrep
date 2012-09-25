@@ -428,7 +428,7 @@ public:
 } // end namespace itk
 
 #ifndef ITK_MANUAL_INSTANTIATION
-#include "itkDWIQCSliceChecker.cpp"
+#include "itkDWIQCSliceChecker.hxx"
 #endif
 
 #endif

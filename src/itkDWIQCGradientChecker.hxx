@@ -1,25 +1,25 @@
 /*=========================================================================
 
- Program:   NeuroLib
- Module:    $file: itkDWIQCInterlaceChecker.cpp $
- Language:  C++
- Date:      $Date: 2009-11-26 21:52:35 $
- Version:   $Revision: 1.10 $
- Author:    Zhexing Liu (liuzhexing@gmail.com)
+Program:   NeuroLib
+Module:    $file: itkDWIQCGradientChecker.cpp $
+Language:  C++
+Date:      $Date: 2009-11-26 21:52:35 $
+Version:   $Revision: 1.10 $
+Author:    Zhexing Liu (liuzhexing@gmail.com)
 
- Copyright (c) NIRAL, UNC. All rights reserved.
- See http://www.niral.unc.edu for details.
+Copyright (c) NIRAL, UNC. All rights reserved.
+See http://www.niral.unc.edu for details.
 
- This software is distributed WITHOUT ANY WARRANTY; without even
- the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- PURPOSE.  See the above copyright notices for more information.
+This software is distributed WITHOUT ANY WARRANTY; without even
+the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+PURPOSE.  See the above copyright notices for more information.
 
- =========================================================================*/
+=========================================================================*/
 
-#ifndef _itkDWIQCInterlaceChecker_cpp
-#define _itkDWIQCInterlaceChecker_cpp
+#ifndef _itkDWIQCGradientChecker_hxx
+#define _itkDWIQCGradientChecker_hxx
 
-#include "itkDWIQCInterlaceChecker.h"
+#include "itkDWIQCGradientChecker.h"
 #include "itkImageRegionIteratorWithIndex.h"
 #include "itkExceptionObject.h"
 #include "itkProgressReporter.h"
@@ -28,7 +28,6 @@
 #include "itkVectorIndexSelectionCastImageFilter.h"
 #include "itkExtractImageFilter.h"
 #include "vnl/vnl_matrix.h"
-#include "vnl/algo/vnl_matrix_inverse.h"
 
 #include "itkMeanSquaresImageToImageMetric.h"
 #include "itkImageRegistrationMethod.h"
@@ -46,58 +45,53 @@
 namespace itk
 {
 /**
- *
- */
+*
+*/
 template <class TImageType>
-DWIQCInterlaceChecker<TImageType>
-::DWIQCInterlaceChecker()
+DWIQCGradientChecker<TImageType>
+::DWIQCGradientChecker()
 {
-  m_CorrelationThresholdBaseline  = 0.95;
-  m_CorrelationThresholdGradient  = 0.95;
-  m_TranslationThreshold      = 2.00;
-  m_RotationThreshold        = 0.50;
-
-  m_CorrelationStedvTimesBaseline = 3.0;
-  m_CorrelationStdevTimesGradient = 3.5;
+  m_TranslationThreshold  = 2.00;
+  m_RotationThreshold    = 0.50;
 
   b0 = -1.0;
-
   m_ReportFileName = "";
-  m_ReportFileMode = DWIQCInterlaceChecker::REPORT_FILE_NEW;
-  m_ReportType = DWIQCInterlaceChecker::REPORT_TYPE_VERBOSE;
-
+  m_ReportFileMode = DWIQCGradientChecker::REPORT_FILE_NEW;
+  m_ReferenceIndex = 0;
   bValues.clear();
+
+  m_ExcludeGradientsWithLargeMotionArtifacts = true;
 
   CheckDoneOff();
 }
 
 /**
- *
- */
+*
+*/
 template <class TImageType>
-DWIQCInterlaceChecker<TImageType>
-::~DWIQCInterlaceChecker()
+DWIQCGradientChecker<TImageType>
+::~DWIQCGradientChecker()
 {
 }
 
 /**
- * PrintSelf
- */
+* PrintSelf
+*/
 template <class TImageType>
 void
-DWIQCInterlaceChecker<TImageType>
+DWIQCGradientChecker<TImageType>
 ::PrintSelf(std::ostream & os, Indent indent) const
 {
   Superclass::PrintSelf(os, indent);
-  os << indent << "DWI QC interlace-wise check filter: " << std::endl;
+  os << indent << "DWI QC gradient-wise check filter: " << std::endl;
 }
 
 /**
- * initialize QC Resullts
- */
+* initialize QC Resullts
+*/
 template <class TImageType>
 void
-DWIQCInterlaceChecker<TImageType>
+DWIQCGradientChecker<TImageType>
 ::initializeQCResullts()
 {
   for( unsigned int j = 0; j < this->GetInput()->GetVectorLength(); j++ )
@@ -107,11 +101,257 @@ DWIQCInterlaceChecker<TImageType>
 }
 
 /**
- *
- */
+*
+*/
 template <class TImageType>
 void
-DWIQCInterlaceChecker<TImageType>
+DWIQCGradientChecker<TImageType>
+::rigidRegistration(
+  GradientImageType::Pointer fixed,
+  GradientImageType::Pointer moving,
+  unsigned int BinsNumber,
+  double SamplesPercent,
+  bool /* ExplicitPDFDerivatives */,
+  GradientResult &  regResult
+  )
+{
+  // setup pipeline
+  typedef itk::VersorRigid3DTransform<double>
+  TransformType;
+  typedef itk::VersorRigid3DTransformOptimizer
+  OptimizerType;
+  typedef itk::MattesMutualInformationImageToImageMetric<GradientImageType,
+                                                         GradientImageType> MetricType;
+  typedef itk::LinearInterpolateImageFunction<GradientImageType,
+                                              double>            InterpolatorType;
+  typedef itk::ImageRegistrationMethod<GradientImageType,
+                                       GradientImageType> RegistrationType;
+
+  typedef GradientImageType::SpacingType
+  SpacingType;
+  typedef GradientImageType::PointType
+  OriginType;
+  typedef GradientImageType::RegionType
+  RegionType;
+  typedef GradientImageType::SizeType
+  SizeType;
+
+  MetricType::Pointer       metric      = MetricType::New();
+  OptimizerType::Pointer    optimizer    = OptimizerType::New();
+  InterpolatorType::Pointer interpolator  = InterpolatorType::New();
+  RegistrationType::Pointer registration  = RegistrationType::New();
+  TransformType::Pointer    transform    = TransformType::New();
+
+  GradientImageType::Pointer fixedImage = fixed;
+  GradientImageType::Pointer movingImage = moving;
+
+  unsigned int numberOfBins = BinsNumber;
+  double       percentOfSamples = SamplesPercent;     // 1% ~ 20%
+  // bool  useExplicitPDFDerivatives = ExplicitPDFDerivatives;
+
+  registration->SetMetric(        metric        );
+  registration->SetOptimizer(     optimizer     );
+  registration->SetInterpolator(  interpolator  );
+  registration->SetTransform(     transform    );
+
+  registration->SetFixedImage(   fixedImage );
+  registration->SetMovingImage(  movingImage);
+
+  // setup parameters
+  registration->SetFixedImageRegion( fixedImage->GetBufferedRegion() );
+
+  typedef itk::CenteredTransformInitializer<TransformType, GradientImageType,
+                                            GradientImageType> TransformInitializerType;
+  TransformInitializerType::Pointer initializer = TransformInitializerType::New();
+
+  initializer->SetTransform(   transform );
+  initializer->SetFixedImage(  fixedImage );
+  initializer->SetMovingImage( movingImage);
+  initializer->MomentsOn();
+  // initializer->GeometryOn();
+  initializer->InitializeTransform();
+
+  typedef TransformType::VersorType VersorType;
+  typedef VersorType::VectorType    VectorType;
+
+  VersorType rotation;
+  VectorType axis;
+
+  axis[0] = 0.0;
+  axis[1] = 0.0;
+  axis[2] = 1.0;
+
+  const double angle = 0;
+  rotation.Set(  axis, angle  );
+  transform->SetRotation( rotation );
+
+  registration->SetInitialTransformParameters( transform->GetParameters() );
+
+  typedef OptimizerType::ScalesType OptimizerScalesType;
+  OptimizerScalesType optimizerScales( transform->GetNumberOfParameters() );
+  const double        translationScale = 1.0 / 1000.0;
+
+  optimizerScales[0] = 1.0;
+  optimizerScales[1] = 1.0;
+  optimizerScales[2] = 1.0;
+  optimizerScales[3] = translationScale;
+  optimizerScales[4] = translationScale;
+  optimizerScales[5] = translationScale;
+
+  optimizer->SetScales( optimizerScales );
+  optimizer->SetMaximumStepLength( 0.2000  );
+  optimizer->SetMinimumStepLength( 0.0001 );
+
+  optimizer->SetNumberOfIterations( 1000 );
+  metric->SetNumberOfHistogramBins( numberOfBins );
+
+  int SampleSize
+    = (int)(fixedImage->GetPixelContainer()->Size() * percentOfSamples);
+  if( SampleSize > 100000 )
+    {
+    metric->SetNumberOfSpatialSamples( SampleSize );
+    }
+  else
+    {
+    metric->UseAllPixelsOn();
+    }
+
+  // metric->SetUseExplicitPDFDerivatives( useExplicitPDFDerivatives ); //true
+  // for small #of parameters; false for big #of transform paramrters
+
+  // run the registration pipeline
+  try
+    {
+    registration->Update();
+    }
+  catch( itk::ExceptionObject & err )
+    {
+    std::cerr << "ExceptionObject caught !" << std::endl;
+    std::cerr << err << std::endl;
+    return;
+    }
+
+  OptimizerType::ParametersType finalParameters
+    = registration->GetLastTransformParameters();
+
+  const double finalAngleX           = finalParameters[0];
+  const double finalAngleY           = finalParameters[1];
+  const double finalAngleZ           = finalParameters[2];
+  const double finalTranslationX     = finalParameters[3];
+  const double finalTranslationY     = finalParameters[4];
+  const double finalTranslationZ     = finalParameters[5];
+
+  // const unsigned int numberOfIterations = optimizer->GetCurrentIteration();
+  const double bestValue = optimizer->GetValue();
+
+  // Print out results
+  const double finalAngleInDegreesX = finalAngleX * 45.0 / atan(1.0);
+  const double finalAngleInDegreesY = finalAngleY * 45.0 / atan(1.0);
+  const double finalAngleInDegreesZ = finalAngleZ * 45.0 / atan(1.0);
+
+  //     std::cout << "Result = " << std::endl;
+  //     std::cout << " AngleX (radians)   = " << finalAngleX  << std::endl;
+  //     std::cout << " AngleX (degrees)   = " << finalAngleInDegreesX  <<
+  // std::endl;
+  //     std::cout << " AngleY (radians)   = " << finalAngleY  << std::endl;
+  //     std::cout << " AngleY (degrees)   = " << finalAngleInDegreesY  <<
+  // std::endl;
+  //     std::cout << " AngleZ (radians)   = " << finalAngleZ  << std::endl;
+  //     std::cout << " AngleZ (degrees)   = " << finalAngleInDegreesZ  <<
+  // std::endl;
+  //     std::cout << " Translation X = " << finalTranslationX  << std::endl;
+  //     std::cout << " Translation Y = " << finalTranslationY  << std::endl;
+  //     std::cout << " Translation Z = " << finalTranslationZ  << std::endl;
+  //     std::cout << " Iterations    = " << numberOfIterations << std::endl;
+  //     std::cout << " Metric value  = " << bestValue          << std::endl;
+
+  regResult.AngleX = finalAngleInDegreesX;
+  regResult.AngleY = finalAngleInDegreesY;
+  regResult.AngleZ = finalAngleInDegreesZ;
+  regResult.TranslationX = finalTranslationX;
+  regResult.TranslationY = finalTranslationY;
+  regResult.TranslationZ = finalTranslationZ;
+  regResult.MutualInformation = -bestValue;
+
+  return;
+}
+
+/**
+*
+*/
+template <class TImageType>
+void
+DWIQCGradientChecker<TImageType>
+::calculate()
+{
+  std::cout << "Gradient calculating " << std::endl;
+  InputImageConstPointer inputPtr = this->GetInput();
+
+  typedef itk::VectorIndexSelectionCastImageFilter<TImageType,
+                                                   GradientImageType> FilterType;
+  typename FilterType::Pointer componentExtractor = FilterType::New();
+  componentExtractor->SetInput(inputPtr);
+
+  typename FilterType::Pointer componentExtractor1 = FilterType::New();
+  componentExtractor1->SetInput(inputPtr);
+
+  // set the first baseline or first gradient as a reference if no baseline
+  // found
+  this->m_ReferenceIndex = 0;
+  for( unsigned int i = 0; i < ResultsContainer.size(); i++ )
+    {
+    if( this->m_GradientDirectionContainer->at(i)[0] == 0.0
+        && this->m_GradientDirectionContainer->at(i)[1] == 0.0
+        && this->m_GradientDirectionContainer->at(i)[2] == 0.0    )
+      {
+      m_ReferenceIndex = i;
+      break;
+      }
+    }
+  componentExtractor->SetIndex(m_ReferenceIndex);
+  componentExtractor->Update();
+
+  std::vector<struGradientResult> Results;
+  for( unsigned int j = 0; j < inputPtr->GetVectorLength(); j++ )
+    {
+    struGradientResult result;
+
+    if( m_ReferenceIndex == j )
+      {
+      result.AngleX = 0.0;
+      result.AngleY = 0.0;
+      result.AngleZ = 0.0;
+      result.TranslationX = 0.0;
+      result.TranslationY = 0.0;
+      result.TranslationZ = 0.0;
+      result.MutualInformation = 1.0;
+
+      this->ResultsContainer.push_back(result);
+      continue;
+      }
+
+    componentExtractor1->SetIndex( j );
+    componentExtractor1->Update();
+
+    std::cout << "Register Gradient " << j << " to Baseline or first Image ..." << std::endl;
+
+    rigidRegistration(
+      componentExtractor->GetOutput(),
+      componentExtractor1->GetOutput(), 25, 0.1, 1, result );
+    this->ResultsContainer.push_back(result);
+
+    }
+
+  std::cout << " DONE" << std::endl;
+  return;
+}
+
+/**
+*
+*/
+template <class TImageType>
+void
+DWIQCGradientChecker<TImageType>
 ::GenerateOutputInformation()
 {
   // call the superclass' implementation of this method
@@ -126,19 +366,25 @@ DWIQCInterlaceChecker<TImageType>
     return;
     }
 
-  // perform InterlaceWiseCheck
-  // std::cout << "Interlace wise checking begins here. " <<std::endl;
+  // perform SliceWiseCheck
   parseGradientDirections();
   collectDiffusionStatistics();
   initializeQCResullts();
-  calculateCorrelationsAndMotions();
+  calculate();
   DoCheck();
   collectLeftDiffusionStatistics();
   writeReport();
   CheckDoneOn();
 
-  outputPtr->SetVectorLength(
-    this->baselineLeftNumber + this->gradientLeftNumber);
+  if( m_ExcludeGradientsWithLargeMotionArtifacts )
+    {
+    outputPtr->SetVectorLength(
+      this->baselineLeftNumber + this->gradientLeftNumber);
+    }
+  else
+    {
+    outputPtr->SetVectorLength( qcResults.size() );
+    }
 
   itk::MetaDataDictionary outputMetaDictionary;
 
@@ -218,9 +464,38 @@ DWIQCInterlaceChecker<TImageType>
   int temp = 0;
   for( unsigned int i = 0; i < this->m_GradientDirectionContainer->Size(); i++ )
     {
-    if( this->qcResults[i] )
+    if( m_ExcludeGradientsWithLargeMotionArtifacts )
       {
-      // std::cout << "qcResult_InterlaceWise: "<< this->qcResults[i] << std::endl;
+      if( this->qcResults[i] )
+        {
+        std::ostringstream ossKey;
+        ossKey << "DWMRI_gradient_" << std::setw(4) << std::setfill('0')
+               << temp;
+
+        std::ostringstream ossMetaString;
+        ossMetaString << std::setw(9) << std::setiosflags(std::ios::fixed)
+                      << std::setprecision(6) << std::setiosflags(
+          std::ios::right)
+                      << this->m_GradientDirectionContainer->ElementAt(i)[0]
+                      << "    "
+                      << std::setw(9) << std::setiosflags(std::ios::fixed)
+                      << std::setprecision(6) << std::setiosflags(
+          std::ios::right)
+                      << this->m_GradientDirectionContainer->ElementAt(i)[1]
+                      << "    "
+                      << std::setw(9) << std::setiosflags(std::ios::fixed)
+                      << std::setprecision(6) << std::setiosflags(
+          std::ios::right)
+                      << this->m_GradientDirectionContainer->ElementAt(i)[2];
+
+        // std::cout<<ossKey.str()<<ossMetaString.str()<<std::endl;
+        itk::EncapsulateMetaData<std::string>( outputMetaDictionary, ossKey.str(
+                                                 ), ossMetaString.str() );
+        ++temp;
+        }
+      }
+    else
+      {
       std::ostringstream ossKey;
       ossKey << "DWMRI_gradient_" << std::setw(4) << std::setfill('0') << temp;
 
@@ -237,7 +512,6 @@ DWIQCInterlaceChecker<TImageType>
                     << std::setprecision(6) << std::setiosflags(std::ios::right)
                     << this->m_GradientDirectionContainer->ElementAt(i)[2];
 
-      // std::cout<<ossKey.str()<<ossMetaString.str()<<std::endl;
       itk::EncapsulateMetaData<std::string>( outputMetaDictionary,
                                              ossKey.str(), ossMetaString.str() );
       ++temp;
@@ -247,610 +521,62 @@ DWIQCInterlaceChecker<TImageType>
 }
 
 /**
- *
- */
+*
+*/
 template <class TImageType>
 void
-DWIQCInterlaceChecker<TImageType>
-::rigidRegistration(
-  GradientImageType::Pointer odd,
-  GradientImageType::Pointer even,
-  unsigned int BinsNumber,
-  double SamplesPercent,
-  bool /* ExplicitPDFDerivatives */,
-  struInterlaceResults &  regResult
-  )
-{
-  // setup pipeline
-  typedef itk::VersorRigid3DTransform<double>
-  TransformType;
-  typedef itk::VersorRigid3DTransformOptimizer
-  OptimizerType;
-  typedef itk::MattesMutualInformationImageToImageMetric<GradientImageType,
-                                                         GradientImageType> MetricType;
-  typedef itk::LinearInterpolateImageFunction<GradientImageType,
-                                              double>            InterpolatorType;
-  typedef itk::ImageRegistrationMethod<GradientImageType,
-                                       GradientImageType> RegistrationType;
-
-  typedef GradientImageType::SpacingType
-  SpacingType;
-  typedef GradientImageType::PointType
-  OriginType;
-  typedef GradientImageType::RegionType
-  RegionType;
-  typedef GradientImageType::SizeType
-  SizeType;
-
-  MetricType::Pointer       metric      = MetricType::New();
-  OptimizerType::Pointer    optimizer    = OptimizerType::New();
-  InterpolatorType::Pointer interpolator  = InterpolatorType::New();
-  RegistrationType::Pointer registration  = RegistrationType::New();
-  TransformType::Pointer    transform    = TransformType::New();
-
-  GradientImageType::Pointer fixedImage = odd;
-  GradientImageType::Pointer movingImage = even;
-
-  unsigned int numberOfBins = BinsNumber;
-  double       percentOfSamples = SamplesPercent;   // 1% ~ 20%
-  // bool  useExplicitPDFDerivatives = ExplicitPDFDerivatives;
-
-  registration->SetMetric(        metric        );
-  registration->SetOptimizer(     optimizer     );
-  registration->SetInterpolator(  interpolator  );
-  registration->SetTransform(     transform    );
-
-  registration->SetFixedImage(   fixedImage );
-  registration->SetMovingImage(  movingImage);
-
-  // setup parameters
-  registration->SetFixedImageRegion( fixedImage->GetBufferedRegion() );
-
-  typedef itk::CenteredTransformInitializer<TransformType, GradientImageType,
-                                            GradientImageType> TransformInitializerType;
-  TransformInitializerType::Pointer initializer = TransformInitializerType::New();
-
-  initializer->SetTransform(   transform );
-  initializer->SetFixedImage(  fixedImage );
-  initializer->SetMovingImage( movingImage);
-  initializer->MomentsOn();
-  // initializer->GeometryOn();
-  initializer->InitializeTransform();
-
-  typedef TransformType::VersorType VersorType;
-  typedef VersorType::VectorType    VectorType;
-
-  VersorType rotation;
-  VectorType axis;
-
-  axis[0] = 0.0;
-  axis[1] = 0.0;
-  axis[2] = 1.0;
-
-  const double angle = 0;
-  rotation.Set(  axis, angle  );
-  transform->SetRotation( rotation );
-
-  registration->SetInitialTransformParameters( transform->GetParameters() );
-
-  typedef OptimizerType::ScalesType OptimizerScalesType;
-  OptimizerScalesType optimizerScales( transform->GetNumberOfParameters() );
-  const double        translationScale = 1.0 / 1000.0;
-
-  optimizerScales[0] = 1.0;
-  optimizerScales[1] = 1.0;
-  optimizerScales[2] = 1.0;
-  optimizerScales[3] = translationScale;
-  optimizerScales[4] = translationScale;
-  optimizerScales[5] = translationScale;
-
-  optimizer->SetScales( optimizerScales );
-  optimizer->SetMaximumStepLength( 0.2000  );
-  optimizer->SetMinimumStepLength( 0.0001 );
-
-  optimizer->SetNumberOfIterations( 1000 );
-  metric->SetNumberOfHistogramBins( numberOfBins );
-
-  int SampleSize
-    = (int)(fixedImage->GetPixelContainer()->Size() * percentOfSamples);
-  if( SampleSize > 100000 )
-    {
-    metric->SetNumberOfSpatialSamples( SampleSize );
-    }
-  else
-    {
-    metric->UseAllPixelsOn();
-    }
-
-  // run the registration pipeline
-  try
-    {
-    registration->Update();
-    }
-  catch( itk::ExceptionObject & err )
-    {
-    std::cerr << "ExceptionObject caught !" << std::endl;
-    std::cerr << err << std::endl;
-    return;
-    }
-
-  OptimizerType::ParametersType finalParameters
-    = registration->GetLastTransformParameters();
-
-  const double finalAngleX           = finalParameters[0];
-  const double finalAngleY           = finalParameters[1];
-  const double finalAngleZ           = finalParameters[2];
-  const double finalTranslationX     = finalParameters[3];
-  const double finalTranslationY     = finalParameters[4];
-  const double finalTranslationZ     = finalParameters[5];
-
-  // const unsigned int numberOfIterations = optimizer->GetCurrentIteration();
-  const double bestValue = optimizer->GetValue();
-
-  // Print out results
-  const double finalAngleInDegreesX = finalAngleX * 45.0 / atan(1.0);
-  const double finalAngleInDegreesY = finalAngleY * 45.0 / atan(1.0);
-  const double finalAngleInDegreesZ = finalAngleZ * 45.0 / atan(1.0);
-
-  //     std::cout << "Result = " << std::endl;
-  //     std::cout << " AngleX (radians)   = " << finalAngleX  << std::endl;
-  //     std::cout << " AngleX (degrees)   = " << finalAngleInDegreesX  <<
-  // std::endl;
-  //     std::cout << " AngleY (radians)   = " << finalAngleY  << std::endl;
-  //     std::cout << " AngleY (degrees)   = " << finalAngleInDegreesY  <<
-  // std::endl;
-  //     std::cout << " AngleZ (radians)   = " << finalAngleZ  << std::endl;
-  //     std::cout << " AngleZ (degrees)   = " << finalAngleInDegreesZ  <<
-  // std::endl;
-  //     std::cout << " Translation X = " << finalTranslationX  << std::endl;
-  //     std::cout << " Translation Y = " << finalTranslationY  << std::endl;
-  //     std::cout << " Translation Z = " << finalTranslationZ  << std::endl;
-  //     std::cout << " Iterations    = " << numberOfIterations << std::endl;
-  //     std::cout << " Metric value  = " << bestValue          << std::endl;
-
-  regResult.AngleX = finalAngleInDegreesX;
-  regResult.AngleY = finalAngleInDegreesY;
-  regResult.AngleZ = finalAngleInDegreesZ;
-  regResult.TranslationX = finalTranslationX;
-  regResult.TranslationY = finalTranslationY;
-  regResult.TranslationZ = finalTranslationZ;
-  regResult.Metric = -bestValue;
-
-  return;
-}
-
-/**
- *
- */
-template <class TImageType>
-double
-DWIQCInterlaceChecker<TImageType>
-::computeCorrelation(GradientImageType::Pointer odd,
-                     GradientImageType::Pointer even)
-{
-  typedef itk::ImageRegionConstIterator<GradientImageType> citType;
-  citType cit1( odd, odd->GetBufferedRegion() );
-  citType cit2( even, even->GetBufferedRegion() );
-
-  cit1.GoToBegin();
-  cit2.GoToBegin();
-
-  double Correlation;
-  double sAB = 0.0, sA2 = 0.0, sB2 = 0.0;
-  while( !cit1.IsAtEnd() )
-    {
-    sAB += cit1.Get() * cit2.Get();
-    sA2 += cit1.Get() * cit1.Get();
-    sB2 += cit2.Get() * cit2.Get();
-    ++cit1;
-    ++cit2;
-    }
-
-  Correlation = sAB / sqrt(sA2 * sB2);
-
-  return Correlation;
-}
-
-/**
- *
- */
-template <class TImageType>
-void
-DWIQCInterlaceChecker<TImageType>
-::calculateCorrelationsAndMotions()
-{
-  std::cout << "Interlace calculating " << std::endl;
-  InputImageConstPointer inputPtr = this->GetInput();
-
-  typedef itk::VectorIndexSelectionCastImageFilter<TImageType,
-                                                   GradientImageType> FilterType;
-  typename FilterType::Pointer componentExtractor = FilterType::New();
-  componentExtractor->SetInput(inputPtr);
-
-  GradientImageType::Pointer InterlaceOdd  = GradientImageType::New();
-  GradientImageType::Pointer InterlaceEven = GradientImageType::New();
-
-  componentExtractor->SetIndex( 0 );
-  componentExtractor->Update();
-
-  GradientImageType::RegionType region;
-  GradientImageType::SizeType   size;
-  size[0]
-    = componentExtractor->GetOutput()->GetLargestPossibleRegion().GetSize()[0];
-  size[1]
-    = componentExtractor->GetOutput()->GetLargestPossibleRegion().GetSize()[1];
-  size[2]
-    = componentExtractor->GetOutput()->GetLargestPossibleRegion().GetSize()[2]
-      / 2;
-  region.SetSize( size );
-
-  // const GradientImageType::SpacingType spacing = componentExtractor->GetOutput()->GetSpacing();
-
-  InterlaceOdd->CopyInformation( componentExtractor->GetOutput() );
-  InterlaceOdd->SetRegions( region );
-  InterlaceOdd->Allocate();
-
-  InterlaceEven->CopyInformation( componentExtractor->GetOutput() );
-  InterlaceEven->SetRegions( region );
-  InterlaceEven->Allocate();
-
-  typedef itk::ImageRegionIteratorWithIndex<GradientImageType> IteratorType;
-  IteratorType iterateOdd( InterlaceOdd, InterlaceOdd->GetLargestPossibleRegion() );
-  IteratorType iterateEven( InterlaceEven,
-                            InterlaceEven->GetLargestPossibleRegion() );
-
-  std::vector<double> Results;
-  for( unsigned int j = 0; j < inputPtr->GetVectorLength(); j++ )
-    {
-    componentExtractor->SetIndex( j );
-    componentExtractor->Update();
-
-    typedef itk::ImageRegionIteratorWithIndex<GradientImageType> IteratorType;
-    IteratorType iterateGradient(
-      componentExtractor->GetOutput(),
-      componentExtractor->GetOutput()->GetLargestPossibleRegion() );
-
-    iterateGradient.GoToBegin();
-    iterateOdd.GoToBegin();
-    iterateEven.GoToBegin();
-
-    unsigned long count = 0;
-    while( !iterateGradient.IsAtEnd() )
-      {
-      if( count < size[0] * size[1] * size[2] * 2 )
-        {
-        if( ( count / ( size[0] * size[1] ) ) % 2 == 0 )
-          {
-          iterateEven.Set( iterateGradient.Get() );
-          ++iterateEven;
-          }
-        if( ( count / ( size[0] * size[1] ) ) % 2 == 1 )
-          {
-          iterateOdd.Set( iterateGradient.Get() );
-          ++iterateOdd;
-          }
-        }
-      ++iterateGradient;
-      ++count;
-      }
-
-    struInterlaceResults result;
-    rigidRegistration(InterlaceOdd, InterlaceEven, 25, 0.1, 1, result );
-    result.Correlation = computeCorrelation(InterlaceOdd, InterlaceEven);
-
-    std::cout << "Interlace correlation for gradient " << j << ": " << result.Correlation << std::endl;
-
-    this->ResultsContainer.push_back(result);
-
-    //       std::cout<<"===="<<std::endl;
-    //       std::cout<<std::endl<<"  Gradient "<<j;
-    //       std::cout<<"RotationAngles(degree):
-    // "<<this->ResultsContainer[j].AngleX<<"
-    // "<<this->ResultsContainer[j].AngleY<<"
-    // "<<this->ResultsContainer[j].AngleZ<<std::endl;
-    //       std::cout<<"Translations(mm)      :
-    // "<<this->ResultsContainer[j].TranslationX<<"
-    // "<<this->ResultsContainer[j].TranslationY<<"
-    // "<<this->ResultsContainer[j].TranslationZ<<std::endl;
-    //       std::cout<<"MutualInformation     :
-    // "<<this->ResultsContainer[j].Metric<<std::endl;
-    //       std::cout<<"NormalizedCorrelation :
-    // "<<this->ResultsContainer[j].Correlation << std::endl;
-    }
-
-  std::cout << " DONE" << std::endl;
-  return;
-}
-
-/**
- *
- */
-template <class TImageType>
-void
-DWIQCInterlaceChecker<TImageType>
+DWIQCGradientChecker<TImageType>
 ::DoCheck()
 {
-  std::cout << "Interlace checking ...";
-  // calculate the mean and stdev of baseline and gradients
-  int DWICount, BaselineCount;
-  BaselineCount  = getBaselineNumber();
-  DWICount    = getGradientNumber();
+  std::cout << "Gradient checking ...";
 
-  //      std::cout<<"BaselineCount: "<<BaselineCount<<std::endl;
-  //      std::cout<<"DWICount: "<<DWICount<<std::endl;
-  //     std::cout<<"getBValueNumber(): "<<getBValueNumber()<<std::endl;
-  //     std::cout<<"getBaselineNumber(): "<<getBaselineNumber()<<std::endl;
-  //     std::cout<<"getBValueLeftNumber(): "<<getBValueLeftNumber()<<std::endl;
-  //     std::cout<<"getBaselineLeftNumber():
-  // "<<getBaselineLeftNumber()<<std::endl;
+  //     int DWICount, BaselineCount;
+  //     BaselineCount  = getBaselineNumber();
+  //     DWICount    = getGradientNumber();
 
-  this->interlaceBaselineMeans = 0.0;
-  this->interlaceBaselineDeviations = 0.0;
+  //     std::cout<<"BaselineCount: "<<BaselineCount<<std::endl;
+  //     std::cout<<"DWICount: "<<DWICount<<std::endl;
 
-  this->interlaceGradientMeans = 0.0;
-  this->interlaceGradientDeviations = 0.0;
-
-  this->interlaceGradientMeans = 0.0;
-  this->interlaceGradientDeviations = 0.0;
-
-  this->quardraticFittedMeans = 0.0;
-  this->quardraticFittedDeviations = 0.0;
-
-  if( getBValueNumber() >= 3 || ( getBValueNumber() == 2 && getBaselineNumber() > 0 ) )
-  // ensure a quardratic fit
+  //     std::cout<<"m_RotationThreshold: "<<m_RotationThreshold<<std::endl;
+  //     std::cout<<"m_TranslationThreshold:
+  // "<<m_TranslationThreshold<<std::endl;
+  for( unsigned int i = 0; i < this->ResultsContainer.size(); i++ )
     {
-    // std::cout<<" multiple b valued DWI, do a quadratic-curve fitting between b-value and image correlation for each
-    // gradient "<<std::endl;
-    vnl_matrix<double> bMatrix( getBaselineNumber() + getGradientNumber(), 3);
-    vnl_matrix<double> correlationVector(getBaselineNumber() + getGradientNumber(), 1);
-    // unsigned int matrixLineNumber = 0;
-    for( unsigned int i = 0; i < this->ResultsContainer.size(); i++ )
-    // each
-    //
-    // gradient
+
+    if( fabs(this->ResultsContainer[i].AngleX) > m_RotationThreshold
+        || fabs(this->ResultsContainer[i].AngleY) > m_RotationThreshold
+        || fabs(this->ResultsContainer[i].AngleZ) > m_RotationThreshold
+        || fabs(this->ResultsContainer[i].TranslationX) > m_TranslationThreshold
+        || fabs(this->ResultsContainer[i].TranslationY) > m_TranslationThreshold
+        || fabs(this->ResultsContainer[i].TranslationZ) > m_TranslationThreshold     )
       {
-      // std::cout<<" gradinent #: " << i << std::endl;
-      bMatrix[i][0] = this->bValues[i] * this->bValues[i];
-      bMatrix[i][1] = this->bValues[i];
-      bMatrix[i][2] = 1.0;
-      correlationVector[i][0] = this->ResultsContainer[i].Correlation;
-      }
-
-    //
-    vnl_matrix_fixed<double, 3, 1> coefficients;
-    vnl_matrix_fixed<double, 3, 3> coefficientsTemp;
-    // coefficients =
-    // vnl_matrix_inverse<double>(bMatrix.transpose()*bMatrix)*bMatrix.transpose()*correlationVector;
-    //      std::cout<<"coefficients1: \n"<<coefficients<<std::endl;
-
-    coefficientsTemp = vnl_matrix_inverse<double>(bMatrix.transpose() * bMatrix);
-    coefficients = coefficientsTemp * bMatrix.transpose() * correlationVector;
-    //       std::cout<<"coefficients2: \n"<<coefficients<<std::endl;
-
-    std::vector<double> normalizedMetric(this->ResultsContainer.size(), -1.0);
-    for( unsigned int i = 0; i < this->ResultsContainer.size(); i++ )  // for
-    // each
-    //
-    // gradient
-      {
-      // std::cout<<"grad[i]: "<<i<<std::endl;
-      normalizedMetric[i] = this->ResultsContainer[i].Correlation
-        - ( this->bValues[i] * this->bValues[i]
-            * coefficients[0][0]
-            + this->bValues[i] * coefficients[1][0]
-            + coefficients[2][0] );
-
-      //     std::cout<<"ResultsContainer[i].Correlation: "
-      //    << ResultsContainer[i].Correlation <<std::endl;
-      //    std::cout<<"normalizedMetric[i]: "
-      //    << normalizedMetric[i]
-      //     <<std::endl;
-      }
-    // to compute the mean and stdev after quardratic fitting
-    for( unsigned int i = 0; i < this->ResultsContainer.size(); i++ )
-      {
-      this->quardraticFittedMeans += normalizedMetric[i]
-        / static_cast<double>( DWICount
-                               + BaselineCount );
-      }
-    for( unsigned int i = 0; i < this->ResultsContainer.size(); i++ )
-      {
-      if( DWICount > 1 )
-        {
-        this->quardraticFittedDeviations
-          += ( normalizedMetric[i]
-               - quardraticFittedMeans )
-            * ( normalizedMetric[i]
-                - quardraticFittedMeans )
-            / (double)(DWICount + BaselineCount - 1);
-        }
-
-      else
-        {
-        this->quardraticFittedDeviations = 0.0;
-        }
-      }
-    quardraticFittedDeviations = sqrt(quardraticFittedDeviations);
-
-    // std::cout<<"quardraticFittedMeans: "<< quardraticFittedMeans
-    // <<std::endl;
-    //       std::cout<<"quardraticFittedDeviations: "<<
-    // quardraticFittedDeviations <<std::endl;
-    for( unsigned int i = 0; i < this->ResultsContainer.size(); i++ )
-      {
-      if( this->m_GradientDirectionContainer->at(i)[0] == 0.0
-          && this->m_GradientDirectionContainer->at(i)[1] == 0.0
-          && this->m_GradientDirectionContainer->at(i)[2] == 0.0    )
-        {  // baseline
-        if( fabs(this->ResultsContainer[i].AngleX) > m_RotationThreshold
-            || fabs(this->ResultsContainer[i].AngleY) > m_RotationThreshold
-            || fabs(this->ResultsContainer[i].AngleZ) > m_RotationThreshold
-            || fabs(this->ResultsContainer[i].TranslationX) > m_TranslationThreshold
-            || fabs(this->ResultsContainer[i].TranslationY) > m_TranslationThreshold
-            || fabs(this->ResultsContainer[i].TranslationZ) > m_TranslationThreshold
-            + (0.5 * this->GetInput()->GetSpacing()[2])
-            || this->ResultsContainer[i].Correlation < m_CorrelationThresholdGradient
-            || normalizedMetric[i] < quardraticFittedMeans - quardraticFittedDeviations
-            * m_CorrelationStedvTimesBaseline )
-          {
-          this->qcResults[i] = 0;
-          }
-        }
-      else
-        { // gradients
-        if( fabs(this->ResultsContainer[i].AngleX) > m_RotationThreshold
-            || fabs(this->ResultsContainer[i].AngleY) > m_RotationThreshold
-            || fabs(this->ResultsContainer[i].AngleZ) > m_RotationThreshold
-            || fabs(this->ResultsContainer[i].TranslationX) > m_TranslationThreshold
-            || fabs(this->ResultsContainer[i].TranslationY) > m_TranslationThreshold
-            || fabs(this->ResultsContainer[i].TranslationZ) > m_TranslationThreshold
-            + (0.5 * this->GetInput()->GetSpacing()[2])
-            || this->ResultsContainer[i].Correlation < m_CorrelationThresholdGradient
-            || normalizedMetric[i] < quardraticFittedMeans - quardraticFittedDeviations
-            * m_CorrelationStdevTimesGradient )
-          {
-          this->qcResults[i] = 0;
-          }
-        }
-      }
-
-    //           std::cout<<"normalizedMetric[i]:
-    // "<<normalizedMetric[i]<<std::endl;
-    //           std::cout<<"quardraticFittedMeans:
-    // "<<quardraticFittedMeans<<std::endl;
-    //           std::cout<<"quardraticFittedDeviations:
-    // "<<quardraticFittedDeviations<<std::endl;
-    //           std::cout<<"m_CorrelationStdevTimesGradient:
-    // "<<m_CorrelationStdevTimesGradient<<std::endl;
-    }
-  else   // single b value( baseline + bvalue or 2 different b values, [2
-  // different b values not yet implemented])
-    {
-    vnl_matrix<double> bMatrix( getBaselineNumber() + getGradientNumber(), 1);
-    for( unsigned int i = 0; i < this->ResultsContainer.size(); i++ )
-      {
-
-      // DEBUG: delete later
-      bMatrix[i][0] = this->bValues[i];
-
-      if( this->m_GradientDirectionContainer->at(i)[0] == 0.0
-          && this->m_GradientDirectionContainer->at(i)[1] == 0.0
-          && this->m_GradientDirectionContainer->at(i)[2] == 0.0    )
-        {  // for interlace baseline correlation
-        this->interlaceBaselineMeans += this->ResultsContainer[i].Correlation
-          / (double)BaselineCount;
-        }
-      else   // for interlace gradient correlation
-        {
-        this->interlaceGradientMeans += this->ResultsContainer[i].Correlation
-          / (double)DWICount;
-        }
-      }
-    for( unsigned int i = 0; i < this->ResultsContainer.size(); i++ )
-      {
-      if( this->m_GradientDirectionContainer->at(i)[0] == 0.0
-          && this->m_GradientDirectionContainer->at(i)[1] == 0.0
-          && this->m_GradientDirectionContainer->at(i)[2] == 0.0     )
-        {
-        if( BaselineCount >= 1 )
-          {
-          this->interlaceBaselineDeviations
-            += ( this->ResultsContainer[i].Correlation
-                 - interlaceBaselineMeans )
-              * ( this->ResultsContainer[i].Correlation
-                  - interlaceBaselineMeans ) / (double)(BaselineCount);
-          }
-        else
-          {
-          this->interlaceBaselineDeviations = 0.0;
-          }
-        }
-      else
-        {
-        if( DWICount >= 1 )
-          {
-          interlaceGradientDeviations
-            += ( this->ResultsContainer[i].Correlation
-                 - interlaceGradientMeans )
-              * ( this->ResultsContainer[i].Correlation
-                  - interlaceGradientMeans ) / (double)(DWICount);
-          }
-        else
-          {
-          interlaceGradientDeviations = 0.0;
-          }
-        }
-      }
-
-    interlaceBaselineDeviations = sqrt(interlaceBaselineDeviations);
-    interlaceGradientDeviations = sqrt(interlaceGradientDeviations);
-
-    //     std::cout<<"interlaceBaselineDeviations: "<<interlaceBaselineDeviations<<std::endl;
-    //    std::cout<<"interlaceGradientDeviations: "<<interlaceGradientDeviations<<std::endl;
-    //     std::cout<<"m_RotationThreshold: "<<m_RotationThreshold<<std::endl;
-    //     std::cout<<"m_TranslationThreshold: "<<m_TranslationThreshold<<std::endl;
-    //     std::cout<<"m_CorrelationThresholdBaseline: "<<m_CorrelationThresholdBaseline<<std::endl;
-    //     std::cout<<"m_CorrelationStedvTimesBaseline: "<<m_CorrelationStedvTimesBaseline<<std::endl;
-    //     std::cout<<"m_CorrelationThresholdGradient: "<<m_CorrelationThresholdGradient<<std::endl;
-    //     std::cout<<"m_CorrelationStdevTimesGradient: "<<m_CorrelationStdevTimesGradient<<std::endl;
-    //     std::cout<<"0.5*this->GetInput()->GetSpacing()[2]: "
-    //     <<0.5*this->GetInput()->GetSpacing()[2]<<std::endl;
-    for( unsigned int i = 0; i < this->ResultsContainer.size(); i++ )
-      {
-      if( this->m_GradientDirectionContainer->at(i)[0] == 0.0
-          && this->m_GradientDirectionContainer->at(i)[1] == 0.0
-          && this->m_GradientDirectionContainer->at(i)[2] == 0.0    )
-        {  // baseline
-        if( fabs(this->ResultsContainer[i].AngleX) > m_RotationThreshold
-            || fabs(this->ResultsContainer[i].AngleY) > m_RotationThreshold
-            || fabs(this->ResultsContainer[i].AngleZ) > m_RotationThreshold
-            || fabs(this->ResultsContainer[i].TranslationX) > m_TranslationThreshold
-            || fabs(this->ResultsContainer[i].TranslationY) > m_TranslationThreshold
-            || fabs(this->ResultsContainer[i].TranslationZ) > m_TranslationThreshold
-            + (0.5 * this->GetInput()->GetSpacing()[2])
-            || this->ResultsContainer[i].Correlation < m_CorrelationThresholdBaseline
-            || this->ResultsContainer[i].Correlation < interlaceBaselineMeans - interlaceBaselineDeviations
-            * m_CorrelationStedvTimesBaseline )
-          {
-          this->qcResults[i] = 0;
-          }
-        }
-      else   // gradients
-        {
-        if( fabs(this->ResultsContainer[i].AngleX) > m_RotationThreshold
-            || fabs(this->ResultsContainer[i].AngleY) > m_RotationThreshold
-            || fabs(this->ResultsContainer[i].AngleZ) > m_RotationThreshold
-            || fabs(this->ResultsContainer[i].TranslationX) > m_TranslationThreshold
-            || fabs(this->ResultsContainer[i].TranslationY) > m_TranslationThreshold
-            || fabs(this->ResultsContainer[i].TranslationZ) > m_TranslationThreshold
-            + (0.5 * this->GetInput()->GetSpacing()[2])
-            || this->ResultsContainer[i].Correlation < m_CorrelationThresholdGradient
-            || this->ResultsContainer[i].Correlation < interlaceGradientMeans - interlaceGradientDeviations
-            * m_CorrelationStdevTimesGradient )
-          {
-          this->qcResults[i] = 0;
-          }
-        }
+      this->qcResults[i] = 0;
       }
     }
+
   std::cout << " DONE" << std::endl;
   return;
 }
 
 /**
- *
- */
+*
+*/
 template <class TImageType>
 void
-DWIQCInterlaceChecker<TImageType>
+DWIQCGradientChecker<TImageType>
 ::writeReport()
 {
-  if( this->GetReportFileName().length() == 0 )
+
+  if( this->m_ReportFileName.length() == 0 )
     {
     return;
     }
+
   std::ofstream outfile;
-  if( GetReportFileMode() == DWIQCInterlaceChecker::REPORT_FILE_APPEND )
+  // int DWICount;
+  // int BaselineCount;
+
+  if( GetReportFileMode() == DWIQCGradientChecker::REPORT_FILE_APPEND )
     {
     outfile.open( GetReportFileName().c_str(), std::ios_base::app);
     }
@@ -859,41 +585,30 @@ DWIQCInterlaceChecker<TImageType>
     outfile.open( GetReportFileName().c_str() );
     }
 
-  int DWICount, BaselineCount;
-
   switch( m_ReportType )
     {
-    case DWIQCInterlaceChecker::REPORT_TYPE_SIMPLE:
+    case DWIQCGradientChecker::REPORT_TYPE_SIMPLE:
       outfile << std::endl;
       outfile << "================================" << std::endl;
-      outfile << "     Interlace-wise checking    " << std::endl;
+      outfile << "    Gradient-wise checking      " << std::endl;
       outfile << "================================" << std::endl;
 
-      outfile << "Parameters:" << std::endl;
-      outfile << "  CorrelationThresholdBaseline: "
-              << m_CorrelationThresholdBaseline  << std::endl;
-      outfile << "  CorrelationThresholdGradient: "
-              << m_CorrelationThresholdGradient  << std::endl;
-      outfile << "  CorrelationStedvTimesBaseline: "
-              << m_CorrelationStedvTimesBaseline  << std::endl;
-      outfile << "  CorrelationStdevTimesGradient: "
-              << m_CorrelationStdevTimesGradient  << std::endl;
-      outfile << "  TranslationThreshold: "
-              << m_TranslationThreshold      << std::endl;
-      outfile << "  RotationThreshold: "        << m_RotationThreshold
-              << std::endl;
+      outfile << std::endl << "Parameters:" << std::endl;
 
-      outfile << std::endl << "======" << std::endl;
-      outfile << "Interlace-wise Check Artifacts:" << std::endl;
+      outfile << "  TranslationThreshold: "    << m_TranslationThreshold
+              << std::endl;
+      outfile << "  RotationThreshold: "    << m_RotationThreshold    << std::endl;
+
+      outfile << std::endl << "Inter-gradient check Artifacts::" << std::endl;
       outfile << "\t" << std::setw(10) << "Gradient#:\t" << std::setw(10)
               << "AngleX\t" << std::setw(10) << "AngleY\t"
               << std::setw(10) << "AngleZ\t" << std::setw(10)
               << "TranslationX\t" << std::setw(10) << "TranslationY\t"
               << std::setw(10) << "TranslationZ\t" << std::setw(10)
-              << "Metric(MI)\t" << std::setw(10) << "Correlation" << std::endl;
+              << "Metric(MI)" << std::endl;
 
-      std::cout << "MEHDI INTELACE INSIDE " << this->qcResults.size() << std::endl;
-      for( unsigned int i = 0; i < this->qcResults.size(); i++ )
+      std::cout << "DWIGradientResultsContainer" << ResultsContainer.size() << std::endl;
+      for( unsigned int i = 0; i < this->ResultsContainer.size(); i++ )
         {
         if( !this->qcResults[i] )
           {
@@ -920,10 +635,7 @@ DWIQCInterlaceChecker<TImageType>
           outfile << this->ResultsContainer[i].TranslationZ;
           outfile << "\t" << std::setw(9) << std::setiosflags(std::ios::fixed)
                   << std::setprecision(6) << std::setiosflags(std::ios::right);
-          outfile << this->ResultsContainer[i].Metric;
-          outfile << "\t" << std::setw(9) << std::setiosflags(std::ios::fixed)
-                  << std::setprecision(6) << std::setiosflags(std::ios::right);
-          outfile << this->ResultsContainer[i].Correlation;
+          outfile << this->ResultsContainer[i].MutualInformation;
           outfile << std::endl;
           outfile.precision();
           outfile.setf(std::ios_base::unitbuf);
@@ -931,45 +643,38 @@ DWIQCInterlaceChecker<TImageType>
         }
       break;
 
-    case DWIQCInterlaceChecker::REPORT_TYPE_VERBOSE:
+    case DWIQCGradientChecker::REPORT_TYPE_VERBOSE:
       outfile << std::endl;
       outfile << "================================" << std::endl;
-      outfile << "     Interlace-wise checking    " << std::endl;
+      outfile << "    Gradient-wise checking      " << std::endl;
       outfile << "================================" << std::endl;
 
-      outfile << "Parameters:" << std::endl;
-      outfile << "  CorrelationThresholdBaseline: "
-              << m_CorrelationThresholdBaseline  << std::endl;
-      outfile << "  CorrelationThresholdGradient: "
-              << m_CorrelationThresholdGradient  << std::endl;
-      outfile << "  CorrelationStedvTimesBaseline: "
-              << m_CorrelationStedvTimesBaseline  << std::endl;
-      outfile << "  CorrelationStdevTimesGradient: "
-              << m_CorrelationStdevTimesGradient  << std::endl;
-      outfile << "  TranslationThreshold: "
-              << m_TranslationThreshold      << std::endl;
-      outfile << "  RotationThreshold: "        << m_RotationThreshold
+      outfile << std::endl << "Parameters:" << std::endl;
+
+      outfile << "  TranslationThreshold: "    << m_TranslationThreshold
               << std::endl;
+      outfile << "  RotationThreshold: "    << m_RotationThreshold    << std::endl;
 
       outfile << std::endl << "======" << std::endl;
-      outfile << "Interlace-wise motions and correlations: " << std::endl
+      outfile << "Gradient-wise motion check with MI-based 3D rigid registration: "
               << std::endl;
-
-      outfile << "\t" << std::setw(10) << "Gradient#:\t" << std::setw(10)
+      outfile << "\t" << std::setw(10) << "Register#:\t" << std::setw(10)
               << "AngleX\t" << std::setw(10) << "AngleY\t"
               << std::setw(10) << "AngleZ\t" << std::setw(10)
               << "TranslationX\t" << std::setw(10) << "TranslationY\t"
               << std::setw(10) << "TranslationZ\t" << std::setw(10)
-              << "Metric(MI)\t" << std::setw(10) << "Correlation" << std::endl;
+              << "Metric(MI)" << std::endl;
 
-      collectLeftDiffusionStatistics();     // update
-      BaselineCount  = getBaselineNumber();
-      DWICount    = getGradientNumber();
+      collectLeftDiffusionStatistics();    // update
       for( unsigned int i = 0; i < this->ResultsContainer.size(); i++ )
         {
+        if( m_ReferenceIndex == i )
+          {
+          continue;
+          }
         outfile.precision(6);
         outfile.setf(std::ios_base::showpoint | std::ios_base::right);
-        outfile << "\t" << std::setw(10) << i;
+        outfile << "\tRegister " << i << "-" << m_ReferenceIndex;
         outfile << "\t" << std::setw(9) << std::setiosflags(std::ios::fixed)
                 << std::setprecision(6) << std::setiosflags(std::ios::right);
         outfile << this->ResultsContainer[i].AngleX;
@@ -990,24 +695,20 @@ DWIQCInterlaceChecker<TImageType>
         outfile << this->ResultsContainer[i].TranslationZ;
         outfile << "\t" << std::setw(9) << std::setiosflags(std::ios::fixed)
                 << std::setprecision(6) << std::setiosflags(std::ios::right);
-        outfile << this->ResultsContainer[i].Metric;
-        outfile << "\t" << std::setw(9) << std::setiosflags(std::ios::fixed)
-                << std::setprecision(6) << std::setiosflags(std::ios::right);
-        outfile << this->ResultsContainer[i].Correlation;
+        outfile << this->ResultsContainer[i].MutualInformation;
         outfile << std::endl;
         outfile.precision();
         outfile.setf(std::ios_base::unitbuf);
         }
 
-      outfile << std::endl << "======" << std::endl;
-      outfile << "Interlace-wise Check Artifacts:" << std::endl;
+      outfile << std::endl << "Inter-gradient check Artifacts::" << std::endl;
       outfile << "\t" << std::setw(10) << "Gradient#:\t" << std::setw(10)
               << "AngleX\t" << std::setw(10) << "AngleY\t"
               << std::setw(10) << "AngleZ\t" << std::setw(10)
               << "TranslationX\t" << std::setw(10) << "TranslationY\t"
               << std::setw(10) << "TranslationZ\t" << std::setw(10)
-              << "Metric(MI)\t" << std::setw(10) << "Correlation" << std::endl;
-      for( unsigned int i = 0; i < this->qcResults.size(); i++ )
+              << "Metric(MI)" << std::endl;
+      for( unsigned int i = 0; i < this->ResultsContainer.size(); i++ )
         {
         if( !this->qcResults[i] )
           {
@@ -1034,10 +735,7 @@ DWIQCInterlaceChecker<TImageType>
           outfile << this->ResultsContainer[i].TranslationZ;
           outfile << "\t" << std::setw(9) << std::setiosflags(std::ios::fixed)
                   << std::setprecision(6) << std::setiosflags(std::ios::right);
-          outfile << this->ResultsContainer[i].Metric;
-          outfile << "\t" << std::setw(9) << std::setiosflags(std::ios::fixed)
-                  << std::setprecision(6) << std::setiosflags(std::ios::right);
-          outfile << this->ResultsContainer[i].Correlation;
+          outfile << this->ResultsContainer[i].MutualInformation;
           outfile << std::endl;
           outfile.precision();
           outfile.setf(std::ios_base::unitbuf);
@@ -1063,7 +761,7 @@ DWIQCInterlaceChecker<TImageType>
                 << this->m_GradientDirectionContainer->at(i)[1] << ", "
                 << std::setw(9) << std::setiosflags(std::ios::fixed)
                 << std::setprecision(6) << std::setiosflags(std::ios::right)
-                << this->m_GradientDirectionContainer->at(i)[2] << " ]"
+                << this->m_GradientDirectionContainer->at(i)[2] << " ] "
                 << "\t" << this->qcResults[i] << std::endl;
         }
 
@@ -1072,7 +770,7 @@ DWIQCInterlaceChecker<TImageType>
               << std::setiosflags(std::ios::left) << "\tRepLeft" << std::endl;
       for( unsigned int i = 0; i < this->DiffusionDirHistOutput.size(); i++ )
         {
-        if( GetReportFileName().length() > 0 )
+        if( m_ReportFileName.length() > 0 )
           {
           outfile << "\t" << i << "\t[ "
                   << std::setw(9) << std::setiosflags(std::ios::fixed)
@@ -1090,39 +788,31 @@ DWIQCInterlaceChecker<TImageType>
         }
       break;
 
-    case DWIQCInterlaceChecker::REPORT_TYPE_EASY_PARSE:
+    case DWIQCGradientChecker::REPORT_TYPE_EASY_PARSE:
       outfile << std::endl;
-      outfile << "Interlacewise_checking  CorrelationThresholdBaseline "
-              << m_CorrelationThresholdBaseline << std::endl;
-      outfile << "Interlacewise_checking  CorrelationThresholdGradient "
-              << m_CorrelationThresholdGradient << std::endl;
-      outfile << "Interlacewise_checking  CorrelationStedvTimesBaseline "
-              << m_CorrelationStedvTimesBaseline << std::endl;
-      outfile << "Interlacewise_checking  CorrelationStdevTimesGradient "
-              << m_CorrelationStdevTimesGradient << std::endl;
-      outfile << "Interlacewise_checking  TranslationThreshold "
-              << m_TranslationThreshold << std::endl;
-      outfile << "Interlacewise_checking  RotationThreshold "
-              << m_RotationThreshold << std::endl;
+      outfile << "Gradientwise_checking  TranslationThreshold "    << m_TranslationThreshold
+              << std::endl;
+      outfile << "Gradientwise_checking  RotationThreshold "    << m_RotationThreshold    << std::endl;
 
       outfile << std::endl;
-
-      outfile << "Interlacewise_motions_corr"
-              << "\t" << std::setw(10) << "GradientNum\t" << std::setw(10)
+      outfile << "Gradientwise_motion_check\t"
+              << std::setw(10) << "RegisterGradientNum\t" << std::setw(10)
               << "AngleX\t" << std::setw(10) << "AngleY\t"
               << std::setw(10) << "AngleZ\t" << std::setw(10)
               << "TranslationX\t" << std::setw(10) << "TranslationY\t"
               << std::setw(10) << "TranslationZ\t" << std::setw(10)
-              << "Metric(MI)\t" << std::setw(10) << "Correlation" << std::endl;
+              << "Metric(MI)" << std::endl;
 
-      collectLeftDiffusionStatistics();     // update
-      BaselineCount  = getBaselineNumber();
-      DWICount    = getGradientNumber();
+      collectLeftDiffusionStatistics();    // update
       for( unsigned int i = 0; i < this->ResultsContainer.size(); i++ )
         {
+        if( m_ReferenceIndex == i )
+          {
+          continue;
+          }
         outfile.precision(6);
         outfile.setf(std::ios_base::showpoint | std::ios_base::right);
-        outfile << "Interlacewise_motions_corr" << "\t" << std::setw(10) << i;
+        outfile << "Gradientwise_motion_check\tRegister " << i << "-" << m_ReferenceIndex;
         outfile << "\t" << std::setw(9) << std::setiosflags(std::ios::fixed)
                 << std::setprecision(6) << std::setiosflags(std::ios::right);
         outfile << this->ResultsContainer[i].AngleX;
@@ -1143,29 +833,26 @@ DWIQCInterlaceChecker<TImageType>
         outfile << this->ResultsContainer[i].TranslationZ;
         outfile << "\t" << std::setw(9) << std::setiosflags(std::ios::fixed)
                 << std::setprecision(6) << std::setiosflags(std::ios::right);
-        outfile << this->ResultsContainer[i].Metric;
-        outfile << "\t" << std::setw(9) << std::setiosflags(std::ios::fixed)
-                << std::setprecision(6) << std::setiosflags(std::ios::right);
-        outfile << this->ResultsContainer[i].Correlation;
+        outfile << this->ResultsContainer[i].MutualInformation;
         outfile << std::endl;
         outfile.precision();
         outfile.setf(std::ios_base::unitbuf);
         }
 
-      outfile << std::endl << "Interlacewise_artifacts"
-              << "\t" << std::setw(10) << "GradientNum\t" << std::setw(10)
+      outfile << std::endl << "Gradientwise_check_artifacts\t"
+              << std::setw(10) << "GradientNum\t" << std::setw(10)
               << "AngleX\t" << std::setw(10) << "AngleY\t"
               << std::setw(10) << "AngleZ\t" << std::setw(10)
               << "TranslationX\t" << std::setw(10) << "TranslationY\t"
               << std::setw(10) << "TranslationZ\t" << std::setw(10)
-              << "Metric(MI)\t" << std::setw(10) << "Correlation" << std::endl;
-      for( unsigned int i = 0; i < this->qcResults.size(); i++ )
+              << "Metric(MI)" << std::endl;
+      for( unsigned int i = 0; i < this->ResultsContainer.size(); i++ )
         {
         if( !this->qcResults[i] )
           {
           outfile.precision(6);
           outfile.setf(std::ios_base::showpoint | std::ios_base::right);
-          outfile << "Interlacewise_artifacts" << "\t" << std::setw(10) << i;
+          outfile << "Gradientwise_check_artifacts\t" << std::setw(10) << i;
           outfile << "\t" << std::setw(9) << std::setiosflags(std::ios::fixed)
                   << std::setprecision(6) << std::setiosflags(std::ios::right);
           outfile << this->ResultsContainer[i].AngleX;
@@ -1186,27 +873,26 @@ DWIQCInterlaceChecker<TImageType>
           outfile << this->ResultsContainer[i].TranslationZ;
           outfile << "\t" << std::setw(9) << std::setiosflags(std::ios::fixed)
                   << std::setprecision(6) << std::setiosflags(std::ios::right);
-          outfile << this->ResultsContainer[i].Metric;
-          outfile << "\t" << std::setw(9) << std::setiosflags(std::ios::fixed)
-                  << std::setprecision(6) << std::setiosflags(std::ios::right);
-          outfile << this->ResultsContainer[i].Correlation;
+          outfile << this->ResultsContainer[i].MutualInformation;
           outfile << std::endl;
           outfile.precision();
           outfile.setf(std::ios_base::unitbuf);
           }
         }
 
-      outfile << std::endl;
-      outfile << "Post_interlacewise\tbValueLeftNumber "    << bValueLeftNumber    << std::endl;
-      outfile << "Post_interlacewise\tbaselineLeftNumber "  << baselineLeftNumber  << std::endl;
-      outfile << "Post_interlacewise\tgradientDirLeftNumber " << gradientDirLeftNumber  << std::endl;
+      outfile <<  std::endl << "Post_gradientwise\tbValueLeftNumber "
+              << bValueLeftNumber    << std::endl;
+      outfile << "Post_gradientwise\tbaselineLeftNumber "
+              << baselineLeftNumber  << std::endl;
+      outfile << "Post_gradientwise\tgradientDirLeftNumber "
+              << gradientDirLeftNumber  << std::endl;
 
-      outfile << std::endl << "Post_interlacewise_diff_grad"
-              << "\tGradientNum" << "\tx" << "\ty" << "\tz" << std::setw(34)
+      outfile << std::endl << "Post_gradientwise_diff_grad\tGradientNum "
+              << "\tx\ty\tz" << std::setw(34)
               << std::setiosflags(std::ios::left) << "\tIncluded" << std::endl;
       for( unsigned int i = 0; i < this->m_GradientDirectionContainer->size(); i++ )
         {
-        outfile << "Post_interlacewise_diff_grad" << "\t" << i << "\t"
+        outfile << "Post_gradientwise_diff_grad\t" << i << "\t"
                 << std::setw(9) << std::setiosflags(std::ios::fixed)
                 << std::setprecision(6) << std::setiosflags(std::ios::right)
                 << this->m_GradientDirectionContainer->at(i)[0] << "\t"
@@ -1215,48 +901,50 @@ DWIQCInterlaceChecker<TImageType>
                 << this->m_GradientDirectionContainer->at(i)[1] << "\t"
                 << std::setw(9) << std::setiosflags(std::ios::fixed)
                 << std::setprecision(6) << std::setiosflags(std::ios::right)
-                << this->m_GradientDirectionContainer->at(i)[2] << "\t"
-                << this->qcResults[i] << std::endl;
+                << this->m_GradientDirectionContainer->at(i)[2]
+                << "\t" << this->qcResults[i] << std::endl;
         }
 
-      outfile << std::endl << "Post_interlacewise_grad_dir_histogram"
-              << "\tGradientNum" << "\tx"  << "\ty" << "\tz" << std::setw(34)
+      outfile << std::endl << "Post_gradientwise_grad_dir_histogram\tGradientNum "
+              << "\tx\ty\tz" << std::setw(34)
               << std::setiosflags(std::ios::left) << "\tRepLeft" << std::endl;
       for( unsigned int i = 0; i < this->DiffusionDirHistOutput.size(); i++ )
         {
-        if( GetReportFileName().length() > 0 )
+        if( m_ReportFileName.length() > 0 )
           {
-          outfile << "Post_interlacewise_grad_dir_histogram" << "\t" << i << "\t[ "
+          outfile << "Post_gradientwise_grad_dir_histogram\t" << i << "\t"
                   << std::setw(9) << std::setiosflags(std::ios::fixed)
                   << std::setprecision(6) << std::setiosflags(std::ios::right)
-                  << DiffusionDirHistOutput[i].gradientDir[0] << ", "
+                  << DiffusionDirHistOutput[i].gradientDir[0] << "\t"
                   << std::setw(9) << std::setiosflags(std::ios::fixed)
                   << std::setprecision(6) << std::setiosflags(std::ios::right)
-                  << DiffusionDirHistOutput[i].gradientDir[1] << ", "
+                  << DiffusionDirHistOutput[i].gradientDir[1] << "\t"
                   << std::setw(9) << std::setiosflags(std::ios::fixed)
                   << std::setprecision(6) << std::setiosflags(std::ios::right)
-                  << DiffusionDirHistOutput[i].gradientDir[2] << " ]"
+                  << DiffusionDirHistOutput[i].gradientDir[2]
                   << "\t" << DiffusionDirHistOutput[i].repetitionNumber
                   << std::endl;
           }
         }
+
       break;
 
-    case DWIQCInterlaceChecker::REPORT_TYPE_NO:
+    case DWIQCGradientChecker::REPORT_TYPE_NO:
     default:
       break;
     }
 
   outfile.close();
+
   return;
 }
 
 /**
- *
- */
+*
+*/
 template <class TImageType>
 void
-DWIQCInterlaceChecker<TImageType>
+DWIQCGradientChecker<TImageType>
 ::collectLeftDiffusionStatistics()
 {
   this->DiffusionDirHistOutput.clear();
@@ -1360,7 +1048,7 @@ DWIQCInterlaceChecker<TImageType>
         bool newDirMode = true;
         for( unsigned int j = 0; j < dirNorm.size(); j++ )
           {
-          if( fabs(normSqr - dirNorm[j]) < 0.001 )  // 1 DIFFERENCE for b value
+          if( fabs(normSqr - dirNorm[j]) < 0.001 )    // 1 DIFFERENCE for b value
             {
             newDirMode = false;
             break;
@@ -1400,15 +1088,101 @@ DWIQCInterlaceChecker<TImageType>
 
   this->bValueLeftNumber = dirNorm.size();
 
+  //     std::ofstream outfile;
+  //     if(reportFilename.length()>0)
+  //     {
+  //       outfile.open(reportFilename.c_str(), std::ios::app);
+  //       outfile<<"====="<<std::endl;
+  //       outfile<<"Left Diffusion Gradient information:"<<std::endl;
+  //       outfile<<"\tbValueLeftNumber: "    <<bValueLeftNumber    <<std::endl;
+  //       outfile<<"\tbaselineLeftNumber: "  <<baselineLeftNumber  <<std::endl;
+  //       outfile<<"\tgradientDirLeftNumber: "<<gradientDirLeftNumber
+  //  <<std::endl;
+  //     }
+  //
+  //     std::cout<<"Left Diffusion Gradient information:"<<std::endl;
+  //     std::cout<<"\tbValueLeftNumber: "     <<bValueLeftNumber
+  //    <<std::endl;
+  //     std::cout<<"\tbaselineLeftNumber: "     <<baselineLeftNumber
+  //  <<std::endl;
+  //     std::cout<<"\tgradientDirLeftNumber: " <<gradientDirLeftNumber
+  //  <<std::endl;
+  //
+  //     std::cout<<std::endl<<"\t#
+  // "<<"\t"<<std::setw(34)<<"DirVector"<<"\tIncluded"<<std::endl;
+  //     outfile  <<std::endl<<"\t#
+  // "<<"\t"<<std::setw(34)<<"DirVector"<<"\tIncluded"<<std::endl;
+  //     for(unsigned int i=0;i< this->m_GradientDirectionContainer->size();i++)
+  //     {
+  //       outfile<<"\t"<<i<<"\t[ "
+  //         <<std::setw(9)<<std::setiosflags(std::ios::fixed)<<
+  // std::setprecision(6)<<std::setiosflags(std::ios::right)
+  //         <<this->m_GradientDirectionContainer->at(i)[0]<<", "
+  //         <<std::setw(9)<<std::setiosflags(std::ios::fixed)<<
+  // std::setprecision(6)<<std::setiosflags(std::ios::right)
+  //         <<this->m_GradientDirectionContainer->at(i)[1]<<", "
+  //         <<std::setw(9)<<std::setiosflags(std::ios::fixed)<<
+  // std::setprecision(6)<<std::setiosflags(std::ios::right)
+  //         <<this->m_GradientDirectionContainer->at(i)[2]<<" ]: "
+  //         <<"\t"<<this->qcResults[i]<<std::endl;
+  //       std::cout<<"\t"<<i<<"\t[ "
+  //         <<std::setw(9)<<std::setiosflags(std::ios::fixed)<<
+  // std::setprecision(6)<<std::setiosflags(std::ios::right)
+  //         <<this->m_GradientDirectionContainer->at(i)[0]<<", "
+  //         <<std::setw(9)<<std::setiosflags(std::ios::fixed)<<
+  // std::setprecision(6)<<std::setiosflags(std::ios::right)
+  //         <<this->m_GradientDirectionContainer->at(i)[1]<<", "
+  //         <<std::setw(9)<<std::setiosflags(std::ios::fixed)<<
+  // std::setprecision(6)<<std::setiosflags(std::ios::right)
+  //         <<this->m_GradientDirectionContainer->at(i)[2]<<" ]: "
+  //         <<"\t"<<this->qcResults[i]<<std::endl;
+  //     }
+  //
+  //     std::cout<<std::endl<<"Left Gradient Direction Histogram: "<<std::endl;
+  //     std::cout<<"\t#
+  // "<<"\t"<<std::setw(34)<<"DirVector"<<"\tRepLeft#"<<std::endl;
+  //     outfile  <<std::endl<<"Left Gradient Direction Histogram: "<<std::endl;
+  //     outfile  <<"\t#
+  // "<<"\t"<<std::setw(34)<<"DirVector"<<"\tRepLeft#"<<std::endl;
+  //     for(unsigned int i=0;i< DiffusionDirHistOutput.size();i++)
+  //     {
+  //       std::cout<<"\t"<<i<<"\t[ "
+  //         <<std::setw(9)<<std::setiosflags(std::ios::fixed)<<
+  // std::setprecision(6)<<std::setiosflags(std::ios::right)
+  //         <<DiffusionDirHistOutput[i].gradientDir[0]<<", "
+  //         <<std::setw(9)<<std::setiosflags(std::ios::fixed)<<
+  // std::setprecision(6)<<std::setiosflags(std::ios::right)
+  //         <<DiffusionDirHistOutput[i].gradientDir[1]<<", "
+  //         <<std::setw(9)<<std::setiosflags(std::ios::fixed)<<
+  // std::setprecision(6)<<std::setiosflags(std::ios::right)
+  //         <<DiffusionDirHistOutput[i].gradientDir[2]<<"] "
+  //         <<"\t"<<DiffusionDirHistOutput[i].repetitionNumber <<std::endl;
+  //
+  //       if(reportFilename.length()>0)
+  //         outfile<<"\t"<<i<<"\t[ "
+  //         <<std::setw(9)<<std::setiosflags(std::ios::fixed)<<
+  // std::setprecision(6)<<std::setiosflags(std::ios::right)
+  //         <<DiffusionDirHistOutput[i].gradientDir[0]<<", "
+  //         <<std::setw(9)<<std::setiosflags(std::ios::fixed)<<
+  // std::setprecision(6)<<std::setiosflags(std::ios::right)
+  //         <<DiffusionDirHistOutput[i].gradientDir[1]<<", "
+  //         <<std::setw(9)<<std::setiosflags(std::ios::fixed)<<
+  // std::setprecision(6)<<std::setiosflags(std::ios::right)
+  //         <<DiffusionDirHistOutput[i].gradientDir[2]<<"] "
+  //         <<"\t"<<DiffusionDirHistOutput[i].repetitionNumber <<std::endl;
+  //     }
+  //
+  //     outfile.close();
+
   return;
 }
 
 /**
- *
- */
+*
+*/
 template <class TImageType>
 void
-DWIQCInterlaceChecker<TImageType>
+DWIQCGradientChecker<TImageType>
 ::collectDiffusionStatistics()
 {
   std::vector<struDiffusionDir> DiffusionDirections;
@@ -1495,7 +1269,7 @@ DWIQCInterlaceChecker<TImageType>
         bool newDirMode = true;
         for( unsigned int j = 0; j < dirNorm.size(); j++ )
           {
-          if( fabs(normSqr - dirNorm[j]) < 0.001 )  // 1 DIFFERENCE for b value
+          if( fabs(normSqr - dirNorm[j]) < 0.001 )    // 1 DIFFERENCE for b value
             {
             newDirMode = false;
             break;
@@ -1522,9 +1296,9 @@ DWIQCInterlaceChecker<TImageType>
     if( repetNum[i] != repetNum[0] )
       {
       // std::cout
-      //  << "Warning: InterlaceChecker:  Not all the gradient directions have same repetition. "
-      //  << "GradientNumber[" << i << "] : " << repetNum[i] << " != " << repetNum[0]
-      //   << " " << std::endl;
+      //  << "Warning: Not all the gradient directions have same repetition. "
+      // << "GradientNumber= " << i << " " << repetNum[i] << " != " << repetNum[0]
+      //  << std::endl;
       repetitionNumber = -1;
       }
     }
@@ -1532,20 +1306,26 @@ DWIQCInterlaceChecker<TImageType>
   this->gradientNumber = this->m_GradientDirectionContainer->size()
     - this->baselineNumber;
 
+  //     std::cout<<"DWI Diffusion Information: "    <<std::endl;
+  //     std::cout<<"  baselineNumber: "    <<baselineNumber  <<std::endl;
+  //     std::cout<<"  bValueNumber: "    <<bValueNumber    <<std::endl;
+  //     std::cout<<"  gradientDirNumber: "  <<gradientDirNumber  <<std::endl;
+  //     std::cout<<"  gradientNumber: "    <<gradientNumber  <<std::endl;
+  //     std::cout<<"  repetitionNumber: "  <<repetitionNumber  <<std::endl;
   return;
 }
 
 /**
- *
- */
+*
+*/
 template <class TImageType>
 void
-DWIQCInterlaceChecker<TImageType>
+DWIQCGradientChecker<TImageType>
 ::parseGradientDirections()
 {
   InputImageConstPointer inputPtr = this->GetInput();
 
-  itk::MetaDataDictionary imgMetaDictionary = inputPtr->GetMetaDataDictionary();      //
+  itk::MetaDataDictionary imgMetaDictionary = inputPtr->GetMetaDataDictionary();        //
 
   std::vector<std::string> imgMetaKeys
     = imgMetaDictionary.GetKeys();
@@ -1598,7 +1378,8 @@ DWIQCInterlaceChecker<TImageType>
     }
 
   //     std::cout << "b values:" << std::endl;
-  //     for(int i=0;i< this->m_GradientDirectionContainer -> Size();i++ )
+  //     for(unsigned int i=0;i< this->m_GradientDirectionContainer ->
+  // Size();i++ )
   //     {
   //       std::cout << bValues[i] << std::endl;
   //     }
@@ -1611,11 +1392,11 @@ DWIQCInterlaceChecker<TImageType>
 }
 
 /**
- *
- */
+*
+*/
 template <class TImageType>
 void
-DWIQCInterlaceChecker<TImageType>
+DWIQCGradientChecker<TImageType>
 ::ThreadedGenerateData(const OutputImageRegionType & outputRegionForThread,
                        ThreadIdType threadId )
 {
@@ -1663,10 +1444,17 @@ DWIQCInterlaceChecker<TImageType>
     int element = 0;
     for( unsigned int i = 0; i < this->qcResults.size(); i++ )
       {
-      if( this->qcResults[i] )
+      if( m_ExcludeGradientsWithLargeMotionArtifacts )
         {
-        value.SetElement( element, inputPtr->GetPixel(inputIndex)[i] );
-        element++;
+        if( this->qcResults[i] )
+          {
+          value.SetElement( element, inputPtr->GetPixel(inputIndex)[i] );
+          element++;
+          }
+        }
+      else
+        {
+        value.SetElement( i, inputPtr->GetPixel(inputIndex)[i] );
         }
       }
     // copy the input pixel to the output
@@ -1678,11 +1466,11 @@ DWIQCInterlaceChecker<TImageType>
 }
 
 /**
- *
- */
+*
+*/
 template <class TImageType>
 typename TImageType::Pointer
-DWIQCInterlaceChecker<TImageType>
+DWIQCGradientChecker<TImageType>
 ::GetExcludedGradients()
 {
   if( GetCheckDone() )
@@ -1707,9 +1495,11 @@ DWIQCInterlaceChecker<TImageType>
       = inputPtr->GetMetaDataDictionary();
     std::vector<std::string> imgMetaKeys
       = imgMetaDictionary.GetKeys();
+
     std::string metaString;
 
     //  measurement frame
+    vnl_matrix_fixed<double, 3, 3> mf;
     if( imgMetaDictionary.HasKey("NRRD_measurement frame") )
       {
 
@@ -1723,6 +1513,7 @@ DWIQCInterlaceChecker<TImageType>
         outputMetaDictionary,
         "NRRD_measurement frame",
         nrrdmf);
+
       }
 
     // modality
@@ -1778,7 +1569,9 @@ DWIQCInterlaceChecker<TImageType>
 
     // gradient vectors
     int temp = 0;
-    for( unsigned int i = 0; i < this->m_GradientDirectionContainer->Size(); i++ )
+    for( unsigned int i = 0;
+         i < this->m_GradientDirectionContainer->Size();
+         i++ )
       {
       if( !this->qcResults[i] )
         {
@@ -1813,7 +1606,7 @@ DWIQCInterlaceChecker<TImageType>
     excludedDwiImage->SetRegions( inputPtr->GetLargestPossibleRegion() );
     excludedDwiImage->SetVectorLength(inputPtr->GetVectorLength() - gradientLeft);
     excludedDwiImage->Allocate();
-    excludedDwiImage->SetMetaDataDictionary(outputMetaDictionary);    //
+    excludedDwiImage->SetMetaDataDictionary(outputMetaDictionary);      //
 
     typedef ImageRegionIteratorWithIndex<TImageType> OutputIterator;
     OutputIterator outIt( excludedDwiImage,
@@ -1821,8 +1614,6 @@ DWIQCInterlaceChecker<TImageType>
 
     // Define a few indices that will be used to translate from an input pixel
     // to an output pixel
-    typename TImageType::IndexType outputIndex;
-    typename TImageType::IndexType inputIndex;
 
     typename TImageType::PixelType value;
     value.SetSize( inputPtr->GetVectorLength() - gradientLeft );
@@ -1831,10 +1622,9 @@ DWIQCInterlaceChecker<TImageType>
     while( !outIt.IsAtEnd() )
       {
       // determine the index of the output pixel
-      outputIndex = outIt.GetIndex();
-
+      const typename TImageType::IndexType outputIndex = outIt.GetIndex();
       // determine the input pixel location associated with this output pixel
-      inputIndex = outputIndex;
+      const typename TImageType::IndexType inputIndex = outputIndex;
 
       int element = 0;
       for( unsigned int i = 0; i < this->qcResults.size(); i++ )
@@ -1852,7 +1642,6 @@ DWIQCInterlaceChecker<TImageType>
 
     return excludedDwiImage;
     }
-
   return NULL;
 }
 

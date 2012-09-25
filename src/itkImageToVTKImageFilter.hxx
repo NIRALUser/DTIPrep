@@ -1,10 +1,6 @@
 /*=========================================================================
 
   Program:   Insight Segmentation & Registration Toolkit
-  Module:    $RCSfile: itkImageToVTKImageFilter.txx,v $
-  Language:  C++
-  Date:      $Date: 2009-03-23 18:06:16 $
-  Version:   $Revision: 1.4 $
 
   Copyright (c) 2002 Insight Consortium. All rights reserved.
   See ITKCopyright.txt or http://www.itk.org/HTML/Copyright.htm for details.
@@ -14,8 +10,8 @@
      PURPOSE.  See the above copyright notices for more information.
 
 =========================================================================*/
-#ifndef _itkImageToVTKImageFilter_txx
-#define _itkImageToVTKImageFilter_txx
+#ifndef _itkImageToVTKImageFilter_hxx
+#define _itkImageToVTKImageFilter_hxx
 
 #include "itkImageToVTKImageFilter.h"
 

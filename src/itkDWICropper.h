@@ -230,7 +230,7 @@ public:
 } // end namespace itk
 
 #ifndef ITK_MANUAL_INSTANTIATION
-#include "itkDWICropper.cpp"
+#include "itkDWICropper.hxx"
 #endif
 
 #endif

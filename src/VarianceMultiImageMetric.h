@@ -137,7 +137,7 @@ private:
 } // end namespace itk
 
 #ifndef ITK_MANUAL_INSTANTIATION
-#include "VarianceMultiImageMetric.txx"
+#include "VarianceMultiImageMetric.hxx"
 #endif
 
 #endif

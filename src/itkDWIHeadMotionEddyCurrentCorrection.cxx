@@ -1,5 +1,5 @@
-#ifndef _itk_DWIHeadMotionEddyCurrent_correction_txx
-#define _itk_DWIHeadMotionEddyCurrent_correction_txx
+#ifndef _itk_DWIHeadMotionEddyCurrent_correction_hxx
+#define _itk_DWIHeadMotionEddyCurrent_correction_hxx
 
 #include "itkDWIHeadMotionEddyCurrentCorrection.h"
 

@@ -16,8 +16,8 @@ PURPOSE.  See the above copyright notices for more information.
 
 =========================================================================*/
 
-#ifndef _itkDWIBaseLineAverager_cpp
-#define _itkDWIBaseLineAverager_cpp
+#ifndef _itkDWIBaseLineAverager_hxx
+#define _itkDWIBaseLineAverager_hxx
 
 #include "itkImageFileWriter.h"
 

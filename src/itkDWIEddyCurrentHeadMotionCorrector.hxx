@@ -16,8 +16,8 @@ PURPOSE.  See the above copyright notices for more information.
 
 =========================================================================*/
 
-#ifndef _itkDWIEddyCurrentHeadMotionCorrector_cpp
-#define _itkDWIEddyCurrentHeadMotionCorrector_cpp
+#ifndef _itkDWIEddyCurrentHeadMotionCorrector_hxx
+#define _itkDWIEddyCurrentHeadMotionCorrector_hxx
 
 #include "itkDWIEddyCurrentHeadMotionCorrector.h"
 #include "itkExceptionObject.h"

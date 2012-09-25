@@ -247,7 +247,7 @@ private:
 } // end namespace itk
 
 #ifndef ITK_MANUAL_INSTANTIATION
-#include "MultiResolutionMultiImageRegistrationMethod.txx"
+#include "MultiResolutionMultiImageRegistrationMethod.hxx"
 #endif
 
 #endif

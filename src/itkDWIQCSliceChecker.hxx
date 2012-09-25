@@ -16,8 +16,8 @@ PURPOSE.  See the above copyright notices for more information.
 
 =========================================================================*/
 
-#ifndef _itkDWIQCSliceChecker_cpp
-#define _itkDWIQCSliceChecker_cpp
+#ifndef _itkDWIQCSliceChecker_hxx
+#define _itkDWIQCSliceChecker_hxx
 
 #include "itkDWIQCSliceChecker.h"
 #include "itkImageRegionIteratorWithIndex.h"

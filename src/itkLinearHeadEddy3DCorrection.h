@@ -212,7 +212,7 @@ private:
 #endif
 
 #if ITK_TEMPLATE_TXX
-#include "itkLinearHeadEddy3DCorrection.txx"
+#include "itkLinearHeadEddy3DCorrection.hxx"
 #endif
 
 #endif /* __itkLinearHeadEddy3DCorrection_h */

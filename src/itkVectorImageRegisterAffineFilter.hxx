@@ -1,7 +1,7 @@
 /*=========================================================================
 
  Program:   GTRACT (Guided Tensor Restore Anatomical Connectivity Tractography)
- Module:    $RCSfile: itkVectorImageRegisterAffineFilter.txx,v $
+ Module:    $RCSfile: itkVectorImageRegisterAffineFilter.hxx,v $
  Language:  C++
  Date:      $Date: 2009-11-23 14:14:23 $
  Version:   $Revision: 1.4 $

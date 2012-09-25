@@ -269,7 +269,7 @@ public:
 } // end namespace itk
 
 #ifndef ITK_MANUAL_INSTANTIATION
-#include "MultiImageMetric.txx"
+#include "MultiImageMetric.hxx"
 #endif
 
 #endif

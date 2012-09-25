@@ -14,8 +14,8 @@
      PURPOSE.  See the above copyright notices for more information.
 
 =========================================================================*/
-#ifndef _itkGradientSteepestDescentOptimizer_txx
-#define _itkGradientSteepestDescentOptimizer_txx
+#ifndef _itkGradientSteepestDescentOptimizer_hxx
+#define _itkGradientSteepestDescentOptimizer_hxx
 
 #include "itkGradientSteepestDescentOptimizer.h"
 #include "itkCommand.h"

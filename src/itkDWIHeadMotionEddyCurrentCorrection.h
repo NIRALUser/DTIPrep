@@ -251,6 +251,6 @@ public:
 
 } // end of namespace
 
-// Changed to a .cpp file #include "itkDWIHeadMotionEddyCurrentCorrection.txx"
+// Changed to a .cpp file #include "itkDWIHeadMotionEddyCurrentCorrection.hxx"
 
 #endif /*__itk_DWIHeadMotionEddyCurrent_correction_h */

@@ -1,6 +1,6 @@
 
-#ifndef _itkLinearHeadEddy3DCorrection_txx
-#define _itkLinearHeadEddy3DCorrection_txx
+#ifndef _itkLinearHeadEddy3DCorrection_hxx
+#define _itkLinearHeadEddy3DCorrection_hxx
 
 #include "itkNumericTraits.h"
 #include "itkLinearHeadEddy3DCorrection.h"

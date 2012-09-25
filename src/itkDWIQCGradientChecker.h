@@ -329,7 +329,7 @@ public:
 } // end namespace itk
 
 #ifndef ITK_MANUAL_INSTANTIATION
-#include "itkDWIQCGradientChecker.cpp"
+#include "itkDWIQCGradientChecker.hxx"
 #endif
 
 #endif
