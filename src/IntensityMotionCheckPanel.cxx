@@ -1561,7 +1561,7 @@ void IntensityMotionCheckPanel::DefaultProtocol()
     = "/tools/bin_linux64/dtiprocess";
   this->GetProtocol().GetDTIProtocol().method = Protocol::METHOD_WLS;
   this->GetProtocol().GetDTIProtocol().baselineThreshold = 50; //
-  this->GetProtocol().GetDTIProtocol().mask = "";
+//  this->GetProtocol().GetDTIProtocol().mask = "";
   this->GetProtocol().GetDTIProtocol().tensorSuffix = "_DTI.nrrd";
   this->GetProtocol().GetDTIProtocol().bbaseline = true;
   this->GetProtocol().GetDTIProtocol().baselineSuffix = "_Baseline.nrrd";

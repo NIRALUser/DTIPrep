@@ -1161,7 +1161,7 @@ bool CIntensityMotionCheck::SliceWiseCheck( DwiImageType::Pointer dwi )
   bool ret = true;
 
   
-    std::string ReportFileName;
+    std::string m_ReportFileName;
 
     std::string Dwi_file_name = FNameBase(this->m_DwiFileName);
 
@@ -1187,9 +1187,9 @@ bool CIntensityMotionCheck::SliceWiseCheck( DwiImageType::Pointer dwi )
 			itksys::SystemTools::MakeDirectory( str.c_str() );
 			}
 			str.append( "/" );
-			ReportFileName = str;
-			ReportFileName.append( Dwi_file_name );
-			ReportFileName.append( protocol->GetSliceCheckProtocol().reportFileNameSuffix );
+			m_ReportFileName = str;
+			m_ReportFileName.append( Dwi_file_name );
+			m_ReportFileName.append( protocol->GetSliceCheckProtocol().reportFileNameSuffix );
 		}
 	
 		else	// "/" exists in the the protocol->GetQCOutputDirectory() and interpreted as the absolute path
@@ -1201,24 +1201,24 @@ bool CIntensityMotionCheck::SliceWiseCheck( DwiImageType::Pointer dwi )
 			itksys::SystemTools::MakeDirectory( str.c_str() );
 			}
 			str.append("/");
-			ReportFileName = str;
-			ReportFileName.append( Dwi_file_name );
-			ReportFileName.append( protocol->GetSliceCheckProtocol().reportFileNameSuffix );
+			m_ReportFileName = str;
+			m_ReportFileName.append( Dwi_file_name );
+			m_ReportFileName.append( protocol->GetSliceCheckProtocol().reportFileNameSuffix );
 			
 		}
 
         }
       else
         {
-        ReportFileName = m_DwiFileName.substr( 0, m_DwiFileName.find_last_of('.') );
-        ReportFileName.append( protocol->GetSliceCheckProtocol().reportFileNameSuffix );
+        m_ReportFileName = m_DwiFileName.substr( 0, m_DwiFileName.find_last_of('.') );
+        m_ReportFileName.append( protocol->GetSliceCheckProtocol().reportFileNameSuffix );
         }
 
       }
 
     // validate the SliceWise output
     std::ofstream outfile;
-    outfile.open(ReportFileName.c_str(), std::ios::app);    
+    outfile.open(m_ReportFileName.c_str(), std::ios::app);    
     
     if( protocol->GetSliceCheckProtocol().bCheck )
     {
@@ -1234,7 +1234,7 @@ bool CIntensityMotionCheck::SliceWiseCheck( DwiImageType::Pointer dwi )
       protocol->GetSliceCheckProtocol().correlationDeviationThresholdbaseline );
     SliceChecker->SetGradientStdevTimes(
       protocol->GetSliceCheckProtocol().correlationDeviationThresholdgradient );
-    SliceChecker->SetReportFileName( ReportFileName );
+    SliceChecker->SetReportFileName( m_ReportFileName );
     SliceChecker->SetReportFileMode(
       protocol->GetSliceCheckProtocol().reportFileMode );
     SliceChecker->SetReportType(protocol->GetReportType() );
@@ -1534,7 +1534,7 @@ bool CIntensityMotionCheck::InterlaceWiseCheck( DwiImageType::Pointer dwi )
 {
   bool ret = true;
 
-    std::string ReportFileName;
+    std::string m_ReportFileName;
 
     std::string Dwi_file_name = FNameBase(this->m_DwiFileName);
 
@@ -1561,9 +1561,9 @@ bool CIntensityMotionCheck::InterlaceWiseCheck( DwiImageType::Pointer dwi )
 		itksys::SystemTools::MakeDirectory( str.c_str() );
 		}
 		str.append( "/" );
-		ReportFileName = str;
-		ReportFileName.append( Dwi_file_name );
-		ReportFileName.append( protocol->GetInterlaceCheckProtocol().reportFileNameSuffix );
+		m_ReportFileName = str;
+		m_ReportFileName.append( Dwi_file_name );
+		m_ReportFileName.append( protocol->GetInterlaceCheckProtocol().reportFileNameSuffix );
 
 	}
 	else	// "/" exists in the the protocol->GetQCOutputDirectory() and interpreted as the absolute path
@@ -1575,23 +1575,23 @@ bool CIntensityMotionCheck::InterlaceWiseCheck( DwiImageType::Pointer dwi )
 			itksys::SystemTools::MakeDirectory( str.c_str() );
 			}
 		str.append("/");
-		ReportFileName = str;
-		ReportFileName.append( Dwi_file_name );
-		ReportFileName.append( protocol->GetInterlaceCheckProtocol().reportFileNameSuffix );
+		m_ReportFileName = str;
+		m_ReportFileName.append( Dwi_file_name );
+		m_ReportFileName.append( protocol->GetInterlaceCheckProtocol().reportFileNameSuffix );
 	}
 
         }
       else
         {
-        ReportFileName = m_DwiFileName.substr( 0, m_DwiFileName.find_last_of('.') );
-        ReportFileName.append( protocol->GetInterlaceCheckProtocol().reportFileNameSuffix );
+        m_ReportFileName = m_DwiFileName.substr( 0, m_DwiFileName.find_last_of('.') );
+        m_ReportFileName.append( protocol->GetInterlaceCheckProtocol().reportFileNameSuffix );
         }
 
       }
     	
     // validate the interlace Wise output
     std::ofstream outfile;
-    outfile.open(ReportFileName.c_str(), std::ios::app);
+    outfile.open(m_ReportFileName.c_str(), std::ios::app);
     
     if( protocol->GetInterlaceCheckProtocol().bCheck )
     {
@@ -1611,7 +1611,7 @@ bool CIntensityMotionCheck::InterlaceWiseCheck( DwiImageType::Pointer dwi )
       protocol->GetInterlaceCheckProtocol().translationThreshold );
     InterlaceChecker->SetRotationThreshold( protocol->GetInterlaceCheckProtocol(
                                               ).rotationThreshold );
-    InterlaceChecker->SetReportFileName( ReportFileName );
+    InterlaceChecker->SetReportFileName( m_ReportFileName );
     InterlaceChecker->SetReportFileMode(
       protocol->GetInterlaceCheckProtocol().reportFileMode );
     InterlaceChecker->SetReportType(protocol->GetReportType() );
@@ -1928,7 +1928,7 @@ bool CIntensityMotionCheck::InterlaceWiseCheck( DwiImageType::Pointer dwi )
 bool CIntensityMotionCheck::BaselineAverage( DwiImageType::Pointer dwi )
 {
  
-    std::string ReportFileName;
+    std::string m_ReportFileName;
 
     std::string Dwi_file_name = FNameBase(this->m_DwiFileName);
 
@@ -1955,9 +1955,9 @@ bool CIntensityMotionCheck::BaselineAverage( DwiImageType::Pointer dwi )
 			itksys::SystemTools::MakeDirectory( str.c_str() );
 			}
 			str.append( "/" );
-			ReportFileName = str;
-			ReportFileName.append( Dwi_file_name );
-			ReportFileName.append( protocol->GetBaselineAverageProtocol().reportFileNameSuffix );
+			m_ReportFileName = str;
+			m_ReportFileName.append( Dwi_file_name );
+			m_ReportFileName.append( protocol->GetBaselineAverageProtocol().reportFileNameSuffix );
 	
 		}
 	
@@ -1970,30 +1970,30 @@ bool CIntensityMotionCheck::BaselineAverage( DwiImageType::Pointer dwi )
 			itksys::SystemTools::MakeDirectory( str.c_str() );
 			}
 			str.append( "/" );
-			ReportFileName = str;
-			ReportFileName.append( Dwi_file_name );
-			ReportFileName.append( protocol->GetBaselineAverageProtocol().reportFileNameSuffix );
+			m_ReportFileName = str;
+			m_ReportFileName.append( Dwi_file_name );
+			m_ReportFileName.append( protocol->GetBaselineAverageProtocol().reportFileNameSuffix );
 	
 		}
 
         }
       else
         {
-        ReportFileName = m_DwiFileName.substr( 0, m_DwiFileName.find_last_of('.') );
-        ReportFileName.append( protocol->GetBaselineAverageProtocol().reportFileNameSuffix );
+        m_ReportFileName = m_DwiFileName.substr( 0, m_DwiFileName.find_last_of('.') );
+        m_ReportFileName.append( protocol->GetBaselineAverageProtocol().reportFileNameSuffix );
         }
 
       }
 
     std::ofstream outfile;
-    outfile.open(ReportFileName.c_str(), std::ios::app);
+    outfile.open(m_ReportFileName.c_str(), std::ios::app);
     
     if( protocol->GetBaselineAverageProtocol().bAverage )
     {
     
     BaselineAveragerType::Pointer BaselineAverager = BaselineAveragerType::New();
     BaselineAverager->SetInput( dwi );
-    BaselineAverager->SetReportFileName( ReportFileName );
+    BaselineAverager->SetReportFileName( m_ReportFileName );
     BaselineAverager->SetReportFileMode(
       protocol->GetBaselineAverageProtocol().reportFileMode);
     BaselineAverager->SetAverageMethod(
@@ -2167,7 +2167,7 @@ bool CIntensityMotionCheck::EddyMotionCorrectIowa( DwiImageType::Pointer dwi )
     std::cout << "Eddy-current and head motion correction using IOWA tool."
               << std::endl;
 
-    std::string ReportFileName;
+    std::string m_ReportFileName;
 
 
     if( protocol->GetEddyMotionCorrectionProtocol().reportFileNameSuffix.
@@ -2198,9 +2198,9 @@ bool CIntensityMotionCheck::EddyMotionCorrectIowa( DwiImageType::Pointer dwi )
 		itksys::SystemTools::MakeDirectory( str.c_str() );
 		}
 		str.append( "/" );
-		ReportFileName = str;
-		ReportFileName.append( Dwi_file_name );
-		ReportFileName.append( protocol->GetEddyMotionCorrectionProtocol().reportFileNameSuffix );
+		m_ReportFileName = str;
+		m_ReportFileName.append( Dwi_file_name );
+		m_ReportFileName.append( protocol->GetEddyMotionCorrectionProtocol().reportFileNameSuffix );
 
 	}
 	else	// "/" exists in the the protocol->GetQCOutputDirectory() and interpreted as the absolute path
@@ -2212,21 +2212,21 @@ bool CIntensityMotionCheck::EddyMotionCorrectIowa( DwiImageType::Pointer dwi )
 			itksys::SystemTools::MakeDirectory( str.c_str() );
 			}
 		str.append( "/" );
-		ReportFileName = str;
-		ReportFileName.append( Dwi_file_name );
-		ReportFileName.append( protocol->GetEddyMotionCorrectionProtocol().reportFileNameSuffix );
+		m_ReportFileName = str;
+		m_ReportFileName.append( Dwi_file_name );
+		m_ReportFileName.append( protocol->GetEddyMotionCorrectionProtocol().reportFileNameSuffix );
 	}
 
         }
       else
         {
-        ReportFileName = m_DwiFileName.substr( 0, m_DwiFileName.find_last_of('.') );
-        ReportFileName.append( protocol->GetEddyMotionCorrectionProtocol().reportFileNameSuffix );
+        m_ReportFileName = m_DwiFileName.substr( 0, m_DwiFileName.find_last_of('.') );
+        m_ReportFileName.append( protocol->GetEddyMotionCorrectionProtocol().reportFileNameSuffix );
         }
       }
 
     std::ofstream outfile;
-    outfile.open(ReportFileName.c_str(), std::ios::app);
+    outfile.open(m_ReportFileName.c_str(), std::ios::app);
     
     if( protocol->GetEddyMotionCorrectionProtocol().bCorrect )
     {
@@ -2629,7 +2629,7 @@ bool CIntensityMotionCheck::EddyMotionCorrect( DwiImageType::Pointer dwi )
 {
   if( protocol->GetEddyMotionCorrectionProtocol().bCorrect )
     {
-    std::string ReportFileName;
+    std::string m_ReportFileName;
 
 
     if( protocol->GetEddyMotionCorrectionProtocol().reportFileNameSuffix.
@@ -2656,9 +2656,9 @@ bool CIntensityMotionCheck::EddyMotionCorrect( DwiImageType::Pointer dwi )
 		itksys::SystemTools::MakeDirectory( str.c_str() );
 		}
 		str.append( "/" );
-		ReportFileName = str;
-		ReportFileName.append( Dwi_file_name );
-		ReportFileName.append( protocol->GetEddyMotionCorrectionProtocol().reportFileNameSuffix );
+		m_ReportFileName = str;
+		m_ReportFileName.append( Dwi_file_name );
+		m_ReportFileName.append( protocol->GetEddyMotionCorrectionProtocol().reportFileNameSuffix );
 	}
 
 	else	// "/" exists in the the protocol->GetQCOutputDirectory() and interpreted as the absolute path
@@ -2670,16 +2670,16 @@ bool CIntensityMotionCheck::EddyMotionCorrect( DwiImageType::Pointer dwi )
 			itksys::SystemTools::MakeDirectory( str.c_str() );
 			}
 		str.append( "/" );
-		ReportFileName = str;
-		ReportFileName.append( Dwi_file_name );
-		ReportFileName.append( protocol->GetEddyMotionCorrectionProtocol().reportFileNameSuffix );
+		m_ReportFileName = str;
+		m_ReportFileName.append( Dwi_file_name );
+		m_ReportFileName.append( protocol->GetEddyMotionCorrectionProtocol().reportFileNameSuffix );
 	}
 
         }
       else
         {
-        ReportFileName = m_DwiFileName.substr( 0, m_DwiFileName.find_last_of('.') );
-        ReportFileName.append( protocol->GetEddyMotionCorrectionProtocol().reportFileNameSuffix );
+        m_ReportFileName = m_DwiFileName.substr( 0, m_DwiFileName.find_last_of('.') );
+        m_ReportFileName.append( protocol->GetEddyMotionCorrectionProtocol().reportFileNameSuffix );
         }
 
       }
@@ -2688,7 +2688,7 @@ bool CIntensityMotionCheck::EddyMotionCorrect( DwiImageType::Pointer dwi )
     EddyMotionCorrectorType::Pointer EddyMotionCorrector
       = EddyMotionCorrectorType::New();
     EddyMotionCorrector->SetInput( dwi);
-    EddyMotionCorrector->SetReportFileName( ReportFileName );
+    EddyMotionCorrector->SetReportFileName(m_ReportFileName );
     EddyMotionCorrector->SetReportFileMode(
       protocol->GetEddyMotionCorrectionProtocol().reportFileMode );
 
@@ -2861,7 +2861,7 @@ bool CIntensityMotionCheck::GradientWiseCheck( DwiImageType::Pointer dwi )
 {
   bool ret = true;
 
-    std::string ReportFileName;
+    std::string m_ReportFileName;
 
     std::string Dwi_file_name = FNameBase(this->m_DwiFileName);
 
@@ -2887,9 +2887,9 @@ bool CIntensityMotionCheck::GradientWiseCheck( DwiImageType::Pointer dwi )
 		itksys::SystemTools::MakeDirectory( str.c_str() );
 		}
 		str.append( "/" );
-		ReportFileName = str;
-		ReportFileName.append( Dwi_file_name );
-		ReportFileName.append( protocol->GetGradientCheckProtocol().reportFileNameSuffix  );
+		m_ReportFileName = str;
+		m_ReportFileName.append( Dwi_file_name );
+		m_ReportFileName.append( protocol->GetGradientCheckProtocol().reportFileNameSuffix  );
 
 	}
 
@@ -2902,23 +2902,23 @@ bool CIntensityMotionCheck::GradientWiseCheck( DwiImageType::Pointer dwi )
 			itksys::SystemTools::MakeDirectory( str.c_str() );
 			}
 		str.append( "/" );
-		ReportFileName = str;
-		ReportFileName.append( Dwi_file_name );
-		ReportFileName.append( protocol->GetGradientCheckProtocol().reportFileNameSuffix  );
+		m_ReportFileName = str;
+		m_ReportFileName.append( Dwi_file_name );
+		m_ReportFileName.append( protocol->GetGradientCheckProtocol().reportFileNameSuffix  );
 	}
 
         }
       else
         {
-        ReportFileName = m_DwiFileName.substr( 0, m_DwiFileName.find_last_of('.') );
-        ReportFileName.append( protocol->GetGradientCheckProtocol().reportFileNameSuffix  );
+        m_ReportFileName = m_DwiFileName.substr( 0, m_DwiFileName.find_last_of('.') );
+        m_ReportFileName.append( protocol->GetGradientCheckProtocol().reportFileNameSuffix  );
         }
 
       }
     
     // validate the gradient Wise output
     std::ofstream outfile;
-    outfile.open(ReportFileName.c_str(), std::ios::app);
+    outfile.open(m_ReportFileName.c_str(), std::ios::app);
     if( protocol->GetGradientCheckProtocol().bCheck )
     {
 
@@ -2928,7 +2928,7 @@ bool CIntensityMotionCheck::GradientWiseCheck( DwiImageType::Pointer dwi )
       protocol->GetGradientCheckProtocol().translationThreshold );
     GradientChecker->SetRotationThreshold(
       protocol->GetGradientCheckProtocol().rotationThreshold );
-    GradientChecker->SetReportFileName( ReportFileName );
+    GradientChecker->SetReportFileName( m_ReportFileName );
     GradientChecker->SetReportFileMode(
       protocol->GetGradientCheckProtocol().reportFileMode );
     GradientChecker->SetReportType( protocol->GetReportType() );
@@ -3415,7 +3415,7 @@ bool CIntensityMotionCheck::BrainMask()
 	bool bReport = false;
 	bool ret = true;
 	
-	std::string ReportFileName;
+	std::string m_ReportFileName;
 	
 	std::string Dwi_file_name = FNameBase(this->m_DwiFileName);
 
@@ -3438,9 +3438,9 @@ bool CIntensityMotionCheck::BrainMask()
 					itksys::SystemTools::MakeDirectory( str.c_str() );
 					}
 				str.append( "/" );
-				ReportFileName = str;
-				ReportFileName.append( Dwi_file_name );
-				ReportFileName.append( "_QCReport.txt");
+				m_ReportFileName = str;
+				m_ReportFileName.append( Dwi_file_name );
+				m_ReportFileName.append( "_QCReport.txt");
 				
 		}
 
@@ -3453,27 +3453,27 @@ bool CIntensityMotionCheck::BrainMask()
 					itksys::SystemTools::MakeDirectory( str.c_str() );
 					}
 				str.append( "/" );
-				ReportFileName = str;
-				ReportFileName.append( Dwi_file_name );
-				ReportFileName.append( "_QCReport.txt");
+				m_ReportFileName = str;
+				m_ReportFileName.append( Dwi_file_name );
+				m_ReportFileName.append( "_QCReport.txt");
 		}
 
 	}
 	else
 	{
-	    	ReportFileName = m_DwiFileName.substr( 0, m_DwiFileName.find_last_of('.') );
-	    	ReportFileName.append( "_QCReport.txt");
+	    	m_ReportFileName = m_DwiFileName.substr( 0, m_DwiFileName.find_last_of('.') );
+	    	m_ReportFileName.append( "_QCReport.txt");
 	}
 	  
 	std::ofstream outfile;
 
     if( protocol->GetBrainMaskProtocol().reportFileMode == 1 )
 	{
-	      outfile.open( ReportFileName.c_str(), std::ios_base::app | std::ios_base::out);
+	      outfile.open( m_ReportFileName.c_str(), std::ios_base::app | std::ios_base::out);
 	}
 	else
 	{
-	     outfile.open( ReportFileName.c_str() );
+	     outfile.open( m_ReportFileName.c_str() );
 	}
 	if( outfile )
 	{
@@ -3507,12 +3507,12 @@ bool CIntensityMotionCheck::BrainMask()
 			
 			 case Protocol::BRAINMASK_METHOD_FSL:
 			 {
-				ret =  BRAINMASK_METHOD_FSL(ReportFileName);
+				ret =  BRAINMASK_METHOD_FSL(m_ReportFileName);
 				break;
 			 }
 			 case Protocol::BRAINMASK_METHOD_SLICER:
 			 {
-				ret = BRAINMASK_METHOD_Slicer(  );
+				ret = BRAINMASK_METHOD_Slicer( m_ReportFileName );
 				break;
 			 }
 			 case Protocol::BRAINMASK_METHOD_OPTION:
@@ -3533,7 +3533,7 @@ bool CIntensityMotionCheck::BrainMask()
 	return ret;	     
 }
 
-bool CIntensityMotionCheck::BRAINMASK_METHOD_FSL(std ::string ReportFileName )
+bool CIntensityMotionCheck::BRAINMASK_METHOD_FSL(std ::string m_ReportFileName )
 {
 	 bool ret = true;
 	 bool bReport = false;
@@ -3543,11 +3543,11 @@ bool CIntensityMotionCheck::BRAINMASK_METHOD_FSL(std ::string ReportFileName )
 
 	 if( protocol->GetBrainMaskProtocol().reportFileMode == 1 )
 	 {
-	      outfile.open( ReportFileName.c_str(), std::ios_base::app | std::ios_base::out);
+	      outfile.open( m_ReportFileName.c_str(), std::ios_base::app | std::ios_base::out);
 	 }
 	 else
 	 {
-	     outfile.open( ReportFileName.c_str() );
+	     outfile.open( m_ReportFileName.c_str() );
 	 }
      if( outfile )
 	 {
@@ -3569,7 +3569,7 @@ bool CIntensityMotionCheck::BRAINMASK_METHOD_FSL(std ::string ReportFileName )
 	     return ret;
 	 }
 	 
-	 std::cout << "ReportFileName " << ReportFileName.c_str() << std::endl;
+	 std::cout << "ReportFileName " << m_ReportFileName.c_str() << std::endl;
 	 
 	 // computing baseline
 	 QStringList str_dtiestim;
@@ -3765,7 +3765,7 @@ bool CIntensityMotionCheck::BRAINMASK_METHOD_FSL(std ::string ReportFileName )
 	
 }
 
-bool CIntensityMotionCheck::BRAINMASK_METHOD_Slicer()
+bool CIntensityMotionCheck::BRAINMASK_METHOD_Slicer(std::string m_ReportFileName)
 {
 	
 	bool ret = true;
@@ -3776,11 +3776,11 @@ bool CIntensityMotionCheck::BRAINMASK_METHOD_Slicer()
 
 	if( protocol->GetBrainMaskProtocol().reportFileMode == 1 )
 	{
-		outfile.open( ReportFileName.c_str(), std::ios_base::app | std::ios_base::out);
+		outfile.open( m_ReportFileName.c_str(), std::ios_base::app | std::ios_base::out);
 	}
 	else
 	{
-	     outfile.open( ReportFileName.c_str() );
+	     outfile.open( m_ReportFileName.c_str() );
 	}
 	if( outfile )
 	{
@@ -3791,7 +3791,7 @@ bool CIntensityMotionCheck::BRAINMASK_METHOD_Slicer()
 	{
 	   	 outfile << std::endl;
 	     outfile << "=====================" << std::endl;
-	     outfile << " Brain Mask FSL " << std::endl;
+	     outfile << " Brain Mask Slicer " << std::endl;
 	     outfile << "=====================" << std::endl;
 	}
 	else if (!bReport)
@@ -3802,7 +3802,7 @@ bool CIntensityMotionCheck::BRAINMASK_METHOD_Slicer()
 	     return ret;
 	}
 		 
-	std::cout << "ReportFileName " << ReportFileName.c_str() << std::endl;
+	std::cout << "ReportFileName " << m_ReportFileName.c_str() << std::endl;
 	
 	
 	std::string Result_b0_masked;
@@ -3906,7 +3906,7 @@ bool CIntensityMotionCheck::DominantDirectionalCheck()
 {
 	bool bReport = false;
 	bool ret = true;
-	std::string ReportFileName;
+	std::string m_ReportFileName;
 	
 	std::cout << "protocol->GetDominantDirectional_Detector().bCheck" << protocol->GetDominantDirectional_Detector().bCheck << std::endl;
 
@@ -3931,9 +3931,9 @@ bool CIntensityMotionCheck::DominantDirectionalCheck()
 							itksys::SystemTools::MakeDirectory( str.c_str() );
 							}
 						str.append( "/" );
-						ReportFileName = str;
-						ReportFileName.append( Dwi_file_name );
-						ReportFileName.append( "_QCReport.txt");
+						m_ReportFileName = str;
+						m_ReportFileName.append( Dwi_file_name );
+						m_ReportFileName.append( "_QCReport.txt");
 						
 				}
 	
@@ -3946,16 +3946,16 @@ bool CIntensityMotionCheck::DominantDirectionalCheck()
 							itksys::SystemTools::MakeDirectory( str.c_str() );
 							}
 						str.append( "/" );
-						ReportFileName = str;
-						ReportFileName.append( Dwi_file_name );
-						ReportFileName.append( "_QCReport.txt");
+						m_ReportFileName = str;
+						m_ReportFileName.append( Dwi_file_name );
+						m_ReportFileName.append( "_QCReport.txt");
 				}
 
 	}
 	else
 	{
-		    	ReportFileName = m_DwiFileName.substr( 0, m_DwiFileName.find_last_of('.') );
-		    	ReportFileName.append( "_QCReport.txt");
+		    	m_ReportFileName = m_DwiFileName.substr( 0, m_DwiFileName.find_last_of('.') );
+		    	m_ReportFileName.append( "_QCReport.txt");
 	}
 		    
 		    
@@ -3963,11 +3963,11 @@ bool CIntensityMotionCheck::DominantDirectionalCheck()
 
 	if( protocol->GetDominantDirectional_Detector().reportFileMode == 1 )
 	{
-		       outfile.open( ReportFileName.c_str(), std::ios_base::app | std::ios_base::out);
+		       outfile.open( m_ReportFileName.c_str(), std::ios_base::app | std::ios_base::out);
 	}
 	else
 	{
-		       outfile.open( ReportFileName.c_str() );
+		       outfile.open( m_ReportFileName.c_str() );
 	}
 
 	if( outfile )
@@ -4254,7 +4254,7 @@ unsigned char CIntensityMotionCheck::RunPipelineByProtocol_FurtherQC()
   bool          bReport = false;
   std::ofstream outfile;
 
-  std::string ReportFileName;
+  std::string m_ReportFileName;
   if( protocol->GetQCOutputDirectory().length() > 0 )
     {
     if( protocol->GetQCOutputDirectory().at( protocol->GetQCOutputDirectory().
@@ -4262,31 +4262,31 @@ unsigned char CIntensityMotionCheck::RunPipelineByProtocol_FurtherQC()
         || protocol->GetQCOutputDirectory().at( protocol->GetQCOutputDirectory()
                                                 .length() - 1 ) == '/'     )
       {
-      ReportFileName = protocol->GetQCOutputDirectory().substr(
+      m_ReportFileName = protocol->GetQCOutputDirectory().substr(
           0, protocol->GetQCOutputDirectory().find_last_of("/\\") );
       }
     else
       {
-      ReportFileName = protocol->GetQCOutputDirectory();
+      m_ReportFileName = protocol->GetQCOutputDirectory();
       }
 
-    ReportFileName.append( "/" );
+    m_ReportFileName.append( "/" );
 
     std::string str = m_DwiFileName.substr( 0, m_DwiFileName.find_last_of('.') );
     str = str.substr( str.find_last_of("/\\") + 1);
 
-    ReportFileName.append( str );
-    ReportFileName.append( "_QC_CheckReports_FurtherQC.txt");
+    m_ReportFileName.append( str );
+    m_ReportFileName.append( "_QC_CheckReports_FurtherQC.txt");
 
     }
   else
     {
-    ReportFileName = m_DwiFileName.substr( 0, m_DwiFileName.find_last_of('.') );
+    m_ReportFileName = m_DwiFileName.substr( 0, m_DwiFileName.find_last_of('.') );
 
-    ReportFileName.append( "_QC_CheckReports_FurtherQC.txt");
+    m_ReportFileName.append( "_QC_CheckReports_FurtherQC.txt");
     }
 
-  outfile.open( ReportFileName.c_str() );
+  outfile.open( m_ReportFileName.c_str() );
 
   if( outfile )
     {
@@ -4791,6 +4791,8 @@ unsigned char CIntensityMotionCheck::RunPipelineByProtocol()
             << std::endl;
   std::cout << "qcResult->GetGradientWiseCheckResult().size() " << qcResult->GetGradientWiseCheckResult().size()
             << std::endl;
+  
+  outfile.close();
 
   return this->qcResult->Get_result();
 
@@ -4811,7 +4813,7 @@ unsigned char CIntensityMotionCheck::validateLeftDiffusionStatistics()
 
 {
   bool        bReport = false;
-  std::string ReportFileName;
+  std::string m_ReportFileName;
 
   std::string Dwi_file_name = FNameBase(this->m_DwiFileName);
 
@@ -4837,9 +4839,9 @@ unsigned char CIntensityMotionCheck::validateLeftDiffusionStatistics()
 			itksys::SystemTools::MakeDirectory( str.c_str() );
 			}
 		str.append( "/" );
-		ReportFileName = str;
-		ReportFileName.append( Dwi_file_name );
-		ReportFileName.append( protocol->GetReportFileNameSuffix() );
+		m_ReportFileName = str;
+		m_ReportFileName.append( Dwi_file_name );
+		m_ReportFileName.append( protocol->GetReportFileNameSuffix() );
 	}
 
 	else	// "/" exists in the the protocol->GetQCOutputDirectory() and interpreted as the absolute path
@@ -4851,21 +4853,21 @@ unsigned char CIntensityMotionCheck::validateLeftDiffusionStatistics()
 			{
 			itksys::SystemTools::MakeDirectory( str.c_str() );
 			}
-		ReportFileName = str;
-		ReportFileName.append( Dwi_file_name );
-		ReportFileName.append( protocol->GetReportFileNameSuffix() );
+		m_ReportFileName = str;
+		m_ReportFileName.append( Dwi_file_name );
+		m_ReportFileName.append( protocol->GetReportFileNameSuffix() );
 	}
 
       }
     else
       {
-      ReportFileName = m_DwiFileName.substr( 0, m_DwiFileName.find_last_of('.') );
-      ReportFileName.append( protocol->GetImageProtocol().reportFileNameSuffix );
+      m_ReportFileName = m_DwiFileName.substr( 0, m_DwiFileName.find_last_of('.') );
+      m_ReportFileName.append( protocol->GetImageProtocol().reportFileNameSuffix );
       }
     }
 
   std::ofstream outfile;
-  outfile.open( ReportFileName.c_str(), std::ios_base::app | std::ios_base::out);
+  outfile.open( m_ReportFileName.c_str(), std::ios_base::app | std::ios_base::out);
 
   if( outfile )
     {
@@ -5282,6 +5284,8 @@ void CIntensityMotionCheck::collectDiffusionStatistics()
 
 bool CIntensityMotionCheck::dtiestim()
 {
+	
+  bool ret = true;	
   if( !protocol->GetDTIProtocol().bCompute )
     {
     std::cout << "DTI computing NOT set" << std::endl;
@@ -5289,7 +5293,7 @@ bool CIntensityMotionCheck::dtiestim()
     }
 
   // dtiestim
-  stdStringList dtiestim_str;
+  QStringList dtiestim_str;
   dtiestim_str << "--dwi_image";
   
   
@@ -5401,40 +5405,69 @@ bool CIntensityMotionCheck::dtiestim()
     //str.append(" -m lls ");
 	dtiestim_str << "-m lls";
     }
+  
+  
 
-  if( protocol->GetDTIProtocol().mask.length() > 0 )
+  if( protocol->GetBrainMaskProtocol().BrainMask_Image.length() > 0 )
     {
     //str.append(" -M ");
     //str.append( protocol->GetDTIProtocol().mask );
-	dtiestim_str << "-M" << 
+	dtiestim_str << "-M" << QString::fromStdString(protocol->GetBrainMaskProtocol().BrainMask_Image);
     }
 
-  str.append(" -t ");
+  //str.append(" -t ");
+  dtiestim_str << "-t";
+  
   char buffer[10];
   sprintf( buffer, "%d", protocol->GetDTIProtocol().baselineThreshold );
-  str.append( buffer );
+  //str.append( buffer );
+  
+  dtiestim_str << buffer;
 
   if( protocol->GetDTIProtocol().bidwi )
     {
-    str.append(" --idwi ");
+    //str.append(" --idwi ");
+    
+    dtiestim_str << "--idwi";
+    
     std::string idwi;
     idwi = outputDWIFileName.substr( 0, outputDWIFileName.find_last_of('.') );
     idwi.append(protocol->GetDTIProtocol().idwiSuffix);
-    str.append(idwi);
+    //str.append(idwi);
+    
+    dtiestim_str << QString::fromStdString(idwi);
     }
 
   if( protocol->GetDTIProtocol().bbaseline )
     {
-    str.append(" --B0 ");
+    //str.append(" --B0 ");
+    dtiestim_str << "--B0";
     std::string baseline;
     baseline = outputDWIFileName.substr( 0, outputDWIFileName.find_last_of('.') );
     baseline.append(protocol->GetDTIProtocol().baselineSuffix);
-    str.append(baseline);
+    //str.append(baseline);
+    dtiestim_str << QString::fromStdString(baseline);
     }
 
   std::cout << "===============  Starting dtiestim command ===============" << std::endl;
-  std::cout << "dtiestim command: " << str.c_str() << std::endl;
-  system( str.c_str() );
+  std::cout << "dtiestim command: " << (dtiestim_str.join(" ")).toStdString() << std::endl;
+  QProcess *process = new QProcess();
+  ret =  process->execute( protocol->GetDTIProtocol().dtiestimCommand.c_str(), dtiestim_str );
+  std::cout << "ret " << ret << std::endl;			
+  	
+  if ( ret == -1)
+  {
+  		std::cout << protocol->GetDTIProtocol().dtiestimCommand << "crashes." << std::endl;
+  		//outfile << protocol->GetDTIProtocol().dtiestimCommand << "crashes." << std::endl;
+  		return false;
+  }
+  if ( ret == -2)
+  {
+  	    std::cout << protocol->GetDTIProtocol().dtiestimCommand << "cannot be started." << std::endl;
+  	    //outfile << protocol->GetDTIProtocol().dtiestimCommand << "cannot be started." << std::endl;
+  	    return false;
+  }
+  //system( str.c_str() );
   return true;
 }
 
@@ -5584,7 +5617,7 @@ bool CIntensityMotionCheck::DiffusionCheck( DwiImageType::Pointer dwi)
   // USE
   // protocol->GetDiffusionProtocol().GetReportFileName();
 
-  std::string ReportFileName;
+  std::string m_ReportFileName;
 
   std::string Dwi_file_name = FNameBase(this->m_DwiFileName);
 
@@ -5606,9 +5639,9 @@ bool CIntensityMotionCheck::DiffusionCheck( DwiImageType::Pointer dwi)
 		itksys::SystemTools::MakeDirectory( str.c_str() );
 		}
 		str.append( "/" );
-		ReportFileName = str;
-		ReportFileName.append( Dwi_file_name );
-		ReportFileName.append( protocol->GetDiffusionProtocol().reportFileNameSuffix );
+		m_ReportFileName = str;
+		m_ReportFileName.append( Dwi_file_name );
+		m_ReportFileName.append( protocol->GetDiffusionProtocol().reportFileNameSuffix );
 
 	}
 
@@ -5621,26 +5654,26 @@ bool CIntensityMotionCheck::DiffusionCheck( DwiImageType::Pointer dwi)
 			itksys::SystemTools::MakeDirectory( str.c_str() );
 			}
 		str.append( "/" );
-		ReportFileName = str;
-		ReportFileName.append( Dwi_file_name );
-		ReportFileName.append( protocol->GetDiffusionProtocol().reportFileNameSuffix );
+		m_ReportFileName = str;
+		m_ReportFileName.append( Dwi_file_name );
+		m_ReportFileName.append( protocol->GetDiffusionProtocol().reportFileNameSuffix );
 	}
 
     }
   else
     {
-    ReportFileName = m_DwiFileName.substr( 0, m_DwiFileName.find_last_of('.') );
-    ReportFileName.append( protocol->GetDiffusionProtocol().reportFileNameSuffix );
+    m_ReportFileName = m_DwiFileName.substr( 0, m_DwiFileName.find_last_of('.') );
+    m_ReportFileName.append( protocol->GetDiffusionProtocol().reportFileNameSuffix );
     }
 
   std::ofstream outfile;
   if( protocol->GetDiffusionProtocol().reportFileMode == 1 )
     {
-    outfile.open( ReportFileName.c_str(), std::ios_base::app | std::ios_base::out);
+    outfile.open( m_ReportFileName.c_str(), std::ios_base::app | std::ios_base::out);
     }
   else
     {
-    outfile.open( ReportFileName.c_str() );
+    outfile.open( m_ReportFileName.c_str() );
     }
   if( outfile )
     {

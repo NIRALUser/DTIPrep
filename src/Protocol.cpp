@@ -91,11 +91,11 @@ void Protocol::initBrainMaskProtocol()
 {
 	brainMaskProtocol.bMask = false;
 	brainMaskProtocol.BrainMask_Method = 0;
-	brainMaskProtocol.BrainMask_SystemPath_FSL = " "; //" /tools/FSL/fsl-4.1.4/fsl/bin/bet2";
-	brainMaskProtocol.BrainMask_SystemPath_Slicer = " ";
-	brainMaskProtocol.BrainMask_SystemPath_convertITK = " ";
-	brainMaskProtocol.BrainMask_SystemPath_imagemath = " ";
-	brainMaskProtocol.BrainMask_Image = " ";
+	brainMaskProtocol.BrainMask_SystemPath_FSL = ""; //" /tools/FSL/fsl-4.1.4/fsl/bin/bet2";
+	brainMaskProtocol.BrainMask_SystemPath_Slicer = "";
+	brainMaskProtocol.BrainMask_SystemPath_convertITK = "";
+	brainMaskProtocol.BrainMask_SystemPath_imagemath = "";
+	brainMaskProtocol.BrainMask_Image = "";
 	brainMaskProtocol.reportFileNameSuffix =  "_QCReport.txt";
 	brainMaskProtocol.reportFileMode = 1; // 0: new   1: append
 	brainMaskProtocol.bQuitOnCheckFailure = false;
@@ -872,7 +872,7 @@ void Protocol::printDTIProtocol()
 
   std::cout << "\tbaselineThreshold: " << GetDTIProtocol().baselineThreshold
             << std::endl;
-  std::cout << "\tmask: " << GetDTIProtocol().mask << std::endl;
+  //std::cout << "\tmask: " << GetDTIProtocol().mask << std::endl;
 
   if( GetDTIProtocol().bfa )
     {
@@ -1603,9 +1603,51 @@ void Protocol::Save( std::string xml)
   outfile << "        </entry>"  << std::endl;  
   
   
-  outfile << "    <entry parameter=\"BRAINMASK\">" << std::endl;
+  outfile << "    <entry parameter=\"BRAINMASK_bCheck\">" << std::endl;
+  	if (GetBrainMaskProtocol().bMask)
+  	{
+  		outfile << "        <value>Yes</value>" << std::endl;
+  	}
+  	else
+  	{
+  		outfile << "        <value>No</value>" << std::endl;
+  	}
+  outfile << "    <entry parameter=\"BRAINMASK_method\">" << std::endl;
+  outfile << "            <value>" << GetBrainMaskProtocol().BrainMask_Method << "</value>" << std::endl;
+  outfile << "        </entry>"  << std::endl; 
+  outfile << "    <entry parameter=\"BRAINMASK_SystemPath_FSL\">" << std::endl;
+  outfile << "            <value>" << GetBrainMaskProtocol().BrainMask_SystemPath_FSL << "</value>" << std::endl;
+  outfile << "        </entry>"  << std::endl; 
+  outfile << "    <entry parameter=\"BRAINMASK_SystemPath_convertITK\">" << std::endl;
+  outfile << "            <value>" << GetBrainMaskProtocol().BrainMask_SystemPath_convertITK << "</value>" << std::endl;
+  outfile << "        </entry>"  << std::endl; 
+  outfile << "    <entry parameter=\"BRAINMASK_SystemPath_imagemath\">" << std::endl;
+  outfile << "            <value>" << GetBrainMaskProtocol().BrainMask_SystemPath_imagemath << "</value>" << std::endl;
+  outfile << "        </entry>"  << std::endl; 
+  outfile << "    <entry parameter=\"BRAINMASK_SystemPath_Slicer\">" << std::endl;
+  outfile << "            <value>" << GetBrainMaskProtocol().BrainMask_SystemPath_Slicer << "</value>" << std::endl;
+  outfile << "        </entry>"  << std::endl; 
+  outfile << "    <entry parameter=\"BRAINMASK_MaskedImage\">" << std::endl;
+  outfile << "            <value>" << GetBrainMaskProtocol().BrainMask_Image << "</value>" << std::endl;
+  outfile << "        </entry>"  << std::endl; 
+  outfile << "    <entry parameter=\"BRAINMASK_reportFileNameSuffix\">" << std::endl;
+  outfile << "            <value>" << GetBrainMaskProtocol().reportFileNameSuffix << "</value>" << std::endl;
+  outfile << "        </entry>"  << std::endl; 
+  outfile << "    <entry parameter=\"BRAINMASK_reportFileMode\">" << std::endl;
+  outfile << "            <value>" << GetBrainMaskProtocol().reportFileMode << "</value>" << std::endl;
+  outfile << "        </entry>"  << std::endl; 
+  outfile << "    <entry parameter=\"BRAINMASK_bQuitOnCheckFailure\">" << std::endl;
+  outfile << "            <value>" << GetBrainMaskProtocol().bQuitOnCheckFailure << "</value>" << std::endl;
+  outfile << "        </entry>"  << std::endl; 
   outfile << "        </entry>"  << std::endl; 
   
+  	
+  	
+  	
+  	
+  	
+  	
+  	
   outfile << "    <entry parameter=\"DOMINANTDIRECTION_bCheck\">" << std::endl;
     if(GetDominantDirectional_Detector(). bCheck)
     {
@@ -1674,9 +1716,9 @@ void Protocol::Save( std::string xml)
   outfile << "        <entry parameter=\"DTI_baselineThreshold\">" << std::endl;
   outfile << "            <value>" << GetDTIProtocol(). baselineThreshold << "</value>" << std::endl;
   outfile << "        </entry>" << std::endl;
-  outfile << "        <entry parameter=\"DTI_maskFileName\">" << std::endl;
-  outfile << "            <value>" << GetDTIProtocol(). mask <<  "</value>" << std::endl;
-  outfile << "        </entry>" << std::endl;
+  //outfile << "        <entry parameter=\"DTI_maskFileName\">" << std::endl;
+  //outfile << "            <value>" << GetDTIProtocol(). mask <<  "</value>" << std::endl;
+  //outfile << "        </entry>" << std::endl;
   outfile << "        <entry parameter=\"DTI_tensor\">" << std::endl;
   outfile << "            <value>" << GetDTIProtocol(). tensorSuffix << "</value>" << std::endl;
   outfile << "        </entry>" << std::endl;

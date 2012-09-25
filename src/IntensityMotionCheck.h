@@ -125,9 +125,9 @@ public:
   
   bool BrainMask();
   
-  bool BRAINMASK_METHOD_FSL( std::string ReportFileName);
+  bool BRAINMASK_METHOD_FSL( std::string reportFileName);
   
-  bool BRAINMASK_METHOD_Slicer( );
+  bool BRAINMASK_METHOD_Slicer(std::string reportFileName );
   
   bool DominantDirectionalCheck();
 
