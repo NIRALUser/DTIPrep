@@ -79,6 +79,9 @@ struct DominantDirectional_Detector
 	double Deviation;
 	double Threshold_Acceptance;
 	double Threshold_Suspicion_Unacceptance;
+	std::string reportFileNameSuffix;
+	int reportFileMode;
+	bool bQuitOnCheckFailure;
 };
 
 struct SliceCheckProtocol
@@ -164,6 +167,20 @@ struct EddyMotionCorrectionProtocol
   int reportFileMode; // 0: new   1: append
   };
 
+struct BrainMaskProtocol
+{
+	bool bMask;
+	int BrainMask_Method;	// 0 : FSL_bet 1:Slicer DiffusionWeightedVolumeMasking 2:user
+	std::string BrainMask_SystemPath_FSL;
+	std::string BrainMask_SystemPath_Slicer;
+	std::string BrainMask_SystemPath_convertITK;
+	std::string BrainMask_SystemPath_imagemath;
+	std::string BrainMask_Image;
+	std::string reportFileNameSuffix;
+	int reportFileMode;
+	bool bQuitOnCheckFailure;
+};
+
 struct DTIProtocol
   {
   bool bCompute;
@@ -172,7 +189,7 @@ struct DTIProtocol
 
   int method;
   int baselineThreshold;
-  std::string mask;
+  //std::string mask;
   std::string tensorSuffix;
 
   std::string idwiSuffix;
@@ -192,6 +209,7 @@ struct DTIProtocol
   std::string reportFileNameSuffix;
   int reportFileMode; // 0: new   1: append
   };
+
 
 class Protocol
 {
@@ -231,6 +249,13 @@ public:
           METHOD_ML,
           METHOD_NLS,
           METHOD_UNKNOWN, };
+  
+  enum {
+	  BRAINMASK_METHOD_FSL = 0,
+	  BRAINMASK_METHOD_SLICER,
+	  BRAINMASK_METHOD_OPTION,
+	  
+  };
 
   struct DiffusionDir
     {
@@ -261,6 +286,8 @@ public:
   void initDominantDirectional_Detector();
 
   void initDTIProtocol();
+  
+  void initBrainMaskProtocol();
 
   // HACK: print functions should be const
   void printProtocols();
@@ -360,6 +387,11 @@ public:
   struct EddyMotionCorrectionProtocol & GetEddyMotionCorrectionProtocol()
   {
     return eddyMotionCorrectionProtocol;
+  }
+  
+  struct BrainMaskProtocol & GetBrainMaskProtocol()
+  {
+	  return brainMaskProtocol;
   }
 
   struct DTIProtocol & GetDTIProtocol()
@@ -482,4 +514,6 @@ private:
   DenoisingJointLMMSE          denoisingJointLMMSE;
   DominantDirectional_Detector			   dominantDirectional_Detector;
   DTIProtocol                  dTIProtocol;
+  BrainMaskProtocol			   brainMaskProtocol;
+  
 };

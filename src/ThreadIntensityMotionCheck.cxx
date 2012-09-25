@@ -58,57 +58,68 @@ void CThreadIntensityMotionCheck::run()
   std::cout << "--------------------------------" << std::endl;
 
   out = result;
-  out = out >> 7;
+  //out = out >> 7;	
+  out = out >> 9;	// because of adding two processes in the QC pipeline ( brainmask and dominant directional artifact
   if( out )
     {
     std::cout << "QC FAILURE: too many gradients excluded!" << std::endl;
     }
 
   out = result;
+  //out = out << 1;
+  //out = out >> 7;
   out = out << 1;
-  out = out >> 7;
+  out = out >> 9;	// because of adding two processes in the QC pipeline ( brainmask and dominant directional artifact
   if( out )
-    {
+  {
     std::cout << "QC FAILURE: Single b-value DWI without a b0/baseline!"
               << std::endl;
-    }
+  }
 
   out = result;
-  out = out << 2;
-  out = out >> 7;
+  //out = out << 2;	
+  //out = out >> 7;
+  out = out << 2;	
+  out = out >> 9;	// because of adding two processes in the QC pipeline ( brainmask and dominant directional artifact
   if( out )
-    {
+  {
     std::cout << "QC FAILURE: Gradient direction #is less than 6!"
               << std::endl;
-    }
+  }
 
   out = result;
-  out = out << 7;
-  out = out >> 7;
+  //out = out << 7;
+  //out = out >> 7;
+  out = out << 9;
+  out = out >> 9;	// because of adding two processes in the QC pipeline ( brainmask and dominant directional artifact
   if( out  )
-    {
+  {
     std::cout << "Image information check:\tFAILURE" << std::endl;
-    }
+  }
   else
     {
     std::cout << "Image information check:\tPASS" << std::endl;
     }
 
   out = result;
-  out = out << 6;
-  out = out >> 7;
+  //out = out << 6;
+  //out = out >> 7;
+  out = out << 8;
+  out = out >> 9;	// because of adding two processes in the QC pipeline ( brainmask and dominant directional artifact
   if( out )
-    {
+  {
     std::cout << "Diffusion information check:\tFAILURE" << std::endl;
-    }
+  }
   else
-    {
+  {
     std::cout << "Diffusion information check:\tPASS" << std::endl;
-    }
+  }
 
   out = result;
-  out = out << 5;
-  out = out >> 7;
+  //out = out << 5;
+  //out = out >> 7;
+  out = out << 7;
+  out = out >> 9;	// because of adding two processes in the QC pipeline ( brainmask and dominant directional artifact
   if( out  )
     {
     std::cout << "Slice-wise check:\t\tFAILURE" << std::endl;
@@ -119,28 +130,58 @@ void CThreadIntensityMotionCheck::run()
     }
 
   out = result;
-  out = out << 4;
-  out = out >> 7;
+  //out = out << 4;
+  //out = out >> 7;
+  out = out << 6;
+  out = out >> 9;	// because of adding two processes in the QC pipeline ( brainmask and dominant directional artifact
   if( out  )
-    {
+  {
     std::cout << "Interlace-wise check:\t\tFAILURE" <<  std::endl;
-    }
+  }
   else
-    {
+  {
     std::cout << "Interlace-wise check:\t\tPASS" << std::endl;
-    }
+  }
 
   out = result;
-  out = out << 3;
-  out = out >> 7;
+  //out = out << 3;
+  //out = out >> 7;
+  out = out << 5;
+  out = out >> 9;	// because of adding two processes in the QC pipeline ( brainmask and dominant directional artifact
   if( out )
-    {
+  {
     std::cout << "Gradient-wise check:\t\tFAILURE" << std::endl;
-    }
+  }
   else
-    {
+  {
     std::cout << "Gradient-wise check:\t\tPASS" << std::endl;
-    }
+  }
+
+  out = result;
+  out = out << 4;
+  out = out >> 9;	// because of adding two processes in the QC pipeline ( brainmask and dominant directional artifact
+  if( out )
+  {
+    std::cout << "Brain mask check:\t\tFAILURE" << std::endl;
+  }
+  else
+  {
+    std::cout << "Brain mask check:\t\tPASS" << std::endl;
+  }  
+  
+  out = result;
+  out = out << 3;
+  out = out >> 9;	// because of adding two processes in the QC pipeline ( brainmask and dominant directional artifact
+  if( out )
+  {
+    std::cout << "Dominant Directional Detector:\t\tFAILURE" << std::endl;
+  }
+  else
+  {
+    std::cout << "Dominant Directional Detector:\t\tPASS" << std::endl;
+  }   
+  
+  
 
   emit StopProgressSignal();  // hiding progress bar
 

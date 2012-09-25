@@ -11,6 +11,7 @@
 #include "itkImageRegionIterator.h"
 #include "vnl/vnl_inverse.h"
 
+#include <itksys/SystemTools.hxx>
 
 #include <iomanip>
 #include <iostream>
@@ -952,6 +953,7 @@ void CIntensityMotionCheck::ForceCroppingOfImage(const bool bReport, const std::
     }
 }
 
+
 int CIntensityMotionCheck::Denoising( DwiImageType::Pointer dwi )
 {
   int ret = 0;
@@ -1158,8 +1160,7 @@ bool CIntensityMotionCheck::SliceWiseCheck( DwiImageType::Pointer dwi )
 {
   bool ret = true;
 
-  if( protocol->GetSliceCheckProtocol().bCheck )
-    {
+  
     std::string ReportFileName;
 
     std::string Dwi_file_name = FNameBase(this->m_DwiFileName);
@@ -1215,6 +1216,13 @@ bool CIntensityMotionCheck::SliceWiseCheck( DwiImageType::Pointer dwi )
 
       }
 
+    // validate the SliceWise output
+    std::ofstream outfile;
+    outfile.open(ReportFileName.c_str(), std::ios::app);    
+    
+    if( protocol->GetSliceCheckProtocol().bCheck )
+    {
+    
     SliceCheckerType::Pointer SliceChecker = SliceCheckerType::New();
     SliceChecker->SetInput( dwi );
     SliceChecker->SetCheckTimes( protocol->GetSliceCheckProtocol().checkTimes );
@@ -1483,9 +1491,7 @@ bool CIntensityMotionCheck::SliceWiseCheck( DwiImageType::Pointer dwi )
         }
       }
 
-    // validate the SliceWise output
-    std::ofstream outfile;
-    outfile.open(ReportFileName.c_str(), std::ios::app);
+    
 
     // outfile<<"=="<<std::endl;
     // outfile<<"SliceWisw check summary:"<<std::endl;
@@ -1518,6 +1524,7 @@ bool CIntensityMotionCheck::SliceWiseCheck( DwiImageType::Pointer dwi )
   else
     {
     std::cout << "Slice-wise check NOT set." << std::endl;
+    outfile << "Slice-wise check NOT set." << std::endl;
     }
 
   return ret;
@@ -1527,8 +1534,6 @@ bool CIntensityMotionCheck::InterlaceWiseCheck( DwiImageType::Pointer dwi )
 {
   bool ret = true;
 
-  if( protocol->GetInterlaceCheckProtocol().bCheck )
-    {
     std::string ReportFileName;
 
     std::string Dwi_file_name = FNameBase(this->m_DwiFileName);
@@ -1583,6 +1588,14 @@ bool CIntensityMotionCheck::InterlaceWiseCheck( DwiImageType::Pointer dwi )
         }
 
       }
+    	
+    // validate the interlace Wise output
+    std::ofstream outfile;
+    outfile.open(ReportFileName.c_str(), std::ios::app);
+    
+    if( protocol->GetInterlaceCheckProtocol().bCheck )
+    {
+    
 
     InterlaceCheckerType::Pointer InterlaceChecker = InterlaceCheckerType::New();
     InterlaceChecker->SetInput( dwi );
@@ -1874,9 +1887,6 @@ bool CIntensityMotionCheck::InterlaceWiseCheck( DwiImageType::Pointer dwi )
         }
       }
 
-    // validate the interlace Wise output
-    std::ofstream outfile;
-    outfile.open(ReportFileName.c_str(), std::ios::app);
 
     // outfile<<"=="<<std::endl;
     // outfile<<"InterlaceWisw check summary:"<<std::endl;
@@ -1909,6 +1919,7 @@ bool CIntensityMotionCheck::InterlaceWiseCheck( DwiImageType::Pointer dwi )
   else
     {
     std::cout << "Interlace-wise check NOT set." << std::endl;
+    outfile << "Interlace-wise check NOT set." << std::endl;
     }
 
   return ret;
@@ -1916,8 +1927,7 @@ bool CIntensityMotionCheck::InterlaceWiseCheck( DwiImageType::Pointer dwi )
 
 bool CIntensityMotionCheck::BaselineAverage( DwiImageType::Pointer dwi )
 {
-  if( protocol->GetBaselineAverageProtocol().bAverage )
-    {
+ 
     std::string ReportFileName;
 
     std::string Dwi_file_name = FNameBase(this->m_DwiFileName);
@@ -1975,6 +1985,12 @@ bool CIntensityMotionCheck::BaselineAverage( DwiImageType::Pointer dwi )
 
       }
 
+    std::ofstream outfile;
+    outfile.open(ReportFileName.c_str(), std::ios::app);
+    
+    if( protocol->GetBaselineAverageProtocol().bAverage )
+    {
+    
     BaselineAveragerType::Pointer BaselineAverager = BaselineAveragerType::New();
     BaselineAverager->SetInput( dwi );
     BaselineAverager->SetReportFileName( ReportFileName );
@@ -2139,6 +2155,7 @@ bool CIntensityMotionCheck::BaselineAverage( DwiImageType::Pointer dwi )
   else
     {
     std::cout << "Baseline average NOT set." << std::endl;
+    outfile << "Baseline average NOT set." << std::endl;
     }
 
   return true;
@@ -2146,8 +2163,7 @@ bool CIntensityMotionCheck::BaselineAverage( DwiImageType::Pointer dwi )
 
 bool CIntensityMotionCheck::EddyMotionCorrectIowa( DwiImageType::Pointer dwi )
 {
-  if( protocol->GetEddyMotionCorrectionProtocol().bCorrect )
-    {
+	
     std::cout << "Eddy-current and head motion correction using IOWA tool."
               << std::endl;
 
@@ -2209,6 +2225,12 @@ bool CIntensityMotionCheck::EddyMotionCorrectIowa( DwiImageType::Pointer dwi )
         }
       }
 
+    std::ofstream outfile;
+    outfile.open(ReportFileName.c_str(), std::ios::app);
+    
+    if( protocol->GetEddyMotionCorrectionProtocol().bCorrect )
+    {
+        
     //    std::cout<<"ReportFileName: "<< ReportFileName <<std::endl;
 
     // get the inputgradDir
@@ -2597,6 +2619,8 @@ bool CIntensityMotionCheck::EddyMotionCorrectIowa( DwiImageType::Pointer dwi )
     {
     std::cout << "Eddy-current and head motion correction NOT set."
               << std::endl;
+    outfile << "Eddy-current and head motion correction NOT set."
+            << std::endl;
     }
   return true;
 }
@@ -2837,8 +2861,6 @@ bool CIntensityMotionCheck::GradientWiseCheck( DwiImageType::Pointer dwi )
 {
   bool ret = true;
 
-  if( protocol->GetGradientCheckProtocol().bCheck )
-    {
     std::string ReportFileName;
 
     std::string Dwi_file_name = FNameBase(this->m_DwiFileName);
@@ -2893,6 +2915,12 @@ bool CIntensityMotionCheck::GradientWiseCheck( DwiImageType::Pointer dwi )
         }
 
       }
+    
+    // validate the gradient Wise output
+    std::ofstream outfile;
+    outfile.open(ReportFileName.c_str(), std::ios::app);
+    if( protocol->GetGradientCheckProtocol().bCheck )
+    {
 
     GradientCheckerType::Pointer GradientChecker = GradientCheckerType::New();
     GradientChecker->SetInput( dwi);
@@ -3162,9 +3190,7 @@ bool CIntensityMotionCheck::GradientWiseCheck( DwiImageType::Pointer dwi )
         }
       }
 
-    // validate the gradient Wise output
-    std::ofstream outfile;
-    outfile.open(ReportFileName.c_str(), std::ios::app);
+    
 
     // outfile<<"=="<<std::endl;
     // outfile<<"GradientWisw check summary:"<<std::endl;
@@ -3197,6 +3223,7 @@ bool CIntensityMotionCheck::GradientWiseCheck( DwiImageType::Pointer dwi )
   else
     {
     std::cout << "Gradient-wise check NOT set." << std::endl;
+    outfile << "Gradient-wise check NOT set." << std::endl;
     }
   return ret;
 }
@@ -3381,28 +3408,24 @@ int CIntensityMotionCheck::JointDenoising( DwiImageType::Pointer dwi )
   return true;
 }
 
-// Dominant directional artifact detector ( entropy tool )
-
-bool CIntensityMotionCheck::DominantDirectionalCheck()
+// Brain Masking
+bool CIntensityMotionCheck::BrainMask()
 {
-	int ret = 0;
+
+	bool bReport = false;
+	bool ret = true;
 	
-	std::string Entropy_Report;
+	std::string ReportFileName;
 	
-	std::cout << "protocol->GetDominantDirectional_Detector().bCheck" << protocol->GetDominantDirectional_Detector().bCheck << std::endl;
+	std::string Dwi_file_name = FNameBase(this->m_DwiFileName);
 
-	  if( protocol->GetDominantDirectional_Detector().bCheck )
-	    {
-
-	    std::string Dwi_file_name = FNameBase(this->m_DwiFileName);
-
-	    if( protocol->GetQCOutputDirectory().length() > 0 )
-	    {
+	if( protocol->GetQCOutputDirectory().length() > 0 )
+	{
 
 		std::string str_QCOutputDirectory = protocol->GetQCOutputDirectory();
 		size_t found_SeparateChar = str_QCOutputDirectory.find_first_of("/");
-			if ( int (found_SeparateChar) == -1 ) // "/" does not exist in the protocol->GetQCOutputDirectory() and interpreted as the relative path and creates the folder
-			{
+		if ( int (found_SeparateChar) == -1 ) // "/" does not exist in the protocol->GetQCOutputDirectory() and interpreted as the relative path and creates the folder
+		{
 
 				size_t found;
 				found = m_DwiFileName.find_last_of("/\\");
@@ -3415,14 +3438,14 @@ bool CIntensityMotionCheck::DominantDirectionalCheck()
 					itksys::SystemTools::MakeDirectory( str.c_str() );
 					}
 				str.append( "/" );
-				Entropy_Report = str;
-				Entropy_Report.append( Dwi_file_name );
-				Entropy_Report.append( "_EntropyReport.txt");
+				ReportFileName = str;
+				ReportFileName.append( Dwi_file_name );
+				ReportFileName.append( "_QCReport.txt");
 				
-			}
+		}
 
-			else	// "/" exists in the the protocol->GetQCOutputDirectory() and interpreted as the absolute path
-			{
+	    else	// "/" exists in the the protocol->GetQCOutputDirectory() and interpreted as the absolute path
+		{
 				std::string str;
 				str.append(protocol->GetQCOutputDirectory());
 				if( !itksys::SystemTools::FileIsDirectory( str.c_str() ) )
@@ -3430,34 +3453,612 @@ bool CIntensityMotionCheck::DominantDirectionalCheck()
 					itksys::SystemTools::MakeDirectory( str.c_str() );
 					}
 				str.append( "/" );
-				Entropy_Report = str;
-				Entropy_Report.append( Dwi_file_name );
-				Entropy_Report.append( "_EntropyReport.txt");
-			}
+				ReportFileName = str;
+				ReportFileName.append( Dwi_file_name );
+				ReportFileName.append( "_QCReport.txt");
+		}
 
-	    }
-	    else
-	    {
-	    	Entropy_Report = m_DwiFileName.substr( 0, m_DwiFileName.find_last_of('.') );
-	    	Entropy_Report.append( "_EntropyReport.txt");
-	    }
-	    
-	   DiffusionTensorEstimation m_DominantDirectionDetector;
-	   
-	   std::string str_mask = "/biomed-resimg/work/mahshid/Data/Entropy/Autism/189601/V12/mri/native/DTI/Mask/189601V12_WholeBrain.nrrd";
+	}
+	else
+	{
+	    	ReportFileName = m_DwiFileName.substr( 0, m_DwiFileName.find_last_of('.') );
+	    	ReportFileName.append( "_QCReport.txt");
+	}
 	  
-	   this->qcResult->GetDominantDirection_Detector().entropy_value = m_DominantDirectionDetector.EstimateTensor_Whitematter_GrayMatter(str_mask, m_outputDWIFileName, Entropy_Report, "");
-	   
-	   std::cout << "Entropy value: " << this->qcResult->GetDominantDirection_Detector().entropy_value << std::endl;
-	   
+	std::ofstream outfile;
+
+    if( protocol->GetBrainMaskProtocol().reportFileMode == 1 )
+	{
+	      outfile.open( ReportFileName.c_str(), std::ios_base::app | std::ios_base::out);
+	}
+	else
+	{
+	     outfile.open( ReportFileName.c_str() );
+	}
+	if( outfile )
+	{
+	     bReport = true;
+	}
+
+	if( bReport )
+	{
+	   	 outfile << std::endl;
+	     outfile << "=====================" << std::endl;
+	     outfile << " Brain Mask " << std::endl;
 	    
-	    }
-	  else
-	  {
-	    std::cout << " Dominant directional artifact detector check NOT set." << std::endl;
-	  }
+	}
+	else if (!bReport)
+	{
+		     std::cout << "Brain mask report file open failed."<< std::endl;
+		     outfile << "Brain mask report file open failed."<< std::endl;
+		     ret = false;
+		     return ret;
+	}	
+	
+	    
+		
+	if( protocol->GetBrainMaskProtocol().bMask )
+	{ 
+		  
+		     int mask_method= protocol->GetBrainMaskProtocol().BrainMask_Method;
+		     
+			 switch (mask_method)
+			 {
+			
+			 case Protocol::BRAINMASK_METHOD_FSL:
+			 {
+				ret =  BRAINMASK_METHOD_FSL(ReportFileName);
+				break;
+			 }
+			 case Protocol::BRAINMASK_METHOD_SLICER:
+			 {
+				ret = BRAINMASK_METHOD_Slicer(  );
+				break;
+			 }
+			 case Protocol::BRAINMASK_METHOD_OPTION:
+			 {
+				break;
+			 }
+			 default:
+				break;
+    		 }
+	}
+	
+	else 
+	{
+	    std::cout << "Brain mask check NOT set." << std::endl;
+	    outfile << "Brain mask check NOT set." << std::endl;
+	}
+	
+	return ret;	     
+}
+
+bool CIntensityMotionCheck::BRAINMASK_METHOD_FSL(std ::string ReportFileName )
+{
+	 bool ret = true;
+	 bool bReport = false;
+	 QProcess *process = new QProcess();
 	 
-	  return true;
+	 std::ofstream outfile;
+
+	 if( protocol->GetBrainMaskProtocol().reportFileMode == 1 )
+	 {
+	      outfile.open( ReportFileName.c_str(), std::ios_base::app | std::ios_base::out);
+	 }
+	 else
+	 {
+	     outfile.open( ReportFileName.c_str() );
+	 }
+     if( outfile )
+	 {
+	     bReport = true;
+	 }
+
+	 if( bReport )
+	 {
+	   	 outfile << std::endl;
+	     outfile << "=====================" << std::endl;
+	     outfile << " Brain Mask FSL " << std::endl;
+	     outfile << "=====================" << std::endl;
+	 }
+	 else if (!bReport)
+	 {
+	     std::cout << "Brain mask report file open failed."<< std::endl;
+	     outfile << "Brain mask report file open failed."<< std::endl;
+	     ret = false;
+	     return ret;
+	 }
+	 
+	 std::cout << "ReportFileName " << ReportFileName.c_str() << std::endl;
+	 
+	 // computing baseline
+	 QStringList str_dtiestim;
+    
+	 //QString parameter;
+	 
+	 str_dtiestim << "--dwi_image " << QString::fromStdString(m_outputDWIFileName.c_str()) << "--B0" <<  "B0.nrrd" << "--tensor_output" << "tensor.nrrd";
+	 	 
+	 std::cout << "dtiestim " << protocol->GetDTIProtocol().dtiestimCommand << (str_dtiestim.join(" ") ).toStdString() << std::endl; 
+     ret = process->execute( protocol->GetDTIProtocol().dtiestimCommand.c_str(), str_dtiestim);
+     std::cout << "ret" << ret << std::endl;
+     
+     if ( ret == -1)
+     {
+    	 std::cout << protocol->GetDTIProtocol().dtiestimCommand << "crashes." << std::endl;
+    	 outfile << protocol->GetDTIProtocol().dtiestimCommand << "crashes." << std::endl;
+    	 return false;
+     }
+     if ( ret == -2)
+     {
+    	 std::cout << protocol->GetDTIProtocol().dtiestimCommand << "cannot be started." << std::endl;
+    	 outfile << protocol->GetDTIProtocol().dtiestimCommand << "cannot be started." << std::endl;
+    	 return false;
+     }
+	 
+   
+	 // converting to nii
+	 QStringList str_convertitk;
+	 
+	 str_convertitk << "B0.nrrd";
+	 
+	 str_convertitk << "B0.nii";
+	 
+	 std::cout << protocol->GetBrainMaskProtocol().BrainMask_SystemPath_convertITK << (str_convertitk.join(" ") ).toStdString() << std::endl;
+	 ret = process->execute( protocol->GetBrainMaskProtocol().BrainMask_SystemPath_convertITK.c_str(), str_convertitk);
+	 std::cout << " ret convert itk" << ret << std::endl;
+	 
+	 if ( ret == -1)
+	 {
+	    	 std::cout << protocol->GetBrainMaskProtocol().BrainMask_SystemPath_convertITK << "crashes." << std::endl;
+	    	 outfile << protocol->GetBrainMaskProtocol().BrainMask_SystemPath_convertITK << "crashes." << std::endl;
+	    	 return false;
+	 }
+	 if ( ret == -2)
+	 {
+	    	 std::cout << protocol->GetBrainMaskProtocol().BrainMask_SystemPath_convertITK << "cannot be started." << std::endl;
+	    	 outfile << protocol->GetBrainMaskProtocol().BrainMask_SystemPath_convertITK << "cannot be started." << std::endl;
+	    	 return false;
+	 }
+	 
+	 
+	 // ImageMath 
+	 QStringList str_imagemath;
+	 
+	 str_imagemath << "B0.nii" << "-outfile" << "B0.nii.gz" << "-constOper" << "3,10000" << "-type" << "float";
+	 
+	 std::cout <<  "mahshid " << protocol->GetBrainMaskProtocol().BrainMask_SystemPath_imagemath.c_str() << std::endl;
+	 ret = process->execute( protocol->GetBrainMaskProtocol().BrainMask_SystemPath_imagemath.c_str() , str_imagemath);
+	 std::cout << "ret ImageMath " << ret << std::endl;
+	 if ( ret == -1)
+	 {
+	    	 std::cout << protocol->GetBrainMaskProtocol().BrainMask_SystemPath_imagemath << "crashes." << std::endl;
+	    	 outfile << protocol->GetBrainMaskProtocol().BrainMask_SystemPath_imagemath << "crashes." << std::endl;
+	    	 return false;
+	 }
+	 if ( ret == -2)
+	 {
+	    	 std::cout << protocol->GetBrainMaskProtocol().BrainMask_SystemPath_imagemath << "cannot be started." << std::endl;
+	    	 outfile << protocol->GetBrainMaskProtocol().BrainMask_SystemPath_imagemath << "cannot be started." << std::endl;
+	    	 return false;
+	 }
+	 
+	 // 
+	 
+	 QStringList rm_temp;
+	 
+	 rm_temp.append("B0.nii");
+	 
+	 ret = process->execute( "rm" , rm_temp);
+	 
+	 //bet2
+	 QStringList str_bet2;
+	 
+	 str_bet2 << "B0.nii.gz" << "B0_bet" <<"-m" ;
+	 
+	 std::cout << "bet2 " << protocol->GetBrainMaskProtocol().BrainMask_SystemPath_FSL.c_str() << (str_bet2.join(" ") ).toStdString() << std::endl;
+	 ret = process->execute( protocol->GetBrainMaskProtocol().BrainMask_SystemPath_FSL.c_str() , str_bet2);
+	 std::cout << "ret bet2 " << ret << std::endl;
+	 if ( ret == -1)
+	 {
+	    	 std::cout << protocol->GetBrainMaskProtocol().BrainMask_SystemPath_FSL << "crashes." << std::endl;
+	    	 outfile << protocol->GetBrainMaskProtocol().BrainMask_SystemPath_FSL << "crashes." << std::endl;
+	    	 return false;
+	 }
+	 if ( ret == -2)
+	 {
+	    	 std::cout << protocol->GetBrainMaskProtocol().BrainMask_SystemPath_FSL << "cannot be started." << std::endl;
+	    	 outfile << protocol->GetBrainMaskProtocol().BrainMask_SystemPath_FSL << "cannot be started." << std::endl;
+	    	 return false;
+	 }
+	 
+	 // Finding the proper path for output brain mask
+	 	 	 
+	 std::string Result_b0_masked;
+	 
+	 
+	 
+	 std::string Dwi_file_name = FNameBase(this->m_DwiFileName);
+	 
+	 if( protocol->GetQCOutputDirectory().length() > 0 )
+	 {
+
+		 std::string str_QCOutputDirectory = protocol->GetQCOutputDirectory();
+		 size_t found_SeparateChar = str_QCOutputDirectory.find_first_of("/");
+		 if ( int (found_SeparateChar) == -1 ) // "/" does not exist in the protocol->GetQCOutputDirectory() and interpreted as the relative path and creates the folder
+		 {
+			 size_t found;
+			found = m_DwiFileName.find_last_of("/\\");
+			std::string str;
+			str = m_DwiFileName.substr( 0, found ); // str : path of QCed outputs
+			str.append( "/" );
+			str.append( protocol->GetQCOutputDirectory() );
+			if( !itksys::SystemTools::FileIsDirectory( str.c_str() ) )
+			{
+				itksys::SystemTools::MakeDirectory( str.c_str() );
+			}
+			str.append( "/" );
+			Result_b0_masked = str;
+			Result_b0_masked.append( Dwi_file_name );
+			Result_b0_masked.append( "_B0_masked.nrrd");
+						
+		 }
+	
+		 else	// "/" exists in the the protocol->GetQCOutputDirectory() and interpreted as the absolute path
+		 {
+			std::string str;
+			str.append(protocol->GetQCOutputDirectory());
+			if( !itksys::SystemTools::FileIsDirectory( str.c_str() ) )
+			{
+				itksys::SystemTools::MakeDirectory( str.c_str() );
+			}
+			str.append( "/" );
+			Result_b0_masked = str;
+			Result_b0_masked.append( Dwi_file_name );
+			Result_b0_masked.append( "_B0_masked.nrrd");
+		 }
+
+	 }
+	 else
+	 {
+		 	Result_b0_masked = m_DwiFileName.substr( 0, m_DwiFileName.find_last_of('.') );
+		 	Result_b0_masked.append( "_B0_masked.nrrd");
+	 }
+	 
+	   
+	 QStringList str_imagemath2;
+	 
+	 str_imagemath2 << "B0.nrrd" <<"-mask" << "B0_bet" ;
+	 	 
+	 str_imagemath2 << "-outfile" << QString::fromStdString(Result_b0_masked);
+	 std::cout << "Result_b0_masked" << Result_b0_masked.c_str() << std::endl;
+	 	 
+	 std::cout << "mahshid1" << protocol->GetBrainMaskProtocol().BrainMask_SystemPath_imagemath.c_str() << (str_imagemath2.join(" ") ).toStdString() << std::endl;
+	 ret = process->execute( protocol->GetBrainMaskProtocol().BrainMask_SystemPath_imagemath.c_str() , str_imagemath2);
+	 std::cout << "ret ImageMath2 " << ret << std::endl;
+	 if ( ret == -1)
+	 {
+	    	 std::cout << protocol->GetBrainMaskProtocol().BrainMask_SystemPath_imagemath << "crashes." << std::endl;
+	    	 outfile << protocol->GetBrainMaskProtocol().BrainMask_SystemPath_imagemath << "crashes." << std::endl;
+	    	 return false;
+	 }
+	 if ( ret == -2)
+	 {
+	    	 std::cout << protocol->GetBrainMaskProtocol().BrainMask_SystemPath_imagemath << "cannot be started." << std::endl;
+	    	 outfile << protocol->GetBrainMaskProtocol().BrainMask_SystemPath_imagemath << "cannot be started." << std::endl;
+	    	 return false;
+	 }
+	 
+	 protocol->GetBrainMaskProtocol().BrainMask_Image = Result_b0_masked;	// brain mask image
+	 
+	 QStringList rm_temp2;
+	 rm_temp2.append("B0.nrrd");
+	 rm_temp2.append("B0.nii.gz");
+	 rm_temp2.append("tensor.nrrd");
+	 rm_temp2.append("B0_bet_mask.nii.gz");
+	 rm_temp2.append("B0_bet.nii.gz");
+	 
+	 std::cout << "rm "  << (rm_temp2.join(" ") ).toStdString() << std::endl;
+	 ret = process->execute( "rm" , rm_temp2);
+	 
+	 return true;
+	 
+	
+}
+
+bool CIntensityMotionCheck::BRAINMASK_METHOD_Slicer()
+{
+	
+	bool ret = true;
+	bool bReport = false;
+	QProcess *process = new QProcess();
+		 
+	std::ofstream outfile;
+
+	if( protocol->GetBrainMaskProtocol().reportFileMode == 1 )
+	{
+		outfile.open( ReportFileName.c_str(), std::ios_base::app | std::ios_base::out);
+	}
+	else
+	{
+	     outfile.open( ReportFileName.c_str() );
+	}
+	if( outfile )
+	{
+	     bReport = true;
+	}
+
+	if( bReport )
+	{
+	   	 outfile << std::endl;
+	     outfile << "=====================" << std::endl;
+	     outfile << " Brain Mask FSL " << std::endl;
+	     outfile << "=====================" << std::endl;
+	}
+	else if (!bReport)
+	{
+	     std::cout << "Brain mask report file open failed."<< std::endl;
+	     outfile << "Brain mask report file open failed."<< std::endl;
+	     ret = false;
+	     return ret;
+	}
+		 
+	std::cout << "ReportFileName " << ReportFileName.c_str() << std::endl;
+	
+	
+	std::string Result_b0_masked;
+		 
+		 
+		 
+    std::string Dwi_file_name = FNameBase(this->m_DwiFileName);
+		 
+	if( protocol->GetQCOutputDirectory().length() > 0 )
+	{
+		std::string str_QCOutputDirectory = protocol->GetQCOutputDirectory();
+		size_t found_SeparateChar = str_QCOutputDirectory.find_first_of("/");
+		if ( int (found_SeparateChar) == -1 ) // "/" does not exist in the protocol->GetQCOutputDirectory() and interpreted as the relative path and creates the folder
+		{
+			 size_t found;
+			found = m_DwiFileName.find_last_of("/\\");
+			std::string str;
+			str = m_DwiFileName.substr( 0, found ); // str : path of QCed outputs
+			str.append( "/" );
+			str.append( protocol->GetQCOutputDirectory() );
+			if( !itksys::SystemTools::FileIsDirectory( str.c_str() ) )
+			{
+					itksys::SystemTools::MakeDirectory( str.c_str() );
+			}
+			str.append( "/" );
+			Result_b0_masked = str;
+			Result_b0_masked.append( Dwi_file_name );
+			Result_b0_masked.append( "_B0_threshold_masked.nrrd");
+							
+		 }
+		
+		 else	// "/" exists in the the protocol->GetQCOutputDirectory() and interpreted as the absolute path
+		 {
+			std::string str;
+			str.append(protocol->GetQCOutputDirectory());
+			if( !itksys::SystemTools::FileIsDirectory( str.c_str() ) )
+			{
+					itksys::SystemTools::MakeDirectory( str.c_str() );
+			}
+			str.append( "/" );
+			Result_b0_masked = str;
+			Result_b0_masked.append( Dwi_file_name );
+			Result_b0_masked.append( "_B0_threshold_masked.nrrd");
+		 }
+	}
+
+	
+	else
+	{
+		 	Result_b0_masked = m_DwiFileName.substr( 0, m_DwiFileName.find_last_of('.') );
+		 	Result_b0_masked.append( "_B0_threshold_masked.nrrd");
+	}
+	
+	QStringList str_slicerMask;
+	
+	str_slicerMask << QString::fromStdString(m_outputDWIFileName.c_str()) << "B0_Slicer.nrrd" << QString::fromStdString(Result_b0_masked.c_str());
+	
+	std::cout << (str_slicerMask.join(" ")).toStdString() << std::endl; 
+	ret =  process->execute( protocol->GetBrainMaskProtocol().BrainMask_SystemPath_Slicer.c_str(), str_slicerMask );
+			
+	
+	if ( ret == -1)
+	{
+		std::cout << protocol->GetBrainMaskProtocol().BrainMask_SystemPath_Slicer << "crashes." << std::endl;
+		outfile << protocol->GetBrainMaskProtocol().BrainMask_SystemPath_Slicer<< "crashes." << std::endl;
+		return false;
+	}
+	if ( ret == -2)
+	{
+	    std::cout << protocol->GetBrainMaskProtocol().BrainMask_SystemPath_imagemath << "cannot be started." << std::endl;
+	    outfile << protocol->GetBrainMaskProtocol().BrainMask_SystemPath_imagemath << "cannot be started." << std::endl;
+	    return false;
+	}
+	
+	protocol->GetBrainMaskProtocol().BrainMask_Image = Result_b0_masked;	// brain mask image
+	
+	return true;
+	
+	
+}
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+
+    	 
+
+
+
+// Dominant directional artifact detector ( entropy tool )
+
+bool CIntensityMotionCheck::DominantDirectionalCheck()
+{
+	bool bReport = false;
+	bool ret = true;
+	std::string ReportFileName;
+	
+	std::cout << "protocol->GetDominantDirectional_Detector().bCheck" << protocol->GetDominantDirectional_Detector().bCheck << std::endl;
+
+	std::string Dwi_file_name = FNameBase(this->m_DwiFileName);
+
+	if( protocol->GetQCOutputDirectory().length() > 0 )
+	{
+
+				std::string str_QCOutputDirectory = protocol->GetQCOutputDirectory();
+				size_t found_SeparateChar = str_QCOutputDirectory.find_first_of("/");
+				if ( int (found_SeparateChar) == -1 ) // "/" does not exist in the protocol->GetQCOutputDirectory() and interpreted as the relative path and creates the folder
+				{
+	
+						size_t found;
+						found = m_DwiFileName.find_last_of("/\\");
+						std::string str;
+						str = m_DwiFileName.substr( 0, found ); // str : path of QCed outputs
+						str.append( "/" );
+						str.append( protocol->GetQCOutputDirectory() );
+						if( !itksys::SystemTools::FileIsDirectory( str.c_str() ) )
+							{
+							itksys::SystemTools::MakeDirectory( str.c_str() );
+							}
+						str.append( "/" );
+						ReportFileName = str;
+						ReportFileName.append( Dwi_file_name );
+						ReportFileName.append( "_QCReport.txt");
+						
+				}
+	
+				else	// "/" exists in the the protocol->GetQCOutputDirectory() and interpreted as the absolute path
+				{
+						std::string str;
+						str.append(protocol->GetQCOutputDirectory());
+						if( !itksys::SystemTools::FileIsDirectory( str.c_str() ) )
+							{
+							itksys::SystemTools::MakeDirectory( str.c_str() );
+							}
+						str.append( "/" );
+						ReportFileName = str;
+						ReportFileName.append( Dwi_file_name );
+						ReportFileName.append( "_QCReport.txt");
+				}
+
+	}
+	else
+	{
+		    	ReportFileName = m_DwiFileName.substr( 0, m_DwiFileName.find_last_of('.') );
+		    	ReportFileName.append( "_QCReport.txt");
+	}
+		    
+		    
+	std::ofstream outfile;
+
+	if( protocol->GetDominantDirectional_Detector().reportFileMode == 1 )
+	{
+		       outfile.open( ReportFileName.c_str(), std::ios_base::app | std::ios_base::out);
+	}
+	else
+	{
+		       outfile.open( ReportFileName.c_str() );
+	}
+
+	if( outfile )
+	{
+		       bReport = true;
+	}
+
+	if( bReport )
+	{
+		       outfile << std::endl;
+		       outfile << "=====================" << std::endl;
+		       outfile << " Dominant directional artifact detector   " << std::endl;
+		       outfile << "=====================" << std::endl;
+	}
+	else
+	{
+		       std::cout << "Dominant directional artifact detector report file open failed."<< std::endl;
+		       outfile << "Dominant directional artifact detector report file open failed."<< std::endl;
+		       return false;
+	}
+		    
+	
+	
+	if( protocol->GetDominantDirectional_Detector().bCheck )
+    {
+	   
+	   std::string str_mask = protocol->GetBrainMaskProtocol().BrainMask_Image;
+	   if ( str_mask.length()== 0 )
+	   {
+		   std::cout << " Brain mask image is not exist." << std::endl;
+		   outfile << " Brain mask image is not exist." << std::endl;
+		   return false;
+	   }
+	   
+	   DiffusionTensorEstimation m_DominantDirectionDetector;
+	   ret = m_DominantDirectionDetector.EstimateTensor_Whitematter_GrayMatter(str_mask, protocol->GetDTIProtocol().dtiestimCommand, m_outputDWIFileName /*, ReportFileName*/ , "");
+	   
+	   if ( ret == true)
+	   {
+	   
+		   this->qcResult->GetDominantDirection_Detector().entropy_value = m_DominantDirectionDetector.Get_entropyValue();
+				   
+				   
+				  
+		   
+		   std::cout << "Entropy value: " << this->qcResult->GetDominantDirection_Detector().entropy_value << std::endl;
+		   outfile << "Entropy value: " << this->qcResult->GetDominantDirection_Detector().entropy_value << std::endl;
+		   
+		   
+		   //Detection step
+		   double Z_score_value;
+		   Z_score_value = double ( (this->qcResult->GetDominantDirection_Detector().entropy_value - protocol->GetDominantDirectional_Detector().Mean)/protocol->GetDominantDirectional_Detector().Deviation );		// computing z-score from entropy value
+		   this->qcResult->GetDominantDirection_Detector().z_score =  (Z_score_value);
+		   outfile << "Z-score: " << this->qcResult->GetDominantDirection_Detector().z_score << std::endl;
+		   
+		   if (this->qcResult->GetDominantDirection_Detector().z_score >= protocol->GetDominantDirectional_Detector().Threshold_Suspicion_Unacceptance )
+		   {
+			   this->qcResult->GetDominantDirection_Detector().detection_result = 2;
+			   outfile << "Detection result: " << "Reject."<< std::endl;
+		   
+			}
+		   if (this->qcResult->GetDominantDirection_Detector().z_score <= protocol->GetDominantDirectional_Detector().Threshold_Suspicion_Unacceptance && 
+				   this->qcResult->GetDominantDirection_Detector().z_score >= protocol->GetDominantDirectional_Detector().Threshold_Acceptance )
+		   {
+			   this->qcResult->GetDominantDirection_Detector().detection_result = 1;
+			   outfile << "Detection result: " << "Suspicious."<< std::endl;
+		   }
+		   if (this->qcResult->GetDominantDirection_Detector().z_score <=  protocol->GetDominantDirectional_Detector().Threshold_Acceptance )
+		   {
+			   this->qcResult->GetDominantDirection_Detector().detection_result = 0;
+			   outfile << "Detection result: " << "Accept."<< std::endl;
+		   }
+       
+	   }
+	   else if (ret == false)
+	   {
+		   std::cout << "Tensor estimation was failed in computing entropy value." << std::endl;
+		   outfile << "Tensor estimation was failed in computing entropy value." << std::endl;
+		   return false;
+	   }
+	   
+	   
+    }  
+    if (!protocol->GetDominantDirectional_Detector().bCheck)
+	{
+	    std::cout << " Dominant directional artifact detector check NOT set." << std::endl;
+	    outfile << " Dominant directional artifact detector check NOT set." << std::endl;
+	    return false;
+	}
+	 
+	return ret;
 }
 
 bool CIntensityMotionCheck::SaveDwiForcedConformanceImage(void)
@@ -3930,9 +4531,11 @@ unsigned char CIntensityMotionCheck::RunPipelineByProtocol()
 
   m_DwiForcedConformanceImage = m_DwiOriginalImage;
 
-  // image information check
+  // ......................................................................image information check ................................................................
   std::cout << "=====================" << std::endl;
   std::cout << "ImageCheck ... " << std::endl;
+  outfile << "=====================" << std::endl;
+  outfile << "ImageCheck ... " << std::endl;
   unsigned char imageCheckResult = ImageCheck( m_DwiForcedConformanceImage );
   if( imageCheckResult )
     {
@@ -3954,7 +4557,7 @@ unsigned char CIntensityMotionCheck::RunPipelineByProtocol()
     }
   std::cout << "ImageCheck DONE " << std::endl;
 
-  // diffusion information check
+  // ...................................................................diffusion information check.....................................................................
   std::cout << "=====================" << std::endl;
   std::cout << "DiffusionCheck ... " << std::endl;
   if( !DiffusionCheck( m_DwiForcedConformanceImage ) )
@@ -3970,15 +4573,18 @@ unsigned char CIntensityMotionCheck::RunPipelineByProtocol()
     }
   std::cout << "DiffusionCheck DONE " << std::endl;
 
-  // Denoising Filter
+  // .......................................................................Denoising Filter...............................................................................
   std::cout << "=====================" << std::endl;
   std::cout << "Denoising LMMSE... " << std::endl;
+ 
   Denoising( m_DwiForcedConformanceImage );
   std::cout << "Denoising LMMSE DONE " << std::endl;
+  
 
-  // SliceChecker
+  // ..........................................................................SliceChecker................................................................................
   std::cout << "=====================" << std::endl;
   std::cout << "SliceWiseCheck ... " << std::endl;
+ 
 
   if( !SliceWiseCheck( m_DwiForcedConformanceImage ) )
     {
@@ -3991,11 +4597,13 @@ unsigned char CIntensityMotionCheck::RunPipelineByProtocol()
       }
     }
   std::cout << "SliceWiseCheck DONE " << std::endl;
+  
 
-  // InterlaceChecker
+  // ..........................................................................InterlaceChecker...............................................................................
   std::cout << "=====================" << std::endl;
   std::cout << "InterlaceWiseCheck ... " << std::endl;
-
+  
+  
   if( !InterlaceWiseCheck( m_DwiForcedConformanceImage ) )
     {
     this->qcResult->Set_result( this->qcResult->Get_result() | 8 );
@@ -4008,20 +4616,27 @@ unsigned char CIntensityMotionCheck::RunPipelineByProtocol()
       }
     }
   std::cout << "InterlaceWiseCheck DONE " << std::endl;
+  
+
+  
 
   std::cout << "Mapping Original and Comforce image: " << "length of Map: "
             << m_Original_ForcedConformance_Mapping.size() << std::endl;
 
-  // baseline average
+  // ..........................................................................baseline average................................................................................
   std::cout << "=====================" << std::endl;
   std::cout << "BaselineAverage ... " << std::endl;
+  outfile << "=====================" << std::endl;
+  outfile << "BaselineAverage ... " << std::endl;
 
   BaselineAverage( m_DwiForcedConformanceImage );
   std::cout << "BaselineAverage DONE " << std::endl;
 
-  // EddyMotionCorrect
+  // .......................................................................EddyMotionCorrect....................................................................................
   std::cout << "=====================" << std::endl;
   std::cout << "EddyCurrentHeadMotionCorrect ... " << std::endl;
+  outfile << "=====================" << std::endl;
+  outfile << "EddyCurrentHeadMotionCorrect ... " << std::endl;
   // EddyMotionCorrect( m_DwiForcedConformanceImage );
   std::cout << "EddyCurrentHeadMotionCorrectIowa ... " << std::endl;
 
@@ -4029,9 +4644,11 @@ unsigned char CIntensityMotionCheck::RunPipelineByProtocol()
   EddyMotionCorrectIowa(m_DwiForcedConformanceImage);
   std::cout << "EddyCurrentHeadMotionCorrect DONE " << std::endl;
 
-  // GradientChecker
+  // .....................................................................GradientChecker...........................................................................................
   std::cout << "=====================" << std::endl;
   std::cout << "GradientCheck ... " << std::endl;
+  outfile << "=====================" << std::endl;
+  outfile << "GradientCheck ... " << std::endl;
 
   if( !GradientWiseCheck( m_DwiForcedConformanceImage ) )
     {
@@ -4045,6 +4662,7 @@ unsigned char CIntensityMotionCheck::RunPipelineByProtocol()
       }
     }
   std::cout << "GradientCheck DONE " << std::endl;
+  
   for( unsigned int k_ind = 0; k_ind < m_Original_ForcedConformance_Mapping.size(); k_ind++ )
     {
     if( k_ind == 0 )
@@ -4055,6 +4673,9 @@ unsigned char CIntensityMotionCheck::RunPipelineByProtocol()
         std::cout << "Baselines_indices:" << " "
                   << m_Original_ForcedConformance_Mapping[k_ind].index_original[kk_ind] << " QCIndex: " << k_ind
                   << std::endl;
+        outfile << "Baselines_indices:" << " "
+                  << m_Original_ForcedConformance_Mapping[k_ind].index_original[kk_ind] << " QCIndex: " << k_ind
+                  << std::endl;
         qcResult->GetIntensityMotionCheckResult()[m_Original_ForcedConformance_Mapping[k_ind].index_original[kk_ind]].
         QCIndex = k_ind;
         }
@@ -4063,6 +4684,8 @@ unsigned char CIntensityMotionCheck::RunPipelineByProtocol()
       {
       std::cout << "Included Gradients:" << " " << m_Original_ForcedConformance_Mapping[k_ind].index_original[0]
                 << " QCIndex: " << k_ind << std::endl;
+      outfile << "Included Gradients:" << " " << m_Original_ForcedConformance_Mapping[k_ind].index_original[0]
+                      << " QCIndex: " << k_ind << std::endl;
       }
     qcResult->GetIntensityMotionCheckResult()[m_Original_ForcedConformance_Mapping[k_ind].index_original[0]].QCIndex =
       k_ind;
@@ -4083,28 +4706,67 @@ unsigned char CIntensityMotionCheck::RunPipelineByProtocol()
        this->qcResult->GetOriginal_ForcedConformance_Map().push_back( item_map );
    }  */
 
-  // Denoising ( Joint LMMSE ) Filter
+  // ............................................................................................Denoising ( Joint LMMSE ) Filter......................................................
   std::cout << "=====================" << std::endl;
   std::cout << "Denoising Joint LMMSE... " << std::endl;
   std::cout << "HACK:  SKIPPING JointDenoising( m_DwiForcedConformanceImage );"  << __FILE__ << " " << __LINE__ << std::endl;
+  outfile << "Denoising Joint LMMSE... " << std::endl;
+  outfile << "HACK:  SKIPPING JointDenoising( m_DwiForcedConformanceImage );"  << __FILE__ << " " << __LINE__ << std::endl;
   std::cout << "Denoising Joint LMMSE DONE " << std::endl;
     
-    
-  // Save QC'ed DWI
+  // .................................................................................................Save QC'ed DWI...................................................................
   std::cout << "=====================" << std::endl;
   std::cout << "Save QC'ed DWI ... ";
   SaveDwiForcedConformanceImage();
 
   std::cout << "DONE" << std::endl;
   
-  // Dominant directional artifact detector ( entropy tool )
-    
-    std::cout << "=====================" << std::endl;
-    std::cout << "Dominant directional artifact detector... " << std::endl;
-    DominantDirectionalCheck();
-    std::cout << "Dominant directional artifact detector DONE " << std::endl;
+  //....................................................................................................Brain Mask.....................................................................
+  std::cout << "=====================" << std::endl;
+  std::cout << "Brain Mask "<< std::endl;;
+  if( !BrainMask() )
+  {
+  	  this->qcResult->Set_result( this->qcResult->Get_result() | 32 );
+  	  this->qcResult->GetOverallQCResult().BMCK = false;
+        // printf("result of GradientCheck = %d ",this-> qcResult->Get_result());
+        if( protocol->GetBrainMaskProtocol().bQuitOnCheckFailure )
+        {
+              std::cout << "Brain Mask failed, pipeline terminated. " << std::endl;
+              outfile << "Brain Mask failed, pipeline terminated. " << std::endl;
+              return this->qcResult->Get_result();
+        }
+  }
+  this->qcResult->GetOverallQCResult().BMCK = true;
+  std::cout << "Brain Mask DONE " << std::endl;
+  
+  // .......................................................................Dominant directional artifact detector ( entropy tool )....................................................
+  std::cout << "=====================" << std::endl;
+  std::cout << "Dominant directional artifact detector... " << std::endl;
+  
+  if (protocol->GetBrainMaskProtocol().bMask == false || this->qcResult->GetOverallQCResult().BMCK == false )
+  {
+	  std::cout << "Brain mask process has been failed or set as No in protocol." << std::endl;
+	  outfile << "Brain mask process has been failed or set as No in protocol." << std::endl;
+  }
+  else
+  {
+	  if( !DominantDirectionalCheck() )
+	  {
+			this->qcResult->Set_result( this->qcResult->Get_result() | 64 );
+			this->qcResult->GetOverallQCResult().DDDCK = false;
+			// printf("result of GradientCheck = %d ",this-> qcResult->Get_result());
+			if( protocol->GetDominantDirectional_Detector().bQuitOnCheckFailure )
+			  {
+			  std::cout << "Dominant directional artifact detector failed, pipeline terminated. " << std::endl;
+			  outfile << "Dominant directional artifact detector failed, pipeline terminated. " << std::endl;
+			  return this->qcResult->Get_result();
+			  }
+	  }
+	  this->qcResult->GetOverallQCResult().DDDCK = true;
+  }
+  std::cout << "Dominant directional artifact detector DONE " << std::endl;
 
-  // DTIComputing
+  // ...........................................................................................DTIComputing............................................................................
   std::cout << "=====================" << std::endl;
   std::cout << "DTIComputing ... " << std::endl;
   DTIComputing();
@@ -4120,7 +4782,9 @@ unsigned char CIntensityMotionCheck::RunPipelineByProtocol()
   collectLeftDiffusionStatistics( m_DwiForcedConformanceImage, ReportFileName );
   ValidateResult = validateLeftDiffusionStatistics();
 
-  this->qcResult->Set_result( ( ValidateResult << 5 ) + this->qcResult->Get_result() );
+  //this->qcResult->Set_result( ( ValidateResult << 5 ) + this->qcResult->Get_result() );
+  
+  this->qcResult->Set_result( ( ValidateResult << 7 ) + this->qcResult->Get_result() );	// because of adding two processes in the QC pipeline ( brainmask and dominant directional artifact
 
   std::cout << "qcResult->GetSliceWiseCheckResult().size() " << qcResult->GetSliceWiseCheckResult().size() << std::endl;
   std::cout << "qcResult->GetInterlaceWiseCheckResult().size() " << qcResult->GetInterlaceWiseCheckResult().size()
@@ -4625,12 +5289,19 @@ bool CIntensityMotionCheck::dtiestim()
     }
 
   // dtiestim
-  std::string str;
-  str.append(protocol->GetDTIProtocol().dtiestimCommand);
-  str.append(" ");
+  stdStringList dtiestim_str;
+  dtiestim_str << "--dwi_image";
+  
+  
+  
+  
+  
+ // std::string str;
+  //str.append(protocol->GetDTIProtocol().dtiestimCommand);
+  //str.append(" ");
 
-  str.append("--dwi_image");
-  str.append(" ");
+  //str.append("--dwi_image");
+  //str.append(" ");
 
   std::string outputDWIFileName;
 
@@ -4693,41 +5364,49 @@ bool CIntensityMotionCheck::dtiestim()
     outputDWIFileName.append( protocol->GetQCedDWIFileNameSuffix() );
     }
   
+  dtiestim_str << QString::fromStdString(outputDWIFileName);
+  //str.append(outputDWIFileName);
   
-  str.append(outputDWIFileName);
-  
-  str.append(" ");
+  //str.append(" ");
 
   std::string OutputTensor;
   OutputTensor
     = outputDWIFileName.substr( 0, outputDWIFileName.find_last_of('.') );
   OutputTensor.append( protocol->GetDTIProtocol().tensorSuffix);
-  str.append("--tensor_output");
-  str.append(" ");
-  str.append(OutputTensor);
+  dtiestim_str << "--tensor_output";
   
+  
+  //str.append("--tensor_output");
+  //str.append(" ");
+  //str.append(OutputTensor);
+  dtiestim_str << QString::fromStdString(OutputTensor);
 
   if( protocol->GetDTIProtocol().method == Protocol::METHOD_WLS )
     {
-    str.append(" -m wls ");
+    //str.append(" -m wls ");
+	dtiestim_str << "-m wls";
     }
   else if( protocol->GetDTIProtocol().method == Protocol::METHOD_ML )
     {
-    str.append(" -m ml ");
+    //str.append(" -m ml ");
+	dtiestim_str << "-m ml";
     }
   else if( protocol->GetDTIProtocol().method == Protocol::METHOD_NLS )
     {
-    str.append(" -m nls ");
+    //str.append(" -m nls ");
+	dtiestim_str << "-m nls";
     }
   else
     {
-    str.append(" -m lls ");
+    //str.append(" -m lls ");
+	dtiestim_str << "-m lls";
     }
 
   if( protocol->GetDTIProtocol().mask.length() > 0 )
     {
-    str.append(" -M ");
-    str.append( protocol->GetDTIProtocol().mask );
+    //str.append(" -M ");
+    //str.append( protocol->GetDTIProtocol().mask );
+	dtiestim_str << "-M" << 
     }
 
   str.append(" -t ");
@@ -5890,6 +6569,13 @@ bool CIntensityMotionCheck::MakeDefaultProtocol( Protocol *_protocol )
   
   // Denoising JointLMMSE
   _protocol->initDenoisingJointLMMSE();
+  
+  // Brain Mask
+  _protocol->initBrainMaskProtocol();
+  
+  // Dominant Directional Detector
+  _protocol->initDominantDirectional_Detector();
+  
 
   // ***** DTI
   _protocol->GetDTIProtocol(). bCompute = true;
@@ -5899,7 +6585,7 @@ bool CIntensityMotionCheck::MakeDefaultProtocol( Protocol *_protocol )
     = "/tools/bin_linux64/dtiprocess";
   _protocol->GetDTIProtocol(). method = Protocol::METHOD_WLS;
   _protocol->GetDTIProtocol(). baselineThreshold = 50;
-  _protocol->GetDTIProtocol(). mask = "";
+  //_protocol->GetDTIProtocol(). mask = "";
   _protocol->GetDTIProtocol(). tensorSuffix = "_DTI.nrrd";
   _protocol->GetDTIProtocol(). bbaseline = true;
   _protocol->GetDTIProtocol(). baselineSuffix = "_Baseline.nrrd";

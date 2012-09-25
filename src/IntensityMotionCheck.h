@@ -123,6 +123,12 @@ public:
 
   bool GradientWiseCheck( DwiImageType::Pointer dwi );
   
+  bool BrainMask();
+  
+  bool BRAINMASK_METHOD_FSL( std::string ReportFileName);
+  
+  bool BRAINMASK_METHOD_Slicer( );
+  
   bool DominantDirectionalCheck();
 
   bool SaveDwiForcedConformanceImage(void);
@@ -315,6 +321,7 @@ public:
 
   std::string m_outputDWIFileName;  // the name of QCed DWI file
   std::string  ReportFileName;
+  
 
 private:
   

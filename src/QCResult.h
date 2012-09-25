@@ -66,6 +66,8 @@ struct OverallQCResult
   bool SWCk; // SliceWiseCheck
   bool IWCk; // InterlaceWiseCheck
   bool GWCk; // GradientWiseCheck
+  bool BMCK; // BrainMaskCheck
+  bool DDDCK; //DominantDirectionalDetectionCheck
 
   };
 
@@ -80,6 +82,7 @@ struct DominantDirection_Detector
   {
 	double z_score;
 	double entropy_value;
+	int detection_result; 	// 0:acceptance 1: Unacceptance 2: Suspicious
   };
 
 class QCResult

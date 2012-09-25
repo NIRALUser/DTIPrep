@@ -130,6 +130,11 @@ enum ProtocolStringValue
     DOMINANTDIRECTION_Deviation,
     DOMINANTDIRECTION_Threshold1,
     DOMINANTDIRECTION_Threshold2,
+    DOMINANTDIRECTION_reportFileNameSuffix,
+    DOMINANTDIRECTION_reportFileMode,
+    DOMINANTDIRECTION_bQuitOnCheckFailure,
+    
+    
 
   // baseline average
   BASELINE_bAverage,
@@ -156,6 +161,18 @@ enum ProtocolStringValue
   EDDYMOTION_outputDWIFileNameSuffix,
   EDDYMOTION_reportFileNameSuffix,
   EDDYMOTION_reportFileMode,
+  
+  // brain masking
+  BRAINMASK_bCheck,
+  BRAINMASK_SystemPath_FSL,		// bet2
+  BRAINMASK_SystemPath_Slicer,	// DiffusionWeightedVolumeMasking module
+  BRAINMASK_SystemPath_convertITK, // convertitkformat
+  BRAINMASK_SystemPath_imagemath,
+  BRAINMASK_MaskedImage,
+  BRAINMASK_method,
+  BRAINMASK_reportFileNameSuffix,
+  BRAINMASK_reportFileMode,
+  BRAINMASK_bQuitOnCheckFailure,
 
   // DTI computing
   DTI_bCompute,
@@ -163,7 +180,7 @@ enum ProtocolStringValue
   DTI_dtiprocessCommand,
   DTI_method,
   DTI_baselineThreshold,
-  DTI_maskFileName,
+ // DTI_maskFileName,
   DTI_tensor,
   DTI_baseline,
   DTI_idwi,
@@ -199,6 +216,8 @@ enum QCRESULTStringValue
   DWI_SWCk,
   DWI_IWCk,
   DWI_GWCk,
+  DWI_BMCK,
+  DWI_DDDCK,
 
   DWI_SLICEWISECHECK,
   DWI_SLICE,
@@ -223,7 +242,16 @@ enum QCRESULTStringValue
   DWI_GRADIENT_TRz,
   DWI_GRADIENT_TRZ,
   DWI_GRADIENT_MI,
-  DWI_QC_Index
+  DWI_QC_Index,
+  
+  DOMINANT_DIRECTION_ENTROPY,
+  DOMINANT_DIRECTION_Z_SCORE,
+  DOMINANT_DIRECTION_RESULT,
+  DOMINANT_DIRECTION_DETECTOR,
+  
+  BRAIN_MASK,
+  
+  
   };
 
 class XmlStreamReader
@@ -273,6 +301,14 @@ public:
   void LoadQCResultFromDiffInfoParsing();
 
   void LoadQCResultFromDWICheckParsing();
+  
+  void GetDominantDirectionParsing(const QDomElement & element);
+  
+  void LoadQCResultFromDominantDirectionParsing();
+  
+  void GetBrainMaskParsing(const QDomElement & element);
+  
+  void LoadQCResultFromBrainMaskParsing();
 
   void parseValueElement_QCResult_GradientDWICheck(const QDomElement & element, QTreeWidgetItem *parent);
 

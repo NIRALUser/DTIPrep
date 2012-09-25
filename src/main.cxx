@@ -1115,74 +1115,113 @@ int main( int argc, char * *argv )
           outfile << "\t" << IntensityMotionCheck.getRepetitionNumber() << "/-";
 
           out = result;
-          out = out << 7;
-          out = out >> 7;
+          //out = out << 7;
+          //out = out >> 7;
+          out = out << 9;
+          out = out >> 9;          
           if( out )
             {
             std::cout << "Image information check: FAILURE" << std::endl;
-            outfile << "\tFAILURE";
+            outfile << "Image information check: FAILURE" << std::endl;
             }
           else
             {
             std::cout << "Image information check: PASS" << std::endl;
-            outfile << "\tPASS";
+            outfile << "Image information check: PASS" << std::endl;
             }
 
           out = result;
-          out = out << 6;
-          out = out >> 7;
+          //out = out << 6;
+          //out = out >> 7;
+          out = out << 8;
+          out = out >> 9;
           if( out )
             {
             std::cout << "Diffusion information check: FAILURE" << std::endl;
-            outfile << "\tFAILURE";
+            outfile << "Diffusion information check: FAILURE" << std::endl;
             }
           else
             {
             std::cout << "Diffusion information check: PASS" << std::endl;
-            outfile << "\tPASS";
+            outfile << "Diffusion information check: PASS" << std::endl;
             }
 
           out = result;
-          out = out << 5;
-          out = out >> 7;
+          //out = out << 5;
+          //out = out >> 7;
+          out = out << 7;
+          out = out >> 9;
           if( out  )
             {
             std::cout << "Slice-wise check: FAILURE" << std::endl;
-            outfile << "\tFAILURE";
+            outfile << "Slice-wise check: FAILURE" << std::endl;
             }
           else
             {
             std::cout << "Slice-wise check: PASS" << std::endl;
-            outfile << "\tPASS";
+            outfile <<  "Slice-wise check: PASS" << std::endl;
             }
 
           out = result;
-          out = out << 4;
-          out = out >> 7;
+          //out = out << 4;
+          //out = out >> 7;
+          out = out << 6;
+          out = out >> 9;
           if( out  )
             {
             std::cout << "Interlace-wise check: FAILURE" <<  std::endl;
-            outfile << "\tFAILURE";
+            outfile << "Interlace-wise check: FAILURE" <<  std::endl;
             }
           else
             {
             std::cout << "Interlace-wise check: PASS" << std::endl;
-            outfile << "\tPASS";
+            outfile << "Interlace-wise check: PASS" << std::endl;
             }
 
           out = result;
-          out = out << 3;
-          out = out >> 7;
+          //out = out << 3;
+          //out = out >> 7;
+          out = out << 5;
+          out = out >> 9;
           if( out )
             {
             std::cout << "Gradient-wise check: FAILURE" << std::endl;
-            outfile << "\tFAILURE";
+            outfile << "Gradient-wise check: FAILURE" << std::endl;
             }
           else
             {
             std::cout << "Gradient-wise check: PASS" << std::endl;
-            outfile << "\tPASS";
+            outfile << "\tGradient-wise check: PASS";
             }
+          
+          out = result;
+          out = out << 4;
+          out = out >> 9;
+          if( out )
+          {
+            std::cout << "Brain mask check:\t\tFAILURE" << std::endl;
+            outfile << "Brain mask check:\t\tFAILURE";
+          }
+          else
+          {
+            std::cout << "Brain mask check: PASS" << std::endl;
+            outfile << "Brain mask check: PASS" << std::endl;
+          }          
+          
+          
+          out = result;
+         out = out << 3;
+         out = out >> 9;
+         if( out )
+         {
+            std::cout << "Dominant Directional Detector:\t\tFAILURE" << std::endl;
+            outfile << "Dominant Directional Detector:\t\tFAILURE";
+         }
+         else
+         {
+            std::cout << "Dominant Directional Detector: PASS" << std::endl;
+            outfile << "Dominant Directional Detector: PASS" << std::endl;
+         }          
 
           // ZYXEDCBA:
           // X QC;Too many bad gradient directions found!
@@ -1190,7 +1229,8 @@ int main( int argc, char * *argv )
           // Z QC: Gradient direction #is less than 6!
 
           out = result;
-          out = out >> 7;
+          //out = out >> 7;
+          out = out >> 9;
           if( out )
             {
             std::cout << "Too many bad gradient directions found!" << std::endl;
@@ -1202,8 +1242,10 @@ int main( int argc, char * *argv )
             }
 
           out = result;
+          //out = out << 1;
+          //out = out >> 7;
           out = out << 1;
-          out = out >> 7;
+          out = out >> 9;
           if( out )
             {
             std::cout << "Single b-value DWI without a b0/baseline!" << std::endl;
@@ -1215,8 +1257,10 @@ int main( int argc, char * *argv )
             }
 
           out = result;
+          //out = out << 2;
+          //out = out >> 7;
           out = out << 2;
-          out = out >> 7;
+          out = out >> 9;
           if( out )
             {
             std::cout << "Gradient direction #is less than 6!" << std::endl;

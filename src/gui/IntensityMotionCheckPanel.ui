@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>551</width>
-    <height>651</height>
+    <width>872</width>
+    <height>954</height>
    </rect>
   </property>
   <property name="windowIcon">
@@ -38,8 +38,8 @@
         <rect>
          <x>0</x>
          <y>0</y>
-         <width>531</width>
-         <height>606</height>
+         <width>852</width>
+         <height>909</height>
         </rect>
        </property>
        <layout class="QVBoxLayout" name="verticalLayout_4">
@@ -1147,7 +1147,7 @@
             <item>
              <widget class="QTreeWidget" name="treeWidget">
               <property name="editTriggers">
-               <set>QAbstractItemView::AllEditTriggers</set>
+               <set>QAbstractItemView::CurrentChanged|QAbstractItemView::DoubleClicked|QAbstractItemView::EditKeyPressed</set>
               </property>
               <property name="tabKeyNavigation">
                <bool>true</bool>
@@ -1219,9 +1219,165 @@
             </item>
            </layout>
           </widget>
+          <widget class="QWidget" name="tab_Systempath">
+           <attribute name="title">
+            <string>Protocol Path</string>
+           </attribute>
+           <widget class="QPushButton" name="pushButton_FSL">
+            <property name="geometry">
+             <rect>
+              <x>50</x>
+              <y>110</y>
+              <width>141</width>
+              <height>31</height>
+             </rect>
+            </property>
+            <property name="text">
+             <string>FSL_bet</string>
+            </property>
+           </widget>
+           <widget class="QPushButton" name="pushButton_Slicer">
+            <property name="geometry">
+             <rect>
+              <x>50</x>
+              <y>160</y>
+              <width>141</width>
+              <height>31</height>
+             </rect>
+            </property>
+            <property name="text">
+             <string>Slicer</string>
+            </property>
+           </widget>
+           <widget class="QLineEdit" name="lineEdit_FSL">
+            <property name="geometry">
+             <rect>
+              <x>230</x>
+              <y>110</y>
+              <width>251</width>
+              <height>31</height>
+             </rect>
+            </property>
+           </widget>
+           <widget class="QPushButton" name="pushButton_dtiestim">
+            <property name="geometry">
+             <rect>
+              <x>50</x>
+              <y>210</y>
+              <width>141</width>
+              <height>31</height>
+             </rect>
+            </property>
+            <property name="text">
+             <string>dtiestim</string>
+            </property>
+           </widget>
+           <widget class="QPushButton" name="pushButton_dtiprocess">
+            <property name="geometry">
+             <rect>
+              <x>50</x>
+              <y>260</y>
+              <width>141</width>
+              <height>31</height>
+             </rect>
+            </property>
+            <property name="text">
+             <string>dtiprocess</string>
+            </property>
+           </widget>
+           <widget class="QPushButton" name="pushButton_Pathdefault">
+            <property name="geometry">
+             <rect>
+              <x>50</x>
+              <y>410</y>
+              <width>251</width>
+              <height>31</height>
+             </rect>
+            </property>
+            <property name="text">
+             <string>Default</string>
+            </property>
+           </widget>
+           <widget class="QLineEdit" name="lineEdit_Slicer">
+            <property name="geometry">
+             <rect>
+              <x>230</x>
+              <y>160</y>
+              <width>251</width>
+              <height>31</height>
+             </rect>
+            </property>
+           </widget>
+           <widget class="QLineEdit" name="lineEdit_dtiestim">
+            <property name="geometry">
+             <rect>
+              <x>230</x>
+              <y>210</y>
+              <width>251</width>
+              <height>31</height>
+             </rect>
+            </property>
+           </widget>
+           <widget class="QLineEdit" name="lineEdit_dtiprocess">
+            <property name="geometry">
+             <rect>
+              <x>230</x>
+              <y>260</y>
+              <width>251</width>
+              <height>31</height>
+             </rect>
+            </property>
+           </widget>
+           <widget class="QPushButton" name="pushButton_convertitk">
+            <property name="geometry">
+             <rect>
+              <x>50</x>
+              <y>310</y>
+              <width>141</width>
+              <height>31</height>
+             </rect>
+            </property>
+            <property name="text">
+             <string>convertITKformats</string>
+            </property>
+           </widget>
+           <widget class="QLineEdit" name="lineEdit_convertitk">
+            <property name="geometry">
+             <rect>
+              <x>230</x>
+              <y>310</y>
+              <width>251</width>
+              <height>31</height>
+             </rect>
+            </property>
+           </widget>
+           <widget class="QPushButton" name="pushButton_imagemath">
+            <property name="geometry">
+             <rect>
+              <x>50</x>
+              <y>360</y>
+              <width>141</width>
+              <height>31</height>
+             </rect>
+            </property>
+            <property name="text">
+             <string>ImageMath</string>
+            </property>
+           </widget>
+           <widget class="QLineEdit" name="lineEdit_imagemath">
+            <property name="geometry">
+             <rect>
+              <x>230</x>
+              <y>360</y>
+              <width>251</width>
+              <height>31</height>
+             </rect>
+            </property>
+           </widget>
+          </widget>
           <widget class="QWidget" name="tab_QCResults">
            <attribute name="title">
-            <string>QCResults</string>
+            <string>QC Results</string>
            </attribute>
            <layout class="QVBoxLayout" name="verticalLayout_2">
             <item>

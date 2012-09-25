@@ -12,6 +12,8 @@
 #include "itkMetaDataDictionary.h"
 #include "itkMetaDataObject.h"
 #include "itkVectorIndexSelectionCastImageFilter.h"
+#include <itksys/SystemTools.hxx>
+
 
 // #include "itkQtAdaptor.h"
 // #include "itkQtAdaptor.h"
@@ -30,12 +32,15 @@
 #include <string>
 #include <math.h>
 
+
 // Defining Checking bits
 #define ImageCheckBit 1
 #define DiffusionCheckBit 2
 #define SliceWiseCheckBit 4
 #define InterlaceWiseCheckBit 8
 #define GradientWiseCheckBit 16
+#define BrainMaskBit 32
+#define DominantDirectionDetectBit 64
 
 IntensityMotionCheckPanel::IntensityMotionCheckPanel(QMainWindow *parentNew) :
   QDockWidget(parentNew)
@@ -85,6 +90,8 @@ IntensityMotionCheckPanel::IntensityMotionCheckPanel(QMainWindow *parentNew) :
   pushButton_RunPipeline->setEnabled( 0 );
 
   pushButton_DefaultQCResult->setEnabled( 0 );
+  
+  
   //   pushButton_OpenQCReport->setEnabled( 0 );
 
   QStringList labels;
@@ -144,6 +151,9 @@ IntensityMotionCheckPanel::IntensityMotionCheckPanel(QMainWindow *parentNew) :
            SIGNAL( Set_QCedDWI() ),
            this,
            SLOT( Set_QCedDWI() ) );
+  
+  connect( this, SIGNAL( Set_init_Path_Signal() ), this, SLOT( Set_init_Path() ));
+  
 
 }
 
@@ -224,6 +234,7 @@ void IntensityMotionCheckPanel::on_treeWidget_Results_itemDoubleClicked(
 
 }
 
+
 void IntensityMotionCheckPanel::on_treeWidget_Results_currentItemChanged(
   QTreeWidgetItem *current,
   QTreeWidgetItem *previous)
@@ -248,10 +259,199 @@ void IntensityMotionCheckPanel::on_treeWidget_itemDoubleClicked(
   QTreeWidgetItem *item,
   int col)
 {
+  
   if( col == 1 && bProtocolTreeEditable )
-    {
+  {
     treeWidget->openPersistentEditor(item, col);
-    }
+  }
+  
+  if( item == NULL )
+  {
+      return;
+  }
+  
+  if( item->text(0).left(22) == tr("BRAINMASK_method") )
+  {
+     std::string str = item->text(0).toStdString();
+     
+     QString str_brainmask = QString("Please select brain masking approach." );
+     QString str_brainmask2 = QString("Please select path." );
+     QString str_brainmask3 = QString("No path was selected." );
+     
+     QMessageBox msgBox;
+     QMessageBox msgBox2;
+     QMessageBox msgBox3;
+     
+     
+     msgBox.setText( str_brainmask );
+     QPushButton * FSL = msgBox.addButton( tr("FSL_bet"), QMessageBox::ActionRole);
+     QPushButton * Slicer = msgBox.addButton( tr("Slicer"), QMessageBox::ActionRole);
+     QPushButton * Option = msgBox.addButton( tr("Option"), QMessageBox::ActionRole);
+     QPushButton * Cancel = msgBox.addButton( tr("Cancel"), QMessageBox::ActionRole);
+     msgBox.exec();
+
+     if( msgBox.clickedButton() == FSL )
+     {
+    	 std::cout << "Protocol Tree child 14 " << std::endl;
+    	 this->GetProtocol().GetBrainMaskProtocol().BrainMask_Method = 0;
+    	 //std::cout << "Protocol Tree child 14 " << this->GetTreeWidgetProtocol()->topLevelItem(14)->child(1)->text(1).toStdString().c_str() << std::endl;
+    	 
+    	 // Set BrainMask parameters in the protocol
+    	this->GetTreeWidgetProtocol()->topLevelItem(14)->child(0)->setText( 1, QString("%1").arg(this->GetProtocol().GetBrainMaskProtocol().BrainMask_Method, 0, 10) );
+    	   	 
+    	 //msgBox2.setText( str_brainmask2 );
+    	 //msgBox2.exec();
+    	 
+    	 // Finding systempath and running the brain masking method
+    	 this->GetProtocol().GetBrainMaskProtocol().BrainMask_SystemPath_FSL = lineEdit_FSL->text().toStdString();
+    	 
+    	 if (lineEdit_FSL->text() == NULL)
+    	 {
+    		 msgBox3.setText( str_brainmask3 );
+    		 msgBox3.exec();
+    		 std::cerr << "No system path was selected. " << std::endl;
+    		 return;
+    	 }
+    	 
+    	 
+    	  /* 
+    	 // computing baseline
+    	 std::string str_dtiestim;
+         str_dtiestim.append(this->GetProtocol().GetDTIProtocol().dtiestimCommand);
+    	 str_dtiestim.append(" ");
+    	 str_dtiestim.append("--dwi_image ");
+    	 str_dtiestim.append(DwiFileName);
+    	 str_dtiestim.append(" --B0 B0.nrrd --tensor_output tensor.nrrd");
+    	 std::cout << "dtiestim " << str_dtiestim.c_str() << std::endl; 
+    	 system(str_dtiestim.c_str());
+    	 
+    	 // converting to nii
+    	 std::string str_convertITKformats;
+    	 str_convertITKformats.append("convertITKformats B0.nrrd B0.nii");
+    	 std::cout << "convertitk " << str_convertITKformats.c_str() << std::endl;
+    	 system(str_convertITKformats.c_str());
+    	 
+    	 std::string str_ImageMath = "ImageMath B0.nii -outfile B0.nii.gz -constOper 3,10000 -type float";
+    	 std::cout << "ImageMath " << str_ImageMath.c_str() << std::endl;
+    	 system(str_ImageMath.c_str());
+    	 
+    	 std::string str_delete = "rm B0.nii";
+    	 system(str_delete.c_str());
+    	 
+    	 std::string str_bet2 = this->GetProtocol().GetBrainMaskProtocol().BrainMask_SystemPath_FSL ;
+    	 str_bet2.append(" B0.nii.gz B0_bet -m");
+    	 std::cout << "bet " << str_bet2.c_str() << std::endl;
+    	 system(str_bet2.c_str());
+
+    	 
+    	 std::string str_mask = "ImageMath B0.nrrd -mask B0_bet -outfile ";
+    	 
+
+    	 // Finding the proper path for output brain mask
+    	 
+    	 QString Result_b0_masked;
+
+    	   if( this->GetProtocol().GetQCOutputDirectory().length() > 0 )
+    	     {
+    	 	QString str_QCOutputDirectory = QString( this->GetProtocol().GetQCOutputDirectory().c_str() );
+    	 	bool found_SeparateChar = str_QCOutputDirectory.contains("/");
+    	 	if ( !found_SeparateChar ) // "/" does not exist in the protocol->GetQCOutputDirectory() and interpreted as the relative path and creates the folder
+    	 	{
+    	 		QString Full_path = DwiFilePath;
+    	 		QString Full_name = DwiFilePath.section('/', -1);
+    	 		Full_path.remove(Full_name);
+    	 		Full_path.append( "/" );
+    	 		Full_path.append( QString( protocol.GetQCOutputDirectory().c_str() ) );
+    	 		if( !QDir( Full_path ).exists() )
+    	 		{
+    	 		QDir().mkdir( Full_path );
+    	 		}
+    	 		Full_path.append( "/" );
+    	 		Full_path.append( Full_name.section('.', -2, 0) );
+    	 		Full_path.append(QString(tr("_B0_masked.nrrd") ) );
+    	 		Result_b0_masked = Full_path;
+    	 	}
+    	 	else
+    	 	{
+    	 		QString Full_name = DwiFilePath.section('/', -1);
+    	 		QString Full_path;
+    	 		Full_path.append( QString( protocol.GetQCOutputDirectory().c_str() ) );
+    	 		if( !QDir( Full_path ).exists() )
+    	 		{
+    	 		QDir().mkdir( Full_path );
+    	 		}
+    	 		Full_path.append( "/" );
+    	 		Full_path.append( Full_name );
+    	 		Full_path.append(QString(tr("_B0_masked.nrrd") ) );
+    	 		Result_b0_masked = Full_path;
+    	 	}
+    	     }
+
+    	   else
+    	     {
+    		   Result_b0_masked = DwiFilePath.section('.', -2, 0);
+    	     //Result_b0_masked.remove("_QCed");
+    		   Result_b0_masked.append(QString(tr("_B0_masked.nrrd") ) );
+    	     }
+    	   
+    	   this->GetProtocol().GetBrainMaskProtocol().BrainMask_Image = Result_b0_masked.toStdString();	// brain mask image
+
+    	   str_mask.append(Result_b0_masked.toStdString());
+    	   std::cout << "mask " << str_mask << std::endl;
+    	   
+      	   system(str_mask.c_str());
+      	   
+      	   
+           std::string str_delete2 = "rm B0.nrrd B0.nii.gz tensor.nrrd B0_bet_mask.nii.gz B0_bet.nii.gz";
+      	   std::cout << "rm " << str_delete2 << std::endl;
+           system(str_delete2.c_str());
+    	 
+    	 
+    	      
+    	 std::cout << "brainMask Test New:" << "FSL" << std::endl;
+    	 */
+    	 
+     }
+     if( msgBox.clickedButton() == Slicer )
+     {
+    	 this->GetProtocol().GetBrainMaskProtocol().BrainMask_Method = 1;	 
+    	 this->GetTreeWidgetProtocol()->topLevelItem(14)->child(0)->setText( 1, QString("%1").arg(this->GetProtocol().GetBrainMaskProtocol().BrainMask_Method, 0, 10) );
+    	 std::cout << "brainMask Test New:" << "Slicer" << std::endl;
+     }
+     if( msgBox.clickedButton() == Option )
+     {
+    	 this->GetProtocol().GetBrainMaskProtocol().BrainMask_Method = 2;
+    	 this->GetTreeWidgetProtocol()->topLevelItem(14)->child(0)->setText( 1, QString("%1").arg(this->GetProtocol().GetBrainMaskProtocol().BrainMask_Method, 0, 10) );
+    	 std::cout << "brainMask Test New:" << "Option" << std::endl;
+    	 
+    	 QString Mask_image = QFileDialog::getOpenFileName( this, tr(
+                 "Open nrrd masked brain image"), QDir::currentPath(),
+               tr("Nrrd Files (*.nhdr *.nrrd)") );
+    	 
+    	 
+    	if( Mask_image.length() > 0 )
+    	{
+    		this->GetProtocol().GetBrainMaskProtocol().BrainMask_Image = Mask_image.toStdString();
+    		std::cout << "brain mask Option " << this->GetProtocol().GetBrainMaskProtocol().BrainMask_Image << std::endl;
+    	}
+    	else
+    	{
+    		std::cout << "No masked brain is selected." << std::endl;
+    	     return;
+    	}
+    	 
+    	 
+     }
+     if( msgBox.clickedButton() == Cancel )
+     {
+    	 std::cout << "brainMask Test New:" << "Cancel" << std::endl;	
+    	 return;
+     }
+     
+     
+     
+     
+  }  
 }
 
 /*void IntensityMotionCheckPanel::on_treeWidget_Results_itemDoubleClicked(
@@ -364,6 +564,7 @@ void IntensityMotionCheckPanel::SetName( QString nrrd_path )
 void IntensityMotionCheckPanel::on_toolButton_ProtocolFileOpen_clicked()
 {
   OpenXML();
+  
   bProtocolTreeEditable = true;
   emit ProtocolChanged();
 }
@@ -1339,6 +1540,15 @@ void IntensityMotionCheckPanel::DefaultProtocol()
 
   // Denoising JointLMMSE
   this->GetProtocol().initDenoisingJointLMMSE();
+  
+  // Brain Mask
+  this->GetProtocol().initBrainMaskProtocol();
+  this->GetProtocol().GetBrainMaskProtocol().BrainMask_SystemPath_FSL = lineEdit_FSL->text().toStdString();  // ??????????????????????????????????????????????????????????????????????????????????????????? 
+  this->GetProtocol().GetBrainMaskProtocol().BrainMask_SystemPath_Slicer = lineEdit_Slicer->text().toStdString();
+  this->GetProtocol().GetBrainMaskProtocol().BrainMask_SystemPath_convertITK = lineEdit_convertitk->text().toStdString();	
+  this->GetProtocol().GetBrainMaskProtocol().BrainMask_SystemPath_imagemath = lineEdit_imagemath->text().toStdString();
+  std::cout << "Test 2 Brain mask " << this->GetProtocol().GetBrainMaskProtocol().BrainMask_SystemPath_FSL << std::endl;
+  emit Set_init_Path_Signal();
   
   // Dominant directional artifact detector ( entropy tool )
   this->GetProtocol().initDominantDirectional_Detector();
@@ -2764,6 +2974,101 @@ void IntensityMotionCheckPanel::UpdateProtocolToTreeWidget()
                                                                                         GetDenoisingJointLMMSE().
                                                                                         Filter_Radius[2], 0, 10 ) );
   
+  // Creating brain mask
+  
+  QTreeWidgetItem * item_brainmask_bCheck = new QTreeWidgetItem(treeWidget);
+  item_brainmask_bCheck->setText( 0 , tr("BRAINMASK_bCheck") );
+  if( this->GetProtocol().GetBrainMaskProtocol().bMask )
+  {
+	  item_brainmask_bCheck->setText( 1, tr("Yes") );
+  }
+  else
+  {
+	  item_brainmask_bCheck->setText( 1, tr("No") );
+  }  
+  
+  QTreeWidgetItem * item_brainmask_Method = new QTreeWidgetItem(item_brainmask_bCheck);
+  item_brainmask_Method->setText( 0 , tr("BRAINMASK_method") );
+  
+  item_brainmask_Method->setText( 1 , QString("%1").arg(this->GetProtocol().GetBrainMaskProtocol().
+		  BrainMask_Method, 0, 10) );
+  
+  QTreeWidgetItem * item_brainmask_SystemPath_FSL = new QTreeWidgetItem(item_brainmask_bCheck);
+  item_brainmask_SystemPath_FSL->setText( 0 , tr("BRAINMASK_SystemPath_FSL") );
+  item_brainmask_SystemPath_FSL->setText( 1 , QString::fromStdString( this->GetProtocol().GetBrainMaskProtocol().BrainMask_SystemPath_FSL ));
+  
+  QTreeWidgetItem * item_brainmask_SystemPath_convitk = new QTreeWidgetItem(item_brainmask_bCheck);
+  item_brainmask_SystemPath_convitk->setText( 0 , tr("BRAINMASK_SystemPath_convertITK") );
+  item_brainmask_SystemPath_convitk->setText( 1 , QString::fromStdString( this->GetProtocol().GetBrainMaskProtocol().BrainMask_SystemPath_convertITK ));
+  
+  QTreeWidgetItem * item_brainmask_SystemPath_imagemath = new QTreeWidgetItem(item_brainmask_bCheck);
+  item_brainmask_SystemPath_imagemath->setText( 0 , tr("BRAINMASK_SystemPath_imagemath") );
+  item_brainmask_SystemPath_imagemath->setText( 1 , QString::fromStdString( this->GetProtocol().GetBrainMaskProtocol().BrainMask_SystemPath_imagemath ));
+        
+  QTreeWidgetItem * item_brainmask_SystemPath_Slicer = new QTreeWidgetItem(item_brainmask_bCheck);
+  item_brainmask_SystemPath_Slicer->setText( 0 , tr("BRAINMASK_SystemPath_Slicer") );
+  item_brainmask_SystemPath_Slicer->setText( 1 , QString::fromStdString( this->GetProtocol().GetBrainMaskProtocol().BrainMask_SystemPath_Slicer ));
+  
+  QTreeWidgetItem * item_brainmask_MaskedImage = new QTreeWidgetItem(item_brainmask_bCheck);
+  item_brainmask_MaskedImage->setText( 0 , tr("BRAINMASK_MaskedImage") );
+  item_brainmask_MaskedImage->setText( 1 , QString::fromStdString( this->GetProtocol().GetBrainMaskProtocol().BrainMask_Image ));
+  
+  QTreeWidgetItem * item_brainmask_reportSuffix = new QTreeWidgetItem(item_brainmask_bCheck);
+  item_brainmask_reportSuffix->setText( 0 , tr("BRAINMASK_reportFileNameSuffix") );
+  item_brainmask_reportSuffix->setText( 1 , QString::fromStdString( this->GetProtocol().GetBrainMaskProtocol().reportFileNameSuffix ));
+    
+  QTreeWidgetItem * item_brainmask_reportMode = new QTreeWidgetItem(item_brainmask_bCheck);
+  item_brainmask_reportMode->setText( 0 , tr("BRAINMASK_reportFileMode") );
+  item_brainmask_reportMode->setText( 1 , QString("%1").arg( this->GetProtocol().GetBrainMaskProtocol().reportFileMode ));
+
+  QTreeWidgetItem * item_brainmask_bQuitOnCheckFailure = new QTreeWidgetItem(item_brainmask_bCheck);
+  item_brainmask_bQuitOnCheckFailure->setText( 0 , tr("BRAINMASK_bQuitOnCheckFailure") );
+  if ( this->GetProtocol().GetBrainMaskProtocol().bQuitOnCheckFailure )
+	  item_brainmask_bQuitOnCheckFailure->setText( 1 , tr( "Yes"));
+  else
+	  item_brainmask_bQuitOnCheckFailure->setText( 1 , tr( "No"));
+  
+  
+    
+  /*ComboBoxItem * cmb3 = new ComboBoxItem(item_brainmask, 1);
+    
+  QTreeWidgetItem * item_brainmask_method = new QTreeWidgetItem(item_brainmask);
+  item_brainmask_method->setText( 0 , tr ("BrainMask_method") );
+    QTreeWidgetItem * item_brainmask_method2 = new QTreeWidgetItem(item_brainmask);
+    item_brainmask_method2->setText( 0 , tr ("BrainMask_method2") );  
+  ComboBoxItem * cmb = new ComboBoxItem(item_brainmask_method, 1);
+  ComboBoxItem * cmb2 = new ComboBoxItem(item_brainmask_method2, 1);
+    cmb2->addItem("One");
+    cmb2->addItem("Two");
+    cmb2->addItem("Three");
+    cmb2->setVisible(true);
+    cmb2->setAutoFillBackground(true);
+    cmb3->addItem("One");
+    cmb3->addItem("Two");
+    cmb3->addItem("Three");
+    cmb3->setVisible(true);
+    cmb3->setAutoFillBackground(true);
+
+    
+  cmb->addItem("One");
+  cmb->addItem("Two");
+  cmb->setVisible(true);
+  cmb->setAutoFillBackground(true);
+  
+  
+  treeWidget->setItemWidget(item_brainmask_method, 1 , cmb);
+    
+    treeWidget->setItemWidget(item_brainmask_method2, 1 , cmb2);
+
+    treeWidget->setItemWidget(item_brainmask, 1 , cmb3);
+  
+  
+  std::cout << "test brain mask " << item_brainmask_method->text(1).toStdString() << std::endl;
+  */
+  
+  
+  
+  
   // Dominant directional artifact checking
   QTreeWidgetItem * item_dominantDirectional = new QTreeWidgetItem(treeWidget);
   item_dominantDirectional->setText( 0, tr("DOMINANTDIRECTION_bCheck") );
@@ -2796,6 +3101,26 @@ void IntensityMotionCheckPanel::UpdateProtocolToTreeWidget()
   item_dominantDirectional_threshold2->setText( 1, QString("%1").arg( this->GetProtocol().GetDominantDirectional_Detector().
 		  Threshold_Suspicion_Unacceptance, 0, 'f', 6 ));
   
+  QTreeWidgetItem * item_dominantDirectional_reportFileNameSuffix = new QTreeWidgetItem(item_dominantDirectional);
+  item_dominantDirectional_reportFileNameSuffix->setText( 0, tr("DOMINANTDIRECTION_reportFileNameSuffix") );
+  item_dominantDirectional_reportFileNameSuffix->setText( 1, QString::fromStdString( this->GetProtocol().GetDominantDirectional_Detector().
+		  reportFileNameSuffix));
+       
+  QTreeWidgetItem * item_dominantDirectional_reportFileMode = new QTreeWidgetItem(item_dominantDirectional);
+  item_dominantDirectional_reportFileMode->setText( 0, tr("DOMINANTDIRECTION_reportFileMode") );
+  item_dominantDirectional_reportFileMode->setText( 1, QString("%1").arg( this->GetProtocol().GetDominantDirectional_Detector().
+		  reportFileMode, 0, 10 ));
+      
+  QTreeWidgetItem * item_dominantDirectional_bQuitOnCheckFailure = new QTreeWidgetItem(item_dominantDirectional);
+  item_dominantDirectional_bQuitOnCheckFailure->setText( 0, tr("DOMINANTDIRECTION_bQuitOnCheckFailure") );
+  if( this->GetProtocol().GetDominantDirectional_Detector().bQuitOnCheckFailure )
+    {
+	  item_dominantDirectional_bQuitOnCheckFailure->setText( 1, tr("Yes") );
+    }
+    else
+    {
+    	item_dominantDirectional_bQuitOnCheckFailure->setText( 1, tr("No") );
+    }
  
   
 
@@ -2850,10 +3175,10 @@ void IntensityMotionCheckPanel::UpdateProtocolToTreeWidget()
   itemBaselineThreshold->setText( 1,
                                   QString::number(this->GetProtocol().GetDTIProtocol().baselineThreshold) );
 
-  QTreeWidgetItem *itemMaskFile = new QTreeWidgetItem(itemDTIComputing);
-  itemMaskFile->setText( 0, tr("DTI_maskFileName") );
-  itemMaskFile->setText( 1,
-                         QString::fromStdString(this->GetProtocol().GetDTIProtocol().mask ) );
+  //QTreeWidgetItem *itemMaskFile = new QTreeWidgetItem(itemDTIComputing);
+  //itemMaskFile->setText( 0, tr("DTI_maskFileName") );
+  //itemMaskFile->setText( 1,
+  //                       QString::fromStdString(this->GetProtocol().GetDTIProtocol().mask ) );
 
   QTreeWidgetItem *itemTensorFile = new QTreeWidgetItem(itemDTIComputing);
   itemTensorFile->setText( 0, tr("DTI_tensor") );
@@ -3124,11 +3449,21 @@ void IntensityMotionCheckPanel::Set_QCedDWI()
 
 }
 
+void IntensityMotionCheckPanel::Set_init_Path()
+{
+	lineEdit_FSL->setText(QString::fromStdString (this->GetProtocol().GetBrainMaskProtocol().BrainMask_SystemPath_FSL) );
+}
+
+/*void IntensityMotionCheckPanel::Update_ProtocolPath()
+{
+	this->GetTreeWidgetProtocol()->topLevelItem(14)->child(1)->setText( 1, lineEdit_FSL->text() );
+}
+*/
+
 void IntensityMotionCheckPanel::QCedResultUpdate()
 {
 
   // creating QCResult tree include "gradients info + visual checking process" :"
-  std::cout << "Signal QCedResultUpdate" << std::endl;
   treeWidget_Results->clear();
 
   // gradient
@@ -3143,17 +3478,17 @@ void IntensityMotionCheckPanel::QCedResultUpdate()
   std::string                              metaString;
 
   std::ofstream outfile;
-  outfile.open( myIntensityThread.m_IntensityMotionCheck->GetReportFileName().c_str(), std::ios_base::app | std::ios_base::out);
-  outfile << "================================" << std::endl;
-  outfile << "Included Gradients" << std::endl;
-  outfile << "================================" << std::endl;
+  //outfile.open( myIntensityThread.m_IntensityMotionCheck->GetReportFileName().c_str(), std::ios_base::app | std::ios_base::out);
+  //outfile << "================================" << std::endl;
+  //outfile << "Included Gradients" << std::endl;
+  //outfile << "================================" << std::endl;
 
   // gradient vectors
   TensorReconstructionImageFilterType::GradientDirectionType vect3d_T;
   GradientDirectionContainer_ConformanceImg = GradientDirectionContainerType::New();
   int index_included_dwi = 0;
   
-  outfile << std::endl << "\t#" << "\tDirVector" << std::endl;
+  //outfile << std::endl << "\t#" << "\tDirVector" << std::endl;
   
   for( ; itKey != imgMetaKeys.end(); itKey++ )
     {
@@ -3163,17 +3498,17 @@ void IntensityMotionCheckPanel::QCedResultUpdate()
       {
     	std::istringstream iss(metaString);
     	iss >> vect3d_T[0] >> vect3d_T[1] >> vect3d_T[2];
-    	outfile << "\t" << index_included_dwi << "\t[ "
-    	                << std::setw(9) << std::setiosflags(std::ios::fixed)
-    	                << std::setprecision(6) << std::setiosflags(std::ios::right)
-    	                << vect3d_T[0] << ", "
-    	                << std::setw(9) << std::setiosflags(std::ios::fixed)
-    	                << std::setprecision(6) << std::setiosflags(std::ios::right)
-    	                << vect3d_T[1] << ", "
-    	                << std::setw(9) << std::setiosflags(std::ios::fixed)
-    	                << std::setprecision(6) << std::setiosflags(std::ios::right)
-    	                << vect3d_T[2] << " ]"
-    	                << std::endl;
+    	//outfile << "\t" << index_included_dwi << "\t[ "
+    	//                << std::setw(9) << std::setiosflags(std::ios::fixed)
+    	//                << std::setprecision(6) << std::setiosflags(std::ios::right)
+    	//                << vect3d_T[0] << ", "
+    	//               << std::setw(9) << std::setiosflags(std::ios::fixed)
+    	//                << std::setprecision(6) << std::setiosflags(std::ios::right)
+    	//                << vect3d_T[1] << ", "
+    	//                << std::setw(9) << std::setiosflags(std::ios::fixed)
+    	//                << std::setprecision(6) << std::setiosflags(std::ios::right)
+    	//                << vect3d_T[2] << " ]"
+    	//                << std::endl;
     	std::cout << "gradients dir: " << vect3d_T[0] << " " << vect3d_T[1] << " " << vect3d_T[2] << std::endl;
         index_included_dwi++;
         GradientDirectionContainer_ConformanceImg->push_back(vect3d_T);
@@ -3254,7 +3589,7 @@ void IntensityMotionCheckPanel::QCedResultUpdate()
 
     }
 
-    outfile.close();
+    //outfile.close();
 }
 
 void IntensityMotionCheckPanel::ResultUpdate()
@@ -3809,7 +4144,97 @@ void IntensityMotionCheckPanel::ResultUpdate()
       }
 
     }
-
+  
+  
+  
+  QTreeWidgetItem *itemBrainMask = new QTreeWidgetItem(
+          treeWidget_Results);
+  itemBrainMask->setText(0, tr("BRAIN_MASK"));
+  
+  if( ( this->GetProtocol().GetBrainMaskProtocol().bQuitOnCheckFailure &&
+              ( (qcResult.Get_result()  & BrainMaskBit) !=  0) ) )
+  {
+	  itemBrainMask->setText( 1, tr("Fail Pipeline Terminated") );
+	  itemBrainMask->setText( 2, tr("Finish QC Processing") );
+      return;
+  }
+    
+  if( !this->GetProtocol().GetBrainMaskProtocol().bMask)
+  {
+	  itemBrainMask->setText(1, tr("Not Set"));
+  }
+  else
+  {
+	  if ( qcResult.GetOverallQCResult().BMCK == true )
+	  {
+		  itemBrainMask->setText(1, tr("Pass"));
+	  }
+	  else
+	  {
+		  itemBrainMask->setText(1, tr("Fail"));
+	  }
+    	
+  }
+    
+  std::cout << "QTree Result " << qcResult.GetOverallQCResult().BMCK << std::endl;
+  std::cout << "QTree Result " << qcResult.GetOverallQCResult().DDDCK << std::endl;
+  
+  
+  //QTreeWidgetItem *itemDominantDirectionDetec = new QTreeWidgetItem(
+  //      treeWidget_Results);
+  QTreeWidgetItem *itemDominantDirectionDetec = new QTreeWidgetItem(
+          treeWidget_Results);
+    itemDominantDirectionDetec->setText(0, tr("Dominant_Direction_Detector"));  
+  
+  if( ( this->GetProtocol().GetDominantDirectional_Detector().bQuitOnCheckFailure &&
+            ( (qcResult.Get_result()  & DominantDirectionDetectBit) !=  0) ) )
+  {
+	  itemDominantDirectionDetec->setText( 1, tr("Fail Pipeline Terminated") );
+	  itemDominantDirectionDetec->setText( 2, tr("Finish QC Processing") );
+       return;
+  }
+  
+  if( !this->GetProtocol().GetDominantDirectional_Detector().bCheck)
+  {
+	  itemDominantDirectionDetec->setText(1, tr("Not Set"));
+  }
+  else
+  {
+  
+	  if ( qcResult.GetOverallQCResult().DDDCK == true )
+	  {
+		  itemDominantDirectionDetec->setText(1, tr("Pass"));
+		  QTreeWidgetItem *itemDominantDirectionDetec_Z_score = new QTreeWidgetItem(
+				  itemDominantDirectionDetec);
+		  itemDominantDirectionDetec_Z_score->setText(0, tr("DOMINANT_DIRECTION_Z_SCORE"));
+		  itemDominantDirectionDetec_Z_score->setText(1, QString("%1").arg(qcResult.GetDominantDirection_Detector().z_score) );
+				  
+				  
+		  
+		  QTreeWidgetItem *itemDominantDirectionDetec_Entropy = new QTreeWidgetItem(
+				  itemDominantDirectionDetec);
+		  itemDominantDirectionDetec_Entropy->setText(0, tr("DOMINANT_DIRECTION_ENTROPY"));
+		  itemDominantDirectionDetec_Entropy->setText(1, QString("%1").arg(qcResult.GetDominantDirection_Detector().entropy_value) );
+			
+			
+			QTreeWidgetItem *itemDominantDirectionDetec_Result = new QTreeWidgetItem(
+					  itemDominantDirectionDetec);
+			itemDominantDirectionDetec_Result->setText(0, tr("DOMINANT_DIRECTION_RESULT"));
+		  
+		  if (qcResult.GetDominantDirection_Detector().detection_result == 2 )
+			  itemDominantDirectionDetec_Result->setText( 1, tr("Reject"));
+		  
+		  if (qcResult.GetDominantDirection_Detector().detection_result == 1 )
+			  itemDominantDirectionDetec_Result->setText( 1, tr("Suspicious"));
+		  
+		  if (qcResult.GetDominantDirection_Detector().detection_result == 0 )
+			  itemDominantDirectionDetec_Result->setText( 1, tr("Accept"));
+	  }
+	  else
+		  itemDominantDirectionDetec->setText(1, tr("Fail"));
+	  
+  }
+  
   // QTreeWidgetItem * itemSliceWiseCheck = new QTreeWidgetItem(treeWidget_Results);
   // itemSliceWiseCheck->setText( 0, tr("SLiceWiseCheck"));
 
@@ -5735,6 +6160,281 @@ bool IntensityMotionCheckPanel::OpenMappingXML()
   return true;
 
 }
+
+void IntensityMotionCheckPanel::on_pushButton_Pathdefault_clicked()
+{
+	std::cout << "Test mahshid " <<std::endl;
+	std::string program;
+	std::string notFound;
+	
+
+	// The protocol paths are bet2,DiffusionWeightedVolumeMasking,dtiestim,dtiprocess and denoisingfilter.
+	// They are saved in protocol in BrainMaskProtocol and DTIProtocol structures.
+	
+	// BrainMask: FSL_bet
+	program = itksys::SystemTools::FindProgram("bet2");
+	std::cout << "Test mahshid " << program.c_str() << std::endl;
+	if(program.empty())
+	{
+		if(lineEdit_FSL->text().isEmpty()) notFound = notFound + "> bet2\n";
+	}
+	else 
+	{
+		lineEdit_FSL->setText(QString::fromStdString(program));
+		this->GetProtocol().GetBrainMaskProtocol().BrainMask_SystemPath_FSL = program;
+		if (!bProtocol )
+		{
+			std::string text_er = "No protocol has been loaded. Please Load Protocol.";
+			QMessageBox::warning(this, "Protocol missing", QString(text_er.c_str()) );
+			return;
+		}
+		this->GetTreeWidgetProtocol()->topLevelItem(14)->child(1)->setText( 1, QString::fromStdString(program) );
+	}
+	
+	//convertitk
+	program = itksys::SystemTools::FindProgram("convertITKformats");
+	std::cout << "Test mahshid " << program.c_str() << std::endl;
+	if(program.empty())
+	{
+		if(lineEdit_convertitk->text().isEmpty()) notFound = notFound + "> convertITKformats\n";
+	}
+	else 
+	{
+		lineEdit_convertitk->setText(QString::fromStdString(program));
+		this->GetProtocol().GetBrainMaskProtocol().BrainMask_SystemPath_convertITK = program;
+		this->GetTreeWidgetProtocol()->topLevelItem(14)->child(2)->setText( 1, QString::fromStdString(program) );
+	}
+	
+	//convertitk
+	program = itksys::SystemTools::FindProgram("ImageMath");
+	std::cout << "Test mahshid " << program.c_str() << std::endl;
+	if(program.empty())
+	{
+		if(lineEdit_imagemath->text().isEmpty()) notFound = notFound + "> ImageMath\n";
+	}
+	else 
+	{
+		lineEdit_imagemath->setText(QString::fromStdString(program));
+		this->GetProtocol().GetBrainMaskProtocol().BrainMask_SystemPath_imagemath = program;
+		this->GetTreeWidgetProtocol()->topLevelItem(14)->child(3)->setText( 1, QString::fromStdString(program) );
+	}
+	
+	//BrainMask: Slicer/DiffusionWeightedVolumeMasking
+	program = itksys::SystemTools::FindProgram("DiffusionWeightedVolumeMasking");
+	if(program.empty())
+	{
+		if(lineEdit_Slicer->text().isEmpty()) notFound = notFound + "> DiffusionWeightedVolumeMasking\n";
+	}
+	else 
+	{
+		lineEdit_Slicer->setText(QString::fromStdString(program));
+		this->GetProtocol().GetBrainMaskProtocol().BrainMask_SystemPath_Slicer = program;
+		this->GetTreeWidgetProtocol()->topLevelItem(14)->child(4)->setText( 1, QString::fromStdString(program) );
+	}
+	
+	//DTI estimation: dtiestim and dtiprocess
+	program = itksys::SystemTools::FindProgram("dtiestim");
+	if(program.empty())
+	{
+		if(lineEdit_dtiestim->text().isEmpty()) notFound = notFound + "> dtiestim\n";
+	}
+	else
+	{
+		lineEdit_dtiestim->setText(QString::fromStdString(program));
+		this->GetProtocol().GetDTIProtocol().dtiestimCommand = program;
+		this->GetTreeWidgetProtocol()->topLevelItem(16)->child(0)->setText( 1, QString::fromStdString(program) );
+	}
+	
+	
+	program = itksys::SystemTools::FindProgram("dtiprocess");
+	if(program.empty())
+	{
+		if(lineEdit_dtiprocess->text().isEmpty()) notFound = notFound + "> dtiprocess\n";
+	}
+	else
+	{
+		lineEdit_dtiprocess->setText(QString::fromStdString(program));
+		this->GetProtocol().GetDTIProtocol().dtiprocessCommand = program;
+		this->GetTreeWidgetProtocol()->topLevelItem(16)->child(1)->setText( 1, QString::fromStdString(program) );
+	}
+
+	
+	if( !notFound.empty() )
+	{
+		std::string text = "The following programs have not been found.\nPlease enter the path manually:\n" + notFound;
+		QMessageBox::warning(this, "Program missing", QString(text.c_str()) );
+		
+	}
+	
+	
+}
+
+void IntensityMotionCheckPanel::on_pushButton_FSL_clicked()
+{
+	if (!bProtocol )
+	{
+	    std::string text_er = "No protocol has been loaded. Please Load Protocol.";
+		QMessageBox::warning(this, "Protocol missing", QString(text_er.c_str()) );
+		return;
+	}
+	
+	
+	QString executable_file = QFileDialog::getOpenFileName( this, tr(
+	                 "Open program executable file"), QDir::currentPath(),
+	               tr("Executable Files") );
+	if (executable_file.length() == 0)
+	{
+		std::string text = "No file is set";
+		QMessageBox::warning(this, "Program missing", QString(text.c_str()) );
+		return;
+	}
+	
+	lineEdit_FSL->setText(executable_file);
+	this->GetProtocol().GetBrainMaskProtocol().BrainMask_SystemPath_FSL = executable_file.toStdString();
+	this->GetTreeWidgetProtocol()->topLevelItem(14)->child(1)->setText( 1, executable_file );
+	
+	return;
+}
+
+void IntensityMotionCheckPanel::on_pushButton_Slicer_clicked()
+{
+	if (!bProtocol )
+	{
+		std::string text_er = "No protocol has been loaded. Please Load Protocol.";
+		QMessageBox::warning(this, "Protocol missing", QString(text_er.c_str()) );
+		return;
+	}
+	
+	QString executable_file = QFileDialog::getOpenFileName( this, tr(
+	                 "Open program executable file"), QDir::currentPath(),
+	               tr("Executable Files") );
+	if (executable_file.length() == 0)
+	{
+		std::string text = "No file is set";
+		QMessageBox::warning(this, "Program missing", QString(text.c_str()) );
+		return;
+	}
+	
+	lineEdit_Slicer->setText(executable_file);
+	this->GetProtocol().GetBrainMaskProtocol().BrainMask_SystemPath_Slicer = executable_file.toStdString();
+	
+	
+	this->GetTreeWidgetProtocol()->topLevelItem(14)->child(4)->setText( 1, executable_file );
+	
+	
+	return;
+}
+
+void IntensityMotionCheckPanel::on_pushButton_dtiestim_clicked()
+{
+	if (!bProtocol )
+	{
+		std::string text_er = "No protocol has been loaded. Please Load Protocol.";
+		QMessageBox::warning(this, "Protocol missing", QString(text_er.c_str()) );
+		return;
+	}
+	
+	QString executable_file = QFileDialog::getOpenFileName( this, tr(
+	                 "Open program executable file"), QDir::currentPath(),
+	               tr("Executable Files") );
+	if (executable_file.length() == 0)
+	{
+		std::string text = "No file is set";
+		QMessageBox::warning(this, "Program missing", QString(text.c_str()) );
+		return;
+	}
+	
+	lineEdit_dtiestim->setText(executable_file);
+	this->GetProtocol().GetDTIProtocol().dtiestimCommand = executable_file.toStdString();
+	
+	this->GetTreeWidgetProtocol()->topLevelItem(16)->child(0)->setText( 1, executable_file );
+	
+	return;
+}
+
+void IntensityMotionCheckPanel::on_pushButton_dtiprocess_clicked()
+{
+	if (!bProtocol )
+	{
+	    std::string text_er = "No protocol has been loaded. Please Load Protocol.";
+		QMessageBox::warning(this, "Protocol missing", QString(text_er.c_str()) );
+		return;
+	}
+	
+	QString executable_file = QFileDialog::getOpenFileName( this, tr(
+	                 "Open program executable file"), QDir::currentPath(),
+	               tr("Executable Files") );
+	if (executable_file.length() == 0)
+	{
+		std::string text = "No file is set";
+		QMessageBox::warning(this, "Program missing", QString(text.c_str()) );
+		return;
+	}
+	
+	lineEdit_dtiprocess->setText(executable_file);
+	this->GetProtocol().GetDTIProtocol().dtiprocessCommand = executable_file.toStdString();
+	
+	this->GetTreeWidgetProtocol()->topLevelItem(16)->child(1)->setText( 1, executable_file );
+	
+	return;
+}
+
+void IntensityMotionCheckPanel::on_pushButton_convertitk_clicked()
+{
+	if (!bProtocol )
+	{
+		std::string text_er = "No protocol has been loaded. Please Load Protocol.";
+		QMessageBox::warning(this, "Protocol missing", QString(text_er.c_str()) );
+		return;
+	}
+	QString executable_file = QFileDialog::getOpenFileName( this, tr(
+	                 "Open program executable file"), QDir::currentPath(),
+	               tr("Executable Files") );
+	if (executable_file.length() == 0)
+	{
+		std::string text = "No file is set";
+		QMessageBox::warning(this, "Program missing", QString(text.c_str()) );
+		return;
+	}
+	
+	lineEdit_convertitk->setText(executable_file);
+	this->GetProtocol().GetBrainMaskProtocol().BrainMask_SystemPath_convertITK = executable_file.toStdString();
+	
+	this->GetTreeWidgetProtocol()->topLevelItem(14)->child(2)->setText( 1, executable_file );
+		
+	
+	return;
+}
+
+void IntensityMotionCheckPanel::on_pushButton_imagemath_clicked()
+{
+	
+	if (!bProtocol )
+	{
+		std::string text_er = "No protocol has been loaded. Please Load Protocol.";
+		QMessageBox::warning(this, "Protocol missing", QString(text_er.c_str()) );
+		return;
+	}
+	
+	QString executable_file = QFileDialog::getOpenFileName( this, tr(
+	                 "Open program executable file"), QDir::currentPath(),
+	               tr("Executable Files") );
+	if (executable_file.length() == 0)
+	{
+		std::string text = "No file is set";
+		QMessageBox::warning(this, "Program missing", QString(text.c_str()) );
+		return;
+	}
+	
+	lineEdit_imagemath->setText(executable_file);
+	this->GetProtocol().GetBrainMaskProtocol().BrainMask_SystemPath_imagemath = executable_file.toStdString();
+	
+	
+	this->GetTreeWidgetProtocol()->topLevelItem(14)->child(3)->setText( 1, executable_file );
+	
+	return;
+}
+
 
 /*void IntensityMotionCheckPanel::DefaultProcess( )
 {

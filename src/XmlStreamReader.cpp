@@ -128,6 +128,12 @@ void XmlStreamReader::InitializeProtocolStringValues()
                                = DOMINANTDIRECTION_Threshold1;
    s_mapProtocolStringValues["DOMINANTDIRECTION_Threshold2"]
                                = DOMINANTDIRECTION_Threshold2;
+   s_mapProtocolStringValues["DOMINANTDIRECTION_reportFileNameSuffix"]
+                                  = DOMINANTDIRECTION_reportFileNameSuffix;
+   s_mapProtocolStringValues["DOMINANTDIRECTION_reportFileMode"]
+                                  = DOMINANTDIRECTION_reportFileMode;
+   s_mapProtocolStringValues["DOMINANTDIRECTION_bQuitOnCheckFailure"]
+                                  = DOMINANTDIRECTION_bQuitOnCheckFailure;
 
   // slice check
   s_mapProtocolStringValues["SLICE_bCheck"]
@@ -253,7 +259,21 @@ void XmlStreamReader::InitializeProtocolStringValues()
     = EDDYMOTION_reportFileNameSuffix;
   s_mapProtocolStringValues["EDDYMOTION_reportFileMode"]
     = EDDYMOTION_reportFileMode;
-
+  
+  // brain masking
+  s_mapProtocolStringValues["BRAINMASK_bCheck"] = BRAINMASK_bCheck ;
+  s_mapProtocolStringValues["BRAINMASK_method"] = BRAINMASK_method ;
+  s_mapProtocolStringValues["BRAINMASK_SystemPath_FSL"] = BRAINMASK_SystemPath_FSL ;
+  s_mapProtocolStringValues["BRAINMASK_SystemPath_Slicer"] = BRAINMASK_SystemPath_Slicer ;
+  s_mapProtocolStringValues["BRAINMASK_SystemPath_convertITK"] = BRAINMASK_SystemPath_convertITK ;
+  s_mapProtocolStringValues["BRAINMASK_SystemPath_imagemath"] = BRAINMASK_SystemPath_imagemath ;
+  s_mapProtocolStringValues["BRAINMASK_MaskedImage"] = BRAINMASK_MaskedImage ;
+  s_mapProtocolStringValues["BRAINMASK_reportFileNameSuffix"] = BRAINMASK_reportFileNameSuffix ;
+  s_mapProtocolStringValues["BRAINMASK_reportFileMode"] = BRAINMASK_reportFileMode ;
+  s_mapProtocolStringValues["BRAINMASK_bQuitOnCheckFailure"] = BRAINMASK_bQuitOnCheckFailure ;
+  
+  
+  
   // DTI computing
   s_mapProtocolStringValues["DTI_bCompute"]
     = DTI_bCompute;
@@ -265,8 +285,8 @@ void XmlStreamReader::InitializeProtocolStringValues()
     = DTI_method;
   s_mapProtocolStringValues["DTI_baselineThreshold"]
     = DTI_baselineThreshold;
-  s_mapProtocolStringValues["DTI_maskFileName"]
-    = DTI_maskFileName;
+  //s_mapProtocolStringValues["DTI_maskFileName"]
+  //  = DTI_maskFileName;
   s_mapProtocolStringValues["DTI_tensor"]
     = DTI_tensor;
   s_mapProtocolStringValues["DTI_baseline"]
@@ -369,6 +389,18 @@ void XmlStreamReader::InitializeQCRESULTStringValue()
 
   s_mapQCRESULTStringValue["QC_Index"]
     = DWI_QC_Index;
+  
+  s_mapQCRESULTStringValue["DOMINANT_DIRECTION_ENTROPY"]
+      = DOMINANT_DIRECTION_ENTROPY;
+  s_mapQCRESULTStringValue["DOMINANT_DIRECTION_Z_SCORE"]
+      = DOMINANT_DIRECTION_Z_SCORE;
+  s_mapQCRESULTStringValue["DOMINANT_DIRECTION_RESULT"]
+      = DOMINANT_DIRECTION_RESULT;
+  s_mapQCRESULTStringValue["DOMINANT_DIRECTION_DETECTOR"]
+        = DOMINANT_DIRECTION_DETECTOR;
+  
+  s_mapQCRESULTStringValue["BRAIN_MASK"]
+        = BRAIN_MASK;
 
 /*
  s_mapQCResultStringValues[ "IntensityMotion" ]
@@ -587,6 +619,31 @@ void XmlStreamReader::parseQCResultElement( const QDomElement & element)
 
   GetDWICheckParsing(child);   // DWI Check
   LoadQCResultFromDWICheckParsing();
+  
+  
+  parametersQCResult.clear();
+
+  child = child.nextSibling();
+  if( child.isNull() )
+  {
+    std::cerr << "Improper xml QCResult file" << std::endl;
+  } 
+    
+  GetBrainMaskParsing(child.toElement());   // BRAIN MASK
+  LoadQCResultFromBrainMaskParsing();  
+  
+  
+  parametersQCResult.clear();
+
+  child = child.nextSibling();
+  if( child.isNull() )
+  {
+  std::cerr << "Improper xml QCResult file" << std::endl;
+  }  
+
+  GetDominantDirectionParsing(child.toElement());   // DOMINANT DIRECTION DETECT
+  LoadQCResultFromDominantDirectionParsing();
+  
 
 }
 
@@ -790,6 +847,125 @@ void XmlStreamReader::LoadQCResultFromDiffInfoParsing()
           QCRESULT->GetDiffusionInformationCheckResult(). measurementFrame = false;
           }
 
+        break;
+        }
+      default:
+        break;
+      }
+    }
+}
+
+void XmlStreamReader::GetDominantDirectionParsing(const QDomElement & element)
+{
+
+  // Dominant Direction Detect
+  if( element.tagName() == "entry" )
+    {
+    parseEntryElement_QCResult_ImgInfo( element, treeWidget->invisibleRootItem() );         // Since the process is same
+                                                                                            // as ImageInfo part we call
+                                                                                            // parseEntryElement_QCResult_ImgInfo
+    }
+
+  else
+    {
+    std::cerr << "Error: Inproper xml QCResult file" << std::endl;
+    return;
+    }
+
+}
+
+void XmlStreamReader::GetBrainMaskParsing(const QDomElement & element)
+{
+
+  // Brain Mask
+  if( element.tagName() == "entry" )
+    {
+    parseEntryElement_QCResult_ImgInfo( element, treeWidget->invisibleRootItem() );         // Since the process is same
+                                                                                            // as ImageInfo part we call
+                                                                                            // parseEntryElement_QCResult_ImgInfo
+    }
+
+  else
+    {
+    std::cerr << "Error: Inproper xml QCResult file" << std::endl;
+    return;
+    }
+
+}
+
+
+void XmlStreamReader::LoadQCResultFromDominantDirectionParsing()
+{
+  for( unsigned int i = 0; i < parametersQCResult.size(); i++ )
+    {
+    switch( s_mapQCRESULTStringValue[parametersQCResult[i].parameter.toStdString()] )
+      {
+    
+      case DOMINANT_DIRECTION_DETECTOR:
+      {
+    	  if (parametersQCResult[i].value == "Pass")
+    	  {
+    	  	QCRESULT->GetOverallQCResult().DDDCK = true ;
+    	  }
+    	  else if (parametersQCResult[i].value == "Fail")
+    	  {
+    	  	QCRESULT->GetOverallQCResult().DDDCK = false ;
+    	  }
+    	  break;
+      }
+      case DOMINANT_DIRECTION_ENTROPY:
+        {
+        
+          QCRESULT->GetDominantDirection_Detector().entropy_value = parametersQCResult[i].value.toDouble() ;
+          
+        break;
+        }
+      case DOMINANT_DIRECTION_Z_SCORE:
+        {
+        	QCRESULT->GetDominantDirection_Detector().z_score = parametersQCResult[i].value.toDouble() ;
+
+        break;
+        }
+      case DOMINANT_DIRECTION_RESULT:
+        {
+        	if (parametersQCResult[i].value.toStdString() == "Reject")
+        	{
+        		QCRESULT->GetDominantDirection_Detector().detection_result = 2;
+        	}
+        	if (parametersQCResult[i].value.toStdString() == "Suspicious")
+        	{
+        	 	QCRESULT->GetDominantDirection_Detector().detection_result = 1;
+        	}
+        	if (parametersQCResult[i].value.toStdString() == "Accept")
+        	{
+        	 	QCRESULT->GetDominantDirection_Detector().detection_result = 0;
+        	}        	
+        	
+        break;
+        }
+      default:
+        break;
+      }
+    }
+}
+
+void XmlStreamReader::LoadQCResultFromBrainMaskParsing()
+{
+  for( unsigned int i = 0; i < parametersQCResult.size(); i++ )
+    {
+    switch( s_mapQCRESULTStringValue[parametersQCResult[i].parameter.toStdString()] )
+      {
+      case BRAIN_MASK:
+        {
+        	if (parametersQCResult[i].value == "Pass")
+        	{
+        		QCRESULT->GetOverallQCResult().BMCK = true ;
+        	}
+        	else if (parametersQCResult[i].value == "Fail")
+        	{
+        		QCRESULT->GetOverallQCResult().BMCK = false ;
+        	}
+          
         break;
         }
       default:
@@ -1966,8 +2142,91 @@ void XmlStreamReader::parseXMLParametersToProtocol()
            break;
        case DOMINANTDIRECTION_Threshold2:
            protocol->GetDominantDirectional_Detector().Threshold_Suspicion_Unacceptance = paremeters[i].value.toDouble();
-           break;  
-           
+           break; 
+       case DOMINANTDIRECTION_reportFileNameSuffix:
+           protocol->GetDominantDirectional_Detector().reportFileNameSuffix = paremeters[i].value.toStdString();
+           break; 
+       case DOMINANTDIRECTION_reportFileMode:
+           protocol->GetDominantDirectional_Detector().reportFileMode = paremeters[i].value.toInt();
+           break; 
+       case DOMINANTDIRECTION_bQuitOnCheckFailure:
+    	   if( paremeters[i].value.toLower().toStdString() == "yes" )
+    	   {
+    		   protocol->GetDominantDirectional_Detector().bQuitOnCheckFailure = true;
+    	   }
+    	   else
+    	   {
+    		   protocol->GetDominantDirectional_Detector().bQuitOnCheckFailure = false;
+    	   }
+    	   break; 
+    	   
+    	// Brain mask
+       case BRAINMASK_bCheck:
+       {
+          if ( paremeters[i].value.toLower().toStdString() == "yes" )
+          {
+          		protocol->GetBrainMaskProtocol().bMask = true;
+          }
+          else
+          {
+        	  protocol->GetBrainMaskProtocol().bMask = false;
+          }
+          break;   
+       }  
+       case BRAINMASK_SystemPath_FSL:
+       {
+    	  protocol->GetBrainMaskProtocol().BrainMask_SystemPath_FSL = paremeters[i].value.toStdString();
+    	  break;   
+       }
+       case BRAINMASK_SystemPath_Slicer:
+       {
+          protocol->GetBrainMaskProtocol().BrainMask_SystemPath_Slicer = paremeters[i].value.toStdString();
+       	  break;   
+       }
+       case BRAINMASK_SystemPath_convertITK:
+       {
+          protocol->GetBrainMaskProtocol().BrainMask_SystemPath_convertITK = paremeters[i].value.toStdString();
+          break;   
+       }
+       case BRAINMASK_SystemPath_imagemath:
+       {
+          protocol->GetBrainMaskProtocol().BrainMask_SystemPath_imagemath = paremeters[i].value.toStdString();
+          break;   
+       }
+       case BRAINMASK_MaskedImage:
+       {
+       	  protocol->GetBrainMaskProtocol().BrainMask_Image = paremeters[i].value.toStdString();
+       	  break;   
+       }       
+       case BRAINMASK_method:
+       {
+       	  protocol->GetBrainMaskProtocol().BrainMask_Method = paremeters[i].value.toInt();
+       	  break;   
+       }   
+       case BRAINMASK_reportFileNameSuffix:
+       {
+          protocol->GetBrainMaskProtocol().reportFileNameSuffix = paremeters[i].value.toStdString();
+          break;   
+        } 
+       case BRAINMASK_reportFileMode:
+       {
+          protocol->GetBrainMaskProtocol().reportFileMode = paremeters[i].value.toInt();
+          break;   
+       }
+       case BRAINMASK_bQuitOnCheckFailure:
+       {
+    	   if(paremeters[i].value.toLower().toStdString() == "yes" )
+    	   {   
+    		   protocol->GetBrainMaskProtocol().bQuitOnCheckFailure = true;
+    	   }
+    	   else if(paremeters[i].value.toLower().toStdString() == "no" )
+    	   {
+    		   protocol->GetBrainMaskProtocol().bQuitOnCheckFailure = false;
+    	   }
+          break;   
+       }
+              
+       
            
 
         //  DTI
@@ -2011,9 +2270,9 @@ void XmlStreamReader::parseXMLParametersToProtocol()
           protocol->GetDTIProtocol().baselineThreshold
             =  paremeters[i].value.toInt();
           break;
-        case DTI_maskFileName:
-          protocol->GetDTIProtocol().mask =  paremeters[i].value.toStdString();
-          break;
+        //case DTI_maskFileName:
+        //  protocol->GetDTIProtocol().mask =  paremeters[i].value.toStdString();
+        //  break;
         case DTI_tensor:
           protocol->GetDTIProtocol().tensorSuffix
             = paremeters[i].value.toStdString();

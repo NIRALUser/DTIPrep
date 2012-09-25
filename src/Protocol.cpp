@@ -67,7 +67,7 @@ void Protocol::initImageProtocol()
   imageProtocol.bCrop = true;
   imageProtocol.croppedDWIFileNameSuffix = "_CroppedDWI.nhdr";
 
-  imageProtocol.reportFileNameSuffix = "_Report.txt";
+  imageProtocol.reportFileNameSuffix = "_QCReport.txt";
   imageProtocol.reportFileMode = 1; // 0: new   1: append
 
   imageProtocol.bQuitOnCheckSpacingFailure = false;
@@ -81,10 +81,24 @@ void Protocol::initDiffusionProtocol()
 
   diffusionProtocol.diffusionReplacedDWIFileNameSuffix
     = "_DiffusionReplaced.nhdr";
-  diffusionProtocol.reportFileNameSuffix = "_Report.txt";
+  diffusionProtocol.reportFileNameSuffix = "_QCReport.txt";
   diffusionProtocol.reportFileMode = 1; // 0: new   1: append
 
   diffusionProtocol.bQuitOnCheckFailure = false;
+}
+
+void Protocol::initBrainMaskProtocol()
+{
+	brainMaskProtocol.bMask = false;
+	brainMaskProtocol.BrainMask_Method = 0;
+	brainMaskProtocol.BrainMask_SystemPath_FSL = " "; //" /tools/FSL/fsl-4.1.4/fsl/bin/bet2";
+	brainMaskProtocol.BrainMask_SystemPath_Slicer = " ";
+	brainMaskProtocol.BrainMask_SystemPath_convertITK = " ";
+	brainMaskProtocol.BrainMask_SystemPath_imagemath = " ";
+	brainMaskProtocol.BrainMask_Image = " ";
+	brainMaskProtocol.reportFileNameSuffix =  "_QCReport.txt";
+	brainMaskProtocol.reportFileMode = 1; // 0: new   1: append
+	brainMaskProtocol.bQuitOnCheckFailure = false;
 }
 
 void Protocol::initDenoisingLMMSE()
@@ -135,6 +149,9 @@ void Protocol::initDominantDirectional_Detector()
 	dominantDirectional_Detector.Deviation = 0.01;	// standard deviation of entropy value  of artifact-free scans over training step
 	dominantDirectional_Detector.Threshold_Acceptance = 1.64;	// z-score threshold of acceptance	z<1.64 --> acceptable
 	dominantDirectional_Detector.Threshold_Suspicion_Unacceptance = 2.58;	// z-score threshold of suspicious and unacceptance 1.64<z<2.58 --> suspicious and z> 2.58 -->Unacceptable
+	dominantDirectional_Detector.reportFileNameSuffix = "_QCReport.txt";
+	dominantDirectional_Detector.reportFileMode = 1;
+	dominantDirectional_Detector.bQuitOnCheckFailure = false;
 	
 	
 }
@@ -153,7 +170,7 @@ void Protocol::initSliceCheckProtocol()
   sliceCheckProtocol.correlationDeviationThresholdgradient = 3.5;
 
   sliceCheckProtocol.outputDWIFileNameSuffix = "";
-  sliceCheckProtocol.reportFileNameSuffix = "_Report.txt";
+  sliceCheckProtocol.reportFileNameSuffix = "_QCReport.txt";
   sliceCheckProtocol.reportFileMode = 1; // 0: new   1: append
 
   std::string excludedDWINrrdFileNameSuffix = "_SliceWiseExcluded.nrrd";
@@ -172,7 +189,7 @@ void Protocol::initInterlaceCheckProtocol()
   interlaceCheckProtocol.rotationThreshold = 0.5;
 
   interlaceCheckProtocol.outputDWIFileNameSuffix = "";
-  interlaceCheckProtocol.reportFileNameSuffix = "_Report.txt";
+  interlaceCheckProtocol.reportFileNameSuffix = "_QCReport.txt";
   interlaceCheckProtocol.reportFileMode = 1; // 0: new   1: append
 
   std::string excludedDWINrrdFileNameSuffix = "_InterlaceWiseExcluded.nrrd";
@@ -187,7 +204,7 @@ void Protocol::initGradientCheckProtocol()
   gradientCheckProtocol.rotationThreshold = 0.5;
 
   gradientCheckProtocol.outputDWIFileNameSuffix = "";
-  gradientCheckProtocol.reportFileNameSuffix = "_Report.txt";
+  gradientCheckProtocol.reportFileNameSuffix = "_QCReport.txt";
   gradientCheckProtocol.reportFileMode = 1; // 0: new   1: append
 
   std::string excludedDWINrrdFileNameSuffix = "_GradientWiseExcluded.nrrd";
@@ -202,7 +219,7 @@ void Protocol::initBaselineAverageProtocol()
   baselineAverageProtocol.stopThreshold = 0.02;
 
   baselineAverageProtocol.outputDWIFileNameSuffix = "";
-  baselineAverageProtocol.reportFileNameSuffix = "_Report.txt";
+  baselineAverageProtocol.reportFileNameSuffix = "_QCReport.txt";
   baselineAverageProtocol.reportFileMode = 1; // 0: new   1: append
 }
 
@@ -218,9 +235,10 @@ void Protocol::initEddyMotionCorrectionProtocol()
   eddyMotionCorrectionProtocol.relaxFactor    = 0.5; 
 
   eddyMotionCorrectionProtocol.outputDWIFileNameSuffix = "";
-  eddyMotionCorrectionProtocol.reportFileNameSuffix = "_Report.txt";
+  eddyMotionCorrectionProtocol.reportFileNameSuffix = "_QCReport.txt";
   eddyMotionCorrectionProtocol.reportFileMode = 1; // 0: new   1: append
 }
+
 
 void Protocol::initDTIProtocol()
 {
@@ -230,7 +248,7 @@ void Protocol::initDTIProtocol()
 
   dTIProtocol.method = Protocol::METHOD_WLS;
   dTIProtocol.baselineThreshold = 50; // for neoates
-  dTIProtocol.mask = "";
+  //dTIProtocol.mask = "";
 
   dTIProtocol.tensorSuffix = "_tensor.nrrd";
 
@@ -248,7 +266,7 @@ void Protocol::initDTIProtocol()
   dTIProtocol.bfrobeniusnorm = true;
   dTIProtocol.bidwi = true;
 
-  dTIProtocol.reportFileNameSuffix = "_Report.txt";
+  dTIProtocol.reportFileNameSuffix = "_QCReport.txt";
   dTIProtocol.reportFileMode = 1; // 0: new   1: append
 }
 
@@ -1583,6 +1601,41 @@ void Protocol::Save( std::string xml)
   outfile << "            <value>" << denoisingJointLMMSE.Filter_Radius[2] << "</value>" << std::endl;
   outfile << "        </entry>"  << std::endl;  
   outfile << "        </entry>"  << std::endl;  
+  
+  
+  outfile << "    <entry parameter=\"BRAINMASK\">" << std::endl;
+  outfile << "        </entry>"  << std::endl; 
+  
+  outfile << "    <entry parameter=\"DOMINANTDIRECTION_bCheck\">" << std::endl;
+    if(GetDominantDirectional_Detector(). bCheck)
+    {
+  	  outfile << "        <value>Yes</value>" << std::endl;
+    }
+    else
+  	  outfile << "        <value>No</value>" << std::endl;
+    
+  outfile << "    <entry parameter=\"DOMINANTDIRECTION_Mean\">" << std::endl; 
+  outfile << "            <value>" << GetDominantDirectional_Detector().Mean << "</value>" << std::endl;
+  outfile << "        </entry>"  << std::endl;
+  outfile << "    <entry parameter=\"DOMINANTDIRECTION_Deviation\">" << std::endl; 
+  outfile << "            <value>" << GetDominantDirectional_Detector().Deviation << "</value>" << std::endl;
+  outfile << "        </entry>"  << std::endl;
+  outfile << "    <entry parameter=\"DOMINANTDIRECTION_z-Threshold1\">" << std::endl; 
+  outfile << "            <value>" << GetDominantDirectional_Detector().Threshold_Acceptance << "</value>" << std::endl;
+  outfile << "        </entry>"  << std::endl;
+  outfile << "    <entry parameter=\"DOMINANTDIRECTION_z-Threshold2\">" << std::endl; 
+  outfile << "            <value>" << GetDominantDirectional_Detector().Threshold_Suspicion_Unacceptance << "</value>" << std::endl;
+  outfile << "        </entry>"  << std::endl;
+  outfile << "    <entry parameter=\"DOMINANTDIRECTION_reportFileNameSuffix\">" << std::endl; 
+  outfile << "            <value>" << GetDominantDirectional_Detector().reportFileNameSuffix << "</value>" << std::endl;
+  outfile << "        </entry>"  << std::endl;
+  outfile << "    <entry parameter=\"DOMINANTDIRECTION_reportFileMode\">" << std::endl; 
+  outfile << "            <value>" << GetDominantDirectional_Detector().reportFileMode << "</value>" << std::endl;
+  outfile << "        </entry>"  << std::endl;
+  outfile << "    <entry parameter=\"DOMINANTDIRECTION_bQuitOnCheckFailure\">" << std::endl; 
+  outfile << "            <value>" << GetDominantDirectional_Detector().bQuitOnCheckFailure << "</value>" << std::endl;
+  outfile << "        </entry>"  << std::endl;
+  outfile << "        </entry>"  << std::endl;
   
   
   outfile << "    <entry parameter=\"DTI_bCompute\">" << std::endl;

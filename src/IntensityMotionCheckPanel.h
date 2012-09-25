@@ -52,6 +52,8 @@ signals:
   void SignalActivateSphere();
 
   void SignalLoadQCedDWI( QString qcdwiname);
+  
+  void Set_init_Path_Signal();
 
 private slots:
   // void on_comboBox_Protocol_currentIndexChanged(QString protocolName);
@@ -66,7 +68,7 @@ private slots:
   void on_treeWidget_DiffusionInformation_currentItemChanged(QTreeWidgetItem *current, QTreeWidgetItem *previous);
 
   void on_treeWidget_Results_itemDoubleClicked(QTreeWidgetItem *item, int column);
-
+  
   void on_treeWidget_Results_currentItemChanged( QTreeWidgetItem *current, QTreeWidgetItem *previous);
 
   void on_treeWidget_Results_itemChanged(QTreeWidgetItem *item, int column);
@@ -85,9 +87,23 @@ private slots:
 
   void on_pushButton_RunPipeline_clicked();
 
+  void on_pushButton_Pathdefault_clicked();
+  
   // void on_pushButton_SaveDWIAs_clicked( );
 
   void on_pushButton_DefaultQCResult_clicked();
+  
+  void on_pushButton_FSL_clicked();
+  
+  void on_pushButton_Slicer_clicked();
+  
+  void on_pushButton_dtiestim_clicked();
+  
+  void on_pushButton_dtiprocess_clicked();
+  
+  void on_pushButton_convertitk_clicked();
+  
+  void on_pushButton_imagemath_clicked();
 
   void ResultUpdate();
 
@@ -98,6 +114,7 @@ private slots:
   void SavingTreeWidgetResult_XmlFile_Default();
 
   void on_pushButton_SaveVisualChecking_clicked();
+  
 
 public slots:
 
@@ -123,6 +140,8 @@ public slots:
   void Set_Original_ForcedConformance_Mapping();
 
   void Set_QCedDWI();
+  
+  void Set_init_Path();
 
 public:
 
@@ -177,6 +196,11 @@ public:
   QTreeWidget * & GetQTreeWidgetResult()
   {
     return treeWidget_Results;
+  }
+  
+  QTreeWidget * & GetTreeWidgetProtocol()
+  {
+	return   treeWidget;
   }
 
   void SaveVisualCheckingResult();
@@ -260,6 +284,9 @@ public:
     t_Original_ForcedConformance_Mapping = m_t;
   }
 
+  
+
+  
 private:
 
   bool     bProtocol;
