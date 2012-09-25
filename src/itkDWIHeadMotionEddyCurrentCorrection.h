@@ -217,6 +217,7 @@ protected:
     CommandIterationUpdate()
     {
     }
+
 public:
     typedef itk::GradientSteepestDescentOptimizer OptimizerType;
     typedef   const OptimizerType *               OptimizerPointer;

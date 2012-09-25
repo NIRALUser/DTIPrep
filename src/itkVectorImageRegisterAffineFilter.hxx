@@ -52,8 +52,6 @@ void VectorImageRegisterAffineFilter<TInputImage, TOutputImage>
 ::GenerateData()
 {
 
-
- 
   itkDebugMacro("VectorImageRegisterAffineFilter::GenerateData()");
 
   // Create a process accumulator for tracking the progress of this minipipeline

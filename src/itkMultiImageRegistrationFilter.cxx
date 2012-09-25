@@ -168,7 +168,6 @@ MultiImageRegistrationFilter
   ParametersType initialAffineParameters( m_AffineTransformArray[0]->GetNumberOfParameters() * m_NumberOfImages );
   initialAffineParameters.Fill(0.0);
   m_Registration->SetInitialTransformParameters( initialAffineParameters );
-
   // int numberOfParameters = affineTransformArray[0]->GetNumberOfParameters();
   for( unsigned int i = 0; i < m_NumberOfImages; i++ )
     {
@@ -212,6 +211,7 @@ MultiImageRegistrationFilter
 {
   ParametersType affineParameters = m_Registration->GetLastTransformParameters();
   ParametersType affineCurrentParameters(m_AffineTransformArray[0]->GetNumberOfParameters() );
+
   // Update the affine transform parameters
   for( unsigned int i = 0; i < m_NumberOfImages; i++ )
     {

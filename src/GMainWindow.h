@@ -300,9 +300,9 @@ public:
   vtkImagePlaneWidget *planeWidgetZ;
 
   // for 3D view
-  vtkRenderer *pvtkRenderer_3DView;
+  vtkRenderer *    pvtkRenderer_3DView;
   vtkSphereSource *SphereSource;
-  double min_length_vec;
+  double           min_length_vec;
 public:
   bool CreateImagePlaneWidgets( vtkImageData *GradientImage );
 

@@ -62,6 +62,7 @@ MultiImageMetric<TImage>
 
   int            numParam = this->m_TransformArray[0]->GetNumberOfParameters();
   ParametersType currentParam(numParam);
+
   for( int i = 0; i < this->m_NumberOfImages; i++ )
     {
     if( !m_TransformArray[i] )

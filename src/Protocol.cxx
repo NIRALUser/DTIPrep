@@ -89,16 +89,16 @@ void Protocol::initDiffusionProtocol()
 
 void Protocol::initBrainMaskProtocol()
 {
-	brainMaskProtocol.bMask = false;
-	brainMaskProtocol.BrainMask_Method = 0;
-	brainMaskProtocol.BrainMask_SystemPath_FSL = ""; //" /tools/FSL/fsl-4.1.4/fsl/bin/bet2";
-	brainMaskProtocol.BrainMask_SystemPath_Slicer = "";
-	brainMaskProtocol.BrainMask_SystemPath_convertITK = "";
-	brainMaskProtocol.BrainMask_SystemPath_imagemath = "";
-	brainMaskProtocol.BrainMask_Image = "";
-	brainMaskProtocol.reportFileNameSuffix =  "_QCReport.txt";
-	brainMaskProtocol.reportFileMode = 1; // 0: new   1: append
-	brainMaskProtocol.bQuitOnCheckFailure = false;
+  brainMaskProtocol.bMask = false;
+  brainMaskProtocol.BrainMask_Method = 0;
+  brainMaskProtocol.BrainMask_SystemPath_FSL = ""; // " /tools/FSL/fsl-4.1.4/fsl/bin/bet2";
+  brainMaskProtocol.BrainMask_SystemPath_Slicer = "";
+  brainMaskProtocol.BrainMask_SystemPath_convertITK = "";
+  brainMaskProtocol.BrainMask_SystemPath_imagemath = "";
+  brainMaskProtocol.BrainMask_Image = "";
+  brainMaskProtocol.reportFileNameSuffix =  "_QCReport.txt";
+  brainMaskProtocol.reportFileMode = 1; // 0: new   1: append
+  brainMaskProtocol.bQuitOnCheckFailure = false;
 }
 
 void Protocol::initDenoisingLMMSE()
@@ -144,16 +144,20 @@ void Protocol::initDenoisingJointLMMSE()
 
 void Protocol::initDominantDirectional_Detector()
 {
-	dominantDirectional_Detector.bCheck = false;
-	dominantDirectional_Detector.Mean = 6.5;	// average of entropy value of artifact-free scans over training step
-	dominantDirectional_Detector.Deviation = 0.01;	// standard deviation of entropy value  of artifact-free scans over training step
-	dominantDirectional_Detector.Threshold_Acceptance = 1.64;	// z-score threshold of acceptance	z<1.64 --> acceptable
-	dominantDirectional_Detector.Threshold_Suspicion_Unacceptance = 2.58;	// z-score threshold of suspicious and unacceptance 1.64<z<2.58 --> suspicious and z> 2.58 -->Unacceptable
-	dominantDirectional_Detector.reportFileNameSuffix = "_QCReport.txt";
-	dominantDirectional_Detector.reportFileMode = 1;
-	dominantDirectional_Detector.bQuitOnCheckFailure = false;
-	
-	
+  dominantDirectional_Detector.bCheck = false;
+  dominantDirectional_Detector.Mean = 6.5;                              // average of entropy value of artifact-free
+                                                                        // scans over training step
+  dominantDirectional_Detector.Deviation = 0.01;                        // standard deviation of entropy value  of
+                                                                        // artifact-free scans over training step
+  dominantDirectional_Detector.Threshold_Acceptance = 1.64;             // z-score threshold of acceptance	z<1.64 -->
+                                                                        // acceptable
+  dominantDirectional_Detector.Threshold_Suspicion_Unacceptance = 2.58; // z-score threshold of suspicious and
+                                                                        // unacceptance 1.64<z<2.58 --> suspicious and
+                                                                        // z> 2.58 -->Unacceptable
+  dominantDirectional_Detector.reportFileNameSuffix = "_QCReport.txt";
+  dominantDirectional_Detector.reportFileMode = 1;
+  dominantDirectional_Detector.bQuitOnCheckFailure = false;
+
 }
 
 void Protocol::initSliceCheckProtocol()
@@ -232,13 +236,12 @@ void Protocol::initEddyMotionCorrectionProtocol()
   eddyMotionCorrectionProtocol.translationScale  = 1000.0;
   eddyMotionCorrectionProtocol.maxStepLength      = 0.2;
   eddyMotionCorrectionProtocol.minStepLength      = 0.0001;
-  eddyMotionCorrectionProtocol.relaxFactor    = 0.5; 
+  eddyMotionCorrectionProtocol.relaxFactor    = 0.5;
 
   eddyMotionCorrectionProtocol.outputDWIFileNameSuffix = "";
   eddyMotionCorrectionProtocol.reportFileNameSuffix = "_QCReport.txt";
   eddyMotionCorrectionProtocol.reportFileMode = 1; // 0: new   1: append
 }
-
 
 void Protocol::initDTIProtocol()
 {
@@ -248,7 +251,7 @@ void Protocol::initDTIProtocol()
 
   dTIProtocol.method = Protocol::METHOD_WLS;
   dTIProtocol.baselineThreshold = 50; // for neoates
-  //dTIProtocol.mask = "";
+  // dTIProtocol.mask = "";
 
   dTIProtocol.tensorSuffix = "_tensor.nrrd";
 
@@ -804,12 +807,12 @@ void Protocol::printEddyMotionCorrectionProtocol()
   std::cout << "\tmaxStepLength: "
             << GetEddyMotionCorrectionProtocol().maxStepLength << std::endl;
   std::cout << "\tminStepLength: "
-              << GetEddyMotionCorrectionProtocol().minStepLength << std::endl;
+            << GetEddyMotionCorrectionProtocol().minStepLength << std::endl;
   std::cout << "\trelaxFactor: "
             << GetEddyMotionCorrectionProtocol().relaxFactor << std::endl;
-  //std::cout << "\tmaxNumberOfIterations: "
-            //<< GetEddyMotionCorrectionProtocol().maxNumberOfIterations
-            //<< std::endl;
+  // std::cout << "\tmaxNumberOfIterations: "
+  // << GetEddyMotionCorrectionProtocol().maxNumberOfIterations
+  // << std::endl;
 
   std::cout << "\toutputDWIFileNameSuffix: "
             <<  GetEddyMotionCorrectionProtocol().outputDWIFileNameSuffix
@@ -872,7 +875,7 @@ void Protocol::printDTIProtocol()
 
   std::cout << "\tbaselineThreshold: " << GetDTIProtocol().baselineThreshold
             << std::endl;
-  //std::cout << "\tmask: " << GetDTIProtocol().mask << std::endl;
+  // std::cout << "\tmask: " << GetDTIProtocol().mask << std::endl;
 
   if( GetDTIProtocol().bfa )
     {
@@ -1120,7 +1123,7 @@ void Protocol::Save( std::string xml)
   outfile << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" << std::endl;
   outfile << "<ProtocolSettings>" << std::endl;
   outfile << "    <entry parameter=\"QC_QCOutputDirectory\">" << std::endl;
-  outfile << "	  	  <value>" << GetQCOutputDirectory() << "</value>" << std::endl;
+  outfile << "	      <value>"<< GetQCOutputDirectory() << "</value>" << std::endl;
   outfile << "    </entry>" << std::endl;
   outfile << "    <entry parameter=\"QC_QCedDWIFileNameSuffix\">" << std::endl;
   outfile << "        <value>" << GetQCedDWIFileNameSuffix() << "</value>" << std::endl;
@@ -1294,41 +1297,47 @@ void Protocol::Save( std::string xml)
     }
 
   outfile << "        <entry parameter=\"DIFFUSION_bUseDiffusionProtocol\">" << std::endl;
-  if (GetDiffusionProtocol(). bUseDiffusionProtocol)
-  {
-	  outfile << "            <value>Yes</value>" << std::endl;
-  }
+  if( GetDiffusionProtocol().bUseDiffusionProtocol )
+    {
+    outfile << "            <value>Yes</value>" << std::endl;
+    }
   else
-	  outfile << "            <value>No</value>" << std::endl;
+    {
+    outfile << "            <value>No</value>" << std::endl;
+    }
   outfile << "        </entry>" << std::endl;
   outfile << "        <entry parameter=\"DIFFUSION_diffusionReplacedDWIFileNameSuffix\">" << std::endl;
-  outfile << "            <value>" << GetDiffusionProtocol().diffusionReplacedDWIFileNameSuffix << "</value>" << std::endl;
+  outfile << "            <value>" << GetDiffusionProtocol().diffusionReplacedDWIFileNameSuffix << "</value>"
+          << std::endl;
   outfile << "        </entry>" << std::endl;
   outfile << "        <entry parameter=\"DIFFUSION_reportFileNameSuffix\">" << std::endl;
-  outfile << "            <value>" << GetDiffusionProtocol(). reportFileNameSuffix << "</value>" << std::endl;
+  outfile << "            <value>" << GetDiffusionProtocol().reportFileNameSuffix << "</value>" << std::endl;
   outfile << "        </entry>" << std::endl;
   outfile << "        <entry parameter=\"DIFFUSION_reportFileMode\">" << std::endl;
-  outfile << "            <value>" << GetDiffusionProtocol(). reportFileMode << "</value>" << std::endl;
+  outfile << "            <value>" << GetDiffusionProtocol().reportFileMode << "</value>" << std::endl;
   outfile << "        </entry>" << std::endl;
   outfile << "        <entry parameter=\"DIFFUSION_bQuitOnCheckFailure\">" << std::endl;
-  if(GetDiffusionProtocol(). bQuitOnCheckFailure)
-  {
-	  outfile << "            <value>Yes</value>" << std::endl;
-  }
+  if( GetDiffusionProtocol().bQuitOnCheckFailure )
+    {
+    outfile << "            <value>Yes</value>" << std::endl;
+    }
   else
-	  outfile << "            <value>No</value>" << std::endl;
-  
+    {
+    outfile << "            <value>No</value>" << std::endl;
+    }
+
   outfile << "        </entry>" << std::endl;
   outfile << "    </entry>" << std::endl;
-  
-  
+
   outfile << "        <entry parameter=\"DENOISING_bCheck\">" << std::endl;
-  if ( denoisingLMMSE.bCheck)
-  {
-	  outfile << "            <value>Yes</value>" << std::endl;
-  }
+  if( denoisingLMMSE.bCheck )
+    {
+    outfile << "            <value>Yes</value>" << std::endl;
+    }
   else
-	  outfile << "            <value>No</value>" << std::endl;
+    {
+    outfile << "            <value>No</value>" << std::endl;
+    }
   outfile << "        <entry parameter=\"DENOISING_Path\">" << std::endl;
   outfile << "            <value>" << denoisingLMMSE.LMMSECommand << "</value>" << std::endl;
   outfile << "    </entry>" << std::endl;
@@ -1364,92 +1373,107 @@ void Protocol::Save( std::string xml)
   outfile << "            <value>" << denoisingLMMSE.HistogramResolution << "</value>" << std::endl;
   outfile << "    </entry>" << std::endl;
   outfile << "        <entry parameter=\"DENOISING_AbsoluteValue\">" << std::endl;
-  if (denoisingLMMSE.AbsoluteValue)
-  {
-	  outfile << "            <value>Yes</value>" << std::endl;
-  }
+  if( denoisingLMMSE.AbsoluteValue )
+    {
+    outfile << "            <value>Yes</value>" << std::endl;
+    }
   else
-	  outfile << "            <value>No</value>" << std::endl;
+    {
+    outfile << "            <value>No</value>" << std::endl;
+    }
   outfile << "    </entry>" << std::endl;
   outfile << "    </entry>" << std::endl;
-  
- 
+
   outfile << "    <entry parameter=\"SLICE_bCheck\">" << std::endl;
-  if (GetSliceCheckProtocol(). bCheck)
-  {
-	  outfile << "        <value>Yes</value>" << std::endl;
-  }
+  if( GetSliceCheckProtocol().bCheck )
+    {
+    outfile << "        <value>Yes</value>" << std::endl;
+    }
   else
-	  outfile << "        <value>No</value>" << std::endl;
-  
+    {
+    outfile << "        <value>No</value>" << std::endl;
+    }
+
   outfile << "        <entry parameter=\"SLICE_bSubregionalCheck\">" << std::endl;
-  if (GetSliceCheckProtocol(). bSubregionalCheck)
-  {
-	  outfile << "            <value>Yes</value>" << std::endl;
-  }
+  if( GetSliceCheckProtocol().bSubregionalCheck )
+    {
+    outfile << "            <value>Yes</value>" << std::endl;
+    }
   else
-	  outfile << "            <value>No</value>" << std::endl;
-  
+    {
+    outfile << "            <value>No</value>" << std::endl;
+    }
+
   outfile << "        </entry>" << std::endl;
   outfile << "        <entry parameter=\"SLICE_subregionalCheckRelaxationFactor\">" << std::endl;
-  outfile << "            <value>" << GetSliceCheckProtocol(). subregionalCheckRelaxationFactor << "</value>" << std::endl;
+  outfile << "            <value>" << GetSliceCheckProtocol().subregionalCheckRelaxationFactor << "</value>"
+          << std::endl;
   outfile << "        </entry>" << std::endl;
   outfile << "        <entry parameter=\"SLICE_checkTimes\">" << std::endl;
-  outfile << "            <value>" << GetSliceCheckProtocol(). checkTimes << "</value>" << std::endl;
+  outfile << "            <value>" << GetSliceCheckProtocol().checkTimes << "</value>" << std::endl;
   outfile << "        </entry>" << std::endl;
   outfile << "        <entry parameter=\"SLICE_headSkipSlicePercentage\">" << std::endl;
-  outfile << "            <value>" << GetSliceCheckProtocol(). headSkipSlicePercentage << "</value>" << std::endl;
+  outfile << "            <value>" << GetSliceCheckProtocol().headSkipSlicePercentage << "</value>" << std::endl;
   outfile << "        </entry>" << std::endl;
   outfile << "        <entry parameter=\"SLICE_tailSkipSlicePercentage\">" << std::endl;
-  outfile << "            <value>"<< GetSliceCheckProtocol(). tailSkipSlicePercentage << "</value>" << std::endl;
+  outfile << "            <value>" << GetSliceCheckProtocol().tailSkipSlicePercentage << "</value>" << std::endl;
   outfile << "        </entry>" << std::endl;
   outfile << "        <entry parameter=\"SLICE_correlationDeviationThresholdbaseline\">" << std::endl;
-  outfile << "            <value>"<< GetSliceCheckProtocol().correlationDeviationThresholdbaseline << "</value>" << std::endl;
+  outfile << "            <value>" << GetSliceCheckProtocol().correlationDeviationThresholdbaseline << "</value>"
+          << std::endl;
   outfile << "        </entry>" << std::endl;
   outfile << "        <entry parameter=\"SLICE_correlationDeviationThresholdgradient\">" << std::endl;
-  outfile << "            <value>" << GetSliceCheckProtocol().correlationDeviationThresholdgradient << "</value>" << std::endl;
+  outfile << "            <value>" << GetSliceCheckProtocol().correlationDeviationThresholdgradient << "</value>"
+          << std::endl;
   outfile << "        </entry>" << std::endl;
   outfile << "        <entry parameter=\"SLICE_outputDWIFileNameSuffix\">" << std::endl;
-  outfile << "            <value>" << GetSliceCheckProtocol(). outputDWIFileNameSuffix << "</value>" << std::endl;
+  outfile << "            <value>" << GetSliceCheckProtocol().outputDWIFileNameSuffix << "</value>" << std::endl;
   outfile << "        </entry>" << std::endl;
   outfile << "        <entry parameter=\"SLICE_reportFileNameSuffix\">" << std::endl;
-  outfile << "            <value>" << GetSliceCheckProtocol(). reportFileNameSuffix << "</value>" << std::endl;
+  outfile << "            <value>" << GetSliceCheckProtocol().reportFileNameSuffix << "</value>" << std::endl;
   outfile << "        </entry>" << std::endl;
   outfile << "        <entry parameter=\"SLICE_reportFileMode\">" << std::endl;
-  outfile << "            <value>" << GetSliceCheckProtocol(). reportFileMode << "</value>" << std::endl;
+  outfile << "            <value>" << GetSliceCheckProtocol().reportFileMode << "</value>" << std::endl;
   outfile << "        </entry>" << std::endl;
   outfile << "        <entry parameter=\"SLICE_excludedDWINrrdFileNameSuffix\">" << std::endl;
-  outfile << "            <value>" << GetSliceCheckProtocol(). excludedDWINrrdFileNameSuffix << "</value>" << std::endl;
+  outfile << "            <value>" << GetSliceCheckProtocol().excludedDWINrrdFileNameSuffix << "</value>" << std::endl;
   outfile << "        </entry>" << std::endl;
   outfile << "        <entry parameter=\"SLICE_bQuitOnCheckFailure\">" << std::endl;
-  if (GetSliceCheckProtocol(). bQuitOnCheckFailure)
-  {
-	  outfile << "            <value>Yes</value>" << std::endl;
-  }
+  if( GetSliceCheckProtocol().bQuitOnCheckFailure )
+    {
+    outfile << "            <value>Yes</value>" << std::endl;
+    }
   else
-	  outfile << "            <value>No</value>" << std::endl;
+    {
+    outfile << "            <value>No</value>" << std::endl;
+    }
   outfile << "        </entry>" << std::endl;
   outfile << "    </entry>" << std::endl;
-  
-  
+
   outfile << "    <entry parameter=\"INTERLACE_bCheck\">" << std::endl;
-  if (GetInterlaceCheckProtocol().bCheck)
-  {
-	  outfile << "        <value>Yes</value>" << std::endl;
-  }
+  if( GetInterlaceCheckProtocol().bCheck )
+    {
+    outfile << "        <value>Yes</value>" << std::endl;
+    }
   else
-	  outfile << "        <value>No</value>" << std::endl;
+    {
+    outfile << "        <value>No</value>" << std::endl;
+    }
   outfile << "        <entry parameter=\"INTERLACE_correlationThresholdBaseline\">" << std::endl;
-  outfile << "            <value>" << GetInterlaceCheckProtocol().correlationThresholdBaseline << "</value>" << std::endl;
+  outfile << "            <value>" << GetInterlaceCheckProtocol().correlationThresholdBaseline << "</value>"
+          << std::endl;
   outfile << "        </entry>" << std::endl;
   outfile << "        <entry parameter=\"INTERLACE_correlationThresholdGradient\">" << std::endl;
-  outfile << "            <value>" << GetInterlaceCheckProtocol().correlationThresholdGradient << "</value>" << std::endl;
+  outfile << "            <value>" << GetInterlaceCheckProtocol().correlationThresholdGradient << "</value>"
+          << std::endl;
   outfile << "        </entry>" << std::endl;
   outfile << "        <entry parameter=\"INTERLACE_correlationDeviationBaseline\">" << std::endl;
-  outfile << "            <value>" << GetInterlaceCheckProtocol().correlationDeviationBaseline << "</value>" << std::endl;
+  outfile << "            <value>" << GetInterlaceCheckProtocol().correlationDeviationBaseline << "</value>"
+          << std::endl;
   outfile << "        </entry>" << std::endl;
   outfile << "        <entry parameter=\"INTERLACE_correlationDeviationGradient\">" << std::endl;
-  outfile << "            <value>" << GetInterlaceCheckProtocol().correlationDeviationGradient << "</value>" << std::endl;
+  outfile << "            <value>" << GetInterlaceCheckProtocol().correlationDeviationGradient << "</value>"
+          << std::endl;
   outfile << "        </entry>" << std::endl;
   outfile << "        <entry parameter=\"INTERLACE_translationThreshold\">" << std::endl;
   outfile << "            <value>" << GetInterlaceCheckProtocol().translationThreshold << "</value>" << std::endl;
@@ -1467,120 +1491,136 @@ void Protocol::Save( std::string xml)
   outfile << "            <value>" << GetInterlaceCheckProtocol().reportFileMode << "</value>" << std::endl;
   outfile << "        </entry>" << std::endl;
   outfile << "        <entry parameter=\"INTERLACE_excludedDWINrrdFileNameSuffix\">" << std::endl;
-  outfile << "            <value>" << GetInterlaceCheckProtocol().excludedDWINrrdFileNameSuffix << "</value>" << std::endl;
+  outfile << "            <value>" << GetInterlaceCheckProtocol().excludedDWINrrdFileNameSuffix << "</value>"
+          << std::endl;
   outfile << "        </entry>" << std::endl;
   outfile << "        <entry parameter=\"INTERLACE_bQuitOnCheckFailure\">" << std::endl;
-  if (GetInterlaceCheckProtocol().bQuitOnCheckFailure)
-  {
-	  outfile << "            <value>Yes</value>" << std::endl;
-  }
+  if( GetInterlaceCheckProtocol().bQuitOnCheckFailure )
+    {
+    outfile << "            <value>Yes</value>" << std::endl;
+    }
   else
-	  outfile << "            <value>No</value>" << std::endl;
+    {
+    outfile << "            <value>No</value>" << std::endl;
+    }
   outfile << "        </entry>" << std::endl;
   outfile << "    </entry>" << std::endl;
   outfile << "    <entry parameter=\"BASELINE_bAverage\">" << std::endl;
-  if (GetBaselineAverageProtocol(). bAverage)
-  {
-	  outfile << "        <value>Yes</value>" << std::endl;
-  }
+  if( GetBaselineAverageProtocol().bAverage )
+    {
+    outfile << "        <value>Yes</value>" << std::endl;
+    }
   else
-	  outfile << "        <value>No</value>" << std::endl;
+    {
+    outfile << "        <value>No</value>" << std::endl;
+    }
   outfile << "        <entry parameter=\"BASELINE_averageMethod\">" << std::endl;
-  outfile << "            <value>" << GetBaselineAverageProtocol(). averageMethod << "</value>" << std::endl;
+  outfile << "            <value>" << GetBaselineAverageProtocol().averageMethod << "</value>" << std::endl;
   outfile << "        </entry>" << std::endl;
   outfile << "        <entry parameter=\"BASELINE_stopThreshold\">" << std::endl;
-  outfile << "            <value>" << GetBaselineAverageProtocol(). stopThreshold << "</value>" << std::endl;
+  outfile << "            <value>" << GetBaselineAverageProtocol().stopThreshold << "</value>" << std::endl;
   outfile << "        </entry>" << std::endl;
   outfile << "        <entry parameter=\"BASELINE_outputDWIFileNameSuffix\">" << std::endl;
-  outfile << "            <value>" << GetBaselineAverageProtocol(). outputDWIFileNameSuffix << "</value>" << std::endl;
+  outfile << "            <value>" << GetBaselineAverageProtocol().outputDWIFileNameSuffix << "</value>" << std::endl;
   outfile << "        </entry>" << std::endl;
   outfile << "        <entry parameter=\"BASELINE_reportFileNameSuffix\">" << std::endl;
-  outfile << "            <value>" << GetBaselineAverageProtocol(). reportFileNameSuffix << "</value>" << std::endl;
+  outfile << "            <value>" << GetBaselineAverageProtocol().reportFileNameSuffix << "</value>" << std::endl;
   outfile << "        </entry>" << std::endl;
   outfile << "       <entry parameter=\"BASELINE_reportFileMode\">" << std::endl;
   outfile << "            <value>" << GetBaselineAverageProtocol().reportFileMode << "</value>" << std::endl;
   outfile << "        </entry>" << std::endl;
   outfile << "    </entry>" << std::endl;
   outfile << "    <entry parameter=\"EDDYMOTION_bCorrect\">" << std::endl;
-  if(GetEddyMotionCorrectionProtocol(). bCorrect)
-  {
-	  outfile << "        <value>Yes</value>" << std::endl;
-  }
+  if( GetEddyMotionCorrectionProtocol().bCorrect )
+    {
+    outfile << "        <value>Yes</value>" << std::endl;
+    }
   else
-	  outfile << "        <value>No</value>" << std::endl;
+    {
+    outfile << "        <value>No</value>" << std::endl;
+    }
   outfile << "        <entry parameter=\"EDDYMOTION_numberOfIterations\">" << std::endl;
-  outfile << "            <value>" << GetEddyMotionCorrectionProtocol(). numberOfIterations << "</value>" << std::endl;
+  outfile << "            <value>" << GetEddyMotionCorrectionProtocol().numberOfIterations << "</value>" << std::endl;
   outfile << "        </entry>" << std::endl;
   outfile << "        <entry parameter=\"EDDYMOTION_numberOfSamples\">" << std::endl;
-  outfile << "            <value>" << GetEddyMotionCorrectionProtocol(). numberOfSamples << "</value>" << std::endl;
+  outfile << "            <value>" << GetEddyMotionCorrectionProtocol().numberOfSamples << "</value>" << std::endl;
   outfile << "        </entry>" << std::endl;
   outfile << "        <entry parameter=\"EDDYMOTION_translationScale\">" << std::endl;
-  outfile << "            <value>" << GetEddyMotionCorrectionProtocol(). translationScale << "</value>" << std::endl;
+  outfile << "            <value>" << GetEddyMotionCorrectionProtocol().translationScale << "</value>" << std::endl;
   outfile << "        </entry>" << std::endl;
   outfile << "        <entry parameter=\"EDDYMOTION_maxStepLength\">" << std::endl;
-  outfile << "            <value>" << GetEddyMotionCorrectionProtocol(). maxStepLength << "</value>" << std::endl;
+  outfile << "            <value>" << GetEddyMotionCorrectionProtocol().maxStepLength << "</value>" << std::endl;
   outfile << "        </entry>" << std::endl;
   outfile << "        <entry parameter=\"EDDYMOTION_minStepLength\">" << std::endl;
-    outfile << "            <value>" << GetEddyMotionCorrectionProtocol(). minStepLength << "</value>" << std::endl;
-    outfile << "        </entry>" << std::endl;
-  outfile << "        <entry parameter=\"EDDYMOTION_relaxFactor\">" << std::endl;
-  outfile << "            <value>" << GetEddyMotionCorrectionProtocol(). relaxFactor << "</value>" << std::endl;
+  outfile << "            <value>" << GetEddyMotionCorrectionProtocol().minStepLength << "</value>" << std::endl;
   outfile << "        </entry>" << std::endl;
-  //outfile << "        <entry parameter=\"EDDYMOTION_maxNumberOfIterations\">" << std::endl;
-  //outfile << "            <value>" << GetEddyMotionCorrectionProtocol(). maxNumberOfIterations << "</value>" << std::endl;
-  //outfile << "        </entry>" << std::endl;
+  outfile << "        <entry parameter=\"EDDYMOTION_relaxFactor\">" << std::endl;
+  outfile << "            <value>" << GetEddyMotionCorrectionProtocol().relaxFactor << "</value>" << std::endl;
+  outfile << "        </entry>" << std::endl;
+  // outfile << "        <entry parameter=\"EDDYMOTION_maxNumberOfIterations\">" << std::endl;
+  // outfile << "            <value>" << GetEddyMotionCorrectionProtocol(). maxNumberOfIterations << "</value>" <<
+  // std::endl;
+  // outfile << "        </entry>" << std::endl;
   outfile << "        <entry parameter=\"EDDYMOTION_outputDWIFileNameSuffix\">" << std::endl;
-  outfile << "            <value>" << GetEddyMotionCorrectionProtocol(). outputDWIFileNameSuffix << "</value>" << std::endl;
+  outfile << "            <value>" << GetEddyMotionCorrectionProtocol().outputDWIFileNameSuffix << "</value>"
+          << std::endl;
   outfile << "        </entry>" << std::endl;
   outfile << "        <entry parameter=\"EDDYMOTION_reportFileNameSuffix\">" << std::endl;
-  outfile << "            <value>" << GetEddyMotionCorrectionProtocol(). reportFileNameSuffix << "</value>" << std::endl;
+  outfile << "            <value>" << GetEddyMotionCorrectionProtocol().reportFileNameSuffix << "</value>" << std::endl;
   outfile << "        </entry>" << std::endl;
   outfile << "        <entry parameter=\"EDDYMOTION_reportFileMode\">" << std::endl;
-  outfile << "            <value>" << GetEddyMotionCorrectionProtocol(). reportFileMode << "</value>" << std::endl;
+  outfile << "            <value>" << GetEddyMotionCorrectionProtocol().reportFileMode << "</value>" << std::endl;
   outfile << "        </entry>" << std::endl;
   outfile << "    </entry>" << std::endl;
   outfile << "    <entry parameter=\"GRADIENT_bCheck\">" << std::endl;
-  if(GetGradientCheckProtocol(). bCheck)
-  {
-	  outfile << "        <value>Yes</value>" << std::endl;
-  }
+  if( GetGradientCheckProtocol().bCheck )
+    {
+    outfile << "        <value>Yes</value>" << std::endl;
+    }
   else
-	  outfile << "        <value>No</value>" << std::endl;
+    {
+    outfile << "        <value>No</value>" << std::endl;
+    }
   outfile << "        <entry parameter=\"GRADIENT_translationThrehshold\">" << std::endl;
-  outfile << "            <value>" << GetGradientCheckProtocol(). translationThreshold << "</value>" << std::endl;
+  outfile << "            <value>" << GetGradientCheckProtocol().translationThreshold << "</value>" << std::endl;
   outfile << "        </entry>" << std::endl;
   outfile << "        <entry parameter=\"GRADIENT_rotationThreshold\">" << std::endl;
-  outfile << "            <value>" << GetGradientCheckProtocol(). rotationThreshold << "</value>" << std::endl;
+  outfile << "            <value>" << GetGradientCheckProtocol().rotationThreshold << "</value>" << std::endl;
   outfile << "        </entry>" << std::endl;
   outfile << "        <entry parameter=\"GRADIENT_outputDWIFileNameSuffix\">" << std::endl;
-  outfile << "            <value>" << GetGradientCheckProtocol(). outputDWIFileNameSuffix << "</value>" << std::endl;
+  outfile << "            <value>" << GetGradientCheckProtocol().outputDWIFileNameSuffix << "</value>" << std::endl;
   outfile << "        </entry>" << std::endl;
   outfile << "        <entry parameter=\"GRADIENT_reportFileNameSuffix\">" << std::endl;
-  outfile << "            <value>" << GetGradientCheckProtocol(). reportFileNameSuffix << "</value>"  << std::endl;
+  outfile << "            <value>" << GetGradientCheckProtocol().reportFileNameSuffix << "</value>"  << std::endl;
   outfile << "        </entry>"  << std::endl;
   outfile << "        <entry parameter=\"GRADIENT_reportFileMode\">" << std::endl;
-  outfile << "            <value>" << GetGradientCheckProtocol(). reportFileMode << "</value>" << std::endl;
+  outfile << "            <value>" << GetGradientCheckProtocol().reportFileMode << "</value>" << std::endl;
   outfile << "        </entry>"  << std::endl;
   outfile << "        <entry parameter=\"GRADIENT_excludedDWINrrdFileNameSuffix\">" << std::endl;
-  outfile << "            <value>" << GetGradientCheckProtocol(). excludedDWINrrdFileNameSuffix << "</value>"  << std::endl;
+  outfile << "            <value>" << GetGradientCheckProtocol().excludedDWINrrdFileNameSuffix << "</value>"
+          << std::endl;
   outfile << "        </entry>"  << std::endl;
   outfile << "        <entry parameter=\"GRADIENT_bQuitOnCheckFailure\">" << std::endl;
-  if(GetGradientCheckProtocol(). bQuitOnCheckFailure)
-  {
-	  outfile << "            <value>Yes</value>" << std::endl;
-  }
+  if( GetGradientCheckProtocol().bQuitOnCheckFailure )
+    {
+    outfile << "            <value>Yes</value>" << std::endl;
+    }
   else
-	  outfile << "            <value>No</value>" << std::endl;
+    {
+    outfile << "            <value>No</value>" << std::endl;
+    }
   outfile << "        </entry>" << std::endl;
   outfile << "    </entry>" << std::endl;
-  
+
   outfile << "    <entry parameter=\"JOINDENOISING_bCheck\">" << std::endl;
-  if (denoisingJointLMMSE.bCheck)
-  {
-	  outfile << "        <value>Yes</value>" << std::endl;
-  }
+  if( denoisingJointLMMSE.bCheck )
+    {
+    outfile << "        <value>Yes</value>" << std::endl;
+    }
   else
-	  outfile << "        <value>No</value>" << std::endl;
+    {
+    outfile << "        <value>No</value>" << std::endl;
+    }
   outfile << "    <entry parameter=\"JOINDENOISING_Path\">" << std::endl;
   outfile << "            <value>" << denoisingJointLMMSE.JointLMMSECommand << "</value>" << std::endl;
   outfile << "        </entry>"  << std::endl;
@@ -1599,188 +1639,196 @@ void Protocol::Save( std::string xml)
   outfile << "            <value>" << denoisingJointLMMSE.Filter_Radius[0] << "</value>" << std::endl;
   outfile << "            <value>" << denoisingJointLMMSE.Filter_Radius[1] << "</value>" << std::endl;
   outfile << "            <value>" << denoisingJointLMMSE.Filter_Radius[2] << "</value>" << std::endl;
-  outfile << "        </entry>"  << std::endl;  
-  outfile << "        </entry>"  << std::endl;  
-  
-  
+  outfile << "        </entry>"  << std::endl;
+  outfile << "        </entry>"  << std::endl;
+
   outfile << "    <entry parameter=\"BRAINMASK_bCheck\">" << std::endl;
-  	if (GetBrainMaskProtocol().bMask)
-  	{
-  		outfile << "        <value>Yes</value>" << std::endl;
-  	}
-  	else
-  	{
-  		outfile << "        <value>No</value>" << std::endl;
-  	}
+  if( GetBrainMaskProtocol().bMask )
+    {
+    outfile << "        <value>Yes</value>" << std::endl;
+    }
+  else
+    {
+    outfile << "        <value>No</value>" << std::endl;
+    }
   outfile << "    <entry parameter=\"BRAINMASK_method\">" << std::endl;
   outfile << "            <value>" << GetBrainMaskProtocol().BrainMask_Method << "</value>" << std::endl;
-  outfile << "        </entry>"  << std::endl; 
+  outfile << "        </entry>"  << std::endl;
   outfile << "    <entry parameter=\"BRAINMASK_SystemPath_FSL\">" << std::endl;
   outfile << "            <value>" << GetBrainMaskProtocol().BrainMask_SystemPath_FSL << "</value>" << std::endl;
-  outfile << "        </entry>"  << std::endl; 
+  outfile << "        </entry>"  << std::endl;
   outfile << "    <entry parameter=\"BRAINMASK_SystemPath_convertITK\">" << std::endl;
   outfile << "            <value>" << GetBrainMaskProtocol().BrainMask_SystemPath_convertITK << "</value>" << std::endl;
-  outfile << "        </entry>"  << std::endl; 
+  outfile << "        </entry>"  << std::endl;
   outfile << "    <entry parameter=\"BRAINMASK_SystemPath_imagemath\">" << std::endl;
   outfile << "            <value>" << GetBrainMaskProtocol().BrainMask_SystemPath_imagemath << "</value>" << std::endl;
-  outfile << "        </entry>"  << std::endl; 
+  outfile << "        </entry>"  << std::endl;
   outfile << "    <entry parameter=\"BRAINMASK_SystemPath_Slicer\">" << std::endl;
   outfile << "            <value>" << GetBrainMaskProtocol().BrainMask_SystemPath_Slicer << "</value>" << std::endl;
-  outfile << "        </entry>"  << std::endl; 
+  outfile << "        </entry>"  << std::endl;
   outfile << "    <entry parameter=\"BRAINMASK_MaskedImage\">" << std::endl;
   outfile << "            <value>" << GetBrainMaskProtocol().BrainMask_Image << "</value>" << std::endl;
-  outfile << "        </entry>"  << std::endl; 
+  outfile << "        </entry>"  << std::endl;
   outfile << "    <entry parameter=\"BRAINMASK_reportFileNameSuffix\">" << std::endl;
   outfile << "            <value>" << GetBrainMaskProtocol().reportFileNameSuffix << "</value>" << std::endl;
-  outfile << "        </entry>"  << std::endl; 
+  outfile << "        </entry>"  << std::endl;
   outfile << "    <entry parameter=\"BRAINMASK_reportFileMode\">" << std::endl;
   outfile << "            <value>" << GetBrainMaskProtocol().reportFileMode << "</value>" << std::endl;
-  outfile << "        </entry>"  << std::endl; 
+  outfile << "        </entry>"  << std::endl;
   outfile << "    <entry parameter=\"BRAINMASK_bQuitOnCheckFailure\">" << std::endl;
   outfile << "            <value>" << GetBrainMaskProtocol().bQuitOnCheckFailure << "</value>" << std::endl;
-  outfile << "        </entry>"  << std::endl; 
-  outfile << "        </entry>"  << std::endl; 
-  
-  	
-  	
-  	
-  	
-  	
-  	
-  	
+  outfile << "        </entry>"  << std::endl;
+  outfile << "        </entry>"  << std::endl;
+
   outfile << "    <entry parameter=\"DOMINANTDIRECTION_bCheck\">" << std::endl;
-    if(GetDominantDirectional_Detector(). bCheck)
+  if( GetDominantDirectional_Detector().bCheck )
     {
-  	  outfile << "        <value>Yes</value>" << std::endl;
+    outfile << "        <value>Yes</value>" << std::endl;
     }
-    else
-  	  outfile << "        <value>No</value>" << std::endl;
-    
-  outfile << "    <entry parameter=\"DOMINANTDIRECTION_Mean\">" << std::endl; 
+  else
+    {
+    outfile << "        <value>No</value>" << std::endl;
+    }
+
+  outfile << "    <entry parameter=\"DOMINANTDIRECTION_Mean\">" << std::endl;
   outfile << "            <value>" << GetDominantDirectional_Detector().Mean << "</value>" << std::endl;
   outfile << "        </entry>"  << std::endl;
-  outfile << "    <entry parameter=\"DOMINANTDIRECTION_Deviation\">" << std::endl; 
+  outfile << "    <entry parameter=\"DOMINANTDIRECTION_Deviation\">" << std::endl;
   outfile << "            <value>" << GetDominantDirectional_Detector().Deviation << "</value>" << std::endl;
   outfile << "        </entry>"  << std::endl;
-  outfile << "    <entry parameter=\"DOMINANTDIRECTION_z-Threshold1\">" << std::endl; 
+  outfile << "    <entry parameter=\"DOMINANTDIRECTION_z-Threshold1\">" << std::endl;
   outfile << "            <value>" << GetDominantDirectional_Detector().Threshold_Acceptance << "</value>" << std::endl;
   outfile << "        </entry>"  << std::endl;
-  outfile << "    <entry parameter=\"DOMINANTDIRECTION_z-Threshold2\">" << std::endl; 
-  outfile << "            <value>" << GetDominantDirectional_Detector().Threshold_Suspicion_Unacceptance << "</value>" << std::endl;
+  outfile << "    <entry parameter=\"DOMINANTDIRECTION_z-Threshold2\">" << std::endl;
+  outfile << "            <value>" << GetDominantDirectional_Detector().Threshold_Suspicion_Unacceptance
+          << "</value>" << std::endl;
   outfile << "        </entry>"  << std::endl;
-  outfile << "    <entry parameter=\"DOMINANTDIRECTION_reportFileNameSuffix\">" << std::endl; 
+  outfile << "    <entry parameter=\"DOMINANTDIRECTION_reportFileNameSuffix\">" << std::endl;
   outfile << "            <value>" << GetDominantDirectional_Detector().reportFileNameSuffix << "</value>" << std::endl;
   outfile << "        </entry>"  << std::endl;
-  outfile << "    <entry parameter=\"DOMINANTDIRECTION_reportFileMode\">" << std::endl; 
+  outfile << "    <entry parameter=\"DOMINANTDIRECTION_reportFileMode\">" << std::endl;
   outfile << "            <value>" << GetDominantDirectional_Detector().reportFileMode << "</value>" << std::endl;
   outfile << "        </entry>"  << std::endl;
-  outfile << "    <entry parameter=\"DOMINANTDIRECTION_bQuitOnCheckFailure\">" << std::endl; 
+  outfile << "    <entry parameter=\"DOMINANTDIRECTION_bQuitOnCheckFailure\">" << std::endl;
   outfile << "            <value>" << GetDominantDirectional_Detector().bQuitOnCheckFailure << "</value>" << std::endl;
   outfile << "        </entry>"  << std::endl;
   outfile << "        </entry>"  << std::endl;
-  
-  
+
   outfile << "    <entry parameter=\"DTI_bCompute\">" << std::endl;
-  if(GetDTIProtocol(). bCompute)
-  {
-	  outfile << "        <value>Yes</value>" << std::endl;
-  }
+  if( GetDTIProtocol().bCompute )
+    {
+    outfile << "        <value>Yes</value>" << std::endl;
+    }
   else
-	  outfile << "        <value>No</value>" << std::endl;
+    {
+    outfile << "        <value>No</value>" << std::endl;
+    }
   outfile << "        <entry parameter=\"DTI_dtiestimCommand\">" << std::endl;
-  outfile << "            <value>" << GetDTIProtocol(). dtiestimCommand << "</value>" << std::endl;
+  outfile << "            <value>" << GetDTIProtocol().dtiestimCommand << "</value>" << std::endl;
   outfile << "        </entry>" << std::endl;
   outfile << "        <entry parameter=\"DTI_dtiprocessCommand\">" << std::endl;
-  outfile << "            <value>" << GetDTIProtocol(). dtiprocessCommand << "</value>" << std::endl;
+  outfile << "            <value>" << GetDTIProtocol().dtiprocessCommand << "</value>" << std::endl;
   outfile << "        </entry>" << std::endl;
   outfile << "        <entry parameter=\"DTI_method\">" << std::endl;
+
   switch( GetDTIProtocol().method )
-      {
-      case Protocol::METHOD_WLS:
-    	  outfile << "            <value>wls</value>" << std::endl;
-        break;
-      case Protocol::METHOD_LLS:
-       	  outfile << "            <value>lls</value>" << std::endl;
-        break;
-      case Protocol::METHOD_ML:
-       	  outfile << "            <value>ml</value>" << std::endl;
-        break;
-      case Protocol::METHOD_UNKNOWN:
-      default:
-       	  outfile << "            <value></value>" << std::endl;
-        break;
-      }
-  
-  
+    {
+    case Protocol::METHOD_WLS:
+      outfile << "            <value>wls</value>" << std::endl;
+      break;
+    case Protocol::METHOD_LLS:
+      outfile << "            <value>lls</value>" << std::endl;
+      break;
+    case Protocol::METHOD_ML:
+      outfile << "            <value>ml</value>" << std::endl;
+      break;
+    case Protocol::METHOD_UNKNOWN:
+    default:
+      outfile << "            <value></value>" << std::endl;
+      break;
+    }
+
   outfile << "        </entry>" << std::endl;
   outfile << "        <entry parameter=\"DTI_baselineThreshold\">" << std::endl;
-  outfile << "            <value>" << GetDTIProtocol(). baselineThreshold << "</value>" << std::endl;
+  outfile << "            <value>" << GetDTIProtocol().baselineThreshold << "</value>" << std::endl;
   outfile << "        </entry>" << std::endl;
-  //outfile << "        <entry parameter=\"DTI_maskFileName\">" << std::endl;
-  //outfile << "            <value>" << GetDTIProtocol(). mask <<  "</value>" << std::endl;
-  //outfile << "        </entry>" << std::endl;
+  // outfile << "        <entry parameter=\"DTI_maskFileName\">" << std::endl;
+  // outfile << "            <value>" << GetDTIProtocol(). mask <<  "</value>" << std::endl;
+  // outfile << "        </entry>" << std::endl;
   outfile << "        <entry parameter=\"DTI_tensor\">" << std::endl;
-  outfile << "            <value>" << GetDTIProtocol(). tensorSuffix << "</value>" << std::endl;
+  outfile << "            <value>" << GetDTIProtocol().tensorSuffix << "</value>" << std::endl;
   outfile << "        </entry>" << std::endl;
   outfile << "        <entry parameter=\"DTI_baseline\">" << std::endl;
-  if(GetDTIProtocol(). bbaseline)
-  {
-	  outfile << "            <value>Yes</value>" << std::endl;
-  }
+  if( GetDTIProtocol().bbaseline )
+    {
+    outfile << "            <value>Yes</value>" << std::endl;
+    }
   else
-	  outfile << "            <value>No</value>" << std::endl;
-  outfile << "            <value>" << GetDTIProtocol(). baselineSuffix << "</value>" << std::endl;
+    {
+    outfile << "            <value>No</value>" << std::endl;
+    }
+  outfile << "            <value>" << GetDTIProtocol().baselineSuffix << "</value>" << std::endl;
   outfile << "        </entry>" << std::endl;
   outfile << "        <entry parameter=\"DTI_idwi\">" << std::endl;
-  if(GetDTIProtocol(). bidwi)
-  {
-	  outfile << "            <value>Yes</value>" << std::endl;
-  }
+  if( GetDTIProtocol().bidwi )
+    {
+    outfile << "            <value>Yes</value>" << std::endl;
+    }
   else
-	  outfile << "            <value>No</value>" << std::endl;
-  outfile << "            <value>" << GetDTIProtocol(). idwiSuffix << "</value>" << std::endl;
+    {
+    outfile << "            <value>No</value>" << std::endl;
+    }
+  outfile << "            <value>" << GetDTIProtocol().idwiSuffix << "</value>" << std::endl;
   outfile << "        </entry>" << std::endl;
   outfile << "        <entry parameter=\"DTI_fa\">" << std::endl;
-  if(GetDTIProtocol(). bfa)
-  {
-	  outfile << "            <value>Yes</value>" << std::endl;
-  }
+  if( GetDTIProtocol().bfa )
+    {
+    outfile << "            <value>Yes</value>" << std::endl;
+    }
   else
-	  outfile << "            <value>No</value>" << std::endl;
-  outfile << "            <value>" << GetDTIProtocol(). faSuffix << "</value>" << std::endl;
+    {
+    outfile << "            <value>No</value>" << std::endl;
+    }
+  outfile << "            <value>" << GetDTIProtocol().faSuffix << "</value>" << std::endl;
   outfile << "        </entry>" << std::endl;
   outfile << "        <entry parameter=\"DTI_md\">" << std::endl;
-  if(GetDTIProtocol(). bmd)
-  {
-	  outfile << "            <value>Yes</value>" << std::endl;
-  }
+  if( GetDTIProtocol().bmd )
+    {
+    outfile << "            <value>Yes</value>" << std::endl;
+    }
   else
-	  outfile << "            <value>No</value>" << std::endl;
-  outfile << "            <value>" << GetDTIProtocol(). mdSuffix << "</value>" << std::endl;
+    {
+    outfile << "            <value>No</value>" << std::endl;
+    }
+  outfile << "            <value>" << GetDTIProtocol().mdSuffix << "</value>" << std::endl;
   outfile << "        </entry>" << std::endl;
   outfile << "        <entry parameter=\"DTI_colorfa\">" << std::endl;
-  if(GetDTIProtocol(). bcoloredfa )
-  {
-	  outfile << "            <value>Yes</value>" << std::endl;
-  }
+  if( GetDTIProtocol().bcoloredfa )
+    {
+    outfile << "            <value>Yes</value>" << std::endl;
+    }
   else
-	  outfile << "            <value>No</value>" << std::endl;
-  outfile << "            <value>" << GetDTIProtocol(). coloredfaSuffix << "</value>" << std::endl;
+    {
+    outfile << "            <value>No</value>" << std::endl;
+    }
+  outfile << "            <value>" << GetDTIProtocol().coloredfaSuffix << "</value>" << std::endl;
   outfile << "        </entry>" << std::endl;
   outfile << "        <entry parameter=\"DTI_frobeniusnorm\">" << std::endl;
-  if(GetDTIProtocol(). bfrobeniusnorm)
-  {
-	  outfile << "            <value>Yes</value>" << std::endl;
-  }
+  if( GetDTIProtocol().bfrobeniusnorm )
+    {
+    outfile << "            <value>Yes</value>" << std::endl;
+    }
   else
-	  outfile << "            <value>No</value>" << std::endl;
-  outfile << "            <value>" << GetDTIProtocol(). frobeniusnormSuffix << "</value>" << std::endl;
+    {
+    outfile << "            <value>No</value>" << std::endl;
+    }
+  outfile << "            <value>" << GetDTIProtocol().frobeniusnormSuffix << "</value>" << std::endl;
   outfile << "        </entry>" << std::endl;
   outfile << "        <entry parameter=\"DTI_reportFileNameSuffix\">" << std::endl;
-  outfile << "            <value>" << GetDTIProtocol(). reportFileNameSuffix << "</value>" << std::endl;
+  outfile << "            <value>" << GetDTIProtocol().reportFileNameSuffix << "</value>" << std::endl;
   outfile << "        </entry>" << std::endl;
   outfile << "        <entry parameter=\"DTI_reportFileMode\">" << std::endl;
-  outfile << "            <value>" << GetDTIProtocol(). reportFileMode << "</value>" << std::endl;
+  outfile << "            <value>" << GetDTIProtocol().reportFileMode << "</value>" << std::endl;
   outfile << "        </entry>" << std::endl;
   outfile << "    </entry>" << std::endl;
   outfile << "</ProtocolSettings>" << std::endl;

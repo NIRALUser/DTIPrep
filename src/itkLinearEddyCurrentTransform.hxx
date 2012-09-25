@@ -210,6 +210,7 @@ LinearEddyCurrentTransform<TScalarType, NInputDimensions, NOutputDimensions>
 ::TransformCovariantVector(const InputCovariantVectorType & vec) const
 {
   OutputCovariantVectorType result;     // Converted vector
+
   for( unsigned int i = 0; i < NOutputDimensions; i++ )
     {
     result[i] = NumericTraits<ScalarType>::Zero;
@@ -409,6 +410,7 @@ LinearEddyCurrentTransform<TScalarType, NInputDimensions, NOutputDimensions>
   const MatrixType & matrix = this->GetMatrix();
 
   OffsetType offset;
+
   for( unsigned int i = 0; i < NOutputDimensions; i++ )
     {
     offset[i] = m_Translation[i] + m_Center[i];
@@ -431,6 +433,7 @@ LinearEddyCurrentTransform<TScalarType, NInputDimensions, NOutputDimensions>
   const MatrixType & matrix = this->GetMatrix();
 
   OffsetType translation;
+
   for( unsigned int i = 0; i < NOutputDimensions; i++ )
     {
     translation[i] = m_Offset[i] - m_Center[i];

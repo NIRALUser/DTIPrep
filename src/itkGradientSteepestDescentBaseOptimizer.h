@@ -113,6 +113,7 @@ protected:
   virtual ~GradientSteepestDescentBaseOptimizer()
   {
   }
+
   void PrintSelf(std::ostream & os, itk::Indent indent) const;
 
   /** Advance one step following the gradient direction

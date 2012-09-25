@@ -305,10 +305,9 @@ public:
   {
     const GradientDirectionType & currentGradient = this->m_GradientDirectionContainer->ElementAt(DirectionIndex);
 
-    return
-      vcl_abs(currentGradient[0]) < NearZeroSmallNumber
-      && vcl_abs(currentGradient[1]) < NearZeroSmallNumber
-      && vcl_abs(currentGradient[2]) < NearZeroSmallNumber
+    return vcl_abs(currentGradient[0]) < NearZeroSmallNumber
+           && vcl_abs(currentGradient[1]) < NearZeroSmallNumber
+           && vcl_abs(currentGradient[2]) < NearZeroSmallNumber
     ;
   }
 

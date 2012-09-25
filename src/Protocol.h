@@ -73,16 +73,16 @@ struct DenoisingJointLMMSE
   };
 
 struct DominantDirectional_Detector
-{
-	bool bCheck;
-	double Mean;
-	double Deviation;
-	double Threshold_Acceptance;
-	double Threshold_Suspicion_Unacceptance;
-	std::string reportFileNameSuffix;
-	int reportFileMode;
-	bool bQuitOnCheckFailure;
-};
+  {
+  bool bCheck;
+  double Mean;
+  double Deviation;
+  double Threshold_Acceptance;
+  double Threshold_Suspicion_Unacceptance;
+  std::string reportFileNameSuffix;
+  int reportFileMode;
+  bool bQuitOnCheckFailure;
+  };
 
 struct SliceCheckProtocol
   {
@@ -155,7 +155,7 @@ struct EddyMotionCorrectionProtocol
   {
   bool bCorrect;
   // int toolSource; // 0:Utah; 1:IOWA
-  int numberOfIterations;	//number of iterations
+  int numberOfIterations; // number of iterations
   int numberOfSamples;
   float translationScale;
   float maxStepLength;
@@ -168,18 +168,18 @@ struct EddyMotionCorrectionProtocol
   };
 
 struct BrainMaskProtocol
-{
-	bool bMask;
-	int BrainMask_Method;	// 0 : FSL_bet 1:Slicer DiffusionWeightedVolumeMasking 2:user
-	std::string BrainMask_SystemPath_FSL;
-	std::string BrainMask_SystemPath_Slicer;
-	std::string BrainMask_SystemPath_convertITK;
-	std::string BrainMask_SystemPath_imagemath;
-	std::string BrainMask_Image;
-	std::string reportFileNameSuffix;
-	int reportFileMode;
-	bool bQuitOnCheckFailure;
-};
+  {
+  bool bMask;
+  int BrainMask_Method; // 0 : FSL_bet 1:Slicer DiffusionWeightedVolumeMasking 2:user
+  std::string BrainMask_SystemPath_FSL;
+  std::string BrainMask_SystemPath_Slicer;
+  std::string BrainMask_SystemPath_convertITK;
+  std::string BrainMask_SystemPath_imagemath;
+  std::string BrainMask_Image;
+  std::string reportFileNameSuffix;
+  int reportFileMode;
+  bool bQuitOnCheckFailure;
+  };
 
 struct DTIProtocol
   {
@@ -189,7 +189,7 @@ struct DTIProtocol
 
   int method;
   int baselineThreshold;
-  //std::string mask;
+  // std::string mask;
   std::string tensorSuffix;
 
   std::string idwiSuffix;
@@ -209,7 +209,6 @@ struct DTIProtocol
   std::string reportFileNameSuffix;
   int reportFileMode; // 0: new   1: append
   };
-
 
 class Protocol
 {
@@ -249,13 +248,14 @@ public:
           METHOD_ML,
           METHOD_NLS,
           METHOD_UNKNOWN, };
-  
-  enum {
-	  BRAINMASK_METHOD_FSL = 0,
-	  BRAINMASK_METHOD_SLICER,
-	  BRAINMASK_METHOD_OPTION,
-	  
-  };
+
+  enum
+    {
+    BRAINMASK_METHOD_FSL = 0,
+    BRAINMASK_METHOD_SLICER,
+    BRAINMASK_METHOD_OPTION,
+
+    };
 
   struct DiffusionDir
     {
@@ -282,11 +282,11 @@ public:
   void initEddyMotionCorrectionProtocol();
 
   void initDenoisingJointLMMSE();
-  
+
   void initDominantDirectional_Detector();
 
   void initDTIProtocol();
-  
+
   void initBrainMaskProtocol();
 
   // HACK: print functions should be const
@@ -353,10 +353,10 @@ public:
   {
     return denoisingJointLMMSE;
   }
-  
+
   struct DominantDirectional_Detector & GetDominantDirectional_Detector()
   {
-	  return dominantDirectional_Detector;
+    return dominantDirectional_Detector;
   }
 
   struct DiffusionProtocol & GetDiffusionProtocol()
@@ -388,10 +388,10 @@ public:
   {
     return eddyMotionCorrectionProtocol;
   }
-  
+
   struct BrainMaskProtocol & GetBrainMaskProtocol()
   {
-	  return brainMaskProtocol;
+    return brainMaskProtocol;
   }
 
   struct DTIProtocol & GetDTIProtocol()
@@ -512,8 +512,8 @@ private:
   EddyMotionCorrectionProtocol eddyMotionCorrectionProtocol;
   GradientCheckProtocol        gradientCheckProtocol;
   DenoisingJointLMMSE          denoisingJointLMMSE;
-  DominantDirectional_Detector			   dominantDirectional_Detector;
+  DominantDirectional_Detector dominantDirectional_Detector;
   DTIProtocol                  dTIProtocol;
-  BrainMaskProtocol			   brainMaskProtocol;
-  
+  BrainMaskProtocol            brainMaskProtocol;
+
 };

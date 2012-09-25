@@ -78,7 +78,7 @@ GMainWindow::GMainWindow()
 
   verticalLayout->setContentsMargins(0, 0, 0, 0);
   verticalLayout_2->setContentsMargins(0, 0, 0, 0);
-  //verticalLayout_3->setContentsMargins(0, 0, 0, 0);
+  // verticalLayout_3->setContentsMargins(0, 0, 0, 0);
   //  verticalLayout_3->setSpacing(2);
   tabWidget->setCurrentIndex(0);
 
@@ -103,7 +103,7 @@ GMainWindow::GMainWindow()
   actorDirFile   = vtkPropAssembly::New();
   actorDirInclude  = vtkPropAssembly::New();
 
-  //vtkSphereSource *SphereSource  =  vtkSphereSource::New();
+  // vtkSphereSource *SphereSource  =  vtkSphereSource::New();
   SphereSource  =  vtkSphereSource::New();
   SphereSource->SetRadius(1.0);
   SphereSource->SetThetaResolution(50);
@@ -126,7 +126,7 @@ GMainWindow::GMainWindow()
   actorSphere->GetProperty()->SetOpacity(0.5);
   actorSphere->SetVisibility(0);
 
-  //this->horizontalSlider_SphereRadius->setRange(0.01, 2);
+  // this->horizontalSlider_SphereRadius->setRange(0.01, 2);
 
   pvtkRenderer_3DView->AddActor(actorSphere);
 
@@ -375,11 +375,11 @@ GMainWindow::GMainWindow()
            SIGNAL( Signal_actionOpenDWINrrd_triggered() ),
            this, SLOT( on_actionOpenDWINrrd_triggered() ) );
 
-  connect( this->doubleSpinBox_SphereRadius, SIGNAL (valueChanged( double )),
-	   this, SLOT( doubleSpinBox_SphereRadiusValueChanged( double ) ) );
+  connect( this->doubleSpinBox_SphereRadius, SIGNAL(valueChanged( double ) ),
+           this, SLOT( doubleSpinBox_SphereRadiusValueChanged( double ) ) );
 
-  connect( this->doubleSpinBox_SphereOpacity, SIGNAL (valueChanged( double )),
-	   this, SLOT( doubleSpinBox_SphereOpacityValueChanged( double ) ) );
+  connect( this->doubleSpinBox_SphereOpacity, SIGNAL(valueChanged( double ) ),
+           this, SLOT( doubleSpinBox_SphereOpacityValueChanged( double ) ) );
 
 }
 
@@ -1326,7 +1326,7 @@ void GMainWindow::UpdateDWIDiffusionVectorActors( DwiImageType::Pointer _DWIImag
   pvtkRenderer_3DView->RemoveActor(actorDirFile);
 
   actorDirFile->GetParts()->RemoveAllItems();
-  float vect3d[3];
+  float  vect3d[3];
   double length = 0;
   min_length_vec = 1;
   for( ; itKey != imgMetaKeys.end(); itKey++ )
@@ -1345,14 +1345,16 @@ void GMainWindow::UpdateDWIDiffusionVectorActors( DwiImageType::Pointer _DWIImag
 
       vtkLineSource *LineSource    =  vtkLineSource::New();
       // LineSource->SetPoint1(0.0, 0.0, 0.0);
-      
+
       LineSource->SetPoint1(-vect3d[0], -vect3d[1], -vect3d[2]);
       LineSource->SetPoint2(vect3d[0], vect3d[1], vect3d[2]);
 
-      length = double (sqrt(vect3d[0]*vect3d[0]+vect3d[1]*vect3d[1]+vect3d[2]*vect3d[2]));
-      //std::cout << "length vect " << length << std::endl;
-      if (length <= min_length_vec)
-		min_length_vec = length; 
+      length = double (sqrt(vect3d[0] * vect3d[0] + vect3d[1] * vect3d[1] + vect3d[2] * vect3d[2]) );
+      // std::cout << "length vect " << length << std::endl;
+      if( length <= min_length_vec )
+        {
+        min_length_vec = length;
+        }
 
       vtkTubeFilter *TubeFilter = vtkTubeFilter::New();
       TubeFilter->SetInput( LineSource->GetOutput() );
@@ -1373,7 +1375,7 @@ void GMainWindow::UpdateDWIDiffusionVectorActors( DwiImageType::Pointer _DWIImag
       }
     }
   pvtkRenderer_3DView->AddActor(actorDirFile);
-  //std::cout << "min_length_vec " << min_length_vec << std::endl;
+  // std::cout << "min_length_vec " << min_length_vec << std::endl;
 
   this->doubleSpinBox_SphereRadius->setMinimum(min_length_vec);
   SphereSource->SetRadius(min_length_vec);
@@ -1447,7 +1449,7 @@ void GMainWindow::UpdateOutputDWIDiffusionVectorActors()
             DTIPrepPanel->GetQCResult().GetIntensityMotionCheckResult()[i].
             processing == QCResult::GRADIENT_EDDY_MOTION_CORRECTED) ||
         (DTIPrepPanel->GetQCResult().GetIntensityMotionCheckResult()[i].
-    VisualChecking == QCResult::GRADIENT_INCLUDE) )
+         VisualChecking == QCResult::GRADIENT_INCLUDE) )
       {
 
       if( DTIPrepPanel->GetQCResult().GetIntensityMotionCheckResult()[i].
@@ -1462,8 +1464,6 @@ void GMainWindow::UpdateOutputDWIDiffusionVectorActors()
 
       // std::cout<<"IncludeDirTest"<<std::endl;
       vtkLineSource *LineSource    =  vtkLineSource::New();
-
-     
 
       LineSource->SetPoint1(
         DTIPrepPanel->GetQCResult().GetIntensityMotionCheckResult()[i].
@@ -1523,7 +1523,7 @@ void GMainWindow::UpdateOutputDWIDiffusionVectorActors_VC()
             DTIPrepPanel->GetQCResult().GetIntensityMotionCheckResult()[i].
             processing == QCResult::GRADIENT_EDDY_MOTION_CORRECTED) ||
         (DTIPrepPanel->GetQCResult().GetIntensityMotionCheckResult()[i].
-    VisualChecking == QCResult::GRADIENT_INCLUDE) )
+         VisualChecking == QCResult::GRADIENT_INCLUDE) )
       {
       if( DTIPrepPanel->GetQCResult().GetIntensityMotionCheckResult()[i].
           CorrectedDir[0] == 0.0
@@ -1537,7 +1537,6 @@ void GMainWindow::UpdateOutputDWIDiffusionVectorActors_VC()
 
       vtkLineSource *LineSource    =  vtkLineSource::New();
 
-      
       LineSource->SetPoint1(
         DTIPrepPanel->GetQCResult().GetIntensityMotionCheckResult()[i].
         CorrectedDir[0],
@@ -2115,7 +2114,7 @@ void GMainWindow::GradientChanged(int WinID, int index)
 
       if( DTIPrepPanel->GetQCResult().GetIntensityMotionCheckResult()[index].VisualChecking == 0 ||
           ( DTIPrepPanel->GetQCResult().GetIntensityMotionCheckResult()[index].VisualChecking == -1 &&
-       DTIPrepPanel->GetQCResult().GetIntensityMotionCheckResult()[index].processing <= 2) )
+            DTIPrepPanel->GetQCResult().GetIntensityMotionCheckResult()[index].processing <= 2) )
         {
         // std::cout << "WinID " << WinID << "indexID " << index <<" " <<  "Processing" <<
         // DTIPrepPanel->GetQCResult().GetIntensityMotionCheckResult()[ index ].processing << std::endl;
@@ -2126,7 +2125,7 @@ void GMainWindow::GradientChanged(int WinID, int index)
 
       else if( DTIPrepPanel->GetQCResult().GetIntensityMotionCheckResult()[index].VisualChecking == 6 ||
                ( DTIPrepPanel->GetQCResult().GetIntensityMotionCheckResult()[index].VisualChecking == -1 &&
-       DTIPrepPanel->GetQCResult().GetIntensityMotionCheckResult()[index].processing > 2) )
+                 DTIPrepPanel->GetQCResult().GetIntensityMotionCheckResult()[index].processing > 2) )
         {
         imageView2DPanelWithControls1->GetLineEdit_Gradient()->setStyleSheet( "background-color: red" );
         imageView2DPanelWithControls2->GetLineEdit_Gradient()->setStyleSheet( "background-color: red" );
@@ -2160,14 +2159,14 @@ void GMainWindow::GradientChanged(int WinID, int index)
 
           if( DTIPrepPanel->GetQCResult().GetIntensityMotionCheckResult()[index].VisualChecking == 0 ||
               ( DTIPrepPanel->GetQCResult().GetIntensityMotionCheckResult()[index].VisualChecking == -1 &&
-         DTIPrepPanel->GetQCResult().GetIntensityMotionCheckResult()[index].processing <= 2) )
+                DTIPrepPanel->GetQCResult().GetIntensityMotionCheckResult()[index].processing <= 2) )
             {
             imageView2DPanelWithControls1->GetLineEdit_Gradient()->setStyleSheet( "background-color: Green" );
             }
 
           else if( DTIPrepPanel->GetQCResult().GetIntensityMotionCheckResult()[index].VisualChecking == 6 ||
                    ( DTIPrepPanel->GetQCResult().GetIntensityMotionCheckResult()[index].VisualChecking == -1 &&
-         DTIPrepPanel->GetQCResult().GetIntensityMotionCheckResult()[index].processing > 2) )
+                     DTIPrepPanel->GetQCResult().GetIntensityMotionCheckResult()[index].processing > 2) )
             {
             imageView2DPanelWithControls1->GetLineEdit_Gradient()->setStyleSheet( "background-color: red" );
             }
@@ -2189,14 +2188,14 @@ void GMainWindow::GradientChanged(int WinID, int index)
           {
           if( DTIPrepPanel->GetQCResult().GetIntensityMotionCheckResult()[index].VisualChecking == 0 ||
               ( DTIPrepPanel->GetQCResult().GetIntensityMotionCheckResult()[index].VisualChecking == -1 &&
-         DTIPrepPanel->GetQCResult().GetIntensityMotionCheckResult()[index].processing <= 2) )
+                DTIPrepPanel->GetQCResult().GetIntensityMotionCheckResult()[index].processing <= 2) )
             {
             imageView2DPanelWithControls2->GetLineEdit_Gradient()->setStyleSheet( "background-color: Green" );
             }
 
           else if( DTIPrepPanel->GetQCResult().GetIntensityMotionCheckResult()[index].VisualChecking == 6 ||
                    ( DTIPrepPanel->GetQCResult().GetIntensityMotionCheckResult()[index].VisualChecking == -1 &&
-         DTIPrepPanel->GetQCResult().GetIntensityMotionCheckResult()[index].processing > 2) )
+                     DTIPrepPanel->GetQCResult().GetIntensityMotionCheckResult()[index].processing > 2) )
             {
             imageView2DPanelWithControls2->GetLineEdit_Gradient()->setStyleSheet( "background-color: red" );
             }
@@ -2217,14 +2216,14 @@ void GMainWindow::GradientChanged(int WinID, int index)
           {
           if( DTIPrepPanel->GetQCResult().GetIntensityMotionCheckResult()[index].VisualChecking == 0 ||
               ( DTIPrepPanel->GetQCResult().GetIntensityMotionCheckResult()[index].VisualChecking == -1 &&
-         DTIPrepPanel->GetQCResult().GetIntensityMotionCheckResult()[index].processing <= 2) )
+                DTIPrepPanel->GetQCResult().GetIntensityMotionCheckResult()[index].processing <= 2) )
             {
             imageView2DPanelWithControls3->GetLineEdit_Gradient()->setStyleSheet( "background-color: Green" );
             }
 
           else if( DTIPrepPanel->GetQCResult().GetIntensityMotionCheckResult()[index].VisualChecking == 6 ||
                    ( DTIPrepPanel->GetQCResult().GetIntensityMotionCheckResult()[index].VisualChecking == -1 &&
-         DTIPrepPanel->GetQCResult().GetIntensityMotionCheckResult()[index].processing > 2) )
+                     DTIPrepPanel->GetQCResult().GetIntensityMotionCheckResult()[index].processing > 2) )
             {
             imageView2DPanelWithControls3->GetLineEdit_Gradient()->setStyleSheet( "background-color: red" );
             }

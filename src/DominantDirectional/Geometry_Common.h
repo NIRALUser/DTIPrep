@@ -5,9 +5,10 @@
  *  By Yinpeng Li, mousquetaires@unc.edu
  */
 
-namespace fiberodf{
+namespace fiberodf
+{
 
-enum {X = 0, Y = 1, Z = 2} ;
-extern const double EPSILON ;
+enum { X = 0, Y = 1, Z = 2 };
+extern const double EPSILON;
 }
 #endif

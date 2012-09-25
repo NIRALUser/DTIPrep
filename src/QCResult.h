@@ -63,11 +63,11 @@ struct SliceWiseCheckResult
 
 struct OverallQCResult
   {
-  bool SWCk; // SliceWiseCheck
-  bool IWCk; // InterlaceWiseCheck
-  bool GWCk; // GradientWiseCheck
-  bool BMCK; // BrainMaskCheck
-  bool DDDCK; //DominantDirectionalDetectionCheck
+  bool SWCk;  // SliceWiseCheck
+  bool IWCk;  // InterlaceWiseCheck
+  bool GWCk;  // GradientWiseCheck
+  bool BMCK;  // BrainMaskCheck
+  bool DDDCK; // DominantDirectionalDetectionCheck
 
   };
 
@@ -80,9 +80,9 @@ struct Original_ForcedConformance_Map
 
 struct DominantDirection_Detector
   {
-	double z_score;
-	double entropy_value;
-	int detection_result; 	// 0:acceptance 1: Unacceptance 2: Suspicious
+  double z_score;
+  double entropy_value;
+  int detection_result;   // 0:acceptance 1: Unacceptance 2: Suspicious
   };
 
 class QCResult
@@ -109,9 +109,9 @@ public:
 
   struct DominantDirection_Detector & GetDominantDirection_Detector()
   {
-	  return dominantDirection_Detector;
+    return dominantDirection_Detector;
   }
-  
+
   struct OverallQCResult & GetOverallQCResult()
   {
     return overallQCResult;
@@ -171,7 +171,7 @@ public:
     imageInformationCheckResult.space = true;
     imageInformationCheckResult.spacedirection = true;
     imageInformationCheckResult.spacing = true;
-    
+
     dominantDirection_Detector.z_score = 0;
     dominantDirection_Detector.entropy_value = 0;
 
@@ -195,9 +195,9 @@ public:
 
 private:
   ImageInformationCheckResult imageInformationCheckResult;
-  
+
   DominantDirection_Detector dominantDirection_Detector;
-  
+
   DiffusionInformationCheckResult diffusionInformationCheckResult;
 
   OverallQCResult overallQCResult;

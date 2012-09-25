@@ -24,7 +24,6 @@
 #include "XmlStreamWriter.h"
 #include "DTIPrepCLP.h"
 
-
 // Defining Checking bits
 #define ImageCheckBit 1
 #define DiffusionCheckBit 2
@@ -41,7 +40,7 @@ int r_GradWiseCheck;      // the overall GradientWiseChecking result
 
 int main( int argc, char * *argv )
 {
-  PARSE_ARGS ;
+  PARSE_ARGS;
 // BUG: When loading the DTIPrep GUI, the following error would appear: "Qt internal error: qt_menu.nib could not be
 // loaded. The .nib file should be placed in QtGui.framework/Versions/Current/Resources/ or in the resources directory
 // of your applicaiton bundle." Qt is aware of this problem (http://bugreports.qt.nokia.com/browse/QTBUG-5952) and has
@@ -72,8 +71,7 @@ int main( int argc, char * *argv )
     {
 
     string resultXMLFile;
-    
-    
+
     // check with  xml
     if( !xmlFileName.empty() )
       {
@@ -98,42 +96,42 @@ int main( int argc, char * *argv )
       if( protocol.GetQCOutputDirectory().length() > 0 )
         {
 
-		std::string str_QCOutputDirectory = protocol.GetQCOutputDirectory();
-    		size_t found_SeparateChar = str_QCOutputDirectory.find_first_of("/");
-    		if ( int (found_SeparateChar) == -1 ) // "/" does not exist in the protocol->GetQCOutputDirectory() and interpreted as the relative path and creates the folder
-    		{
+        std::string str_QCOutputDirectory = protocol.GetQCOutputDirectory();
+        size_t      found_SeparateChar = str_QCOutputDirectory.find_first_of("/");
+        if( int (found_SeparateChar) == -1 )  // "/" does not exist in the protocol->GetQCOutputDirectory() and
+                                              // interpreted as the relative path and creates the folder
+          {
 
-			size_t found;
-			found = DWIFileName.find_last_of("/\\");
-			std::string str;
-			str = DWIFileName.substr( 0, found ); // str : path of QCed outputs
-			str.append( "/" );
-			str.append( protocol.GetQCOutputDirectory() );
-			if( !itksys::SystemTools::FileIsDirectory( str.c_str() ) )
-			{
-			itksys::SystemTools::MakeDirectory( str.c_str() );
-			}
-			str.append( "/" );
-			resultXMLFile = str;
-			resultXMLFile.append( Dwi_file_name );
-			resultXMLFile.append( "_XMLQCResult.xml" );
-		}
+          size_t found;
+          found = DWIFileName.find_last_of("/\\");
+          std::string str;
+          str = DWIFileName.substr( 0, found ); // str : path of QCed outputs
+          str.append( "/" );
+          str.append( protocol.GetQCOutputDirectory() );
+          if( !itksys::SystemTools::FileIsDirectory( str.c_str() ) )
+            {
+            itksys::SystemTools::MakeDirectory( str.c_str() );
+            }
+          str.append( "/" );
+          resultXMLFile = str;
+          resultXMLFile.append( Dwi_file_name );
+          resultXMLFile.append( "_XMLQCResult.xml" );
+          }
 
-		else	// "/" exists in the the protocol->GetQCOutputDirectory() and interpreted as the absolute path
-		{
-			std::string str;
-			str.append(protocol.GetQCOutputDirectory());
-			if( !itksys::SystemTools::FileIsDirectory( str.c_str() ) )
-			{
-			itksys::SystemTools::MakeDirectory( str.c_str() );
-			}
-			str.append( "/" );
-			resultXMLFile = str;
-			resultXMLFile.append( Dwi_file_name );
-			resultXMLFile.append( "_XMLQCResult.xml" );
-			
-			
-		}
+        else // "/" exists in the the protocol->GetQCOutputDirectory() and interpreted as the absolute path
+          {
+          std::string str;
+          str.append(protocol.GetQCOutputDirectory() );
+          if( !itksys::SystemTools::FileIsDirectory( str.c_str() ) )
+            {
+            itksys::SystemTools::MakeDirectory( str.c_str() );
+            }
+          str.append( "/" );
+          resultXMLFile = str;
+          resultXMLFile.append( Dwi_file_name );
+          resultXMLFile.append( "_XMLQCResult.xml" );
+
+          }
 
         }
       else
@@ -178,10 +176,6 @@ int main( int argc, char * *argv )
         protocol.Save( xmlFileName.c_str() );
         }
 
-      
-      
-      
-      
       if( bcheckByProtocol || ( !bCreateDefaultProtocol && !bcheckByProtocol ) )
         {
         if( !bCreateDefaultProtocol && !bcheckByProtocol )
@@ -224,7 +218,7 @@ int main( int argc, char * *argv )
           if( ( protocol.GetImageProtocol().bQuitOnCheckSizeFailure &&
                 ( (qcResult.Get_result()  & ImageCheckBit) !=  0) ) ||
               (    protocol.GetImageProtocol().bQuitOnCheckSpacingFailure &&
-              ( (qcResult.Get_result()  & ImageCheckBit) !=  0) ) )
+                   ( (qcResult.Get_result()  & ImageCheckBit) !=  0) ) )
             {
             xmlWriter.writeTextElement("value", "Fail Pipeline Terminated");
             xmlWriter.writeStartElement("entry");
@@ -439,10 +433,15 @@ int main( int argc, char * *argv )
 
         if( !( ( (qcResult.Get_result()  & SliceWiseCheckBit) == SliceWiseCheckBit ) &&
                protocol.GetSliceCheckProtocol().bQuitOnCheckFailure) && protocol.GetInterlaceCheckProtocol().bCheck )                                                                           //
+                                                                                                                                                                                                //
                                                                                                                                                                                                 // Check
+                                                                                                                                                                                                //
                                                                                                                                                                                                 // protocol
+                                                                                                                                                                                                //
                                                                                                                                                                                                 // whether
+                                                                                                                                                                                                //
                                                                                                                                                                                                 // run
+                                                                                                                                                                                                //
                                                                                                                                                                                                 // InterlaceWiseChecking
           {
           if(  (qcResult.Get_result() & InterlaceWiseCheckBit) == InterlaceWiseCheckBit )
@@ -487,10 +486,15 @@ int main( int argc, char * *argv )
 
         if( !protocol.GetSliceCheckProtocol().bQuitOnCheckFailure &&
             !protocol.GetInterlaceCheckProtocol().bQuitOnCheckFailure && protocol.GetGradientCheckProtocol().bCheck )                                                              //
+                                                                                                                                                                                   //
                                                                                                                                                                                    // Check
+                                                                                                                                                                                   //
                                                                                                                                                                                    // protocol
+                                                                                                                                                                                   //
                                                                                                                                                                                    // whether
+                                                                                                                                                                                   //
                                                                                                                                                                                    // run
+                                                                                                                                                                                   //
                                                                                                                                                                                    // GradientWiseChecking
           {
           if( (qcResult.Get_result() & GradientWiseCheckBit) == GradientWiseCheckBit )
@@ -667,17 +671,25 @@ int main( int argc, char * *argv )
                   protocol.GetInterlaceCheckProtocol().rotationThreshold )
                 {
                 xmlWriter.writeTextElement("green", QString("%1").arg(qcResult.GetInterlaceWiseCheckResult()[i].AngleX) ); //
+                                                                                                                           //
                                                                                                                            // rotation
+                                                                                                                           //
                                                                                                                            // threshold
+                                                                                                                           //
                                                                                                                            // in
+                                                                                                                           //
                                                                                                                            // protocol
                 }
               else
                 {
                 xmlWriter.writeTextElement("red", QString("%1").arg(qcResult.GetInterlaceWiseCheckResult()[i].AngleX) ); //
+                                                                                                                         //
                                                                                                                          // rotation
+                                                                                                                         //
                                                                                                                          // threshold
+                                                                                                                         //
                                                                                                                          // in
+                                                                                                                         //
                                                                                                                          // protocol
                 }
               xmlWriter.writeEndElement();
@@ -687,17 +699,25 @@ int main( int argc, char * *argv )
                   protocol.GetInterlaceCheckProtocol().rotationThreshold )
                 {
                 xmlWriter.writeTextElement("green", QString("%1").arg(qcResult.GetInterlaceWiseCheckResult()[i].AngleY) ); //
+                                                                                                                           //
                                                                                                                            // rotation
+                                                                                                                           //
                                                                                                                            // threshold
+                                                                                                                           //
                                                                                                                            // in
+                                                                                                                           //
                                                                                                                            // protocol
                 }
               else
                 {
                 xmlWriter.writeTextElement("red", QString("%1").arg(qcResult.GetInterlaceWiseCheckResult()[i].AngleY) ); //
+                                                                                                                         //
                                                                                                                          // rotation
+                                                                                                                         //
                                                                                                                          // threshold
+                                                                                                                         //
                                                                                                                          // in
+                                                                                                                         //
                                                                                                                          // protocol
                 }
               xmlWriter.writeEndElement();
@@ -707,17 +727,25 @@ int main( int argc, char * *argv )
                   protocol.GetInterlaceCheckProtocol().rotationThreshold )
                 {
                 xmlWriter.writeTextElement("green", QString("%1").arg(qcResult.GetInterlaceWiseCheckResult()[i].AngleZ) ); //
+                                                                                                                           //
                                                                                                                            // rotation
+                                                                                                                           //
                                                                                                                            // threshold
+                                                                                                                           //
                                                                                                                            // in
+                                                                                                                           //
                                                                                                                            // protocol
                 }
               else
                 {
                 xmlWriter.writeTextElement("red", QString("%1").arg(qcResult.GetInterlaceWiseCheckResult()[i].AngleZ) ); //
+                                                                                                                         //
                                                                                                                          // rotation
+                                                                                                                         //
                                                                                                                          // threshold
+                                                                                                                         //
                                                                                                                          // in
+                                                                                                                         //
                                                                                                                          // protocol
                 }
               xmlWriter.writeEndElement();
@@ -728,18 +756,26 @@ int main( int argc, char * *argv )
                 {
                 xmlWriter.writeTextElement("green",
                                            QString("%1").arg(qcResult.GetInterlaceWiseCheckResult()[i].TranslationX) );        //
+                                                                                                                               //
                                                                                                                                // translation
+                                                                                                                               //
                                                                                                                                // threshold
+                                                                                                                               //
                                                                                                                                // in
+                                                                                                                               //
                                                                                                                                // protocol
                 }
               else
                 {
                 xmlWriter.writeTextElement("red",
                                            QString("%1").arg(qcResult.GetInterlaceWiseCheckResult()[i].TranslationX) );      //
+                                                                                                                             //
                                                                                                                              // translation
+                                                                                                                             //
                                                                                                                              // threshold
+                                                                                                                             //
                                                                                                                              // in
+                                                                                                                             //
                                                                                                                              // protocol
                 }
               xmlWriter.writeEndElement();
@@ -750,18 +786,26 @@ int main( int argc, char * *argv )
                 {
                 xmlWriter.writeTextElement("green",
                                            QString("%1").arg(qcResult.GetInterlaceWiseCheckResult()[i].TranslationY) );        //
+                                                                                                                               //
                                                                                                                                // translation
+                                                                                                                               //
                                                                                                                                // threshold
+                                                                                                                               //
                                                                                                                                // in
+                                                                                                                               //
                                                                                                                                // protocol
                 }
               else
                 {
                 xmlWriter.writeTextElement("red",
                                            QString("%1").arg(qcResult.GetInterlaceWiseCheckResult()[i].TranslationY) );      //
+                                                                                                                             //
                                                                                                                              // translation
+                                                                                                                             //
                                                                                                                              // threshold
+                                                                                                                             //
                                                                                                                              // in
+                                                                                                                             //
                                                                                                                              // protocol
                 }
               xmlWriter.writeEndElement();
@@ -772,18 +816,26 @@ int main( int argc, char * *argv )
                 {
                 xmlWriter.writeTextElement("green",
                                            QString("%1").arg(qcResult.GetInterlaceWiseCheckResult()[i].TranslationZ) );        //
+                                                                                                                               //
                                                                                                                                // translation
+                                                                                                                               //
                                                                                                                                // threshold
+                                                                                                                               //
                                                                                                                                // in
+                                                                                                                               //
                                                                                                                                // protocol
                 }
               else
                 {
                 xmlWriter.writeTextElement("red",
                                            QString("%1").arg(qcResult.GetInterlaceWiseCheckResult()[i].TranslationZ) );      //
+                                                                                                                             //
                                                                                                                              // translation
+                                                                                                                             //
                                                                                                                              // threshold
+                                                                                                                             //
                                                                                                                              // in
+                                                                                                                             //
                                                                                                                              // protocol
                 }
               xmlWriter.writeEndElement();
@@ -797,11 +849,17 @@ int main( int argc, char * *argv )
                 xmlWriter.writeAttribute( "parameter",  "InterlaceCorrelation_Baseline" );
                 if( qcResult.GetInterlaceWiseCheckResult()[i].Correlation <
                     protocol.GetInterlaceCheckProtocol().correlationThresholdBaseline )                                                          //
+                                                                                                                                                 //
                                                                                                                                                  // correlation
+                                                                                                                                                 //
                                                                                                                                                  // threshold
+                                                                                                                                                 //
                                                                                                                                                  // for
+                                                                                                                                                 //
                                                                                                                                                  // baseline
+                                                                                                                                                 //
                                                                                                                                                  // in
+                                                                                                                                                 //
                                                                                                                                                  // protocol
                   {
                   xmlWriter.writeTextElement("green",
@@ -819,10 +877,15 @@ int main( int argc, char * *argv )
                 xmlWriter.writeAttribute( "parameter",  "InterlaceCorrelation" );
                 if( qcResult.GetInterlaceWiseCheckResult()[i].Correlation <
                     protocol.GetInterlaceCheckProtocol().correlationThresholdGradient )                                                          //
+                                                                                                                                                 //
                                                                                                                                                  // correlation
+                                                                                                                                                 //
                                                                                                                                                  // threshold
+                                                                                                                                                 //
                                                                                                                                                  // gradients
+                                                                                                                                                 //
                                                                                                                                                  // in
+                                                                                                                                                 //
                                                                                                                                                  // protocol
                   {
                   xmlWriter.writeTextElement("green",
@@ -862,9 +925,13 @@ int main( int argc, char * *argv )
                 xmlWriter.writeAttribute( "parameter",  "GradientAngleX" );
                 if( qcResult.GetGradientWiseCheckResult()[i].AngleX <
                     protocol.GetGradientCheckProtocol().rotationThreshold )                                                    //
+                                                                                                                               //
                                                                                                                                // rotation
+                                                                                                                               //
                                                                                                                                // threshold
+                                                                                                                               //
                                                                                                                                // in
+                                                                                                                               //
                                                                                                                                // protocol
                   {
                   xmlWriter.writeTextElement("green", QString("%1").arg(qcResult.GetGradientWiseCheckResult()[i].AngleX) );
@@ -878,9 +945,13 @@ int main( int argc, char * *argv )
                 xmlWriter.writeAttribute( "parameter",  "GradientAngleY" );
                 if( qcResult.GetGradientWiseCheckResult()[i].AngleY <
                     protocol.GetGradientCheckProtocol().rotationThreshold )                                                    //
+                                                                                                                               //
                                                                                                                                // rotation
+                                                                                                                               //
                                                                                                                                // threshold
+                                                                                                                               //
                                                                                                                                // in
+                                                                                                                               //
                                                                                                                                // protocol
                   {
                   xmlWriter.writeTextElement("green", QString("%1").arg(qcResult.GetGradientWiseCheckResult()[i].AngleY) );
@@ -894,9 +965,13 @@ int main( int argc, char * *argv )
                 xmlWriter.writeAttribute( "parameter",  "GradientAngleZ" );
                 if( qcResult.GetGradientWiseCheckResult()[i].AngleZ <
                     protocol.GetGradientCheckProtocol().rotationThreshold )                                                    //
+                                                                                                                               //
                                                                                                                                // rotation
+                                                                                                                               //
                                                                                                                                // threshold
+                                                                                                                               //
                                                                                                                                // in
+                                                                                                                               //
                                                                                                                                // protocol
                   {
                   xmlWriter.writeTextElement("green", QString("%1").arg(qcResult.GetGradientWiseCheckResult()[i].AngleZ) );
@@ -910,9 +985,13 @@ int main( int argc, char * *argv )
                 xmlWriter.writeAttribute( "parameter",  "GradientTranslationX" );
                 if( qcResult.GetGradientWiseCheckResult()[i].TranslationX <
                     protocol.GetGradientCheckProtocol().translationThreshold )                                                           //
+                                                                                                                                         //
                                                                                                                                          // translation
+                                                                                                                                         //
                                                                                                                                          // threshold
+                                                                                                                                         //
                                                                                                                                          // in
+                                                                                                                                         //
                                                                                                                                          // protocol
                   {
                   xmlWriter.writeTextElement("green",
@@ -928,9 +1007,13 @@ int main( int argc, char * *argv )
                 xmlWriter.writeAttribute( "parameter",  "GradientTranslationY" );
                 if( qcResult.GetGradientWiseCheckResult()[i].TranslationY <
                     protocol.GetGradientCheckProtocol().translationThreshold )                                                           //
+                                                                                                                                         //
                                                                                                                                          // translation
+                                                                                                                                         //
                                                                                                                                          // threshold
+                                                                                                                                         //
                                                                                                                                          // in
+                                                                                                                                         //
                                                                                                                                          // protocol
                   {
                   xmlWriter.writeTextElement("green",
@@ -946,9 +1029,13 @@ int main( int argc, char * *argv )
                 xmlWriter.writeAttribute( "parameter",  "GradientTranslationZ" );
                 if( qcResult.GetGradientWiseCheckResult()[i].TranslationZ <
                     protocol.GetGradientCheckProtocol().translationThreshold )                                                           //
+                                                                                                                                         //
                                                                                                                                          // translation
+                                                                                                                                         //
                                                                                                                                          // threshold
+                                                                                                                                         //
                                                                                                                                          // in
+                                                                                                                                         //
                                                                                                                                          // protocol
                   {
                   xmlWriter.writeTextElement("green",
@@ -1115,10 +1202,10 @@ int main( int argc, char * *argv )
           outfile << "\t" << IntensityMotionCheck.getRepetitionNumber() << "/-";
 
           out = result;
-          //out = out << 7;
-          //out = out >> 7;
+          // out = out << 7;
+          // out = out >> 7;
           out = out << 9;
-          out = out >> 9;          
+          out = out >> 9;
           if( out )
             {
             std::cout << "Image information check: FAILURE" << std::endl;
@@ -1131,8 +1218,8 @@ int main( int argc, char * *argv )
             }
 
           out = result;
-          //out = out << 6;
-          //out = out >> 7;
+          // out = out << 6;
+          // out = out >> 7;
           out = out << 8;
           out = out >> 9;
           if( out )
@@ -1147,8 +1234,8 @@ int main( int argc, char * *argv )
             }
 
           out = result;
-          //out = out << 5;
-          //out = out >> 7;
+          // out = out << 5;
+          // out = out >> 7;
           out = out << 7;
           out = out >> 9;
           if( out  )
@@ -1163,8 +1250,8 @@ int main( int argc, char * *argv )
             }
 
           out = result;
-          //out = out << 4;
-          //out = out >> 7;
+          // out = out << 4;
+          // out = out >> 7;
           out = out << 6;
           out = out >> 9;
           if( out  )
@@ -1179,8 +1266,8 @@ int main( int argc, char * *argv )
             }
 
           out = result;
-          //out = out << 3;
-          //out = out >> 7;
+          // out = out << 3;
+          // out = out >> 7;
           out = out << 5;
           out = out >> 9;
           if( out )
@@ -1193,35 +1280,34 @@ int main( int argc, char * *argv )
             std::cout << "Gradient-wise check: PASS" << std::endl;
             outfile << "\tGradient-wise check: PASS";
             }
-          
+
           out = result;
           out = out << 4;
           out = out >> 9;
           if( out )
-          {
+            {
             std::cout << "Brain mask check:\t\tFAILURE" << std::endl;
             outfile << "Brain mask check:\t\tFAILURE";
-          }
+            }
           else
-          {
+            {
             std::cout << "Brain mask check: PASS" << std::endl;
             outfile << "Brain mask check: PASS" << std::endl;
-          }          
-          
-          
+            }
+
           out = result;
-         out = out << 3;
-         out = out >> 9;
-         if( out )
-         {
+          out = out << 3;
+          out = out >> 9;
+          if( out )
+            {
             std::cout << "Dominant Directional Detector:\t\tFAILURE" << std::endl;
             outfile << "Dominant Directional Detector:\t\tFAILURE";
-         }
-         else
-         {
+            }
+          else
+            {
             std::cout << "Dominant Directional Detector: PASS" << std::endl;
             outfile << "Dominant Directional Detector: PASS" << std::endl;
-         }          
+            }
 
           // ZYXEDCBA:
           // X QC;Too many bad gradient directions found!
@@ -1229,7 +1315,7 @@ int main( int argc, char * *argv )
           // Z QC: Gradient direction #is less than 6!
 
           out = result;
-          //out = out >> 7;
+          // out = out >> 7;
           out = out >> 9;
           if( out )
             {
@@ -1242,8 +1328,8 @@ int main( int argc, char * *argv )
             }
 
           out = result;
-          //out = out << 1;
-          //out = out >> 7;
+          // out = out << 1;
+          // out = out >> 7;
           out = out << 1;
           out = out >> 9;
           if( out )
@@ -1257,8 +1343,8 @@ int main( int argc, char * *argv )
             }
 
           out = result;
-          //out = out << 2;
-          //out = out >> 7;
+          // out = out << 2;
+          // out = out >> 7;
           out = out << 2;
           out = out >> 9;
           if( out )
@@ -1277,7 +1363,9 @@ int main( int argc, char * *argv )
         }
       }
     else
-    	std::cout << "No protocol is loaded." << std::endl;
+      {
+      std::cout << "No protocol is loaded." << std::endl;
+      }
     return 0;
     }
 }

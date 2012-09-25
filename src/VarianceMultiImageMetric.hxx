@@ -96,6 +96,7 @@ VarianceMultiImageMetric<TImage>
 
   // Update intensity values
   ImagePointType mappedPoint;
+
   for( unsigned long int i = threadId; i < this->m_NumberOfSpatialSamples; i += this->m_NumberOfThreads )
     {
     for( unsigned int j = 0; j < this->m_NumberOfImages; j++ )
@@ -139,6 +140,7 @@ VarianceMultiImageMetric<TImage>
 {
 
   MeasureType value = NumericTraits<RealType>::Zero;
+
   // Sum over the values returned by threads
   for( unsigned int i = 0; i < this->m_NumberOfThreads; i++ )
     {
@@ -203,6 +205,7 @@ VarianceMultiImageMetric<TImage>
   /** The tranform parameters vector holding i'th images parameters
   Copy parameters in to a collection of arrays */
   MeasureType value = NumericTraits<MeasureType>::Zero;
+
   // Initialize the derivative array to zero
   for( unsigned int i = 0; i < this->m_NumberOfImages; i++ )
     {

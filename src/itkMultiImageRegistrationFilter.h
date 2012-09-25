@@ -56,6 +56,7 @@ public:
   inline PixelType operator()( const std::vector<PixelType> pixelStack)
   {
     double sum = 0.0;
+
     for( unsigned int i = 0; i < pixelStack.size(); i++ )
       {
       sum += pixelStack[i];

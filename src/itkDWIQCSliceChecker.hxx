@@ -474,9 +474,7 @@ DWIQCSliceChecker<TImageType>
   RegionFilter2->SetRegionOfInterest( desiredRegion );
   RegionFilter1->SetInput( filter1->GetOutput() );
   RegionFilter2->SetInput( filter2->GetOutput() );
-
   //     typedef itk::ImageRegionConstIterator<SliceImageType>  citOutputType;
-
   // ////////////////////////////////////////////////////////////////////////
   for( unsigned int j = 0; j < inputPtr->GetVectorLength(); j++ )
     {
@@ -1009,6 +1007,7 @@ DWIQCSliceChecker<TImageType>
                 }
 
               //                 if(effectCount>=2)
+              //
               //
               //
               //

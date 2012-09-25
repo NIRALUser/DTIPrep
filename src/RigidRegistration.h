@@ -35,6 +35,7 @@ protected:
   CommandIterationUpdate3DRigid()
   {
   }
+
 public:
   typedef itk::VersorRigid3DTransformOptimizer OptimizerType;
   typedef   const OptimizerType *              OptimizerPointer;

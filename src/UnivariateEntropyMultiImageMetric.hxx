@@ -380,6 +380,7 @@ UnivariateEntropyMultiImageMetric<TFixedImage>
 
   // Update intensity values
   ImagePointType mappedPoint;
+
   for( unsigned long int i = threadId; i < this->m_NumberOfSpatialSamples; i += this->m_NumberOfThreads )
     {
     for( unsigned int j = 0; j < this->m_NumberOfImages; j++ )
@@ -428,6 +429,7 @@ UnivariateEntropyMultiImageMetric<TFixedImage>
 {
 
   MeasureType value = NumericTraits<RealType>::Zero;
+
   // Sum over the values returned by threads
   for( unsigned int i = 0; i < this->m_NumberOfThreads; i++ )
     {

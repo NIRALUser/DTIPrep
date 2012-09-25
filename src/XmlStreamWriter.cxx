@@ -71,7 +71,8 @@ void XmlStreamWriter::writeIndexEntry(QXmlStreamWriter *xmlWriter,
     }
   if( pageString == "InterlaceCorrelation_Baseline" )
     {
-    if( item->text(1).toFloat() > protocol->GetInterlaceCheckProtocol().correlationThresholdBaseline )      // correlation
+    if( item->text(1).toFloat() > protocol->GetInterlaceCheckProtocol().correlationThresholdBaseline )      //
+                                                                                                            // correlation
                                                                                                             // threshold
                                                                                                             // for
                                                                                                             // baseline
@@ -92,7 +93,8 @@ void XmlStreamWriter::writeIndexEntry(QXmlStreamWriter *xmlWriter,
 
   if( pageString == "InterlaceCorrelation" )
     {
-    if( item->text(1).toFloat() > protocol->GetInterlaceCheckProtocol().correlationThresholdGradient )     // correlation
+    if( item->text(1).toFloat() > protocol->GetInterlaceCheckProtocol().correlationThresholdGradient )     //
+                                                                                                           // correlation
                                                                                                            // threshold
                                                                                                            // for
                                                                                                            // gradients
@@ -216,7 +218,8 @@ void XmlStreamWriter::writeIndexEntry_Protocol(QXmlStreamWriter *xmlWriter,
     }
   if( pageString == "InterlaceCorrelation_Baseline" )
     {
-    if( item->text(1).toFloat() > protocol->GetInterlaceCheckProtocol().correlationThresholdBaseline )      // correlation
+    if( item->text(1).toFloat() > protocol->GetInterlaceCheckProtocol().correlationThresholdBaseline )      //
+                                                                                                            // correlation
                                                                                                             // threshold
                                                                                                             // for
                                                                                                             // baseline
@@ -224,6 +227,7 @@ void XmlStreamWriter::writeIndexEntry_Protocol(QXmlStreamWriter *xmlWriter,
                                                                                                             // protocol
       {
       xmlWriter->writeTextElement("green", item->text(1) );
+      //
       // std::cout<<"InterlaceCorrelation_Baseline"<<protocol->GetInterlaceCheckProtocol().correlationThresholdBaseline<<std::endl;
       }
     else
@@ -236,7 +240,8 @@ void XmlStreamWriter::writeIndexEntry_Protocol(QXmlStreamWriter *xmlWriter,
 
   if( pageString == "InterlaceCorrelation" )
     {
-    if( item->text(1).toFloat() > protocol->GetInterlaceCheckProtocol().correlationThresholdGradient )     // correlation
+    if( item->text(1).toFloat() > protocol->GetInterlaceCheckProtocol().correlationThresholdGradient )     //
+                                                                                                           // correlation
                                                                                                            // threshold
                                                                                                            // for
                                                                                                            // gradients

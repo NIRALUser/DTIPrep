@@ -130,6 +130,7 @@ protected:
   ~DWICropper();
 
   void PrintSelf(std::ostream & os, Indent indent) const;
+
   virtual void ThreadedGenerateData(const OutputImageRegionType & outputRegionForThread, ThreadIdType threadId );
 
 private:

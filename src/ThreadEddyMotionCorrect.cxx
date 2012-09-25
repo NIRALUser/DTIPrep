@@ -16,6 +16,7 @@ CThreadEddyMotionCorrect::~CThreadEddyMotionCorrect()
 void CThreadEddyMotionCorrect::run()
 {
   emit allDone("transform begings");
+
   for( int i = 0; i < 10000; i++ )
     {
     emit kkk( ( i + 1 ) / 100 );

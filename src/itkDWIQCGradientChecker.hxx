@@ -529,14 +529,11 @@ DWIQCGradientChecker<TImageType>
 ::DoCheck()
 {
   std::cout << "Gradient checking ...";
-
   //     int DWICount, BaselineCount;
   //     BaselineCount  = getBaselineNumber();
   //     DWICount    = getGradientNumber();
-
   //     std::cout<<"BaselineCount: "<<BaselineCount<<std::endl;
   //     std::cout<<"DWICount: "<<DWICount<<std::endl;
-
   //     std::cout<<"m_RotationThreshold: "<<m_RotationThreshold<<std::endl;
   //     std::cout<<"m_TranslationThreshold:
   // "<<m_TranslationThreshold<<std::endl;

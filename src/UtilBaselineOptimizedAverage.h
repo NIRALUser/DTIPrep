@@ -100,17 +100,17 @@ bool BaselineOptimizedAverage(
                          + vcl_abs(allImageRegistrations.at(i).GetTranslationZ() ) ) / 3.0;
         newTransSum +=
           ( vcl_abs(currentIterationCurrentImageRegistration.GetTranslationX() )
-           + vcl_abs(currentIterationCurrentImageRegistration.GetTranslationY() )
-           + vcl_abs(currentIterationCurrentImageRegistration.GetTranslationZ() ) ) / 3.0;
+            + vcl_abs(currentIterationCurrentImageRegistration.GetTranslationY() )
+            + vcl_abs(currentIterationCurrentImageRegistration.GetTranslationZ() ) ) / 3.0;
 
         oldRotateSum +=
           ( vcl_abs(allImageRegistrations.at(i).GetFinalAngleInRadiansX() )
-           + vcl_abs(allImageRegistrations.at(i).GetFinalAngleInRadiansY() )
-           + vcl_abs(allImageRegistrations.at(i).GetFinalAngleInRadiansZ() ) ) / 3.0;
+            + vcl_abs(allImageRegistrations.at(i).GetFinalAngleInRadiansY() )
+            + vcl_abs(allImageRegistrations.at(i).GetFinalAngleInRadiansZ() ) ) / 3.0;
         newRotateSum +=
           ( vcl_abs(currentIterationCurrentImageRegistration.GetFinalAngleInRadiansX() )
-           + vcl_abs(currentIterationCurrentImageRegistration.GetFinalAngleInRadiansY() )
-           + vcl_abs(currentIterationCurrentImageRegistration.GetFinalAngleInRadiansZ() ) ) / 3.0;
+            + vcl_abs(currentIterationCurrentImageRegistration.GetFinalAngleInRadiansY() )
+            + vcl_abs(currentIterationCurrentImageRegistration.GetFinalAngleInRadiansZ() ) ) / 3.0;
 
         std::cout << "Current metric: " << i << " "
                   << currentIterationCurrentImageRegistration.GetMutualInformation() << std::endl;

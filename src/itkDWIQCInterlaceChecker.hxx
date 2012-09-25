@@ -671,7 +671,6 @@ DWIQCInterlaceChecker<TImageType>
         }
       }
     quardraticFittedDeviations = sqrt(quardraticFittedDeviations);
-
     // std::cout<<"quardraticFittedMeans: "<< quardraticFittedMeans
     // <<std::endl;
     //       std::cout<<"quardraticFittedDeviations: "<<
@@ -784,7 +783,6 @@ DWIQCInterlaceChecker<TImageType>
 
     interlaceBaselineDeviations = sqrt(interlaceBaselineDeviations);
     interlaceGradientDeviations = sqrt(interlaceGradientDeviations);
-
     //     std::cout<<"interlaceBaselineDeviations: "<<interlaceBaselineDeviations<<std::endl;
     //    std::cout<<"interlaceGradientDeviations: "<<interlaceGradientDeviations<<std::endl;
     //     std::cout<<"m_RotationThreshold: "<<m_RotationThreshold<<std::endl;

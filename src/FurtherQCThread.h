@@ -54,7 +54,8 @@ public:
   }
 
   void GenerateCheckOutputImage( DwiImageType::Pointer dwi);    // generating the nrrd file from input dwi which all its
-                                                                // excluded gradients are taken away
+
+  // excluded gradients are taken away
 
   inline DwiImageType::Pointer Getdwi() const
   {

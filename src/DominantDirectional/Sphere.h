@@ -8,18 +8,23 @@
 #include "Point.h"
 #include "Vector.h"
 
-namespace fiberodf{
+namespace fiberodf
+{
 
-class Sphere{
+class Sphere
+{
 protected:
-	Point m_center ;
-	double m_radius ;
+  Point  m_center;
+  double m_radius;
 public:
-	Sphere(const Point &center, const double radius) ;
-	Vector normal(const Point &pointOnSurface) const ;
-	bool intersect(const Point &raySource, const Point &pointOnRay, Point &intersectPoint) const ;
-	bool intersect(const Point &raySource, const Vector &direction, Point &intersectPoint) const ;
-} ;
+  Sphere(const Point & center, const double radius);
+  Vector normal(const Point & pointOnSurface) const;
+
+  bool intersect(const Point & raySource, const Point & pointOnRay, Point & intersectPoint) const;
+
+  bool intersect(const Point & raySource, const Vector & direction, Point & intersectPoint) const;
+
+};
 
 }
 #endif

@@ -27,7 +27,6 @@
 
 #include "DominantDirectional/DominantDirectional_Detector.h"
 
-
 #include "itkDWIEddyCurrentHeadMotionCorrector.h" // eddy-motion Utah
 #include "itkVectorImageRegisterAffineFilter.h"   // eddy-motion IOWA
 
@@ -66,8 +65,7 @@ public:
   typedef itk::DWIQCInterlaceChecker<DwiImageType> InterlaceCheckerType;
   typedef itk::DWIBaselineAverager<DwiImageType>   BaselineAveragerType;
   typedef itk::DWIQCGradientChecker<DwiImageType>  GradientCheckerType;
-  
-  
+
   itksysProcess* m_Process;
 
   // eddy-motion Utah
@@ -89,12 +87,10 @@ public:
 
   bool GetGradientDirections(DwiImageType::Pointer dwi, double & bValue,
                              GradientDirectionContainerType::Pointer GradDireContainer);
-  bool GetInterlaceProtocolParameters_B(
-    double & correlationThresholdBaseline,
-    double & correlationThresholdGradient,
-    double & correlationBaselineDevTimes,
-    double & correlationGradientDevTimes
-    );
+
+  bool GetInterlaceProtocolParameters_B(double & correlationThresholdBaseline, double & correlationThresholdGradient,
+                                        double & correlationBaselineDevTimes,
+                                        double & correlationGradientDevTimes);
 
   unsigned char ImageCheck( DwiImageType::Pointer dwi );
 
@@ -122,13 +118,13 @@ public:
   bool EddyMotionCorrectIowa( DwiImageType::Pointer dwi );
 
   bool GradientWiseCheck( DwiImageType::Pointer dwi );
-  
+
   bool BrainMask();
-  
+
   bool BRAINMASK_METHOD_FSL( std::string reportFileName);
-  
+
   bool BRAINMASK_METHOD_Slicer(std::string reportFileName );
-  
+
   bool DominantDirectionalCheck();
 
   bool SaveDwiForcedConformanceImage(void);
@@ -232,7 +228,8 @@ public:
   unsigned char  RunPipelineByProtocol();
 
   unsigned char  RunPipelineByProtocol_FurtherQC(); // In Further QC step: Runing Baseline Avg, Eddy motion correction,
-                                                    // Gradient-wise checking, DWI saving
+
+  // Gradient-wise checking, DWI saving
 
   inline DwiImageType::Pointer GetDwiImage() const
   {
@@ -316,18 +313,15 @@ public:
   std::string & GetReportFileName()
   {
 
-	return ReportFileName;
+    return ReportFileName;
   }
 
   std::string m_outputDWIFileName;  // the name of QCed DWI file
-  std::string  ReportFileName;
-  
-
+  std::string ReportFileName;
 private:
-  
- // DiffusionTensorEstimation	m_DominantDirectionDetector;
 
-  
+  // DiffusionTensorEstimation	m_DominantDirectionDetector;
+
   void collectDiffusionStatistics();
 
   void collectLeftDiffusionStatistics( DwiImageType::Pointer dwi, std::string reportfilename );

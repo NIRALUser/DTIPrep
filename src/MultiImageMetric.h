@@ -255,6 +255,7 @@ public:
     SpatialSample()
     {
     }
+
     ~SpatialSample()
     {
     };

@@ -4,8 +4,9 @@
 
 #include "Geometry_Common.h"
 
-namespace fiberodf{
+namespace fiberodf
+{
 
-const double EPSILON = 0.000001 ;
+const double EPSILON = 0.000001;
 
 }
