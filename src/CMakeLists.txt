@@ -57,7 +57,7 @@ SET( DTIPrep_SRCS
 
 generateclp(DTIPrep_SRCS DTIPrep.xml )
 
-SET( DTIPrep_HRDS
+SET( DTIPrep_MOC_HDRS
   GMainWindow.h
   Dicom2NrrdPanel.h
   IntensityMotionCheckPanel.h
@@ -67,6 +67,10 @@ SET( DTIPrep_HRDS
   ThreadDicomToNrrd.h
   ThreadDicomSeriesRead.h
   FurtherQCThread.h
+  #Combo_Box.h
+)
+
+SET( DTIPrep_HDRS
   DominantDirectional/DominantDirectional_Detector.h
   DominantDirectional/Counter.h
   DominantDirectional/SphereIkosahedron.h
@@ -75,8 +79,8 @@ SET( DTIPrep_HRDS
   DominantDirectional/Triangle.h
   DominantDirectional/Vector.h
   DominantDirectional/Geometry_Common.h
-  #Combo_Box.h
-)
+  )
+
 
 SET( DTIPrep_UIS
   gui/MainWindow.ui
@@ -91,7 +95,7 @@ SET(DTIPrep_RCCS gui/DTIPrep.qrc)
 QT4_ADD_RESOURCES(RCC_SRCS ${DTIPrep_RCCS})
 
 QT4_WRAP_UI( UIHeaders ${DTIPrep_UIS} )
-QT4_WRAP_CPP( MOCSrcs ${DTIPrep_HRDS} )
+QT4_WRAP_CPP( MOCSrcs ${DTIPrep_MOC_HDRS} )
 
 #ADD_DEFINITIONS(-DQT_GUI_LIBS -DQT_CORE_LIB -DQT3_SUPPORT)
 
