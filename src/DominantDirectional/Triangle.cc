@@ -20,9 +20,9 @@ std::ostream &operator<<(std::ostream &os, const TriangleBarycentricCoords &bary
 }
 
 Triangle::Triangle(const Point &p1, const Point &p2, const Point &p3){
-	this->p1 = p1 ;
-	this->p2 = p2 ;
-	this->p3 = p3 ;
+	this->m_p1 = p1 ;
+	this->m_p2 = p2 ;
+	this->m_p3 = p3 ;
 }
 
 bool Triangle::intersect(const Point &raySource, const Point &pointOnRay, Point &intersectPoint) const{
@@ -39,7 +39,7 @@ bool Triangle::intersect(const Point &raySource, const Vector &direction, Point 
 	if (direc * norm == 0)	//The ray is parallel to the plane
 		return false ;
 	//Turn the ray function into: raySource + t * direc
-	double t = norm * Vector(raySource, p1) / (norm * direc) ;
+	const double t = norm * Vector(raySource, m_p1) / (norm * direc) ;
 
 	if (t < 0){
 		return false ;
@@ -64,7 +64,7 @@ bool Triangle::intersect(const Point &raySource, const Vector &direction, Point 
 }
 
 Vector Triangle::normal() const{
-	Vector n = crossProduct(Vector(p1, p2), Vector(p1, p3)) ;
+	Vector n = crossProduct(Vector(m_p1, m_p2), Vector(m_p1, m_p3)) ;
 	n.normalize() ;
 	return n ;
 }
@@ -72,9 +72,9 @@ Vector Triangle::normal() const{
 TriangleBarycentricCoords Triangle::barycentric(const Point &p) const{
 	//Local 2D coordinate system is used--p1 is the origin
 	//Let intersect point be P = p1 + u(p2 - p1) + v(p3 - p1), where u and v are real numbers
-	Vector p1P(p1, p) ;
-	Vector p1p2(p1, p2) ;
-	Vector p1p3(p1, p3) ;
+	Vector p1P(m_p1, p) ;
+	Vector p1p2(m_p1, m_p2) ;
+	Vector p1p3(m_p1, m_p3) ;
 
 	//p1P = u * p1p2 + v * p1p3
 	const double u = ((p1P * p1p2) * (p1p3 * p1p3) - (p1P * p1p3) * (p1p2 * p1p3)) / ((p1p2 * p1p2) * (p1p3 * p1p3) - (p1p2 * p1p3) * (p1p2 * p1p3)) ;

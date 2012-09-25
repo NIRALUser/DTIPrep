@@ -2,7 +2,7 @@
  *	By Yinpeng Li, mousquetaires@unc.edu
  */
 
-#include "Counter.h""
+#include "Counter.h"
 #include "Triangle.h"
 #include <cassert>
 #include <iostream>

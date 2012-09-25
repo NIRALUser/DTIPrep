@@ -42,7 +42,7 @@ DiffusionTensorEstimation::~DiffusionTensorEstimation()
 {}
 
 /*******************************************************************************************************************************/
-/* *******Description of arguments 
+/* *******Description of arguments */
 /* ******** labelfilename, program path of dtiestim, QCedDWI, Reportfilename, DTI ==  buffer1, buffer2, buffer3,  buffer2,  buffer4*/
 /*******************************************************************************************************************************/
 
@@ -161,11 +161,11 @@ double DiffusionTensorEstimation::EstimateTensor_Whitematter_GrayMatter(std::str
 			//buffer_counter.replace(buffer3.end()-1,buffer3.end()-6,"_PD_Counter.vtk");
 			counter4.WriteCounterToVTKFile( buffer_counter.c_str() ) ;
 			double total4 = 0;
-			for ( int i = 0; i < counter4.Getbins().size() ; i++)
+			for ( unsigned int i = 0; i < counter4.Getbins().size() ; i++)
 			{
 				total4+=counter4.Getbins()[i];
 			}
-			for ( int i = 0; i < counter4.Getbins().size() ; i++)
+			for ( unsigned int i = 0; i < counter4.Getbins().size() ; i++)
 			{
 				if ( (double) counter4.Getbins()[i] != 0 )
 				{
@@ -219,7 +219,7 @@ void DiffusionTensorEstimation::SaveEntropyResult_beta( std::string Reportfilena
 	    outfile << "Label fileName: " << Labelfilename << std::endl;
 		//outfile << "-t threshold for dtiestim " << threshold_dtiestim << std::endl;
 		//outfile << "bins: " << std::endl;
-		int i =0;
+		unsigned int i =0;
 		while ( i<m_bins.size() )
 		{
 			//outfile << m_bins[i] << " " << m_bins[i+1] << " " << m_bins[i+2] << " " << m_bins[i+3] << std::endl;

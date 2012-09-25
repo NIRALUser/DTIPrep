@@ -50,6 +50,7 @@ SET( DTIPrep_SRCS
  DominantDirectional/Counter.cc
  DominantDirectional/Point.cc
  DominantDirectional/Sphere.cc
+ DominantDirectional/SphereIkosahedron.cxx
  DominantDirectional/Triangle.cc
  DominantDirectional/Vector.cc
  DominantDirectional/Geometry_Common.cc

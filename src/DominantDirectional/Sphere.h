@@ -12,8 +12,8 @@ namespace fiberodf{
 
 class Sphere{
 protected:
-	Point center ;
-	double radius ;
+	Point m_center ;
+	double m_radius ;
 public:
 	Sphere(const Point &center, const double radius) ;
 	Vector normal(const Point &pointOnSurface) const ;

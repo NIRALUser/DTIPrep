@@ -11,12 +11,14 @@ namespace fiberodf{
 
 class Point{
 protected:
-	double x, y, z ;
+	double m_x;
+	double m_y;
+	double m_z;
 public:
 	explicit Point(const double x = 0, const double y = 0, const double z = 0) ;
-	double getX() const {return x ;}
-	double getY() const {return y ;}
-	double getZ() const {return z ;}
+	double getX() const {return m_x ;}
+	double getY() const {return m_y ;}
+	double getZ() const {return m_z ;}
 	double operator[](const int index) const ;
 	double &getRef(const int index) ;
 } ;

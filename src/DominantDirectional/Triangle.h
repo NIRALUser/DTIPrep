@@ -19,7 +19,7 @@ std::ostream &operator<<(std::ostream &os, const TriangleBarycentricCoords &bary
 
 class Triangle{
 protected:
-	Point p1, p2, p3 ;
+	Point m_p1, m_p2, m_p3 ;
 public:
 	Triangle(const Point &p1, const Point &p2, const Point &p3) ;
 	Vector normal() const ;

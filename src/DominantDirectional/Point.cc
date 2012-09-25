@@ -11,21 +11,21 @@
 namespace fiberodf{
 
 Point::Point(const double x, const double y, const double z){
-	this->x = x ;
-	this->y = y ;
-	this->z = z ;
+	this->m_x = x ;
+	this->m_y = y ;
+	this->m_z = z ;
 }
 
 double Point::operator[](const int index) const{
   switch (index){
   case X:
-    return x ;
+    return m_x ;
     break ;
   case Y:
-    return y ;
+    return m_y ;
     break ;
   case Z:
-    return z ;
+    return m_z ;
     break ;
   default:
     std::cout << "Index out of range!" << std::endl ;
@@ -37,13 +37,13 @@ double Point::operator[](const int index) const{
 double &Point::getRef(const int index){
      switch (index){
   case X:
-    return x ;
+    return m_x ;
     break ;
   case Y:
-    return y ;
+    return m_y ;
     break ;
   case Z:
-    return z ;
+    return m_z ;
     break ;
   default:
     std::cout << "Index out of range!" << std::endl ;

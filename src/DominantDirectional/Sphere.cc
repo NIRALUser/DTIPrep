@@ -8,8 +8,8 @@
 namespace fiberodf{
 
 Sphere::Sphere(const Point &center, const double radius){
-	this->center = center ;
-	this->radius = radius ;
+	this->m_center = center ;
+	this->m_radius = radius ;
 }
 
 bool Sphere::intersect(const Point &raySource, const Point &pointOnRay, Point &intersectPoint) const{
@@ -27,14 +27,14 @@ bool Sphere::intersect(const Point &raySource, const Vector &direction, Point &i
 	//Turn the intersection function into a * sqr(t) + b * t + c = 0 => sqr(|S + t * v - C|) = sqr(r)
 	//=>sqr(tv) + 2tv(S - C) + sqr(S - C) - sqr(r)
 	//a = 1
-	double b = 2 * direc * Vector(center, raySource) ;
-	double c = (Vector(center, raySource)).magnitudeSquare() - radius * radius ;
+	const double b = 2.0 * direc * Vector(m_center, raySource) ;
+	const double c = (Vector(m_center, raySource)).magnitudeSquare() - m_radius * m_radius ;
 
-	if ((b * b - 4 * c) < 0)
+	if ((b * b - 4.0 * c) < 0.0)
 		return false ;
-	else if ((b * b - 4 * c) == 0){
-		double t = - b / 2 ;
-		if (t < 0){
+	else if ((b * b - 4.0 * c) == 0.0){
+		const double t = - b * 0.5 ;
+		if (t < 0.0){
 			return false ;
 		}
 		else {
@@ -43,12 +43,12 @@ bool Sphere::intersect(const Point &raySource, const Vector &direction, Point &i
 		}
 	}
 	else{
-		double t1 = (- b - sqrt(b * b - 4 * c)) / 2 ;
-		double t2 = (- b + sqrt(b * b - 4 * c)) / 2 ;
-		if (t2 < 0){
+		const double t1 = (- b - sqrt(b * b - 4.0 * c)) *0.5 ;
+		const double t2 = (- b + sqrt(b * b - 4.0 * c)) *0.5 ;
+		if (t2 < 0.0){
 			return false ;
 		}
-		else if (t1 < 0){
+		else if (t1 < 0.0){
 			intersectPoint = raySource + t2 * direc ;
 			return true ;
 		}
@@ -60,7 +60,7 @@ bool Sphere::intersect(const Point &raySource, const Vector &direction, Point &i
 }
 
 Vector Sphere::normal(const Point &pointOnSurface) const{
-	Vector n(center, pointOnSurface) ;
+	Vector n(m_center, pointOnSurface) ;
 	n.normalize() ;
 	return n ;
 }

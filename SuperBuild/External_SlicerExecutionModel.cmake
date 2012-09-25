@@ -72,6 +72,8 @@ if(NOT DEFINED ${extProjName}_DIR AND NOT ${USE_SYSTEM_${extProjName}})
       ${${proj}_DEPENDENCIES}
     )
   set(${extProjName}_DIR ${CMAKE_BINARY_DIR}/${proj}-build)
+  set(GenerateCLP_DIR
+    ${CMAKE_CURRENT_BINARY_DIR}/${proj}-build/GenerateCLP)
 else()
   if(${USE_SYSTEM_${extProjName}})
     find_package(${extProjName} REQUIRED)

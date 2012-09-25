@@ -72,30 +72,14 @@ class ITK_EXPORT SphereIkosahedron : public DataObject
 		void 	operator=(const Self&); //purposely not implemented
 };
 
-#define X .525731112119133606
-#define Z .850650808352039932
-
 #ifndef M_PI
 #define M_PI 3.141592653589793
 #endif
 
 //Vertices, triangles, edges of a single icosahedron
-static double vert[12][3] = {
-	{-X, 0.0, Z}, {X, 0.0, Z}, {-X, 0.0, -Z}, {X, 0.0, -Z},
-	{0.0, Z, X}, {0.0, Z, -X}, {0.0, -Z, X}, {0.0, -Z, -X},
-	{Z, X, 0.0}, {-Z, X, 0.0}, {Z, -X, 0.0}, {-Z, -X, 0.0}
-};
-static short edge[30][2] = {
-	{0,1}, {0,4}, {0,6}, {0,9}, {0,11}, {1,4}, {1,6}, {1,8}, {1,10}, {2,3},
-	{2,5}, {2,7}, {2,9}, {2,11}, {3,5}, {3,7}, {3,8}, {3,10}, {4,5}, {4,8},
-	{4,9}, {5,8}, {5,9}, {6,7}, {6,10}, {6,11}, {7,10}, {7,11}, {8,10}, {9,11}
-};
-static short triang[20][3] = {
-	{0,4,1}, {0,9,4}, {9,5,4}, {4,5,8}, {4,8,1},
-	{8,10,1}, {8,3,10}, {5,3,8}, {5,2,3}, {2,7,3},
-	{7,10,3}, {7,6,10}, {7,11,6}, {11,0,6}, {0,1,6},
-	{6,1,10}, {9,0,11}, {9,11,2}, {9,2,5}, {7,2,11}
-};
+extern const double vert[12][3];
+extern const short edge[30][2];
+extern const short triang[20][3];
 
 //************************************************************************************************
 
@@ -118,15 +102,13 @@ short SphereIkosahedron< T >::GetNumberOfTriangle()
 template < typename T >
 void SphereIkosahedron< T >::ComputeSubdivision()
 {
-	int i;
-	
 	m_NumberOfVertices = 12 + 30*m_SubdivisionLevel + 20*m_SubdivisionLevel*(m_SubdivisionLevel-1)/2;//12 is the number of vertices of the simple iko, 30: number of edge, 20: number of triangles
 	m_NumberOfTriangles = 20*(m_SubdivisionLevel+1)*(m_SubdivisionLevel+1);
 
 	unsigned short subdiv = m_SubdivisionLevel + 1;
 	int m,n;
 	double x1, y1, z1, x2, y2, z2, x3, y3, z3, dx12, dy12, dz12, dx23, dy23, dz23, length;
-	for(i=0; i<30; i++) 
+	for(unsigned char i=0; i<30; i++) 
 	{
 		x1 = vert[edge[i][0] ][0];
 		y1 = vert[edge[i][0] ][1];
@@ -172,7 +154,7 @@ void SphereIkosahedron< T >::ComputeSubdivision()
 	if(subdiv > 2) 
 	{
 		//If the subdivision level is > 2, we have to create points inside each basic triangle
-		for(i=0; i<20; i++) 
+		for(unsigned char i=0; i<20; i++) 
 		{
 			//For each triangle, we subdivide each edge.
 			x1 = vert[triang[i][0] ][0];
@@ -231,7 +213,7 @@ void SphereIkosahedron< T >::ComputeSubdivision()
 	//Create the triangle from the new made vertices
 	if (subdiv > 1) 
 	{
-		for(i=0; i<20; i++) 
+		for(unsigned char i=0; i<20; i++) 
 		{
 			x1 = vert[triang[i][0] ][0];
 			y1 = vert[triang[i][0] ][1];
@@ -329,13 +311,13 @@ void SphereIkosahedron< T >::ComputeSubdivision()
 	}
 	
 	if (m_SubdivisionLevel == 0){	//0-level subdivision
-		for (int i = 0; i < m_NumberOfTriangles; i++){
+		for (int ii = 0; ii < m_NumberOfTriangles; ii++){
 			std::vector<VectorType> triangle(3) ;
 			
-			for (int j = 0; j < 3; j++){
-				triangle[j].resize(3) ;	//The point
-				for (int k = 0; k < 3; k++){
-					triangle[j][k] = vert[triang[i][j]][k] ;
+			for (int jj = 0; jj < 3; jj++){
+				triangle[jj].resize(3) ;	//The point
+				for (int kk = 0; kk < 3; kk++){
+					triangle[jj][kk] = vert[triang[ii][jj]][kk] ;
 				}
 			}
 			
@@ -343,9 +325,9 @@ void SphereIkosahedron< T >::ComputeSubdivision()
 		}
 	}
 	
-	double epsilon = 0.00001;
+	const double epsilon = 0.00001;
 	
-	for (i = 0 ; i < m_NumberOfTriangles ; i++)
+	for (int i = 0 ; i < m_NumberOfTriangles ; i++)
 	{
 		std::vector<short> triangs;
 		for( int l = 0; l < 3 ; l++ )
@@ -357,11 +339,11 @@ void SphereIkosahedron< T >::ComputeSubdivision()
 
 	// find indexes
 	if (subdiv > 1){
-		for(i = 0; i < m_NumberOfVertices; i++) 
+		for(int i = 0; i < m_NumberOfVertices; i++) 
 		{
 			for (int j = 0; j < m_NumberOfTriangles ; j++) 
 			{
-				for(int k = 0 ; k < 3 ; k++)
+				for(unsigned char k = 0 ; k < 3 ; k++)
 				{
 					if (m_OrdinatedTriangles[j][k] < 0)
 					{
@@ -470,9 +452,7 @@ template< typename T >
 int SphereIkosahedron< T >::PhiThetaToIndex(double Phi, double Theta)
 {
 	int indice = -1;
-	int i,j;
-	
-	for(i = 0 ; i < m_NumberOfVertices ; i++)
+	for(unsigned int i = 0 ; i < m_NumberOfVertices ; i++)
 	{
 		if( Phi == m_PhiThetaTable[i][0] && Theta == m_PhiThetaTable[i][1])
 		{
