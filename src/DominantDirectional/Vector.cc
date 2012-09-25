@@ -2,7 +2,7 @@
  *	By Yinpeng Li, mousquetaires@unc.edu
  */
 
-#include "Vector.h""
+#include "Vector.h"
 #include "Point.h"
 #include "Geometry_Common.h"
 #include <cstdlib>
@@ -12,15 +12,15 @@
 namespace fiberodf{
 
 Vector::Vector(const double x, const double y, const double z){
-	this->x = x ;
-	this->y = y ;
-	this->z = z ;
+	this->m_x = x ;
+	this->m_y = y ;
+	this->m_z = z ;
 }
 
 Vector::Vector(const Point &tail, const Point &tip){
-	x = tip.getX() - tail.getX() ;
-	y = tip.getY() - tail.getY() ;
-	z = tip.getZ() - tail.getZ() ;
+	m_x = tip.getX() - tail.getX() ;
+	m_y = tip.getY() - tail.getY() ;
+	m_z = tip.getZ() - tail.getZ() ;
 }
 
 bool operator==(const Vector &v1, const Vector &v2){
@@ -28,12 +28,12 @@ bool operator==(const Vector &v1, const Vector &v2){
 }
 
 double Vector::magnitude() const{
-	double squareMagnitude = x * x + y * y + z * z ;
+	const double squareMagnitude = m_x * m_x + m_y * m_y + m_z * m_z ;
 	return sqrt(squareMagnitude) ;
 }
 
 double Vector::magnitudeSquare() const{
-	return x * x + y * y + z * z ;
+	return m_x * m_x + m_y * m_y + m_z * m_z ;
 }
 
 bool Vector::isZero() const{
@@ -43,9 +43,9 @@ bool Vector::isZero() const{
 void Vector::normalize(){
 	double mag = magnitude() ;
 	if (mag > 0){
-		x = x / mag ;
-		y = y / mag ;
-		z = z / mag ;
+		m_x = m_x / mag ;
+		m_y = m_y / mag ;
+		m_z = m_z / mag ;
 	}
 	else{
 		std::cout << "Zero vector, can not normalize!" << std::endl ;
@@ -54,19 +54,19 @@ void Vector::normalize(){
 }
 
 Vector Vector::operator -() const{
-	return Vector(-x, -y, -z) ;
+	return Vector(-m_x, -m_y, -m_z) ;
 }
 
 double Vector::operator[](const int index) const{
   switch (index){
   case X:
-    return x ;
+    return m_x ;
     break ;
   case Y:
-    return y ;
+    return m_y ;
     break ;
   case Z:
-    return z ;
+    return m_z ;
     break ;
   default:
     std::cout << "Index out of range!" << std::endl ;

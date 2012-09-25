@@ -13,7 +13,9 @@ class Point ;
 
 class Vector{
 protected:
-	double x, y, z ;
+	double m_x;
+	double m_y;
+	double m_z;
 public:
 	explicit Vector(const double x = 0, const double y = 0, const double z = 0) ;
 	Vector(const Point &tail, const Point &tip) ;
@@ -22,9 +24,9 @@ public:
 	void normalize() ;
 	bool isZero() const ;
 	Vector operator-() const ;
-	double getX() const {return x ;}
-	double getY() const {return y ;}
-	double getZ() const {return z ;}
+	double getX() const {return m_x ;}
+	double getY() const {return m_y ;}
+	double getZ() const {return m_z ;}
 	double operator[](const int index) const ;
 } ;
 
