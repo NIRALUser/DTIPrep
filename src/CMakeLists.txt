@@ -1,5 +1,5 @@
-#ADD_SUBDIRECTORY(src)
-#ADD_SUBDIRECTORY(gui)
+#add_subdirectory(src)
+#add_subdirectory(gui)
 
 find_package(GenerateCLP REQUIRED)
 if(GenerateCLP_FOUND)
@@ -9,7 +9,7 @@ endif(GenerateCLP_FOUND)
 include_directories(${CMAKE_BINARY_DIR}/src)
 link_directories(${CMAKE_LIBRARY_OUTPUT_DIRECTORY})
 
-SET( DTIPrep_SRCS
+set( DTIPrep_SRCS
   main.cxx
   GMainWindow.cxx
   Dicom2NrrdPanel.cxx
@@ -58,7 +58,7 @@ SET( DTIPrep_SRCS
 
 generateclp(DTIPrep_SRCS DTIPrep.xml )
 
-SET( DTIPrep_MOC_HDRS
+set( DTIPrep_MOC_HDRS
   GMainWindow.h
   Dicom2NrrdPanel.h
   IntensityMotionCheckPanel.h
@@ -71,7 +71,7 @@ SET( DTIPrep_MOC_HDRS
   #Combo_Box.h
 )
 
-SET( DTIPrep_HDRS
+set( DTIPrep_HDRS
   DominantDirectional/DominantDirectional_Detector.h
   DominantDirectional/Counter.h
   DominantDirectional/SphereIkosahedron.h
@@ -83,14 +83,14 @@ SET( DTIPrep_HDRS
   )
 
 
-SET( DTIPrep_UIS
+set( DTIPrep_UIS
   gui/MainWindow.ui
   gui/Dicom2NrrdPanel.ui
   gui/IntensityMotionCheckPanel.ui
   gui/ImageView2DPanelWithControls.ui
 )
 
-SET(DTIPrep_RCCS gui/DTIPrep.qrc)
+set(DTIPrep_RCCS gui/DTIPrep.qrc)
 
 # generate rules for building source files from the resources
 QT4_ADD_RESOURCES(RCC_SRCS ${DTIPrep_RCCS})
@@ -98,12 +98,12 @@ QT4_ADD_RESOURCES(RCC_SRCS ${DTIPrep_RCCS})
 QT4_WRAP_UI( UIHeaders ${DTIPrep_UIS} )
 QT4_WRAP_CPP( MOCSrcs ${DTIPrep_MOC_HDRS} )
 
-#ADD_DEFINITIONS(-DQT_GUI_LIBS -DQT_CORE_LIB -DQT3_SUPPORT)
+#add_definitions(-DQT_GUI_LIBS -DQT_CORE_LIB -DQT3_SUPPORT)
 
-SET_SOURCE_FILES_PROPERTIES(${DTIPrep_SRCS} PROPERTIES
+set_source_files_properties(${DTIPrep_SRCS} PROPERTIES
   OBJECT_DEPENDS "${UIHeaders}")
 
-ADD_EXECUTABLE( DTIPrep
+add_executable( DTIPrep
   MACOSX_BUNDLE
   ${DTIPrep_SRCS}
   ${UISrcs}
@@ -111,7 +111,7 @@ ADD_EXECUTABLE( DTIPrep
   ${RCC_SRCS}
 )
 
-TARGET_LINK_LIBRARIES( DTIPrep
+target_link_libraries( DTIPrep
   ModuleDescriptionParser
   QVTK
   ${QT_LIBRARIES}
@@ -122,38 +122,38 @@ TARGET_LINK_LIBRARIES( DTIPrep
 )
 
 
-INSTALL(TARGETS
+install(TARGETS
   DTIPrep
                  BUNDLE DESTINATION  bin
                  RUNTIME DESTINATION bin
                  LIBRARY DESTINATION lib
                  ARCHIVE DESTINATION lib/static)
 
-SET(plugin_dest_dir bin)
-SET(qtconf_dest_dir bin)
-SET(APPS "\${CMAKE_INSTALL_PREFIX}/bin/DTIPrep")
-IF(APPLE)
-  SET(plugin_dest_dir DTIPrep.app/Contents/MacOS)
-  SET(qtconf_dest_dir DTIPrep.app/Contents/Resources)
-  SET(APPS "\${CMAKE_INSTALL_PREFIX}/bin/DTIPrep.app")
-ENDIF(APPLE)
-IF(WIN32)
-  SET(APPS "\${CMAKE_INSTALL_PREFIX}/bin/DTIPrep.exe")
-ENDIF(WIN32)
+set(plugin_dest_dir bin)
+set(qtconf_dest_dir bin)
+set(APPS "\${CMAKE_INSTALL_PREFIX}/bin/DTIPrep")
+if(APPLE)
+  set(plugin_dest_dir DTIPrep.app/Contents/MacOS)
+  set(qtconf_dest_dir DTIPrep.app/Contents/Resources)
+  set(APPS "\${CMAKE_INSTALL_PREFIX}/bin/DTIPrep.app")
+endif(APPLE)
+if(WIN32)
+  set(APPS "\${CMAKE_INSTALL_PREFIX}/bin/DTIPrep.exe")
+endif(WIN32)
 
 #--------------------------------------------------------------------------------
 # Install needed Qt plugins by copying directories from the qt installation
 # One can cull what gets copied by using 'REGEX "..." EXCLUDE'
-#INSTALL(DIRECTORY "${QT_PLUGINS_DIR}/imageformats" DESTINATION ${plugin_dest_dir}/plugins COMPONENT Runtime)
+#install(DIRECTORY "${QT_PLUGINS_DIR}/imageformats" DESTINATION ${plugin_dest_dir}/plugins COMPONENT Runtime)
 
 if(APPLE)
 #--------------------------------------------------------------------------------
 # install a qt.conf file
 # this inserts some cmake code into the install script to write the file
-INSTALL(CODE "
+install(CODE "
     file(WRITE \"\${CMAKE_INSTALL_PREFIX}/${qtconf_dest_dir}/qt.conf\" \"\")
     " COMPONENT Runtime)
-INSTALL(CODE "
+install(CODE "
     execute_process(COMMAND cp -r \"${QT_LIBRARY_DIR}/QtGui.framework/Resources/qt_menu.nib\" \".\" WORKING_DIRECTORY ${CMAKE_INSTALL_PREFIX}/${qtconf_dest_dir})")
 endif(APPLE)
 #--------------------------------------------------------------------------------
@@ -161,7 +161,7 @@ endif(APPLE)
 # It takes a bundle or executable along with possible plugins and inspects it
 # for dependencies.  If they are not system dependencies, they are copied.
 
-SET(DIRS
+set(DIRS
 ${QT_LIBRARY_DIRS}
 ${ITK_DIR}
 ${VTK_DIR}
@@ -173,7 +173,7 @@ ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/lib
 # An alternative is the do a configure_file() on a script and use install(SCRIPT  ...).
 # Note that the image plugins depend on QtSvg and QtXml, and it got those copied
 # over.
-INSTALL(CODE "
+install(CODE "
    include(BundleUtilities)
     fixup_bundle(\"${APPS}\" \"\${QTPLUGINS}\" \"${DIRS}\")
     " COMPONENT Runtime)

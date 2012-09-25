@@ -11,7 +11,7 @@ link_directories(${BRAINSCommonLib_LIBRARY_DIRS})
 #include(${MultiImageRegistration_USE_FILE})
 
 # Use the include path and library for Qt that is used by VTK.
-#INCLUDE_DIRECTORIES(
+#include_directories(
 #  ${CMAKE_CURRENT_BINARY_DIR}
 #  ${CMAKE_CURRENT_SOURCE_DIR}
 #  ${VTK_INCLUDE_DIR}
@@ -19,15 +19,15 @@ link_directories(${BRAINSCommonLib_LIBRARY_DIRS})
 #  ${QT_INCLUDE_DIR}
 #)
 
-# No need to add with nothing to compile. ADD_SUBDIRECTORY(BRAINSFit_Common)
+# No need to add with nothing to compile. add_subdirectory(BRAINSFit_Common)
 ##HACK:  
-#SET(BRAINSFit_SOURCE_DIR  ${CMAKE_CURRENT_SOURCE_DIR}/BRAINSFit)
-#INCLUDE_DIRECTORIES(${BRAINSFit_SOURCE_DIR})
-#INCLUDE_DIRECTORIES(${BRAINSFit_SOURCE_DIR}/BRAINSFit_Common)
-#INCLUDE_DIRECTORIES(${BRAINSFit_SOURCE_DIR}/LargestForegroundFilledMaskImageFilter)
-#INCLUDE_DIRECTORIES(${BRAINSFit_SOURCE_DIR}/FindCenterOfBrainFilter)
-#INCLUDE_DIRECTORIES(${CMAKE_INSTALL_PREFIX}/MultiImageRegistration/Source)
-#INCLUDE_DIRECTORIES(${CMAKE_INSTALL_PREFIX}/MultiImageRegistration/Source/Common)
+#set(BRAINSFit_SOURCE_DIR  ${CMAKE_CURRENT_SOURCE_DIR}/BRAINSFit)
+#include_directories(${BRAINSFit_SOURCE_DIR})
+#include_directories(${BRAINSFit_SOURCE_DIR}/BRAINSFit_Common)
+#include_directories(${BRAINSFit_SOURCE_DIR}/LargestForegroundFilledMaskImageFilter)
+#include_directories(${BRAINSFit_SOURCE_DIR}/FindCenterOfBrainFilter)
+#include_directories(${CMAKE_INSTALL_PREFIX}/MultiImageRegistration/Source)
+#include_directories(${CMAKE_INSTALL_PREFIX}/MultiImageRegistration/Source/Common)
 
 #-----------------------------------------------------------------------------
 # Update CMake module path

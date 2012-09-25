@@ -32,7 +32,7 @@ endforeach(x)
 string(REGEX REPLACE "ABCX
 " "" code "${code}")
 
-string(REPLACE "TARGET_LINK_LIBRARIES(FiberViewerLight"
-"TARGET_LINK_LIBRARIES(FiberViewerLight \${VTK_LIBRARIES}" code "${code}")
+string(REPLACE "target_link_libraries(FiberViewerLight"
+"target_link_libraries(FiberViewerLight \${VTK_LIBRARIES}" code "${code}")
 
 file(WRITE ${fixfile} "${code}")
