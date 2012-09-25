@@ -75,7 +75,7 @@ SET( DTIPrep_HRDS
   DominantDirectional/Triangle.h
   DominantDirectional/Vector.h
   DominantDirectional/Geometry_Common.h
-  Combo_Box.h
+  #Combo_Box.h
 )
 
 SET( DTIPrep_UIS
