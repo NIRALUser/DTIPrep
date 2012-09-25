@@ -62,18 +62,24 @@ if(NOT DEFINED ${extProjName}_DIR AND NOT ${USE_SYSTEM_${extProjName}})
   #      link properly if -fopenmp is used.
   string(REPLACE "-fopenmp" "" ITK_CMAKE_C_FLAGS "${CMAKE_C_FLAGS}")
   string(REPLACE "-fopenmp" "" ITK_CMAKE_CXX_FLAGS "${CMAKE_CX_FLAGS}")
+  if(USE_FFTWD OR USE_FFTWF)
+    set(FFTWF_FLAGS -DUSE_FFTWF:BOOL=ON)
+  else()
+    set(FFTWF_FLAGS "")
+  endif()
 
   set(${proj}_CMAKE_OPTIONS
       -DITK_LEGACY_REMOVE:BOOL=OFF
+      -DITKV3_COMPATIBILITY:BOOL=ON
       -DITK_BUILD_ALL_MODULES:BOOL=ON
       -DITK_USE_REVIEW:BOOL=ON
-      -DITKV3_COMPATIBILITY:BOOL=ON
       -DKWSYS_USE_MD5:BOOL=ON # Required by SlicerExecutionModel
       -DUSE_WRAP_ITK:BOOL=OFF ## HACK:  QUICK CHANGE
+      ${FFTWF_FLAGS}
     )
   ### --- End Project specific additions
   set(${proj}_REPOSITORY ${git_protocol}://itk.org/ITK.git)
-  set(${proj}_GIT_TAG 65f08a503d72eb86fcbcf86801c39adc5dc1bb06) #2012-08-28
+  set(${proj}_GIT_TAG 6a08cbb5f9a97b2e02d42066506c06657f83bf43) #2012-09-24
   ExternalProject_Add(${proj}
     GIT_REPOSITORY ${${proj}_REPOSITORY}
     GIT_TAG ${${proj}_GIT_TAG}
@@ -82,6 +88,8 @@ if(NOT DEFINED ${extProjName}_DIR AND NOT ${USE_SYSTEM_${extProjName}})
     "${cmakeversion_external_update}"
     CMAKE_GENERATOR ${gen}
     CMAKE_ARGS
+      -Wno-dev
+      --no-warn-unused-cli
       ${CMAKE_OSX_EXTERNAL_PROJECT_ARGS}
       ${COMMON_EXTERNAL_PROJECT_ARGS}
       -DBUILD_EXAMPLES:BOOL=OFF

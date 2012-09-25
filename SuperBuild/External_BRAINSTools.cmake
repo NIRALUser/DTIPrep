@@ -29,11 +29,7 @@ endif()
 
 if(NOT DEFINED BRAINSTools_SOURCE_DIR)
   #message(STATUS "${__indent}Adding project ${proj}")
-if(${ITK_VERSION_MAJOR} STREQUAL "3")
-  set(GIT_TAG "03ce71cca9bbfb1f0da0040b139011211694b1c6")
-else()
-  set(GIT_TAG "c1f2cd71c33c62d8931029f18aab01960a0b9dbc")
-endif()
+  set(GIT_TAG "98a46a2b08da882d46f04cbf0d539c2b73348049")
 
   if(NOT DEFINED git_protocol)
     set(git_protocol "git")
@@ -50,6 +46,8 @@ endif()
     CMAKE_GENERATOR ${gen}
     "${cmakeversion_external_update}"
     CMAKE_ARGS
+      -Wno-dev
+      --no-warn-unused-cli
       ${CMAKE_OSX_EXTERNAL_PROJECT_ARGS}
       ${COMMON_EXTERNAL_PROJECT_ARGS}
       -DBUILD_EXAMPLES:BOOL=OFF
@@ -59,6 +57,29 @@ endif()
       -DUSE_SYSTEM_SlicerExecutionModel:BOOL=ON
       -DITK_DIR:PATH=${ITK_DIR}
       -DVTK_DIR:PATH=${VTK_DIR}
+      -DUSE_ANTS:BOOL=OFF
+      -DUSE_AutoWorkup:BOOL=OFF
+      -DUSE_BRAINSABC:BOOL=OFF
+      -DUSE_BRAINSConstellationDetector:BOOL=OFF
+      -DUSE_BRAINSContinuousClass:BOOL=OFF
+      -DUSE_BRAINSCut:BOOL=OFF
+      -DUSE_BRAINSDemonWarp:BOOL=OFF
+      -DUSE_BRAINSFit:BOOL=ON
+      -DUSE_BRAINSFitEZ:BOOL=OFF
+      -DUSE_BRAINSImageConvert:BOOL=OFF
+      -DUSE_BRAINSInitializedControlPoints:BOOL=OFF
+      -DUSE_BRAINSLandmarkInitializer:BOOL=OFF
+      -DUSE_BRAINSMultiModeSegment:BOOL=OFF
+      -DUSE_BRAINSMush:BOOL=OFF
+      -DUSE_BRAINSROIAuto:BOOL=ON
+      -DUSE_BRAINSResample:BOOL=ON
+      -DUSE_BRAINSSnapShotWriter:BOOL=OFF
+      -DUSE_BRAINSSurfaceTools:BOOL=OFF
+      -DUSE_BRAINSTransformConvert:BOOL=OFF
+      -DUSE_DebugImageViewer:BOOL=OFF
+      -DUSE_GTRACT:BOOL=ON
+      -DUSE_ICCDEF:BOOL=OFF
+      -DUSE_ImageCalculator:BOOL=ON
       -DSlicerExecutionModel_DIR:PATH=${SlicerExecutionModel_DIR}
       ${${proj}_CMAKE_OPTIONS}
     INSTALL_COMMAND ""
