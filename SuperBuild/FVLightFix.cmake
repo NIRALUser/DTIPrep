@@ -27,7 +27,7 @@ foreach(x vtkWidgets
   "  *vtkfreetype"
 )
   string(REGEX REPLACE "${x}" "ABCX" code "${code}")
-endforeach(x)
+endforeach()
 
 string(REGEX REPLACE "ABCX
 " "" code "${code}")

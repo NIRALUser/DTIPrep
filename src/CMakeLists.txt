@@ -4,7 +4,7 @@
 find_package(GenerateCLP REQUIRED)
 if(GenerateCLP_FOUND)
   include(${GenerateCLP_USE_FILE})
-endif(GenerateCLP_FOUND)
+endif()
 
 include_directories(${CMAKE_BINARY_DIR}/src)
 link_directories(${CMAKE_LIBRARY_OUTPUT_DIRECTORY})
@@ -136,10 +136,10 @@ if(APPLE)
   set(plugin_dest_dir DTIPrep.app/Contents/MacOS)
   set(qtconf_dest_dir DTIPrep.app/Contents/Resources)
   set(APPS "\${CMAKE_INSTALL_PREFIX}/bin/DTIPrep.app")
-endif(APPLE)
+endif()
 if(WIN32)
   set(APPS "\${CMAKE_INSTALL_PREFIX}/bin/DTIPrep.exe")
-endif(WIN32)
+endif()
 
 #--------------------------------------------------------------------------------
 # Install needed Qt plugins by copying directories from the qt installation
@@ -155,7 +155,7 @@ install(CODE "
     " COMPONENT Runtime)
 install(CODE "
     execute_process(COMMAND cp -r \"${QT_LIBRARY_DIR}/QtGui.framework/Resources/qt_menu.nib\" \".\" WORKING_DIRECTORY ${CMAKE_INSTALL_PREFIX}/${qtconf_dest_dir})")
-endif(APPLE)
+endif()
 #--------------------------------------------------------------------------------
 # Use BundleUtilities to get all other dependencies for the application to work.
 # It takes a bundle or executable along with possible plugins and inspects it

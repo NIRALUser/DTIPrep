@@ -3,7 +3,7 @@ if(OPT_USE_SYSTEM_BatchMake)
   include(${BatchMake_USE_FILE})
   set(BatchMake_DEPEND "")
   return()
-endif(OPT_USE_SYSTEM_BatchMake)
+endif()
 
 set(proj BatchMake)
 if(NOT DEFINED git_protocol)
