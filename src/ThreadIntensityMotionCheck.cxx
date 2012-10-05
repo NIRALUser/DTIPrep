@@ -98,7 +98,7 @@ void CThreadIntensityMotionCheck::run()
     }
   else
     {
-    std::cout << "Image information check:\tPASS" << std::endl;
+    std::cout << "Image information check:\tPASS or Not Set" << std::endl;
     }
 
   out = result;
@@ -112,7 +112,7 @@ void CThreadIntensityMotionCheck::run()
     }
   else
     {
-    std::cout << "Diffusion information check:\tPASS" << std::endl;
+    std::cout << "Diffusion information check:\tPASS or Not Set" << std::endl;
     }
 
   out = result;
@@ -126,7 +126,7 @@ void CThreadIntensityMotionCheck::run()
     }
   else
     {
-    std::cout << "Slice-wise check:\t\tPASS" << std::endl;
+    std::cout << "Slice-wise check:\t\tPASS or Not Set" << std::endl;
     }
 
   out = result;
@@ -140,7 +140,7 @@ void CThreadIntensityMotionCheck::run()
     }
   else
     {
-    std::cout << "Interlace-wise check:\t\tPASS" << std::endl;
+    std::cout << "Interlace-wise check:\t\tPASS or Not Set" << std::endl;
     }
 
   out = result;
@@ -154,7 +154,7 @@ void CThreadIntensityMotionCheck::run()
     }
   else
     {
-    std::cout << "Gradient-wise check:\t\tPASS" << std::endl;
+    std::cout << "Gradient-wise check:\t\tPASS or Not Set" << std::endl;
     }
 
   out = result;
@@ -166,7 +166,7 @@ void CThreadIntensityMotionCheck::run()
     }
   else
     {
-    std::cout << "Brain mask check:\t\tPASS" << std::endl;
+    std::cout << "Brain mask check:\t\tPASS or Not Set" << std::endl;
     }
 
   out = result;
@@ -178,7 +178,7 @@ void CThreadIntensityMotionCheck::run()
     }
   else
     {
-    std::cout << "Dominant Directional Detector:\t\tPASS" << std::endl;
+    std::cout << "Dominant Directional Detector:\t\tPASS or Not Set" << std::endl;
     }
 
   emit StopProgressSignal();  // hiding progress bar

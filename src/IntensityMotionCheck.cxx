@@ -22,7 +22,7 @@
 #include <vcl_algorithm.h>
 
 // The version of DTI prep should be incremented with each algorithm changes
-static const std::string DTIPREP_VERSION("1.1.6");
+static const std::string DTIPREP_VERSION("1.2");
 
 vnl_matrix_fixed<double, 3, 3>
 CIntensityMotionCheck::GetMeasurementFrame(
@@ -603,7 +603,7 @@ unsigned char CIntensityMotionCheck::ImageCheck( DwiImageType::Pointer localDWII
 
   if( protocol->GetImageProtocol().reportFileMode == 1 )
     {
-    outfile.open( ImageCheckReportFileName.c_str(), std::ios_base::app | std::ios_base::out);
+    outfile.open( ImageCheckReportFileName.c_str(), std::ios_base::app );
     }
   else
     {
@@ -1158,6 +1158,7 @@ int CIntensityMotionCheck::Denoising( DwiImageType::Pointer dwi )
 
 bool CIntensityMotionCheck::SliceWiseCheck( DwiImageType::Pointer dwi )
 {
+  
   bool ret = true;
 
   std::string m_ReportFileName;
@@ -1220,6 +1221,9 @@ bool CIntensityMotionCheck::SliceWiseCheck( DwiImageType::Pointer dwi )
   std::ofstream outfile;
   outfile.open(m_ReportFileName.c_str(), std::ios::app);
 
+  outfile << "=====================" << std::endl;
+  outfile << "SliceWiseCheck ... " << std::endl;	
+  
   if( protocol->GetSliceCheckProtocol().bCheck )
     {
 
@@ -1524,6 +1528,7 @@ bool CIntensityMotionCheck::SliceWiseCheck( DwiImageType::Pointer dwi )
     outfile << "Slice-wise check NOT set." << std::endl;
     }
 
+  outfile.close();
   return ret;
 }
 
@@ -1590,6 +1595,9 @@ bool CIntensityMotionCheck::InterlaceWiseCheck( DwiImageType::Pointer dwi )
   // validate the interlace Wise output
   std::ofstream outfile;
   outfile.open(m_ReportFileName.c_str(), std::ios::app);
+  
+  outfile << "=====================" << std::endl;
+  outfile << "InterlaceWiseCheck ... " << std::endl;
 
   if( protocol->GetInterlaceCheckProtocol().bCheck )
     {
@@ -1916,6 +1924,8 @@ bool CIntensityMotionCheck::InterlaceWiseCheck( DwiImageType::Pointer dwi )
     std::cout << "Interlace-wise check NOT set." << std::endl;
     outfile << "Interlace-wise check NOT set." << std::endl;
     }
+  
+  outfile.close();
 
   return ret;
 }
@@ -1984,6 +1994,9 @@ bool CIntensityMotionCheck::BaselineAverage( DwiImageType::Pointer dwi )
   std::ofstream outfile;
   outfile.open(m_ReportFileName.c_str(), std::ios::app);
 
+  outfile << "=====================" << std::endl;
+  outfile << "BaselineAverage ... " << std::endl;
+  
   if( protocol->GetBaselineAverageProtocol().bAverage )
     {
 
@@ -2154,6 +2167,8 @@ bool CIntensityMotionCheck::BaselineAverage( DwiImageType::Pointer dwi )
     std::cout << "Baseline average NOT set." << std::endl;
     outfile << "Baseline average NOT set." << std::endl;
     }
+  
+  outfile.close();
 
   return true;
 }
@@ -2225,6 +2240,9 @@ bool CIntensityMotionCheck::EddyMotionCorrectIowa( DwiImageType::Pointer dwi )
   std::ofstream outfile;
   outfile.open(m_ReportFileName.c_str(), std::ios::app);
 
+  outfile << "=====================" << std::endl;
+  outfile << "EddyCurrentHeadMotionCorrectIowa ... " << std::endl;  
+  
   if( protocol->GetEddyMotionCorrectionProtocol().bCorrect )
     {
 
@@ -2617,6 +2635,8 @@ bool CIntensityMotionCheck::EddyMotionCorrectIowa( DwiImageType::Pointer dwi )
     outfile << "Eddy-current and head motion correction NOT set."
             << std::endl;
     }
+  
+  outfile.close();
   return true;
 }
 
@@ -2916,6 +2936,10 @@ bool CIntensityMotionCheck::GradientWiseCheck( DwiImageType::Pointer dwi )
   // validate the gradient Wise output
   std::ofstream outfile;
   outfile.open(m_ReportFileName.c_str(), std::ios::app);
+  
+  outfile << "=====================" << std::endl;
+  outfile << "GradientCheck ... " << std::endl;
+  
   if( protocol->GetGradientCheckProtocol().bCheck )
     {
 
@@ -3219,6 +3243,8 @@ bool CIntensityMotionCheck::GradientWiseCheck( DwiImageType::Pointer dwi )
     std::cout << "Gradient-wise check NOT set." << std::endl;
     outfile << "Gradient-wise check NOT set." << std::endl;
     }
+  
+  outfile.close();
   return ret;
 }
 
@@ -3462,15 +3488,17 @@ bool CIntensityMotionCheck::BrainMask()
     }
 
   std::ofstream outfile;
+  
+  std::cout << "protocol->GetBrainMaskProtocol().reportFileMode " << protocol->GetBrainMaskProtocol().reportFileMode << std::endl;
 
-  if( protocol->GetBrainMaskProtocol().reportFileMode == 1 )
-    {
-    outfile.open( m_ReportFileName.c_str(), std::ios_base::app | std::ios_base::out);
-    }
-  else
-    {
-    outfile.open( m_ReportFileName.c_str() );
-    }
+  //if( protocol->GetBrainMaskProtocol().reportFileMode == 1 )
+  //  {
+    outfile.open( m_ReportFileName.c_str(), std::ios_base::app);
+  //  }
+  //else
+  //  {
+  //  outfile.open( m_ReportFileName.c_str() );
+ //   }
   if( outfile )
     {
     bReport = true;
@@ -3511,6 +3539,7 @@ bool CIntensityMotionCheck::BrainMask()
         }
       case Protocol::BRAINMASK_METHOD_OPTION:
         {
+        std::cout << "Brain mask: " << protocol->GetBrainMaskProtocol(). BrainMask_Image << std::endl;
         break;
         }
       default:
@@ -3523,6 +3552,8 @@ bool CIntensityMotionCheck::BrainMask()
     std::cout << "Brain mask check NOT set." << std::endl;
     outfile << "Brain mask check NOT set." << std::endl;
     }
+  
+  outfile.close();
 
   return ret;
 }
@@ -3535,14 +3566,14 @@ bool CIntensityMotionCheck::BRAINMASK_METHOD_FSL(std::string m_ReportFileName )
 
   std::ofstream outfile;
 
-  if( protocol->GetBrainMaskProtocol().reportFileMode == 1 )
-    {
-    outfile.open( m_ReportFileName.c_str(), std::ios_base::app | std::ios_base::out);
-    }
-  else
-    {
-    outfile.open( m_ReportFileName.c_str() );
-    }
+  //if( protocol->GetBrainMaskProtocol().reportFileMode == 1 )
+  //  {
+    outfile.open( m_ReportFileName.c_str(), std::ios_base::app );
+  //  }
+ // else
+  //  {
+  //  outfile.open( m_ReportFileName.c_str() );
+ //   }
   if( outfile )
     {
     bReport = true;
@@ -3551,9 +3582,9 @@ bool CIntensityMotionCheck::BRAINMASK_METHOD_FSL(std::string m_ReportFileName )
   if( bReport )
     {
     outfile << std::endl;
-    outfile << "=====================" << std::endl;
+    
     outfile << " Brain Mask FSL " << std::endl;
-    outfile << "=====================" << std::endl;
+    
     }
   else if( !bReport )
     {
@@ -3755,6 +3786,8 @@ bool CIntensityMotionCheck::BRAINMASK_METHOD_FSL(std::string m_ReportFileName )
   std::cout << "rm "  << (rm_temp2.join(" ") ).toStdString() << std::endl;
   ret = process->execute( "rm", rm_temp2);
 
+  outfile.close();
+  
   return true;
 
 }
@@ -3768,14 +3801,14 @@ bool CIntensityMotionCheck::BRAINMASK_METHOD_Slicer(std::string m_ReportFileName
 
   std::ofstream outfile;
 
-  if( protocol->GetBrainMaskProtocol().reportFileMode == 1 )
-    {
-    outfile.open( m_ReportFileName.c_str(), std::ios_base::app | std::ios_base::out);
-    }
-  else
-    {
-    outfile.open( m_ReportFileName.c_str() );
-    }
+ // if( protocol->GetBrainMaskProtocol().reportFileMode == 1 )
+ //   {
+    outfile.open( m_ReportFileName.c_str(), std::ios_base::app );
+ //   }
+ // else
+ //   {
+ //   outfile.open( m_ReportFileName.c_str() );
+ //   }
   if( outfile )
     {
     bReport = true;
@@ -3784,9 +3817,9 @@ bool CIntensityMotionCheck::BRAINMASK_METHOD_Slicer(std::string m_ReportFileName
   if( bReport )
     {
     outfile << std::endl;
-    outfile << "=====================" << std::endl;
+    
     outfile << " Brain Mask Slicer " << std::endl;
-    outfile << "=====================" << std::endl;
+    
     }
   else if( !bReport )
     {
@@ -3869,7 +3902,9 @@ bool CIntensityMotionCheck::BRAINMASK_METHOD_Slicer(std::string m_ReportFileName
     }
 
   protocol->GetBrainMaskProtocol(). BrainMask_Image = Result_b0_masked; // brain mask image
-
+  
+  outfile.close();
+  
   return true;
 
 }
@@ -3936,15 +3971,16 @@ bool CIntensityMotionCheck::DominantDirectionalCheck()
 
   std::ofstream outfile;
 
-  if( protocol->GetDominantDirectional_Detector().reportFileMode == 1 )
-    {
-    outfile.open( m_ReportFileName.c_str(), std::ios_base::app | std::ios_base::out);
-    }
-  else
-    {
-    outfile.open( m_ReportFileName.c_str() );
-    }
+ // if( protocol->GetDominantDirectional_Detector().reportFileMode == 1 )
+ //   {
+    outfile.open( m_ReportFileName.c_str(), std::ios_base::app);
+ //   }
+ // else
+ //   {
+ //   outfile.open( m_ReportFileName.c_str() );
+ //   }
 
+    std::cout << "Dominant outfile" << outfile << std::endl;
   if( outfile )
     {
     bReport = true;
@@ -3955,7 +3991,7 @@ bool CIntensityMotionCheck::DominantDirectionalCheck()
     outfile << std::endl;
     outfile << "=====================" << std::endl;
     outfile << " Dominant directional artifact detector   " << std::endl;
-    outfile << "=====================" << std::endl;
+    
     }
   else
     {
@@ -4390,7 +4426,9 @@ unsigned char CIntensityMotionCheck::RunPipelineByProtocol()
     }
 
   bool          bReport = false;
-  std::ofstream outfile;
+  // *****outfile contains QCed results as .txt format 
+  // ***** In each step of QCed processing, outfile will be opened and at the end it will be closed. The QCed results in each step will be appended to previous steps.
+  std::ofstream outfile;		
 
   // std::string ReportFileName;
 
@@ -4460,12 +4498,15 @@ unsigned char CIntensityMotionCheck::RunPipelineByProtocol()
     }
 
   outfile.open( ReportFileName.c_str(), std::ios_base::out | std::ios_base::trunc);
+  
 
   if( outfile )
     {
     bReport = true;
 
     }
+  
+  std::cout << "Test Mahshid bReport " << bReport << std::endl;
 
   if( bReport )
     {
@@ -4478,6 +4519,7 @@ unsigned char CIntensityMotionCheck::RunPipelineByProtocol()
     outfile << "Check Time: " << ctime(&rawtime) << std::endl;
 
     outfile.close();
+    
     }
 
   m_Original_ForcedConformance_Mapping.clear();
@@ -4516,8 +4558,7 @@ unsigned char CIntensityMotionCheck::RunPipelineByProtocol()
   // ................................................................
   std::cout << "=====================" << std::endl;
   std::cout << "ImageCheck ... " << std::endl;
-  outfile << "=====================" << std::endl;
-  outfile << "ImageCheck ... " << std::endl;
+  
   unsigned char imageCheckResult = ImageCheck( m_DwiForcedConformanceImage );
   if( imageCheckResult )
     {
@@ -4606,8 +4647,8 @@ unsigned char CIntensityMotionCheck::RunPipelineByProtocol()
   // average................................................................................
   std::cout << "=====================" << std::endl;
   std::cout << "BaselineAverage ... " << std::endl;
-  outfile << "=====================" << std::endl;
-  outfile << "BaselineAverage ... " << std::endl;
+  //outfile << "=====================" << std::endl;
+  //outfile << "BaselineAverage ... " << std::endl;
 
   BaselineAverage( m_DwiForcedConformanceImage );
   std::cout << "BaselineAverage DONE " << std::endl;
@@ -4616,8 +4657,8 @@ unsigned char CIntensityMotionCheck::RunPipelineByProtocol()
   // .......................................................................EddyMotionCorrect....................................................................................
   std::cout << "=====================" << std::endl;
   std::cout << "EddyCurrentHeadMotionCorrect ... " << std::endl;
-  outfile << "=====================" << std::endl;
-  outfile << "EddyCurrentHeadMotionCorrect ... " << std::endl;
+  //outfile << "=====================" << std::endl;
+  //outfile << "EddyCurrentHeadMotionCorrect ... " << std::endl;
   // EddyMotionCorrect( m_DwiForcedConformanceImage );
   std::cout << "EddyCurrentHeadMotionCorrectIowa ... " << std::endl;
 
@@ -4628,8 +4669,8 @@ unsigned char CIntensityMotionCheck::RunPipelineByProtocol()
   // .....................................................................GradientChecker...........................................................................................
   std::cout << "=====================" << std::endl;
   std::cout << "GradientCheck ... " << std::endl;
-  outfile << "=====================" << std::endl;
-  outfile << "GradientCheck ... " << std::endl;
+  //outfile << "=====================" << std::endl;
+  //outfile << "GradientCheck ... " << std::endl;
 
   if( !GradientWiseCheck( m_DwiForcedConformanceImage ) )
     {
@@ -4643,6 +4684,12 @@ unsigned char CIntensityMotionCheck::RunPipelineByProtocol()
       }
     }
   std::cout << "GradientCheck DONE " << std::endl;
+  
+  
+  outfile.open( ReportFileName.c_str(), std::ios_base::app);
+  outfile << "=====================" << std::endl;
+  outfile << "Included gradients:" << std::endl;
+  
   for( unsigned int k_ind = 0; k_ind < m_Original_ForcedConformance_Mapping.size(); k_ind++ )
     {
     if( k_ind == 0 )
@@ -4671,7 +4718,9 @@ unsigned char CIntensityMotionCheck::RunPipelineByProtocol()
       k_ind;
 
     }
-
+  
+  outfile.close();
+  
   // ofstream	report_file_Original_ForcedConformance_Mapping;
   // report_file_Original_ForcedConformance_Mapping.open(
 
@@ -4692,9 +4741,9 @@ unsigned char CIntensityMotionCheck::RunPipelineByProtocol()
   std::cout << "Denoising Joint LMMSE... " << std::endl;
   std::cout << "HACK:  SKIPPING JointDenoising( m_DwiForcedConformanceImage );"  << __FILE__ << " " << __LINE__
             << std::endl;
-  outfile << "Denoising Joint LMMSE... " << std::endl;
-  outfile << "HACK:  SKIPPING JointDenoising( m_DwiForcedConformanceImage );"  << __FILE__ << " " << __LINE__
-          << std::endl;
+  //outfile << "Denoising Joint LMMSE... " << std::endl;
+  //outfile << "HACK:  SKIPPING JointDenoising( m_DwiForcedConformanceImage );"  << __FILE__ << " " << __LINE__
+  //        << std::endl;
   std::cout << "Denoising Joint LMMSE DONE " << std::endl;
 
   // .................................................................................................Save QC'ed
@@ -4717,7 +4766,7 @@ unsigned char CIntensityMotionCheck::RunPipelineByProtocol()
     if( protocol->GetBrainMaskProtocol().bQuitOnCheckFailure )
       {
       std::cout << "Brain Mask failed, pipeline terminated. " << std::endl;
-      outfile << "Brain Mask failed, pipeline terminated. " << std::endl;
+      //outfile << "Brain Mask failed, pipeline terminated. " << std::endl;
       return this->qcResult->Get_result();
       }
     }
@@ -4726,13 +4775,19 @@ unsigned char CIntensityMotionCheck::RunPipelineByProtocol()
 
   // .......................................................................Dominant directional artifact detector (
   // entropy tool )....................................................
+  outfile.open( ReportFileName.c_str(), std::ios_base::app);
   std::cout << "=====================" << std::endl;
   std::cout << "Dominant directional artifact detector... " << std::endl;
+  
+  
 
   if( protocol->GetBrainMaskProtocol().bMask == false || this->qcResult->GetOverallQCResult().BMCK == false )
     {
-    std::cout << "Brain mask process has been failed or set as No in protocol." << std::endl;
-    outfile << "Brain mask process has been failed or set as No in protocol." << std::endl;
+    std::cout << "Brain mask process has been failed or is not set in protocol." << std::endl;
+    outfile << "=====================" << std::endl;
+    outfile << "Dominant directional artifact detector... " << std::endl;
+    outfile << "Brain mask process has been failed or is not set in protocol" << std::endl;
+    outfile.close();
     }
   else
     {
@@ -4744,7 +4799,7 @@ unsigned char CIntensityMotionCheck::RunPipelineByProtocol()
       if( protocol->GetDominantDirectional_Detector().bQuitOnCheckFailure )
         {
         std::cout << "Dominant directional artifact detector failed, pipeline terminated. " << std::endl;
-        outfile << "Dominant directional artifact detector failed, pipeline terminated. " << std::endl;
+        //outfile << "Dominant directional artifact detector failed, pipeline terminated. " << std::endl;
         return this->qcResult->Get_result();
         }
       }
@@ -4759,6 +4814,8 @@ unsigned char CIntensityMotionCheck::RunPipelineByProtocol()
   DTIComputing();
   std::cout << "DTIComputing DONE" << std::endl;
 
+  //outfile.close();
+  
   // 00000CBA:
   // A: Gradient direction #is less than 6!
   // B: Single b-value DWI without a b0/baseline!
@@ -4781,8 +4838,6 @@ unsigned char CIntensityMotionCheck::RunPipelineByProtocol()
             << std::endl;
   std::cout << "qcResult->GetGradientWiseCheckResult().size() " << qcResult->GetGradientWiseCheckResult().size()
             << std::endl;
-
-  outfile.close();
 
   return this->qcResult->Get_result();
 
@@ -4858,7 +4913,7 @@ unsigned char CIntensityMotionCheck::validateLeftDiffusionStatistics()
     }
 
   std::ofstream outfile;
-  outfile.open( m_ReportFileName.c_str(), std::ios_base::app | std::ios_base::out);
+  outfile.open( m_ReportFileName.c_str(), std::ios_base::app );
 
   if( outfile )
     {
@@ -5657,7 +5712,7 @@ bool CIntensityMotionCheck::DiffusionCheck( DwiImageType::Pointer dwi)
   std::ofstream outfile;
   if( protocol->GetDiffusionProtocol().reportFileMode == 1 )
     {
-    outfile.open( m_ReportFileName.c_str(), std::ios_base::app | std::ios_base::out);
+    outfile.open( m_ReportFileName.c_str(), std::ios_base::app );
     }
   else
     {

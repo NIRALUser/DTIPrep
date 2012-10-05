@@ -30,6 +30,8 @@
 #define SliceWiseCheckBit 4
 #define InterlaceWiseCheckBit 8
 #define GradientWiseCheckBit 16
+#define BrainMaskBit 32
+#define DominantDirectionDetectBit 64
 
 // #include <QStyleFactory>
 using namespace std;
@@ -183,6 +185,12 @@ int main( int argc, char * *argv )
           std::cout << "Create default protocol or check by protocol, at least one of them should be set." << std::endl;
           std::cout << "Neither of them was set. Check by default." << std::endl;
           }
+        
+      if (protocol.GetBrainMaskProtocol().BrainMask_Method == 2 && protocol.GetBrainMaskProtocol().BrainMask_Image.empty() && protocol.GetBrainMaskProtocol().bMask == true)  
+      {
+    	  std::cerr << "The brain mask procedure needs brain mask image. No brain mask image is used in protocol." << std::endl;
+    	  exit(1);
+      }
 
         const unsigned char result = IntensityMotionCheck.RunPipelineByProtocol();
         unsigned char       out = result;
@@ -1124,6 +1132,110 @@ int main( int argc, char * *argv )
           }
         xmlWriter.writeEndElement();
 
+        xmlWriter.writeStartElement("entry");
+        xmlWriter.writeAttribute( "parameter",  "BRAIN_MASK" );
+        
+
+        //xmlWriter.writeTextElement("value", "Not Set");
+        
+        if( ( protocol.GetBrainMaskProtocol().bQuitOnCheckFailure &&
+              ( (qcResult.Get_result()  & BrainMaskBit) !=  0) ) )
+        {
+        	xmlWriter.writeTextElement("value", "Fail Pipeline Terminated");
+        }
+        else 
+        {
+			if( !protocol.GetBrainMaskProtocol().bMask )
+			{
+				xmlWriter.writeTextElement("value", "Not Set");
+			}
+			else
+			{
+			  if( qcResult.GetOverallQCResult().BMCK == true )
+				{
+				  xmlWriter.writeTextElement("value", "Pass");
+				}
+			  else
+				{
+				  xmlWriter.writeTextElement("value", "Fail");
+				}
+	
+			}
+        }
+        xmlWriter.writeEndElement();
+        
+        
+        xmlWriter.writeStartElement("entry");
+        xmlWriter.writeAttribute( "parameter",  "Dominant_Direction_Detector" );
+        if( ( protocol.GetDominantDirectional_Detector().bQuitOnCheckFailure &&
+              ( (qcResult.Get_result()  & DominantDirectionDetectBit) !=  0) ) )
+        {
+        	xmlWriter.writeTextElement("value", "Fail Pipeline Terminated");
+        }
+
+        else
+        {
+			if( !protocol.GetDominantDirectional_Detector().bCheck )
+			{
+				xmlWriter.writeTextElement("value", "Not Set");
+			}
+			else
+			{
+				  if( qcResult.GetOverallQCResult().DDDCK == true )
+				  {
+					  xmlWriter.writeTextElement("value", "Pass");
+					
+					  
+					  xmlWriter.writeStartElement("entry");
+					  xmlWriter.writeAttribute( "parameter",  "DOMINANT_DIRECTION_Z_SCORE" );
+					  xmlWriter.writeTextElement("value", QString("%1").arg(qcResult.GetDominantDirection_Detector().z_score) );  
+					  xmlWriter.writeEndElement();
+					  
+					  xmlWriter.writeStartElement("entry");
+					  xmlWriter.writeAttribute( "parameter",  "DOMINANT_DIRECTION_ENTROPY" );
+					  xmlWriter.writeTextElement("value", QString("%1").arg(qcResult.GetDominantDirection_Detector().entropy_value)  );  
+					  xmlWriter.writeEndElement();
+					  
+					  xmlWriter.writeStartElement("entry");
+					  xmlWriter.writeAttribute( "parameter",  "DOMINANT_DIRECTION_RESULT" );
+					  if( qcResult.GetDominantDirection_Detector().detection_result == 2 )
+					  {
+						  xmlWriter.writeTextElement("value",  "Reject" );
+					  }
+						
+					  if( qcResult.GetDominantDirection_Detector().detection_result == 1 )
+					  {
+						  xmlWriter.writeTextElement("value", "Suspicious" );
+					  }
+					  
+					  if( qcResult.GetDominantDirection_Detector().detection_result == 0 )
+					  {
+						  xmlWriter.writeTextElement("value",  "Accept" );
+					  }
+				  }
+				  else
+				  {
+					  xmlWriter.writeTextElement("value", "Fail");
+				  }
+					  xmlWriter.writeEndElement();
+					  
+			  }
+	
+				
+        }
+        
+        
+        
+        xmlWriter.writeEndElement();        
+        
+        
+        
+        
+        
+        
+        
+        
+        
         xmlWriter.writeEndDocument();
         file.close();
         if( file.error() )

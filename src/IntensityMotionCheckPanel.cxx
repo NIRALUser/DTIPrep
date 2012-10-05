@@ -280,7 +280,7 @@ void IntensityMotionCheckPanel::on_treeWidget_itemDoubleClicked(
     msgBox.setText( str_brainmask );
     QPushButton * FSL = msgBox.addButton( tr("FSL_bet"), QMessageBox::ActionRole);
     QPushButton * Slicer = msgBox.addButton( tr("Slicer"), QMessageBox::ActionRole);
-    QPushButton * Option = msgBox.addButton( tr("Option"), QMessageBox::ActionRole);
+    QPushButton * Option = msgBox.addButton( tr("User mask"), QMessageBox::ActionRole);
     QPushButton * Cancel = msgBox.addButton( tr("Cancel"), QMessageBox::ActionRole);
     msgBox.exec();
 
@@ -311,102 +311,7 @@ void IntensityMotionCheckPanel::on_treeWidget_itemDoubleClicked(
         return;
         }
 
-      /*
-     // computing baseline
-     std::string str_dtiestim;
-       str_dtiestim.append(this->GetProtocol().GetDTIProtocol().dtiestimCommand);
-     str_dtiestim.append(" ");
-     str_dtiestim.append("--dwi_image ");
-     str_dtiestim.append(DwiFileName);
-     str_dtiestim.append(" --B0 B0.nrrd --tensor_output tensor.nrrd");
-     std::cout << "dtiestim " << str_dtiestim.c_str() << std::endl;
-     system(str_dtiestim.c_str());
-
-     // converting to nii
-     std::string str_convertITKformats;
-     str_convertITKformats.append("convertITKformats B0.nrrd B0.nii");
-     std::cout << "convertitk " << str_convertITKformats.c_str() << std::endl;
-     system(str_convertITKformats.c_str());
-
-     std::string str_ImageMath = "ImageMath B0.nii -outfile B0.nii.gz -constOper 3,10000 -type float";
-     std::cout << "ImageMath " << str_ImageMath.c_str() << std::endl;
-     system(str_ImageMath.c_str());
-
-     std::string str_delete = "rm B0.nii";
-     system(str_delete.c_str());
-
-     std::string str_bet2 = this->GetProtocol().GetBrainMaskProtocol().BrainMask_SystemPath_FSL ;
-     str_bet2.append(" B0.nii.gz B0_bet -m");
-     std::cout << "bet " << str_bet2.c_str() << std::endl;
-     system(str_bet2.c_str());
-
-
-     std::string str_mask = "ImageMath B0.nrrd -mask B0_bet -outfile ";
-
-
-     // Finding the proper path for output brain mask
-
-     QString Result_b0_masked;
-
-       if( this->GetProtocol().GetQCOutputDirectory().length() > 0 )
-         {
-      QString str_QCOutputDirectory = QString( this->GetProtocol().GetQCOutputDirectory().c_str() );
-      bool found_SeparateChar = str_QCOutputDirectory.contains("/");
-      if ( !found_SeparateChar ) // "/" does not exist in the protocol->GetQCOutputDirectory() and interpreted as the relative path and creates the folder
-      {
-        QString Full_path = DwiFilePath;
-        QString Full_name = DwiFilePath.section('/', -1);
-        Full_path.remove(Full_name);
-        Full_path.append( "/" );
-        Full_path.append( QString( protocol.GetQCOutputDirectory().c_str() ) );
-        if( !QDir( Full_path ).exists() )
-        {
-        QDir().mkdir( Full_path );
-        }
-        Full_path.append( "/" );
-        Full_path.append( Full_name.section('.', -2, 0) );
-        Full_path.append(QString(tr("_B0_masked.nrrd") ) );
-        Result_b0_masked = Full_path;
-      }
-      else
-      {
-        QString Full_name = DwiFilePath.section('/', -1);
-        QString Full_path;
-        Full_path.append( QString( protocol.GetQCOutputDirectory().c_str() ) );
-        if( !QDir( Full_path ).exists() )
-        {
-        QDir().mkdir( Full_path );
-        }
-        Full_path.append( "/" );
-        Full_path.append( Full_name );
-        Full_path.append(QString(tr("_B0_masked.nrrd") ) );
-        Result_b0_masked = Full_path;
-      }
-         }
-
-       else
-         {
-         Result_b0_masked = DwiFilePath.section('.', -2, 0);
-         //Result_b0_masked.remove("_QCed");
-         Result_b0_masked.append(QString(tr("_B0_masked.nrrd") ) );
-         }
-
-       this->GetProtocol().GetBrainMaskProtocol().BrainMask_Image = Result_b0_masked.toStdString();	// brain mask image
-
-       str_mask.append(Result_b0_masked.toStdString());
-       std::cout << "mask " << str_mask << std::endl;
-
-         system(str_mask.c_str());
-
-
-         std::string str_delete2 = "rm B0.nrrd B0.nii.gz tensor.nrrd B0_bet_mask.nii.gz B0_bet.nii.gz";
-         std::cout << "rm " << str_delete2 << std::endl;
-         system(str_delete2.c_str());
-
-
-
-     std::cout << "brainMask Test New:" << "FSL" << std::endl;
-     */
+     
 
       }
     if( msgBox.clickedButton() == Slicer )
@@ -427,11 +332,11 @@ void IntensityMotionCheckPanel::on_treeWidget_itemDoubleClicked(
                                                                                             BrainMask_Method, 0, 10) );
       std::cout << "brainMask Test New:" << "Option" << std::endl;
 
-      QString Mask_image = QFileDialog::getOpenFileName( this, tr(
+      /*QString Mask_image = QFileDialog::getOpenFileName( this, tr(
                                                            "Open nrrd masked brain image"), QDir::currentPath(),
                                                          tr("Nrrd Files (*.nhdr *.nrrd)") );
 
-      if( Mask_image.length() > 0 )
+      /if( Mask_image.length() > 0 )
         {
         this->GetProtocol().GetBrainMaskProtocol().BrainMask_Image = Mask_image.toStdString();
         std::cout << "brain mask Option " << this->GetProtocol().GetBrainMaskProtocol().BrainMask_Image << std::endl;
@@ -441,7 +346,7 @@ void IntensityMotionCheckPanel::on_treeWidget_itemDoubleClicked(
         std::cout << "No masked brain is selected." << std::endl;
         return;
         }
-
+		*/
       }
     if( msgBox.clickedButton() == Cancel )
       {
@@ -529,6 +434,42 @@ void IntensityMotionCheckPanel::on_pushButton_RunPipeline_clicked()
     QMessageBox::critical( this, tr("Warning"), tr("DWI file name not set!") );
     return;
     }
+  
+  if (this->GetProtocol().GetBrainMaskProtocol().BrainMask_Method == 2 && this->GetProtocol().GetBrainMaskProtocol().BrainMask_Image.empty() && this->GetProtocol().GetBrainMaskProtocol().bMask == true)
+  {
+	  QString m_user_option = "The brain mask procedure needs brain mask image is loaded:";
+	  QMessageBox m_msgBox;
+	  m_msgBox.setText( m_user_option );
+	  QPushButton * Option = m_msgBox.addButton( tr("Load"), QMessageBox::ActionRole);
+	  QPushButton * Cancel = m_msgBox.addButton( tr("Cancel"), QMessageBox::ActionRole);
+	  m_msgBox.exec();
+	  
+	  if( m_msgBox.clickedButton() == Option )
+	  {
+	      
+	      QString Mask_image = QFileDialog::getOpenFileName( this, tr(
+	                                                             "Open nrrd masked brain image"), QDir::currentPath(),
+	                                                           tr("Nrrd Files (*.nhdr *.nrrd)") );
+
+	      if( Mask_image.length() > 0 )
+	      {
+	          this->GetProtocol().GetBrainMaskProtocol().BrainMask_Image = Mask_image.toStdString();
+	          //std::cout << "brain mask Option " << this->GetProtocol().GetBrainMaskProtocol().BrainMask_Image << std::endl;
+	      }
+	      else
+	      {
+	          std::cout << "No masked brain is selected." << std::endl;
+	          return;
+	      }
+
+	   }
+	   if( m_msgBox.clickedButton() == Cancel )
+	   {
+	        std::cout << "brainMask Test New:" << "Cancel" << std::endl;
+	        return;
+	   }
+
+  }
 
   treeWidget_Results->clear();
   qcResult.Clear();
@@ -1340,6 +1281,17 @@ void IntensityMotionCheckPanel::DefaultProtocol()
       // imaging frame
       const vnl_matrix_fixed<double, 3, 3> & imgf = m_DwiOriginalImage->GetDirection().GetVnlMatrix();
 
+      std::cout << "imgf(0, 0)" << imgf(0, 0) << std::endl;
+      std::cout << "imgf(0, 1)" << imgf(0, 1) << std::endl;
+      std::cout << "imgf(0, 2)" << imgf(0, 2) << std::endl;
+      std::cout << "imgf(1, 0)" << imgf(1, 0) << std::endl;
+      std::cout << "imgf(1, 1)" << imgf(1, 1) << std::endl;
+      std::cout << "imgf(1, 2)" << imgf(1, 2) << std::endl;
+      std::cout << "imgf(2, 0)" << imgf(2, 0) << std::endl;
+      std::cout << "imgf(2, 1)" << imgf(2, 1) << std::endl;
+      std::cout << "imgf(2, 2)" << imgf(2, 2) << std::endl;
+      
+      
       // Image frame
       this->GetProtocol().GetImageProtocol().spacedirection = m_DwiOriginalImage->GetDirection().GetVnlMatrix();
       this->GetProtocol().GetImageProtocol().spacedirection[0][0] = imgf(0, 0);
@@ -1365,6 +1317,7 @@ void IntensityMotionCheckPanel::DefaultProtocol()
           {
           // Meausurement frame
           this->GetProtocol().GetDiffusionProtocol().measurementFrame[i][j] = nrrdmf[i][j];
+          std::cout << "nrrdmf[i][j]" << nrrdmf[i][j] << std::endl;
           }
         }
       std::cout << this->GetProtocol().GetDiffusionProtocol().measurementFrame << std::flush << std::endl;

@@ -72,17 +72,6 @@ struct DenoisingJointLMMSE
   vnl_vector_fixed<int, 3> Filter_Radius;
   };
 
-struct DominantDirectional_Detector
-  {
-  bool bCheck;
-  double Mean;
-  double Deviation;
-  double Threshold_Acceptance;
-  double Threshold_Suspicion_Unacceptance;
-  std::string reportFileNameSuffix;
-  int reportFileMode;
-  bool bQuitOnCheckFailure;
-  };
 
 struct SliceCheckProtocol
   {
@@ -176,6 +165,18 @@ struct BrainMaskProtocol
   std::string BrainMask_SystemPath_convertITK;
   std::string BrainMask_SystemPath_imagemath;
   std::string BrainMask_Image;
+  std::string reportFileNameSuffix;
+  int reportFileMode;
+  bool bQuitOnCheckFailure;
+  };
+
+struct DominantDirectional_Detector
+  {
+  bool bCheck;
+  double Mean;
+  double Deviation;
+  double Threshold_Acceptance;
+  double Threshold_Suspicion_Unacceptance;
   std::string reportFileNameSuffix;
   int reportFileMode;
   bool bQuitOnCheckFailure;
