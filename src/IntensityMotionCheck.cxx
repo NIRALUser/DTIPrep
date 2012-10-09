@@ -3437,6 +3437,8 @@ bool CIntensityMotionCheck::BrainMask()
   bool ret = true;
 
   std::string m_ReportFileName;
+  std::string str;			 // str : path of QCed outputs
+  std::string str2;			 // str2 : path of temp results ;
 
   std::string Dwi_file_name = FNameBase(this->m_DwiFileName);
 
@@ -3451,15 +3453,21 @@ bool CIntensityMotionCheck::BrainMask()
 
       size_t found;
       found = m_DwiFileName.find_last_of("/\\");
-      std::string str;
-      str = m_DwiFileName.substr( 0, found );   // str : path of QCed outputs
+      str = m_DwiFileName.substr( 0, found );  
       str.append( "/" );
       str.append( protocol->GetQCOutputDirectory() );
       if( !itksys::SystemTools::FileIsDirectory( str.c_str() ) )
-        {
+      {
         itksys::SystemTools::MakeDirectory( str.c_str() );
-        }
+      }
+      str2 = str ;
+      str2.append("/temp");
+      if( !itksys::SystemTools::FileIsDirectory( str2.c_str() ) )
+      {
+        itksys::SystemTools::MakeDirectory( str2.c_str() );
+      }      
       str.append( "/" );
+      str2.append( "/" );
       m_ReportFileName = str;
       m_ReportFileName.append( Dwi_file_name );
       m_ReportFileName.append( "_QCReport.txt");
@@ -3468,13 +3476,21 @@ bool CIntensityMotionCheck::BrainMask()
 
     else    // "/" exists in the the protocol->GetQCOutputDirectory() and interpreted as the absolute path
       {
-      std::string str;
+ 
       str.append(protocol->GetQCOutputDirectory() );
       if( !itksys::SystemTools::FileIsDirectory( str.c_str() ) )
         {
         itksys::SystemTools::MakeDirectory( str.c_str() );
         }
+      
+      str2 = str;
+      str2.append( "/temp" );
+      if( !itksys::SystemTools::FileIsDirectory( str2.c_str() ) )
+      {
+         itksys::SystemTools::MakeDirectory( str2.c_str() );
+      }
       str.append( "/" );
+      str2.append( "/" );
       m_ReportFileName = str;
       m_ReportFileName.append( Dwi_file_name );
       m_ReportFileName.append( "_QCReport.txt");
@@ -3483,6 +3499,13 @@ bool CIntensityMotionCheck::BrainMask()
     }
   else
     {
+    str2 = m_DwiFileName.substr( 0, m_DwiFileName.find_last_of('/') );
+    str2.append( "/temp/" );
+	if( !itksys::SystemTools::FileIsDirectory( str2.c_str() ) )
+	{
+	   itksys::SystemTools::MakeDirectory( str2.c_str() );
+	}
+	
     m_ReportFileName = m_DwiFileName.substr( 0, m_DwiFileName.find_last_of('.') );
     m_ReportFileName.append( "_QCReport.txt");
     }
@@ -3529,12 +3552,12 @@ bool CIntensityMotionCheck::BrainMask()
 
       case Protocol::BRAINMASK_METHOD_FSL:
         {
-        ret =  BRAINMASK_METHOD_FSL(m_ReportFileName);
+        ret =  BRAINMASK_METHOD_FSL(m_ReportFileName, str2);
         break;
         }
       case Protocol::BRAINMASK_METHOD_SLICER:
         {
-        ret = BRAINMASK_METHOD_Slicer( m_ReportFileName );
+        ret = BRAINMASK_METHOD_Slicer( m_ReportFileName);
         break;
         }
       case Protocol::BRAINMASK_METHOD_OPTION:
@@ -3558,14 +3581,13 @@ bool CIntensityMotionCheck::BrainMask()
   return ret;
 }
 
-bool CIntensityMotionCheck::BRAINMASK_METHOD_FSL(std::string m_ReportFileName )
+bool CIntensityMotionCheck::BRAINMASK_METHOD_FSL(std::string m_ReportFileName, std::string str2 )
 {
   bool      ret = true;
   bool      bReport = false;
   QProcess *process = new QProcess();
-
   std::ofstream outfile;
-
+    
   //if( protocol->GetBrainMaskProtocol().reportFileMode == 1 )
   //  {
     outfile.open( m_ReportFileName.c_str(), std::ios_base::app );
@@ -3600,9 +3622,28 @@ bool CIntensityMotionCheck::BRAINMASK_METHOD_FSL(std::string m_ReportFileName )
   QStringList str_dtiestim;
 
   // QString parameter;
-
-  str_dtiestim << "--dwi_image " << QString::fromStdString(m_outputDWIFileName.c_str() ) << "--B0" <<  "B0.nrrd"
-               << "--tensor_output" << "tensor.nrrd";
+  std::string str_tensor = str2;
+  str_tensor.append("tensor.nrrd");
+  
+  std::string str_B0nii = str2;
+  str_B0nii.append("B0.nii");
+  
+  std::string str_B0nrrd = str2;
+  str_B0nrrd.append("B0.nrrd");
+  
+  std::string str_B0niigz = str2;
+  str_B0niigz.append("B0.nii.gz");
+  
+  std::string str_B0betmask = str2;
+  str_B0betmask.append("B0_bet_mask.nii.gz");
+  
+  std::string str_B0bet = str2;
+  str_B0bet.append("B0_bet.nii.gz");
+  
+  
+  
+  str_dtiestim << "--dwi_image " << QString::fromStdString(m_outputDWIFileName.c_str() ) << "--B0" <<  QString::fromStdString(str_B0nrrd.c_str() )
+               << "--tensor_output" << QString::fromStdString(str_tensor.c_str() );
 
   std::cout << "dtiestim " << protocol->GetDTIProtocol().dtiestimCommand << (str_dtiestim.join(" ") ).toStdString()
             << std::endl;
@@ -3625,9 +3666,9 @@ bool CIntensityMotionCheck::BRAINMASK_METHOD_FSL(std::string m_ReportFileName )
   // converting to nii
   QStringList str_convertitk;
 
-  str_convertitk << "B0.nrrd";
+  str_convertitk << QString::fromStdString(str_B0nrrd.c_str() );
 
-  str_convertitk << "B0.nii";
+  str_convertitk << QString::fromStdString(str_B0nii.c_str() );
 
   std::cout << protocol->GetBrainMaskProtocol().BrainMask_SystemPath_convertITK
             << (str_convertitk.join(" ") ).toStdString() << std::endl;
@@ -3650,9 +3691,8 @@ bool CIntensityMotionCheck::BRAINMASK_METHOD_FSL(std::string m_ReportFileName )
   // ImageMath
   QStringList str_imagemath;
 
-  str_imagemath << "B0.nii" << "-outfile" << "B0.nii.gz" << "-constOper" << "3,10000" << "-type" << "float";
+  str_imagemath << QString::fromStdString(str_B0nii.c_str() ) << "-outfile" << QString::fromStdString(str_B0niigz.c_str() ) << "-constOper" << "3,10000" << "-type" << "float";
 
-  std::cout <<  "mahshid " << protocol->GetBrainMaskProtocol().BrainMask_SystemPath_imagemath.c_str() << std::endl;
   ret = process->execute( protocol->GetBrainMaskProtocol().BrainMask_SystemPath_imagemath.c_str(), str_imagemath);
   std::cout << "ret ImageMath " << ret << std::endl;
   if( ret == -1 )
@@ -3672,14 +3712,14 @@ bool CIntensityMotionCheck::BRAINMASK_METHOD_FSL(std::string m_ReportFileName )
 
   QStringList rm_temp;
 
-  rm_temp.append("B0.nii");
+  rm_temp << QString::fromStdString(str_B0nii.c_str() ) << "B0.nii";
 
   ret = process->execute( "rm", rm_temp);
 
   // bet2
   QStringList str_bet2;
 
-  str_bet2 << "B0.nii.gz" << "B0_bet" << "-m";
+  str_bet2 << QString::fromStdString(str_B0niigz.c_str() ) << QString::fromStdString(str_B0bet.c_str() ) << "-m";
 
   std::cout << "bet2 " << protocol->GetBrainMaskProtocol().BrainMask_SystemPath_FSL.c_str()
             << (str_bet2.join(" ") ).toStdString() << std::endl;
@@ -3752,7 +3792,7 @@ bool CIntensityMotionCheck::BRAINMASK_METHOD_FSL(std::string m_ReportFileName )
 
   QStringList str_imagemath2;
 
-  str_imagemath2 << "B0.nrrd" << "-mask" << "B0_bet";
+  str_imagemath2 << QString::fromStdString(str_B0nrrd.c_str() ) << "-mask" << QString::fromStdString(str_B0bet.c_str() );
 
   str_imagemath2 << "-outfile" << QString::fromStdString(Result_b0_masked);
   std::cout << "Result_b0_masked" << Result_b0_masked.c_str() << std::endl;
@@ -3776,15 +3816,15 @@ bool CIntensityMotionCheck::BRAINMASK_METHOD_FSL(std::string m_ReportFileName )
 
   protocol->GetBrainMaskProtocol(). BrainMask_Image = Result_b0_masked; // brain mask image
 
-  QStringList rm_temp2;
-  rm_temp2.append("B0.nrrd");
-  rm_temp2.append("B0.nii.gz");
-  rm_temp2.append("tensor.nrrd");
-  rm_temp2.append("B0_bet_mask.nii.gz");
-  rm_temp2.append("B0_bet.nii.gz");
+  //QStringList rm_temp2;
+  //rm_temp2.append("B0.nrrd");
+  //rm_temp2.append("B0.nii.gz");
+  //rm_temp2.append("tensor.nrrd");
+  //rm_temp2.append("B0_bet_mask.nii.gz");
+  //rm_temp2.append("B0_bet.nii.gz");
 
-  std::cout << "rm "  << (rm_temp2.join(" ") ).toStdString() << std::endl;
-  ret = process->execute( "rm", rm_temp2);
+  //std::cout << "rm "  << (rm_temp2.join(" ") ).toStdString() << std::endl;
+  //ret = process->execute( "rm", rm_temp2);
 
   outfile.close();
   
@@ -4506,7 +4546,7 @@ unsigned char CIntensityMotionCheck::RunPipelineByProtocol()
 
     }
   
-  std::cout << "Test Mahshid bReport " << bReport << std::endl;
+  //std::cout << "Test Mahshid bReport " << bReport << std::endl;
 
   if( bReport )
     {

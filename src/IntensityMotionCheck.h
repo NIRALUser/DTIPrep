@@ -121,7 +121,7 @@ public:
 
   bool BrainMask();
 
-  bool BRAINMASK_METHOD_FSL( std::string reportFileName);
+  bool BRAINMASK_METHOD_FSL( std::string reportFileName, std::string str2);
 
   bool BRAINMASK_METHOD_Slicer(std::string reportFileName );
 
