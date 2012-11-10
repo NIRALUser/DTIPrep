@@ -392,19 +392,7 @@ private:
 };   // class LinearEddyCurrentTransform
 }  // namespace itk
 
-// Define instantiation macro for this template.
-#define ITK_TEMPLATE_LinearEddyCurrentTransform(_, EXPORT, x, y) \
-  namespace itk { \
-  _( 3 ( class EXPORT LinearEddyCurrentTransform<ITK_TEMPLATE_3 x> ) ) \
-  namespace Templates { typedef LinearEddyCurrentTransform<ITK_TEMPLATE_3 x> \
-                        LinearEddyCurrentTransform##y; } \
-  }
-
-#if ITK_TEMPLATE_EXPLICIT
-#include "Templates/itkLinearEddyCurrentTransform+-.h"
-#endif
-
-#if ITK_TEMPLATE_TXX
+#ifndef ITK_MANUAL_INSTANTIATION
 #include "itkLinearEddyCurrentTransform.hxx"
 #endif
 

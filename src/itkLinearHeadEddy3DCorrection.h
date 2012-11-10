@@ -199,19 +199,7 @@ private:
 };   // class LinearHeadEddy3DCorrection
 }  // namespace itk
 
-// Define instantiation macro for this template.
-#define ITK_TEMPLATE_LinearHeadEddy3DCorrection(_, EXPORT, x, y) \
-  namespace itk { \
-  _( 3 ( class EXPORT LinearHeadEddy3DCorrection<ITK_TEMPLATE_3 x> ) ) \
-  namespace Templates { typedef LinearHeadEddy3DCorrection<ITK_TEMPLATE_3 x> \
-                        LinearHeadEddy3DCorrection##y; } \
-  }
-
-#if ITK_TEMPLATE_EXPLICIT
-#include "Templates/itkLinearHeadEddy3DCorrection+-.h"
-#endif
-
-#if ITK_TEMPLATE_TXX
+#ifndef ITK_MANUAL_INSTANTIATION
 #include "itkLinearHeadEddy3DCorrection.hxx"
 #endif
 
