@@ -1203,6 +1203,44 @@ void IntensityMotionCheckPanel::DefaultProtocol()
   this->GetProtocol().GetImageProtocol().spacing[1] = m_DwiOriginalImage->GetSpacing()[1];
   this->GetProtocol().GetImageProtocol().spacing[2] = m_DwiOriginalImage->GetSpacing()[2];
 
+  //space direction
+  // space direction of image = direction (from GetDirection() ) * spacing ( in form of identity matrix )
+  vnl_matrix <double> Image_Direction;
+  Image_Direction.set_size(3,3);
+  Image_Direction [0][0] =  m_DwiOriginalImage->GetDirection() (0,0);
+  Image_Direction [0][1] =  m_DwiOriginalImage->GetDirection() (0,1);
+  Image_Direction [0][2] =  m_DwiOriginalImage->GetDirection() (0,2);
+  Image_Direction [1][0] =  m_DwiOriginalImage->GetDirection() (1,0);
+  Image_Direction [1][1] =  m_DwiOriginalImage->GetDirection() (1,1);
+  Image_Direction [1][2] =  m_DwiOriginalImage->GetDirection() (1,2);
+  Image_Direction [2][0] =  m_DwiOriginalImage->GetDirection() (2,0);
+  Image_Direction [2][1] =  m_DwiOriginalImage->GetDirection() (2,1);
+  Image_Direction [2][2] =  m_DwiOriginalImage->GetDirection() (2,2);
+  
+  vnl_matrix <double> imgspacing;
+  imgspacing.set_size(3,3);
+  imgspacing(0,0) =  this->GetProtocol().GetImageProtocol().spacing[0];
+  imgspacing(1,1) =  this->GetProtocol().GetImageProtocol().spacing[1];
+  imgspacing(2,2) =  this->GetProtocol().GetImageProtocol().spacing[2];
+  imgspacing(0,1) =  imgspacing(0,2) = imgspacing(1,0) = imgspacing(1,2) = imgspacing(2,0) = imgspacing(2,1) = 0;
+  
+  vnl_matrix <double> Img_spacedirection;
+  Img_spacedirection.set_size(3,3);
+  Img_spacedirection = ( Image_Direction * imgspacing ).transpose();
+  
+  this->GetProtocol().GetImageProtocol().spacedirection[0][0] = Img_spacedirection [0][0];
+  this->GetProtocol().GetImageProtocol().spacedirection[0][1] = Img_spacedirection [0][1];
+  this->GetProtocol().GetImageProtocol().spacedirection[0][2] = Img_spacedirection [0][2];
+  this->GetProtocol().GetImageProtocol().spacedirection[1][0] = Img_spacedirection [1][0];
+  this->GetProtocol().GetImageProtocol().spacedirection[1][1] = Img_spacedirection [1][1];
+  this->GetProtocol().GetImageProtocol().spacedirection[1][2] = Img_spacedirection [1][2];
+  this->GetProtocol().GetImageProtocol().spacedirection[2][0] = Img_spacedirection [2][0];
+  this->GetProtocol().GetImageProtocol().spacedirection[2][1] = Img_spacedirection [2][1];
+  this->GetProtocol().GetImageProtocol().spacedirection[2][2] = Img_spacedirection [2][2];
+  
+ 
+  
+  
   // space
   itk::MetaDataDictionary imgMetaDictionary
     = m_DwiOriginalImage->GetMetaDataDictionary();
@@ -1273,37 +1311,10 @@ void IntensityMotionCheckPanel::DefaultProtocol()
 
     this->GetProtocol().GetDiffusionProtocol().gradients.push_back(vect);
     }
-
-  //
+  
+  
   if( imgMetaDictionary.HasKey("NRRD_measurement frame") )
-    {
-      {
-      // imaging frame
-      const vnl_matrix_fixed<double, 3, 3> & imgf = m_DwiOriginalImage->GetDirection().GetVnlMatrix();
-
-      std::cout << "imgf(0, 0)" << imgf(0, 0) << std::endl;
-      std::cout << "imgf(0, 1)" << imgf(0, 1) << std::endl;
-      std::cout << "imgf(0, 2)" << imgf(0, 2) << std::endl;
-      std::cout << "imgf(1, 0)" << imgf(1, 0) << std::endl;
-      std::cout << "imgf(1, 1)" << imgf(1, 1) << std::endl;
-      std::cout << "imgf(1, 2)" << imgf(1, 2) << std::endl;
-      std::cout << "imgf(2, 0)" << imgf(2, 0) << std::endl;
-      std::cout << "imgf(2, 1)" << imgf(2, 1) << std::endl;
-      std::cout << "imgf(2, 2)" << imgf(2, 2) << std::endl;
-      
-      
-      // Image frame
-      this->GetProtocol().GetImageProtocol().spacedirection = m_DwiOriginalImage->GetDirection().GetVnlMatrix();
-      this->GetProtocol().GetImageProtocol().spacedirection[0][0] = imgf(0, 0);
-      this->GetProtocol().GetImageProtocol().spacedirection[0][1] = imgf(0, 1);
-      this->GetProtocol().GetImageProtocol().spacedirection[0][2] = imgf(0, 2);
-      this->GetProtocol().GetImageProtocol().spacedirection[1][0] = imgf(1, 0);
-      this->GetProtocol().GetImageProtocol().spacedirection[1][1] = imgf(1, 1);
-      this->GetProtocol().GetImageProtocol().spacedirection[1][2] = imgf(1, 2);
-      this->GetProtocol().GetImageProtocol().spacedirection[2][0] = imgf(2, 0);
-      this->GetProtocol().GetImageProtocol().spacedirection[2][1] = imgf(2, 1);
-      this->GetProtocol().GetImageProtocol().spacedirection[2][2] = imgf(2, 2);
-      }
+    { 
       {
       std::vector<std::vector<double> > nrrdmf;
       itk::ExposeMetaData<std::vector<std::vector<double> > >(
@@ -1317,7 +1328,6 @@ void IntensityMotionCheckPanel::DefaultProtocol()
           {
           // Meausurement frame
           this->GetProtocol().GetDiffusionProtocol().measurementFrame[i][j] = nrrdmf[i][j];
-          std::cout << "nrrdmf[i][j]" << nrrdmf[i][j] << std::endl;
           }
         }
       std::cout << this->GetProtocol().GetDiffusionProtocol().measurementFrame << std::flush << std::endl;
@@ -1503,7 +1513,7 @@ void IntensityMotionCheckPanel::DefaultProtocol()
   this->GetProtocol().GetBrainMaskProtocol().BrainMask_SystemPath_Slicer = lineEdit_Slicer->text().toStdString();
   this->GetProtocol().GetBrainMaskProtocol().BrainMask_SystemPath_convertITK = lineEdit_convertitk->text().toStdString();
   this->GetProtocol().GetBrainMaskProtocol().BrainMask_SystemPath_imagemath = lineEdit_imagemath->text().toStdString();
-  std::cout << "Test 2 Brain mask " << this->GetProtocol().GetBrainMaskProtocol().BrainMask_SystemPath_FSL << std::endl;
+  //std::cout << "Test 2 Brain mask " << this->GetProtocol().GetBrainMaskProtocol().BrainMask_SystemPath_FSL << std::endl;
   emit Set_init_Path_Signal();
 
   // Dominant directional artifact detector ( entropy tool )
@@ -6148,7 +6158,7 @@ bool IntensityMotionCheckPanel::OpenMappingXML()
 
 void IntensityMotionCheckPanel::on_pushButton_Pathdefault_clicked()
 {
-  std::cout << "Test mahshid " << std::endl;
+  //std::cout << "Test mahshid " << std::endl;
   std::string program;
   std::string notFound;
 
@@ -6157,7 +6167,7 @@ void IntensityMotionCheckPanel::on_pushButton_Pathdefault_clicked()
 
   // BrainMask: FSL_bet
   program = itksys::SystemTools::FindProgram("bet2");
-  std::cout << "Test mahshid " << program.c_str() << std::endl;
+  //std::cout << "Test mahshid " << program.c_str() << std::endl;
   if( program.empty() )
     {
     if( lineEdit_FSL->text().isEmpty() )
@@ -6180,7 +6190,7 @@ void IntensityMotionCheckPanel::on_pushButton_Pathdefault_clicked()
 
   // convertitk
   program = itksys::SystemTools::FindProgram("convertITKformats");
-  std::cout << "Test mahshid " << program.c_str() << std::endl;
+  //std::cout << "Test mahshid " << program.c_str() << std::endl;
   if( program.empty() )
     {
     if( lineEdit_convertitk->text().isEmpty() )
@@ -6197,7 +6207,7 @@ void IntensityMotionCheckPanel::on_pushButton_Pathdefault_clicked()
 
   // convertitk
   program = itksys::SystemTools::FindProgram("ImageMath");
-  std::cout << "Test mahshid " << program.c_str() << std::endl;
+ // std::cout << "Test mahshid " << program.c_str() << std::endl;
   if( program.empty() )
     {
     if( lineEdit_imagemath->text().isEmpty() )

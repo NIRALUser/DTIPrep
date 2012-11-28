@@ -6434,6 +6434,42 @@ bool CIntensityMotionCheck::MakeDefaultProtocol( Protocol *_protocol )
   _protocol->GetImageProtocol(). spacing[0] = m_DwiOriginalImage->GetSpacing()[0];
   _protocol->GetImageProtocol(). spacing[1] = m_DwiOriginalImage->GetSpacing()[1];
   _protocol->GetImageProtocol(). spacing[2] = m_DwiOriginalImage->GetSpacing()[2];
+  
+  
+  //space direction
+    // space direction of image = direction (from GetDirection() ) * spacing ( in form of identity matrix )
+    vnl_matrix <double> Image_Direction;
+    Image_Direction.set_size(3,3);
+    Image_Direction [0][0] =  m_DwiOriginalImage->GetDirection() (0,0);
+    Image_Direction [0][1] =  m_DwiOriginalImage->GetDirection() (0,1);
+    Image_Direction [0][2] =  m_DwiOriginalImage->GetDirection() (0,2);
+    Image_Direction [1][0] =  m_DwiOriginalImage->GetDirection() (1,0);
+    Image_Direction [1][1] =  m_DwiOriginalImage->GetDirection() (1,1);
+    Image_Direction [1][2] =  m_DwiOriginalImage->GetDirection() (1,2);
+    Image_Direction [2][0] =  m_DwiOriginalImage->GetDirection() (2,0);
+    Image_Direction [2][1] =  m_DwiOriginalImage->GetDirection() (2,1);
+    Image_Direction [2][2] =  m_DwiOriginalImage->GetDirection() (2,2);
+    
+    vnl_matrix <double> imgspacing;
+    imgspacing.set_size(3,3);
+    imgspacing(0,0) =  _protocol->GetImageProtocol().spacing[0];
+    imgspacing(1,1) =  _protocol->GetImageProtocol().spacing[1];
+    imgspacing(2,2) =  _protocol->GetImageProtocol().spacing[2];
+    imgspacing(0,1) =  imgspacing(0,2) = imgspacing(1,0) = imgspacing(1,2) = imgspacing(2,0) = imgspacing(2,1) = 0;
+    
+    vnl_matrix <double> Img_spacedirection;
+    Img_spacedirection.set_size(3,3);
+    Img_spacedirection = ( Image_Direction * imgspacing ).transpose();
+    
+    _protocol->GetImageProtocol().spacedirection[0][0] = Img_spacedirection [0][0];
+    _protocol->GetImageProtocol().spacedirection[0][1] = Img_spacedirection [0][1];
+    _protocol->GetImageProtocol().spacedirection[0][2] = Img_spacedirection [0][2];
+    _protocol->GetImageProtocol().spacedirection[1][0] = Img_spacedirection [1][0];
+    _protocol->GetImageProtocol().spacedirection[1][1] = Img_spacedirection [1][1];
+    _protocol->GetImageProtocol().spacedirection[1][2] = Img_spacedirection [1][2];
+    _protocol->GetImageProtocol().spacedirection[2][0] = Img_spacedirection [2][0];
+    _protocol->GetImageProtocol().spacedirection[2][1] = Img_spacedirection [2][1];
+    _protocol->GetImageProtocol().spacedirection[2][2] = Img_spacedirection [2][2];
 
   // space
   itk::MetaDataDictionary imgMetaDictionary
@@ -6505,18 +6541,6 @@ bool CIntensityMotionCheck::MakeDefaultProtocol( Protocol *_protocol )
     }
 
   // imaging frame
-  const vnl_matrix_fixed<double, 3, 3> & imgf = m_DwiOriginalImage->GetDirection().GetVnlMatrix();
-
-  _protocol->GetImageProtocol(). spacedirection[0][0] = imgf(0, 0);
-
-  _protocol->GetImageProtocol(). spacedirection[0][1] = imgf(0, 1);
-  _protocol->GetImageProtocol(). spacedirection[0][2] = imgf(0, 2);
-  _protocol->GetImageProtocol(). spacedirection[1][0] = imgf(1, 0);
-  _protocol->GetImageProtocol(). spacedirection[1][1] = imgf(1, 1);
-  _protocol->GetImageProtocol(). spacedirection[1][2] = imgf(1, 2);
-  _protocol->GetImageProtocol(). spacedirection[2][0] = imgf(2, 0);
-  _protocol->GetImageProtocol(). spacedirection[2][1] = imgf(2, 1);
-  _protocol->GetImageProtocol(). spacedirection[2][2] = imgf(2, 2);
 
   // measurement frame
   std::vector<std::vector<double> > nrrdmf;
