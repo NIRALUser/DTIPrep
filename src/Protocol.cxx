@@ -1688,7 +1688,15 @@ void Protocol::Save( std::string xml)
   outfile << "            <value>" << GetBrainMaskProtocol().reportFileMode << "</value>" << std::endl;
   outfile << "        </entry>"  << std::endl;
   outfile << "    <entry parameter=\"BRAINMASK_bQuitOnCheckFailure\">" << std::endl;
-  outfile << "            <value>" << GetBrainMaskProtocol().bQuitOnCheckFailure << "</value>" << std::endl;
+  if (GetBrainMaskProtocol().bQuitOnCheckFailure  )  
+  {
+	outfile << "            <value>Yes</value>" << std::endl;
+  }
+  else
+  {
+	outfile << "            <value>No</value>" << std::endl;
+  }
+  //outfile << "            <value>" << GetBrainMaskProtocol().bQuitOnCheckFailure << "</value>" << std::endl;
   outfile << "        </entry>"  << std::endl;
   outfile << "        </entry>"  << std::endl;
 
@@ -1722,7 +1730,17 @@ void Protocol::Save( std::string xml)
   outfile << "            <value>" << GetDominantDirectional_Detector().reportFileMode << "</value>" << std::endl;
   outfile << "        </entry>"  << std::endl;
   outfile << "    <entry parameter=\"DOMINANTDIRECTION_bQuitOnCheckFailure\">" << std::endl;
-  outfile << "            <value>" << GetDominantDirectional_Detector().bQuitOnCheckFailure << "</value>" << std::endl;
+   
+  if (GetDominantDirectional_Detector().bQuitOnCheckFailure)
+  {
+	outfile << "            <value>Yes</value>" << std::endl;
+  }
+  else
+  {
+	outfile << "            <value>No</value>" << std::endl;
+  }
+
+  //outfile << "            <value>" << GetDominantDirectional_Detector().bQuitOnCheckFailure << "</value>" << std::endl;
   outfile << "        </entry>"  << std::endl;
   outfile << "        </entry>"  << std::endl;
 

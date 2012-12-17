@@ -5805,6 +5805,7 @@ bool CIntensityMotionCheck::DiffusionCheck( DwiImageType::Pointer dwi)
     // should be defined in protocol.	
     //const double bValueAcceptablePercentageTolerance = 0.005;
     const double bValueAcceptablePercentageTolerance = protocol->GetDiffusionProtocol().bValueAcceptablePercentageTolerance_;
+    std::cout << "protocol->GetDiffusionProtocol().bValueAcceptablePercentageTolerance_" << protocol->GetDiffusionProtocol().bValueAcceptablePercentageTolerance_ << std::endl;
 
     if( vcl_abs( ( protocol->GetDiffusionProtocol().bValue - bValue ) / protocol->GetDiffusionProtocol().bValue ) <
         bValueAcceptablePercentageTolerance )
@@ -6028,6 +6029,7 @@ bool CIntensityMotionCheck::DiffusionCheck( DwiImageType::Pointer dwi)
 	// should be defined in protocol
         //const float gradientToleranceForSameness = 1; // Allow 1 degree
 	const float gradientToleranceForSameness = protocol->GetDiffusionProtocol().gradientToleranceForSameness_degree;
+	std::cout << "protocol->GetDiffusionProtocol().gradientToleranceForSameness_degree" << protocol->GetDiffusionProtocol().gradientToleranceForSameness_degree << std::endl;
 	//****
         // difference for sameness
         // (180.0/static_cast<float>(protocol->GetDiffusionProtocol().gradients.size()))
@@ -6566,6 +6568,10 @@ bool CIntensityMotionCheck::MakeDefaultProtocol( Protocol *_protocol )
 
   _protocol->GetDiffusionProtocol(). bCheck = true;
   _protocol->GetDiffusionProtocol(). bValue = this->m_b0;
+
+  _protocol->GetDiffusionProtocol(). bValueAcceptablePercentageTolerance_ = 0.005;
+  _protocol->GetDiffusionProtocol(). gradientToleranceForSameness_degree = 1;	//allow in degree
+
   for( unsigned int i = 0; i < m_GradientDirectionContainer->size(); i++ )
     {
     vnl_vector_fixed<double, 3> vect;
