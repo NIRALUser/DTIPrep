@@ -3461,13 +3461,13 @@ bool CIntensityMotionCheck::BrainMask()
         itksys::SystemTools::MakeDirectory( str.c_str() );
       }
       str2 = str ;
-      str2.append("/temp");
-      if( !itksys::SystemTools::FileIsDirectory( str2.c_str() ) )
-      {
-        itksys::SystemTools::MakeDirectory( str2.c_str() );
-      }      
+      str2.append("/temp/");
+      //if( !itksys::SystemTools::FileIsDirectory( str2.c_str() ) )
+      //{
+      //  itksys::SystemTools::MakeDirectory( str2.c_str() );
+      //}      
       str.append( "/" );
-      str2.append( "/" );
+      //str2.append( "/" );
       m_ReportFileName = str;
       m_ReportFileName.append( Dwi_file_name );
       m_ReportFileName.append( "_QCReport.txt");
@@ -3484,13 +3484,13 @@ bool CIntensityMotionCheck::BrainMask()
         }
       
       str2 = str;
-      str2.append( "/temp" );
-      if( !itksys::SystemTools::FileIsDirectory( str2.c_str() ) )
-      {
-         itksys::SystemTools::MakeDirectory( str2.c_str() );
-      }
+      str2.append( "/temp/" );
+      //if( !itksys::SystemTools::FileIsDirectory( str2.c_str() ) )
+      //{
+      //   itksys::SystemTools::MakeDirectory( str2.c_str() );
+      //}
       str.append( "/" );
-      str2.append( "/" );
+      //str2.append( "/" );
       m_ReportFileName = str;
       m_ReportFileName.append( Dwi_file_name );
       m_ReportFileName.append( "_QCReport.txt");
@@ -3501,10 +3501,10 @@ bool CIntensityMotionCheck::BrainMask()
     {
     str2 = m_DwiFileName.substr( 0, m_DwiFileName.find_last_of('/') );
     str2.append( "/temp/" );
-	if( !itksys::SystemTools::FileIsDirectory( str2.c_str() ) )
-	{
-	   itksys::SystemTools::MakeDirectory( str2.c_str() );
-	}
+	//if( !itksys::SystemTools::FileIsDirectory( str2.c_str() ) )
+	//{
+	//   itksys::SystemTools::MakeDirectory( str2.c_str() );
+	//}
 	
     m_ReportFileName = m_DwiFileName.substr( 0, m_DwiFileName.find_last_of('.') );
     m_ReportFileName.append( "_QCReport.txt");
@@ -3545,6 +3545,11 @@ bool CIntensityMotionCheck::BrainMask()
   if( protocol->GetBrainMaskProtocol().bMask )
     {
 
+	if( !itksys::SystemTools::FileIsDirectory( str2.c_str() ) )
+	{
+	   itksys::SystemTools::MakeDirectory( str2.c_str() );
+	}  
+	  
     int mask_method = protocol->GetBrainMaskProtocol().BrainMask_Method;
 
     switch( mask_method )
@@ -3797,8 +3802,8 @@ bool CIntensityMotionCheck::BRAINMASK_METHOD_FSL(std::string m_ReportFileName, s
   str_imagemath2 << "-outfile" << QString::fromStdString(Result_b0_masked);
   std::cout << "Result_b0_masked" << Result_b0_masked.c_str() << std::endl;
 
-  std::cout << "mahshid1" << protocol->GetBrainMaskProtocol().BrainMask_SystemPath_imagemath.c_str()
-            << (str_imagemath2.join(" ") ).toStdString() << std::endl;
+  //std::cout << "mahshid1" << protocol->GetBrainMaskProtocol().BrainMask_SystemPath_imagemath.c_str()
+  //          << (str_imagemath2.join(" ") ).toStdString() << std::endl;
   ret = process->execute( protocol->GetBrainMaskProtocol().BrainMask_SystemPath_imagemath.c_str(), str_imagemath2);
   std::cout << "ret ImageMath2 " << ret << std::endl;
   if( ret == -1 )
@@ -5797,7 +5802,10 @@ bool CIntensityMotionCheck::DiffusionCheck( DwiImageType::Pointer dwi)
     double bValue;
     this->GetGradientDirections( dwi, bValue, GradContainer);
 
-    const double bValueAcceptablePercentageTolerance = 0.005;
+    // should be defined in protocol.	
+    //const double bValueAcceptablePercentageTolerance = 0.005;
+    const double bValueAcceptablePercentageTolerance = protocol->GetDiffusionProtocol().bValueAcceptablePercentageTolerance_;
+
     if( vcl_abs( ( protocol->GetDiffusionProtocol().bValue - bValue ) / protocol->GetDiffusionProtocol().bValue ) <
         bValueAcceptablePercentageTolerance )
       {
@@ -5958,6 +5966,30 @@ bool CIntensityMotionCheck::DiffusionCheck( DwiImageType::Pointer dwi)
     std::cout << "Image measurement frame (normalized inverse) \n" <<  mfInverseFromImage << std::endl;
     // JTM - END DEBUG: delete later
 
+
+    // Mahshid : check with protocol ( bUseDiffusionProtocol ) to apply measurement frame of protocol in DWI image 
+    if( protocol->GetDiffusionProtocol().bUseDiffusionProtocol )
+        {
+
+	std::vector<std::vector<double> > Mtx_MeasurementFrameFromProtocol;
+	 
+	itk::ExposeMetaData<std::vector<std::vector<double> > >( dwi->GetMetaDataDictionary(), "NRRD_measurement frame", Mtx_MeasurementFrameFromProtocol);
+
+      	Mtx_MeasurementFrameFromProtocol[0][0] = protocol->GetDiffusionProtocol().measurementFrame[0][0];
+	Mtx_MeasurementFrameFromProtocol[0][1] = protocol->GetDiffusionProtocol().measurementFrame[0][1];
+	Mtx_MeasurementFrameFromProtocol[0][2] = protocol->GetDiffusionProtocol().measurementFrame[0][2];
+	Mtx_MeasurementFrameFromProtocol[1][0] = protocol->GetDiffusionProtocol().measurementFrame[1][0];
+	Mtx_MeasurementFrameFromProtocol[1][1] = protocol->GetDiffusionProtocol().measurementFrame[1][1];
+	Mtx_MeasurementFrameFromProtocol[1][2] = protocol->GetDiffusionProtocol().measurementFrame[1][2];
+	Mtx_MeasurementFrameFromProtocol[2][0] = protocol->GetDiffusionProtocol().measurementFrame[2][0];
+	Mtx_MeasurementFrameFromProtocol[2][1] = protocol->GetDiffusionProtocol().measurementFrame[2][1];
+	Mtx_MeasurementFrameFromProtocol[2][2] = protocol->GetDiffusionProtocol().measurementFrame[2][2];	
+
+	itk::EncapsulateMetaData<std::vector<std::vector<double> > >(dwi->GetMetaDataDictionary(),"NRRD_measurement frame",Mtx_MeasurementFrameFromProtocol);
+			
+        }
+    
+
     bool result = true;
     if( GradContainer->size() !=
         protocol->GetDiffusionProtocol().gradients.size() )
@@ -5992,7 +6024,11 @@ bool CIntensityMotionCheck::DiffusionCheck( DwiImageType::Pointer dwi)
         // Allow for small differences in colinearity to be considered the same
         // direction.
         // const float gradientTolerancePercentOfSmallestAngle=0.2;
-        const float gradientToleranceForSameness = 1; // Allow 1 degree
+	//****
+	// should be defined in protocol
+        //const float gradientToleranceForSameness = 1; // Allow 1 degree
+	const float gradientToleranceForSameness = protocol->GetDiffusionProtocol().gradientToleranceForSameness_degree;
+	//****
         // difference for sameness
         // (180.0/static_cast<float>(protocol->GetDiffusionProtocol().gradients.size()))
         // *gradientTolerancePercentOfSmallestAngle;

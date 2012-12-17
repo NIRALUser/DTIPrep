@@ -2671,3 +2671,4 @@ void XmlStreamReader::skipUnknownElement()
       }
     }
 }
+

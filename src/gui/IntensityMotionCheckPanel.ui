@@ -38,7 +38,7 @@
         <rect>
          <x>0</x>
          <y>0</y>
-         <width>852</width>
+         <width>850</width>
          <height>909</height>
         </rect>
        </property>
@@ -61,7 +61,7 @@
            <cursorShape>ArrowCursor</cursorShape>
           </property>
           <property name="currentIndex">
-           <number>2</number>
+           <number>3</number>
           </property>
           <widget class="QWidget" name="Tab_DWI">
            <attribute name="title">
@@ -1480,13 +1480,6 @@
                  </property>
                  <property name="value">
                   <number>-1</number>
-                 </property>
-                </widget>
-               </item>
-               <item>
-                <widget class="QPushButton" name="pushButton_DefaultQCResult">
-                 <property name="text">
-                  <string>Default Result</string>
                  </property>
                 </widget>
                </item>

@@ -87,7 +87,8 @@ IntensityMotionCheckPanel::IntensityMotionCheckPanel(QMainWindow *parentNew) :
 
   pushButton_RunPipeline->setEnabled( 0 );
 
-  pushButton_DefaultQCResult->setEnabled( 0 );
+// This button "pushButton_DefaultQCResult" was removed from IntensityMotionCheckPanel.ui
+//  pushButton_DefaultQCResult->setEnabled( 0 );
 
   //   pushButton_OpenQCReport->setEnabled( 0 );
 
@@ -1038,7 +1039,7 @@ void IntensityMotionCheckPanel::UpdatePanelDWI()
 {
   this->qcResult.Clear();
   treeWidget_Results->clear();
-  pushButton_DefaultQCResult->setEnabled( 1 );
+//  pushButton_DefaultQCResult->setEnabled( 1 );
   //   pushButton_OpenQCReport->setEnabled( 1 );
 
   treeWidget_DiffusionInformation->clear();
@@ -1336,6 +1337,8 @@ void IntensityMotionCheckPanel::DefaultProtocol()
 
   // HACK:  This breaks encapsulation of the function.  SetFunctions should be used!
   this->GetProtocol().GetDiffusionProtocol().bUseDiffusionProtocol = false;
+  this->GetProtocol().GetDiffusionProtocol().bValueAcceptablePercentageTolerance_ = 0.005;
+  this->GetProtocol().GetDiffusionProtocol().gradientToleranceForSameness_degree = 1;	// allow in degree
   this->GetProtocol().GetDiffusionProtocol().diffusionReplacedDWIFileNameSuffix
     = "_DiffusionReplaced.nrrd";
 
@@ -2292,6 +2295,16 @@ void IntensityMotionCheckPanel::UpdateProtocolToTreeWidget()
     {
     itembUseDiffusionProtocol->setText( 1, tr("No") );
     }
+
+  QTreeWidgetItem *itembValueAcceptablePercentageTolerance = new QTreeWidgetItem(
+      itemDiffusionInformation);
+  itembValueAcceptablePercentageTolerance->setText( 0, tr("DIFFUSION_bValueAcceptablePercentageTolerance_") );
+  itembValueAcceptablePercentageTolerance->setText( 1, QString("%1").arg(this->GetProtocol().GetDiffusionProtocol().bValueAcceptablePercentageTolerance_, 0, 'f',4));
+
+  QTreeWidgetItem *itemgradientToleranceForSameness_degree = new QTreeWidgetItem(
+      itemDiffusionInformation);
+  itemgradientToleranceForSameness_degree->setText( 0, tr("DIFFUSION_gradientToleranceForSameness_degree") );
+  itemgradientToleranceForSameness_degree->setText( 1, QString("%1").arg(this->GetProtocol().GetDiffusionProtocol().gradientToleranceForSameness_degree, 0, 'f',4));
 
   QTreeWidgetItem *itemDiffusionReplacedDWIFileNameSuffix = new QTreeWidgetItem(
       itemDiffusionInformation);
@@ -4167,8 +4180,6 @@ void IntensityMotionCheckPanel::ResultUpdate()
 
     }
 
-  std::cout << "QTree Result " << qcResult.GetOverallQCResult().BMCK << std::endl;
-  std::cout << "QTree Result " << qcResult.GetOverallQCResult().DDDCK << std::endl;
 
   // QTreeWidgetItem *itemDominantDirectionDetec = new QTreeWidgetItem(
   //      treeWidget_Results);
@@ -5923,7 +5934,7 @@ void IntensityMotionCheckPanel::GenerateOutput_VisualCheckingResult()
 
 }
 
-void IntensityMotionCheckPanel::on_pushButton_DefaultQCResult_clicked()
+/*void IntensityMotionCheckPanel::on_pushButton_DefaultQCResult_clicked()
 {
   bLoadDefaultQC = true;
   if( m_DwiOriginalImage->GetVectorLength() != GradientDirectionContainer->size() )
@@ -5943,7 +5954,7 @@ void IntensityMotionCheckPanel::on_pushButton_DefaultQCResult_clicked()
   pushButton_SaveVisualChecking->setEnabled( 1 );
 
   emit UpdateOutputDWIDiffusionVectorActors();
-}
+}*/
 
 void IntensityMotionCheckPanel::DefaultProcess()
 {

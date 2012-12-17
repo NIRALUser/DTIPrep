@@ -85,6 +85,8 @@ void Protocol::initDiffusionProtocol()
   diffusionProtocol.reportFileMode = 1; // 0: new   1: append
 
   diffusionProtocol.bQuitOnCheckFailure = false;
+  diffusionProtocol.bValueAcceptablePercentageTolerance_ = 0.005;
+  diffusionProtocol.gradientToleranceForSameness_degree = 1;	//allow in degree
 }
 
 void Protocol::initBrainMaskProtocol()
@@ -499,6 +501,10 @@ void Protocol::printDiffusionProtocol()
     {
     std::cout << "\tuseDiffusionProtocol: No" << std::endl;
     }
+
+  std::cout << "\tbValueAcceptablePercentageTolerance: " << GetDiffusionProtocol().bValueAcceptablePercentageTolerance_ << std::endl;
+
+  std::cout << "\tgradientToleranceForSameness_degree: " << GetDiffusionProtocol().gradientToleranceForSameness_degree << std::endl;
 
   std::cout << "\tdiffusionReplacedDWIFileNameSuffix: "
             <<  GetDiffusionProtocol().diffusionReplacedDWIFileNameSuffix
@@ -1305,6 +1311,12 @@ void Protocol::Save( std::string xml)
     {
     outfile << "            <value>No</value>" << std::endl;
     }
+  outfile << "        </entry>" << std::endl;
+  outfile << "        <entry parameter=\"DIFFUSION_bValueAcceptablePercentageTolerance_\">" << std::endl;
+  outfile << "            <value>" << GetDiffusionProtocol().bValueAcceptablePercentageTolerance_ << "</value>" << std::endl;
+  outfile << "        </entry>" << std::endl;
+  outfile << "        <entry parameter=\"DIFFUSION_gradientToleranceForSameness_degree\">" << std::endl;
+  outfile << "            <value>" << GetDiffusionProtocol().gradientToleranceForSameness_degree << "</value>" << std::endl;
   outfile << "        </entry>" << std::endl;
   outfile << "        <entry parameter=\"DIFFUSION_diffusionReplacedDWIFileNameSuffix\">" << std::endl;
   outfile << "            <value>" << GetDiffusionProtocol().diffusionReplacedDWIFileNameSuffix << "</value>"

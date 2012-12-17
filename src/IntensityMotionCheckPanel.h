@@ -91,7 +91,7 @@ private slots:
 
   // void on_pushButton_SaveDWIAs_clicked( );
 
-  void on_pushButton_DefaultQCResult_clicked();
+  //void on_pushButton_DefaultQCResult_clicked();
 
   void on_pushButton_FSL_clicked();
 

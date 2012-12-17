@@ -41,6 +41,10 @@ struct DiffusionProtocol
   int reportFileMode; // 0: new   1: append
 
   bool bQuitOnCheckFailure;
+
+  double bValueAcceptablePercentageTolerance_;
+  float gradientToleranceForSameness_degree; //allow degree
+
   };
 
 struct DenoisingLMMSE

@@ -174,11 +174,11 @@ void CThreadIntensityMotionCheck::run()
   out = out >> 9; // because of adding two processes in the QC pipeline ( brainmask and dominant directional artifact
   if( out )
     {
-    std::cout << "Dominant Directional Detector:\t\tFAILURE" << std::endl;
+    std::cout << "Dominant Directional Detector:\tFAILURE" << std::endl;
     }
   else
     {
-    std::cout << "Dominant Directional Detector:\t\tPASS or Not Set" << std::endl;
+    std::cout << "Dominant Directional Detector:\tPASS or Not Set" << std::endl;
     }
 
   emit StopProgressSignal();  // hiding progress bar
