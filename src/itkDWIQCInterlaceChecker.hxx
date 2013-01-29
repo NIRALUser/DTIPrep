@@ -225,16 +225,11 @@ DWIQCInterlaceChecker<TImageType>
       ossKey << "DWMRI_gradient_" << std::setw(4) << std::setfill('0') << temp;
 
       std::ostringstream ossMetaString;
-      ossMetaString << std::setw(9) << std::setiosflags(std::ios::fixed)
-                    << std::setprecision(6) << std::setiosflags(std::ios::right)
+      ossMetaString << std::setprecision(17)
                     << this->m_GradientDirectionContainer->ElementAt(i)[0]
                     << "    "
-                    << std::setw(9) << std::setiosflags(std::ios::fixed)
-                    << std::setprecision(6) << std::setiosflags(std::ios::right)
                     << this->m_GradientDirectionContainer->ElementAt(i)[1]
                     << "    "
-                    << std::setw(9) << std::setiosflags(std::ios::fixed)
-                    << std::setprecision(6) << std::setiosflags(std::ios::right)
                     << this->m_GradientDirectionContainer->ElementAt(i)[2];
 
       // std::cout<<ossKey.str()<<ossMetaString.str()<<std::endl;
@@ -1785,19 +1780,11 @@ DWIQCInterlaceChecker<TImageType>
                << temp;
 
         std::ostringstream ossMetaString;
-        ossMetaString << std::setw(9) << std::setiosflags(std::ios::fixed)
-                      << std::setprecision(6) << std::setiosflags(
-          std::ios::right)
+        ossMetaString << std::setprecision(17)
                       << this->m_GradientDirectionContainer->ElementAt(i)[0]
                       << "    "
-                      << std::setw(9) << std::setiosflags(std::ios::fixed)
-                      << std::setprecision(6) << std::setiosflags(
-          std::ios::right)
                       << this->m_GradientDirectionContainer->ElementAt(i)[1]
                       << "    "
-                      << std::setw(9) << std::setiosflags(std::ios::fixed)
-                      << std::setprecision(6) << std::setiosflags(
-          std::ios::right)
                       << this->m_GradientDirectionContainer->ElementAt(i)[2];
 
         // std::cout<<ossKey.str()<<ossMetaString.str()<<std::endl;

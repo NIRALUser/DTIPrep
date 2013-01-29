@@ -481,14 +481,9 @@ void Protocol::printDiffusionProtocol()
     // "<<vect[2]<<std::endl;
 
     std::cout << "\tDWMRI_gradient_" << i << "\t[ "
-              << std::setw(9) << std::setiosflags(std::ios::fixed)
-              << std::setprecision(6) << std::setiosflags(std::ios::right)
+              << std::setprecision(17)
               << vect[0] << ", "
-              << std::setw(9) << std::setiosflags(std::ios::fixed)
-              << std::setprecision(6) << std::setiosflags(std::ios::right)
               << vect[1] << ", "
-              << std::setw(9) << std::setiosflags(std::ios::fixed)
-              << std::setprecision(6) << std::setiosflags(std::ios::right)
               << vect[2] << " ]"
               << std::endl;
     }
@@ -1295,6 +1290,7 @@ void Protocol::Save( std::string xml)
             << std::setw(4) << std::setfill('0') << i
             << "\">" << std::endl;
     outfile << "            <value>"
+            << std::setprecision(17)
             << GetDiffusionProtocol().gradients[i][0] << " "
             << GetDiffusionProtocol().gradients[i][1] << " "
             << GetDiffusionProtocol().gradients[i][2]
