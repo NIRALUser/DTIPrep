@@ -1,6 +1,9 @@
 
 include(${CMAKE_CURRENT_LIST_DIR}/Common.cmake)
 
+set(MODULE_NAME ${EXTENSION_NAME}) # Do not use 'project()'
+set(MODULE_TITLE ${MODULE_NAME})
+
 find_package(BRAINSCommonLib NO_MODULE REQUIRED)
 include(${BRAINSCommonLib_USE_FILE})
 include_directories(${BRAINSCommonLib_INCLUDE_DIRS})
@@ -63,7 +66,7 @@ include(${SlicerExecutionModel_USE_FILE})
 include(${SlicerExecutionModel_CMAKE_DIR}/SEMMacroBuildCLI.cmake)
 
 #-----------------------------------------------------------------------------
-enable_testing()
+#enable_testing()
 include(CTest)
 
 #-----------------------------------------------------------------------
@@ -95,4 +98,28 @@ set(TestData_DIR ${CMAKE_CURRENT_SOURCE_DIR}/TestData)
 # Add module sub-directory if USE_<MODULENAME> is both defined and true
 #-----------------------------------------------------------------------------
 add_subdirectory(src)
+
+if( EXTENSION_SUPERBUILD_BINARY_DIR )
+  unsetForSlicer( NAMES ITK_DIR SlicerExecutionModel_DIR )
+  find_package(Slicer REQUIRED)
+  include(${Slicer_USE_FILE})
+  resetForSlicer( NAMES ITK_DIR SlicerExecutionModel_DIR )
+endif()
+
+IF(BUILD_TESTING)
+  ADD_SUBDIRECTORY(Testing)
+ENDIF(BUILD_TESTING)
+
+if( EXTENSION_SUPERBUILD_BINARY_DIR )
+  set( Tools  BRAINSCreateLabelMapFromProbabilityMaps BRAINSFitEZ BRAINSResize compareTractInclusion DTIPrep DWIConvert extractNrrdVectorIndex gtractAnisotropyMap gtractAverageBvalues gtractClipAnisotropy gtractConcatDwi gtractCopyImageOrientation gtractCoRegAnatomy gtractCoregBvalues gtractCostFastMarching gtractCreateGuideFiber gtractFastMarchingTracking gtractFiberTracking gtractImageConformity gtractInvertBSplineTransform gtractInvertDisplacementField gtractInvertRigidTransform gtractResampleAnisotropy gtractResampleB0 gtractResampleCodeImage gtractResampleDWIInPlace gtractResampleFibers gtractTensor gtractTransformToDisplacementField H5detect H5make_libsettings ImageCalculator ImageGenerate )
+  set( Libraries libBRAINSCreateLabelMapFromProbabilityMapsLib.so libBRAINSFitEZLib.so libBRAINSResizeLib.so libcompareTractInclusionLib.so libDWIConvertLib.so libextractNrrdVectorIndexLib.so libgtractAnisotropyMapLib.so libgtractAverageBvaluesLib.so libgtractClipAnisotropyLib.so libgtractConcatDwiLib.so libgtractCopyImageOrientationLib.so libgtractCoRegAnatomyLib.so libgtractCoregBvaluesLib.so libgtractCostFastMarchingLib.so libgtractCreateGuideFiberLib.so libgtractFastMarchingTrackingLib.so libgtractFiberTrackingLib.so libgtractImageConformityLib.so libgtractInvertBSplineTransformLib.so libgtractInvertDisplacementFieldLib.so libgtractInvertRigidTransformLib.so libgtractResampleAnisotropyLib.so libgtractResampleB0Lib.so libgtractResampleCodeImageLib.so libgtractResampleDWIInPlaceLib.so libgtractResampleFibersLib.so libgtractTensorLib.so )
+  foreach( tool ${Tools} )
+    install(PROGRAMS ${EXTENSION_SUPERBUILD_BINARY_DIR}/bin/${tool} DESTINATION ${${LOCAL_PROJECT_NAME}_CLI_INSTALL_RUNTIME_DESTINATION} )
+  endforeach()
+  foreach( lib ${Libraries} )
+    install(FILES ${EXTENSION_SUPERBUILD_BINARY_DIR}/bin/${lib} DESTINATION ${${LOCAL_PROJECT_NAME}_CLI_INSTALL_LIBRARY_DESTINATION} )
+  endforeach()
+  set(CPACK_INSTALL_CMAKE_PROJECTS "${CPACK_INSTALL_CMAKE_PROJECTS};${CMAKE_BINARY_DIR};${EXTENSION_NAME};ALL;/")
+  include(${Slicer_EXTENSION_CPACK})
+endif()
 

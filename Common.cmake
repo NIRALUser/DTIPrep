@@ -1,6 +1,23 @@
 
 include(CMakeDependentOption)
 
+
+#Declare DTIPrep extension variables
+set(EXTENSION_NAME DTIPrep)
+set(EXTENSION_HOMEPAGE "http://www.slicer.org/slicerWiki/index.php/Documentation/Nightly/Extensions/DTIPrep")
+set(EXTENSION_CATEGORY "Diffusion")
+set(EXTENSION_CONTRIBUTORS "Francois Budin (UNC)")
+set(EXTENSION_DESCRIPTION "This extension provides the tool DTIPrep integrated in Slicer")
+set(EXTENSION_ICONURL "http://www.nitrc.org/project/screenshot.php?group_id=283&screenshot_id=608")
+set(EXTENSION_SCREENSHOTURLS "http://www.nitrc.org/project/screenshot.php?group_id=283&screenshot_id=609 http://www.nitrc.org/project/screenshot.php?group_id=283&screenshot_id=610")
+set(EXTENSION_STATUS "Beta")
+set(EXTENSION_DEPENDS "" ) # Specified as a space separated list or 'NA' if any
+set(EXTENSION_BUILD_SUBDIRECTORY DTIPrepTools-build )
+
+
+
+
+
 #-----------------------------------------------------------------------------
 # Build option(s)
 #-----------------------------------------------------------------------------
@@ -55,7 +72,7 @@ set(CMAKE_MODULE_PATH
 #------------------------------------------------------------------------------
 include(PreventInSourceBuilds)
 include(PreventInBuildInstalls)
-
+include(SlicerExtensionsConfigureMacros)
 #-----------------------------------------------------------------------------
 # CMake Function(s) and Macro(s)
 #-----------------------------------------------------------------------------
