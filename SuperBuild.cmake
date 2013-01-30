@@ -91,6 +91,7 @@ option(USE_SYSTEM_VTK "Build using an externally defined version of VTK" OFF)
 #------------------------------------------------------------------------------
 
 set(ITK_EXTERNAL_NAME ITKv${ITK_VERSION_MAJOR})
+set(${PROJECT_NAME}_BUILD_DICOM_SUPPORT ON)
 
 set(${LOCAL_PROJECT_NAME}_DEPENDENCIES DCMTK ${ITK_EXTERNAL_NAME} SlicerExecutionModel VTK BRAINSTools)
 
