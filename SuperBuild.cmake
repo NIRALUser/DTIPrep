@@ -85,13 +85,14 @@ CMAKE_DEPENDENT_OPTION(
 option(USE_SYSTEM_ITK "Build using an externally defined version of ITK" OFF)
 option(USE_SYSTEM_SlicerExecutionModel "Build using an externally defined version of SlicerExecutionModel"  OFF)
 option(USE_SYSTEM_VTK "Build using an externally defined version of VTK" OFF)
+option(USE_SYSTEM_DCMTK "Build using an externally defined version of DCMTK" OFF)
+option(${PROJECT_NAME}_BUILD_DICOM_SUPPORT "Build Dicom Support" ON)
 
 #------------------------------------------------------------------------------
 # ${LOCAL_PROJECT_NAME} dependency list
 #------------------------------------------------------------------------------
 
 set(ITK_EXTERNAL_NAME ITKv${ITK_VERSION_MAJOR})
-set(${PROJECT_NAME}_BUILD_DICOM_SUPPORT ON)
 
 set(${LOCAL_PROJECT_NAME}_DEPENDENCIES DCMTK ${ITK_EXTERNAL_NAME} SlicerExecutionModel VTK BRAINSTools)
 
