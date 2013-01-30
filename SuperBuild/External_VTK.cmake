@@ -130,6 +130,7 @@ if(NOT DEFINED ${extProjName}_DIR AND NOT ${USE_SYSTEM_${extProjName}})
   endif()
 
   set(${proj}_CMAKE_OPTIONS
+      -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_CURRENT_BINARY_DIR}/${proj}-install
       -DVTK_USE_PARALLEL:BOOL=ON
       -DVTK_DEBUG_LEAKS:BOOL=${Slicer_USE_VTK_DEBUG_LEAKS}
       -DVTK_LEGACY_REMOVE:BOOL=OFF
@@ -160,12 +161,23 @@ if(NOT DEFINED ${extProjName}_DIR AND NOT ${USE_SYSTEM_${extProjName}})
       -DBUILD_EXAMPLES:BOOL=OFF
       -DBUILD_TESTING:BOOL=OFF
       ${${proj}_CMAKE_OPTIONS}
-    INSTALL_COMMAND ""
+## We really do want to install in order to limit # of include paths INSTALL_COMMAND ""
     DEPENDS
       ${${proj}_DEPENDENCIES}
     BUILD_COMMAND ${VTK_BUILD_STEP}
     )
-  set(${extProjName}_DIR ${CMAKE_BINARY_DIR}/${proj}-build)
+
+  set(VTKPatchScript ${CMAKE_CURRENT_LIST_DIR}/VTKPatch.cmake)
+  ExternalProject_Add_Step(${proj} VTKPatch
+    COMMENT "get rid of obsolete C/CXX flags"
+    DEPENDEES download
+    DEPENDERS configure
+    COMMAND ${CMAKE_COMMAND}
+    -DVTKSource=<SOURCE_DIR>
+    -P ${VTKPatchScript}
+    )
+
+  set(${extProjName}_DIR ${CMAKE_BINARY_DIR}/${proj}-install/lib/vtk-5.10)
 else()
   if(${USE_SYSTEM_${extProjName}})
     set(VTK_VERSION_MAJOR 5)

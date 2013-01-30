@@ -1,5 +1,5 @@
 
-include(${CMAKE_CURRENT_SOURCE_DIR}/Common.cmake)
+include(${CMAKE_CURRENT_LIST_DIR}/Common.cmake)
 
 find_package(BRAINSCommonLib NO_MODULE REQUIRED)
 include(${BRAINSCommonLib_USE_FILE})

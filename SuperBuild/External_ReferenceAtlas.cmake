@@ -43,15 +43,20 @@ if(NOT DEFINED ${extProjName}_DIR OR NOT DEFINED ATLAS_NAME)
   endif()
 
   ### --- Project specific additions here
-  set(ATLAS_VERSION 20120830)
+  set(ATLAS_VERSION 20130106)
+  # REMOVE set(ATLAS_MIDAS_CODE http://slicer.kitware.com/midas3/download?items=12780)
+  # REMOVE set(ATLAS_MD5 ed9e635ef8681f2b0c666aa72e77021c)
+  set(ATLAS_SVN_REPOSITORY http://www.nitrc.org/svn/brainstestdata/BRAINSAtlas)
+  set(ATLAS_SVN_REVISION 55)
+
 
   set(${proj}_CMAKE_OPTIONS
       -DReferenceAtlas_XML_DIR:PATH=<BINARY_DIR>
       -DATLAS_VERSION:STRING=${ATLAS_VERSION}
       )
   ### --- End Project specific additions
-                                                  ## Midas version of Atlas:  Atlas_${ATLAS_VERSION}.tar.gz
-  set(ATLAS_URL "http://slicer.kitware.com/midas3/download?items=6599?Atlas_${ATLAS_VERSION}.tar.gz")
+  ## Midas version of Atlas:  Atlas_${ATLAS_VERSION}.tar.gz
+  # REMOVE set(ATLAS_URL "${ATLAS_MIDAS_CODE}?Atlas_${ATLAS_VERSION}.tar.gz")
                                                                     #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
                                                                     #  This is ignored by midas, but allows the filename for download
                                                                     #  to be generated.
@@ -61,8 +66,13 @@ if(NOT DEFINED ${extProjName}_DIR OR NOT DEFINED ATLAS_NAME)
                                                                     #  web page and filled in appropriately.
   set(ATLAS_NAME Atlas/Atlas_${ATLAS_VERSION})
   ExternalProject_add(${proj}
-    URL ${ATLAS_URL}
-    URL_MD5 036e9ade22e76bc030ce6d594374b14c
+    # REMOVE URL ${ATLAS_URL}
+    # REMOVE URL_MD5 ${ATLAS_MD5}
+    SVN_REPOSITORY ${ATLAS_SVN_REPOSITORY}
+    SVN_REVISION -r ${ATLAS_SVN_REVISION}
+    SVN_USERNAME slicerbot
+    SVN_PASSWORD slicer
+    SVN_TRUST_CERT
     SOURCE_DIR ${proj}
     BINARY_DIR ${proj}-build
     "${cmakeversion_external_update}"
