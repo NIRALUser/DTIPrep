@@ -65,10 +65,6 @@ include(${GenerateCLP_USE_FILE})
 include(${SlicerExecutionModel_USE_FILE})
 include(${SlicerExecutionModel_CMAKE_DIR}/SEMMacroBuildCLI.cmake)
 
-#-----------------------------------------------------------------------------
-#enable_testing()
-include(CTest)
-
 #-----------------------------------------------------------------------
 # Setup locations to find externally maintained test data.
 #-----------------------------------------------------------------------
@@ -107,6 +103,7 @@ if( EXTENSION_SUPERBUILD_BINARY_DIR )
 endif()
 
 IF(BUILD_TESTING)
+  include(CTest)
   ADD_SUBDIRECTORY(Testing)
 ENDIF(BUILD_TESTING)
 
