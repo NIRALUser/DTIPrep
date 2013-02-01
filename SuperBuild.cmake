@@ -13,7 +13,9 @@ include(CTest)
 
 #-----------------------------------------------------------------------------
 include(${CMAKE_CURRENT_SOURCE_DIR}/Common.cmake)
-
+#-----------------------------------------------------------------------------
+#If it is build as an extension
+#-----------------------------------------------------------------------------
 
 if( DTIPrep_BUILD_SLICER_EXTENSION )
   set( USE_SYSTEM_VTK ON )
@@ -36,12 +38,10 @@ endif()
 
 find_package(Git REQUIRED)
 
-option(${LOCAL_PROJECT_NAME}_USE_QT "Turn on to build packages requiring QT" ON)
-
 # I don't know who removed the Find_Package for QT, but it needs to be here
 # in order to build VTK if ${LOCAL_PROJECT_NAME}_USE_QT is set.
-if(${LOCAL_PROJECT_NAME}_USE_QT)
-find_package(Qt4 REQUIRED)
+if(${LOCAL_PROJECT_NAME}_USE_QT AND NOT DTIPrep_BUILD_SLICER_EXTENSION)
+    find_package(Qt4 REQUIRED)
 endif()
 
 #-----------------------------------------------------------------------------

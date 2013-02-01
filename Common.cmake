@@ -21,6 +21,12 @@ set(EXTENSION_BUILD_SUBDIRECTORY DTIPrepTools-build )
 #-----------------------------------------------------------------------------
 # Build option(s)
 #-----------------------------------------------------------------------------
+option(${LOCAL_PROJECT_NAME}_USE_QT "Find and use Qt with VTK to build GUI Tools" ON)
+mark_as_advanced(${LOCAL_PROJECT_NAME}_USE_QT)
+
+option(${LOCAL_PROJECT_NAME}_INSTALL_DEVELOPMENT "Install development support include and libraries for external packages." OFF)
+mark_as_advanced(${LOCAL_PROJECT_NAME}_INSTALL_DEVELOPMENT)
+
 option(USE_DTIPrep  "Build DTIPrep"                       ON)
 
 set(ITK_VERSION_MAJOR 4 CACHE STRING "Choose the expected ITK major version to build DTIPrep (3 or 4).")
@@ -41,7 +47,7 @@ endif()
 #  USE_DTIPrep                         "Build DTIPrep"                                ON "${LOCAL_PROJECT_NAME}_USE_QT" ON)
 
 set(${LOCAL_PROJECT_NAME}_USE_QT ON)
-if(${LOCAL_PROJECT_NAME}_USE_QT)
+if(${LOCAL_PROJECT_NAME}_USE_QT AND NOT DTIPrep_BUILD_SLICER_EXTENSION )
   if(NOT QT4_FOUND)
     find_package(Qt4 4.6 COMPONENTS QtCore QtGui QtNetwork QtXml REQUIRED)
     include(${QT_USE_FILE})
