@@ -14,7 +14,8 @@ ExternalProject_Add(FVLight
     --no-warn-unused-cli # HACK Only expected variables should be passed down.
     ${CMAKE_OSX_EXTERNAL_PROJECT_ARGS}
     ${COMMON_EXTERNAL_PROJECT_ARGS}
-    -DGenerateCLP_DIR:PATH=${GenerateCLP_DIR}
+    -DUSE_SYSTEM_SlicerExecutionModel:BOOL=ON
+    -DSlicerExecutionModel_DIR:PATH=${SlicerExecutionModel_DIR}
     -DQWT_LIBRARY:PATH=${QWT_LIBRARY}
     -DQWT_INCLUDE_DIR:PATH=${QWT_INCLUDE_DIR}
     DEPENDS ${ITK_EXTERNAL_NAME} VTK QWT
