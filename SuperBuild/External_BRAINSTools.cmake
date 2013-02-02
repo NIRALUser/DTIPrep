@@ -55,6 +55,7 @@ if(NOT DEFINED BRAINSTools_SOURCE_DIR)
       -DUSE_SYSTEM_ITK:BOOL=ON
       -DUSE_SYSTEM_VTK:BOOL=ON
       -DUSE_SYSTEM_SlicerExecutionModel:BOOL=ON
+      -DSlicerExecutionModel_DIR:PATH=${SlicerExecutionModel_DIR}
       -DITK_DIR:PATH=${ITK_DIR}
       -DVTK_DIR:PATH=${VTK_DIR}
       -DUSE_ANTS:BOOL=OFF
@@ -80,7 +81,6 @@ if(NOT DEFINED BRAINSTools_SOURCE_DIR)
       -DUSE_GTRACT:BOOL=ON
       -DUSE_ICCDEF:BOOL=OFF
       -DUSE_ImageCalculator:BOOL=ON
-      -DSlicerExecutionModel_DIR:PATH=${SlicerExecutionModel_DIR}
       ${${proj}_CMAKE_OPTIONS}
     INSTALL_COMMAND ""
     DEPENDS

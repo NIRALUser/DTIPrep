@@ -1,6 +1,6 @@
 ExternalProject_Add(DTIReg
   SVN_REPOSITORY https://www.nitrc.org/svn/dtireg/trunk/DTI-Reg
-  SVN_REVISION -r "31"
+  SVN_REVISION -r "32"  ## Fix SlicerExecutionModel find_package
   SOURCE_DIR DTIReg
   BINARY_DIR DTIReg-build  
   SVN_USERNAME slicerbot
@@ -12,10 +12,6 @@ ExternalProject_Add(DTIReg
     --no-warn-unused-cli # HACK Only expected variables should be passed down.
     ${CMAKE_OSX_EXTERNAL_PROJECT_ARGS}
     ${COMMON_EXTERNAL_PROJECT_ARGS}
-    # -DOPT_USE_SYSTEM_ITK:BOOL=ON
-    # -DOPT_USE_SYSTEM_SlicerExecutionModel:BOOL=ON
-    -DGenerateCLP_DIR:PATH=${GenerateCLP_DIR}
-    # -DOPT_USE_SYSTEM_BatchMake:BOOL=ON
     -DBatchMake_DIR:PATH=${BatchMake_DIR}
     -DDTIReg_ADDITIONAL_LINK_DIRS:PATH=${CMAKE_CURRENT_BINARY_DIR}/lib
     DEPENDS ${ITK_EXTERNAL_NAME} BatchMake
