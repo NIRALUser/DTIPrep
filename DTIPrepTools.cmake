@@ -96,10 +96,10 @@ set(TestData_DIR ${CMAKE_CURRENT_SOURCE_DIR}/TestData)
 add_subdirectory(src)
 
 if( EXTENSION_SUPERBUILD_BINARY_DIR )
-  unsetForSlicer( NAMES ITK_DIR SlicerExecutionModel_DIR )
+  unsetForSlicer( NAMES SlicerExecutionModel_DIR ITK_DIR VTK_DIR CMAKE_C_COMPILER CMAKE_CXX_COMPILER CMAKE_CXX_FLAGS CMAKE_C_FLAGS ITK_LIBRARIES )
   find_package(Slicer REQUIRED)
   include(${Slicer_USE_FILE})
-  resetForSlicer( NAMES ITK_DIR SlicerExecutionModel_DIR )
+  resetForSlicer( NAMES ITK_DIR SlicerExecutionModel_DIR CMAKE_C_COMPILER CMAKE_CXX_COMPILER CMAKE_CXX_FLAGS CMAKE_C_FLAGS ITK_LIBRARIES )
 endif()
 
 IF(BUILD_TESTING)

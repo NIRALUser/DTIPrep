@@ -3,7 +3,7 @@
 #include <string>
 #include <iostream>
 #include <stdlib.h>
-#include <libgen.h>
+#include <itksys/SystemTools.hxx>
 
 CThreadDicomToNrrd::CThreadDicomToNrrd(QObject *parentLocal) :
   QThread(parentLocal)
@@ -21,8 +21,8 @@ void CThreadDicomToNrrd::run()
   QString str;
 
   std::string outputVolumeFullName = std::string(NrrdFileName.toStdString() );
-  std::string outputVolumeName =  basename(const_cast<char *>(outputVolumeFullName.c_str() ) );
-  std::string outputDirName =  dirname(const_cast<char *>(outputVolumeFullName.c_str() ) );
+  std::string outputVolumeName = itksys::SystemTools::GetFilenamePath( outputVolumeFullName ) ;
+  std::string outputDirName = itksys::SystemTools::GetFilenamePath( outputVolumeFullName );
 
   str.append( DicomToNrrdCmd );
 
