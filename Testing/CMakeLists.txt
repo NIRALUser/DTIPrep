@@ -3,7 +3,7 @@
 #
 
 
-add_test(NAME DTIPrepTest COMMAND $<TARGET_FILE:DTIPrep> --help )
+add_test(NAME DTIPrepTest COMMAND ${Slicer_LAUNCH_COMMAND} $<TARGET_FILE:DTIPrep> --help )
 
 if( UNIX )
   set( prog_name Replace_basename_by_itksys_GetFilenameName )
