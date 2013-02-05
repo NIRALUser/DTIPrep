@@ -108,13 +108,27 @@ IF(BUILD_TESTING)
 ENDIF(BUILD_TESTING)
 
 if( EXTENSION_SUPERBUILD_BINARY_DIR )
-  set( Tools  BRAINSCreateLabelMapFromProbabilityMaps BRAINSFitEZ BRAINSResize compareTractInclusion DTIPrep DWIConvert extractNrrdVectorIndex gtractAnisotropyMap gtractAverageBvalues gtractClipAnisotropy gtractConcatDwi gtractCopyImageOrientation gtractCoRegAnatomy gtractCoregBvalues gtractCostFastMarching gtractCreateGuideFiber gtractFastMarchingTracking gtractFiberTracking gtractImageConformity gtractInvertBSplineTransform gtractInvertDisplacementField gtractInvertRigidTransform gtractResampleAnisotropy gtractResampleB0 gtractResampleCodeImage gtractResampleDWIInPlace gtractResampleFibers gtractTensor gtractTransformToDisplacementField H5detect H5make_libsettings ImageCalculator ImageGenerate )
-  set( Libraries libBRAINSCreateLabelMapFromProbabilityMapsLib.so libBRAINSFitEZLib.so libBRAINSResizeLib.so libcompareTractInclusionLib.so libDWIConvertLib.so libextractNrrdVectorIndexLib.so libgtractAnisotropyMapLib.so libgtractAverageBvaluesLib.so libgtractClipAnisotropyLib.so libgtractConcatDwiLib.so libgtractCopyImageOrientationLib.so libgtractCoRegAnatomyLib.so libgtractCoregBvaluesLib.so libgtractCostFastMarchingLib.so libgtractCreateGuideFiberLib.so libgtractFastMarchingTrackingLib.so libgtractFiberTrackingLib.so libgtractImageConformityLib.so libgtractInvertBSplineTransformLib.so libgtractInvertDisplacementFieldLib.so libgtractInvertRigidTransformLib.so libgtractResampleAnisotropyLib.so libgtractResampleB0Lib.so libgtractResampleCodeImageLib.so libgtractResampleDWIInPlaceLib.so libgtractResampleFibersLib.so libgtractTensorLib.so )
-  foreach( tool ${Tools} )
-    install(PROGRAMS ${EXTENSION_SUPERBUILD_BINARY_DIR}/bin/${tool} DESTINATION ${${LOCAL_PROJECT_NAME}_CLI_INSTALL_RUNTIME_DESTINATION} )
-  endforeach()
-  foreach( lib ${Libraries} )
-    install(FILES ${EXTENSION_SUPERBUILD_BINARY_DIR}/bin/${lib} DESTINATION ${${LOCAL_PROJECT_NAME}_CLI_INSTALL_LIBRARY_DESTINATION} )
+  set( ToolsList
+  ImageMath
+  convertITKformats
+  BRAINSCreateLabelMapFromProbabilityMaps
+  BRAINSFitEZ
+  BRAINSResize
+  compareTractInclusion
+  DWIConvert
+  ImageCalculator
+  ImageGenerate
+  ) 
+  foreach( tool ${ToolsList})
+    unset( path_to_tool CACHE )
+    find_program( path_to_tool 
+       NAMES ${tool}
+       PATHS ${EXTENSION_SUPERBUILD_BINARY_DIR}/bin
+       PATH_SUFFIXES Debug Release RelWithDebInfo MinSizeRel 
+       NO_DEFAULT_PATH
+       NO_SYSTEM_ENVIRONMENT_PATH
+      )
+    install(PROGRAMS ${path_to_tool} DESTINATION ${${LOCAL_PROJECT_NAME}_CLI_INSTALL_RUNTIME_DESTINATION} ) 
   endforeach()
   set(CPACK_INSTALL_CMAKE_PROJECTS "${CPACK_INSTALL_CMAKE_PROJECTS};${CMAKE_BINARY_DIR};${EXTENSION_NAME};ALL;/")
   include(${Slicer_EXTENSION_CPACK})

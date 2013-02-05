@@ -176,4 +176,6 @@ if( NOT EXTENSION_SUPERBUILD_BINARY_DIR )
   # And then there's ways to customize this as well
   set(CPACK_BINARY_DRAGNDROP ON)
   include(CPack)
+else()
+  install(TARGETS DTIPrep DESTINATION ${${LOCAL_PROJECT_NAME}_CLI_INSTALL_RUNTIME_DESTINATION} )
 endif()

@@ -26,6 +26,7 @@ if( DTIPrep_BUILD_SLICER_EXTENSION )
   include(${Slicer_USE_FILE})
   unsetAllForSlicerBut( NAMES VTK_DIR QT_QMAKE_EXECUTABLE )
   resetForSlicer(NAMES CMAKE_MODULE_PATH CMAKE_C_COMPILER CMAKE_CXX_COMPILER ITK_VERSION_MAJOR CMAKE_CXX_FLAGS CMAKE_C_FLAGS)
+  set( NIRAL_UTILITIES_DEPENDS niral_utilities)
 endif()
 #-----------------------------------------------------------------------------
 # Git protocole option
@@ -105,7 +106,7 @@ option(${PROJECT_NAME}_BUILD_DICOM_SUPPORT "Build Dicom Support" ON)
 
 set(ITK_EXTERNAL_NAME ITKv${ITK_VERSION_MAJOR})
 
-set(${LOCAL_PROJECT_NAME}_DEPENDENCIES DCMTK ${ITK_EXTERNAL_NAME} SlicerExecutionModel VTK BRAINSTools)
+set(${LOCAL_PROJECT_NAME}_DEPENDENCIES DCMTK ${ITK_EXTERNAL_NAME} SlicerExecutionModel VTK BRAINSTools ${NIRAL_UTILITIES_DEPENDS} )
 
 if(BUILD_STYLE_UTILS)
   list(APPEND ${LOCAL_PROJECT_NAME}_DEPENDENCIES Cppcheck KWStyle Uncrustify)
@@ -291,6 +292,8 @@ if(verbose)
   endforeach()
 endif()
 
+
+
 #------------------------------------------------------------------------------
 # Configure and build
 #------------------------------------------------------------------------------
@@ -343,4 +346,9 @@ option(USE_DTIProcess "Build DTIProcess" OFF)
 if(USE_DTIProcess)
   include(${CMAKE_CURRENT_LIST_DIR}/SuperBuild/External_Boost.cmake)
   include(${CMAKE_CURRENT_LIST_DIR}/SuperBuild/External_DTIProcess.cmake)
+endif()
+
+option(USE_NIRALUtilities "Build NIRALUtilities" OFF)
+if(USE_NIRALUtilities)
+  include(${CMAKE_CURRENT_LIST_DIR}/SuperBuild/External_niral_utilities.cmake)
 endif()
