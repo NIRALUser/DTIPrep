@@ -116,10 +116,14 @@ if( EXTENSION_SUPERBUILD_BINARY_DIR )
 
   set( CLIToolsList
     BRAINSCreateLabelMapFromProbabilityMaps
+    libBRAINSCreateLabelMapFromProbabilityMapsLib.so
     BRAINSFitEZ
+    libBRAINSFitEZLib.so
     BRAINSResize
+    libBRAINSResizeLib.so
     compareTractInclusion
     DWIConvert
+    libDWIConvertLib.so
 #    ImageCalculator ## Causes problems when loading it in Slicer on Windows
     ImageGenerate
      ) 
