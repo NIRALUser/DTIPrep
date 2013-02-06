@@ -108,18 +108,22 @@ IF(BUILD_TESTING)
 ENDIF(BUILD_TESTING)
 
 if( EXTENSION_SUPERBUILD_BINARY_DIR )
-  set( ToolsList
-  ImageMath
-  convertITKformats
-  BRAINSCreateLabelMapFromProbabilityMaps
-  BRAINSFitEZ
-  BRAINSResize
-  compareTractInclusion
-  DWIConvert
-  ImageCalculator
-  ImageGenerate
-  ) 
-  foreach( tool ${ToolsList})
+  if(APPLE) # On mac, Ext/cli_modules/DTIAtlasBuilder so Ext/ExternalBin is ../ExternalBin
+    set(NOCLI_INSTALL_DIR ${${LOCAL_PROJECT_NAME}_CLI_INSTALL_RUNTIME_DESTINATION}/../ExternalBin)
+  else(WIN32) # On Windows : idem Linux : Ext/lib/Slicer4.2/cli_modules/DTIAtlasBuilder so Ext/ExternalBin is ../../../ExternalBin
+    set(NOCLI_INSTALL_DIR ${${LOCAL_PROJECT_NAME}_CLI_INSTALL_RUNTIME_DESTINATION}/../../../ExternalBin)
+  endif()
+
+  set( CLIToolsList
+    BRAINSCreateLabelMapFromProbabilityMaps
+    BRAINSFitEZ
+    BRAINSResize
+    compareTractInclusion
+    DWIConvert
+#    ImageCalculator ## Causes problems when loading it in Slicer on Windows
+    ImageGenerate
+     ) 
+  foreach( tool ${CLIToolsList})
     unset( path_to_tool CACHE )
     find_program( path_to_tool 
        NAMES ${tool}
@@ -129,6 +133,23 @@ if( EXTENSION_SUPERBUILD_BINARY_DIR )
        NO_SYSTEM_ENVIRONMENT_PATH
       )
     install(PROGRAMS ${path_to_tool} DESTINATION ${${LOCAL_PROJECT_NAME}_CLI_INSTALL_RUNTIME_DESTINATION} ) 
+  endforeach()
+  set( NotCLIToolsList
+    ImageMath
+    convertITKformats
+     )
+  foreach( tool ${NotCLIToolsList})
+    unset( path_to_tool CACHE )
+    message( WARNING ${tool} )
+    find_program( path_to_tool 
+       NAMES ${tool}
+       PATHS ${EXTENSION_SUPERBUILD_BINARY_DIR}/bin
+       PATH_SUFFIXES Debug Release RelWithDebInfo MinSizeRel 
+       NO_DEFAULT_PATH
+       NO_SYSTEM_ENVIRONMENT_PATH
+      )
+    message( WARNING ${path_to_tool} )
+    install(PROGRAMS ${path_to_tool} DESTINATION ${NOCLI_INSTALL_DIR} ) 
   endforeach()
   set(CPACK_INSTALL_CMAKE_PROJECTS "${CPACK_INSTALL_CMAKE_PROJECTS};${CMAKE_BINARY_DIR};${EXTENSION_NAME};ALL;/")
   include(${Slicer_EXTENSION_CPACK})
