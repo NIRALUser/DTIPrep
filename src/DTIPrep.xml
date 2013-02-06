@@ -30,6 +30,7 @@
         <longflag>xmlProtocol</longflag>
          <description>protocol xml file containing all the parameters</description>
         <default></default>
+        <channel>input</channel>
       </file>
       <file>
         <name>resultNotes</name>
@@ -37,6 +38,7 @@
         <flag>n</flag>
         <longflag>resultNotesFile</longflag>
         <description>result notes</description>
+        <channel>input</channel>
         <default></default>
       </file>
       <directory>
@@ -46,6 +48,7 @@
         <longflag>outputFolder</longflag>
         <description>DTIPrep creates the output folder via using both absolute path (starts with "/") and relative path. The realtive path does not start with "/". If the relative path ends with "/" means that the output folder will be created in current location, otherwise the output folder will be created in the same folder as dwi image.</description>
         <default></default>
+        <channel>output</channel>
       </directory>
       <boolean>
         <name>bCreateDefaultProtocol</name>
