@@ -230,7 +230,7 @@ DWICropper<TImageType>
     ossKey << "DWMRI_gradient_" << std::setw(4) << std::setfill('0') << temp;
 
     std::ostringstream ossMetaString;
-    ossMetaString << std::ios::scientific << std::setprecision(17)
+    ossMetaString << std::setiosflags(std::ios::scientific) << std::setprecision(17)
                   << this->m_GradientDirectionContainer->ElementAt(i)[0]
                   << "    "
                   << this->m_GradientDirectionContainer->ElementAt(i)[1]

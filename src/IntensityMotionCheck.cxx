@@ -5197,25 +5197,25 @@ void CIntensityMotionCheck::collectLeftDiffusionStatistics(
       {
       std::cout << "\t" << i << "\t[ "
                 << std::setw(9) << std::setiosflags(std::ios::fixed)
-                << std::ios::scientific << std::setprecision(17) << std::setiosflags(std::ios::right)
+                << std::setprecision(17) << std::setiosflags( std::ios::right | std::ios::scientific )
                 << DiffusionDirections[i].gradientDir[0] << ", "
                 << std::setw(9) << std::setiosflags(std::ios::fixed)
-                << std::ios::scientific << std::setprecision(17) << std::setiosflags(std::ios::right)
+                << std::setprecision(17) << std::setiosflags( std::ios::right | std::ios::scientific )
                 << DiffusionDirections[i].gradientDir[1] << ", "
                 << std::setw(9) << std::setiosflags(std::ios::fixed)
-                << std::ios::scientific << std::setprecision(17) << std::setiosflags(std::ios::right)
+                << std::setprecision(17) << std::setiosflags( std::ios::right | std::ios::scientific )
                 << DiffusionDirections[i].gradientDir[2] << " ]"
                 << "\t" << DiffusionDirections[i].repetitionNumber << std::endl;
 
       outfile << "\t" << i << "\t[ "
               << std::setw(9) << std::setiosflags(std::ios::fixed)
-              << std::ios::scientific << std::setprecision(17) << std::setiosflags(std::ios::right)
+              << std::setprecision(17) << std::setiosflags( std::ios::right | std::ios::scientific )
               << DiffusionDirections[i].gradientDir[0] << ", "
               << std::setw(9) << std::setiosflags(std::ios::fixed)
-              << std::ios::scientific << std::setprecision(17) << std::setiosflags(std::ios::right)
+              << std::setprecision(17) << std::setiosflags( std::ios::right | std::ios::scientific )
               << DiffusionDirections[i].gradientDir[1] << ", "
               << std::setw(9) << std::setiosflags(std::ios::fixed)
-              << std::ios::scientific << std::setprecision(17) << std::setiosflags(std::ios::right)
+              << std::setprecision(17) << std::setiosflags( std::ios::right | std::ios::scientific )
               << DiffusionDirections[i].gradientDir[2] << " ]"
               << "\t" << DiffusionDirections[i].repetitionNumber << std::endl;
       }
@@ -6161,28 +6161,22 @@ bool CIntensityMotionCheck::DiffusionCheck( DwiImageType::Pointer dwi)
             outfile << "DWMRI_gradient_" << std::setw(4)
                     << std::setfill('0') << i << " mismatch! DWI: [ "
                     << std::setw(9) << std::setiosflags(std::ios::fixed)
-                    << std::ios::scientific << std::setprecision(17) << std::setiosflags(
-              std::ios::right)
+                    << std::setprecision(17) << std::setiosflags( std::ios::right | std::ios::scientific )
                     << GradContainer->ElementAt(i)[0] << " "
                     << std::setw(9) << std::setiosflags(std::ios::fixed)
-                    << std::ios::scientific << std::setprecision(17) << std::setiosflags(
-              std::ios::right)
+                    << std::setprecision(17) << std::setiosflags( std::ios::right | std::ios::scientific )
                     << GradContainer->ElementAt(i)[1] << " "
                     << std::setw(9) << std::setiosflags(std::ios::fixed)
-                    << std::ios::scientific << std::setprecision(17) << std::setiosflags(
-              std::ios::right)
+                    << std::setprecision(17) << std::setiosflags( std::ios::right | std::ios::scientific )
                     << GradContainer->ElementAt(i)[2] << " ] protocol: [ "
                     << std::setw(9) << std::setiosflags(std::ios::fixed)
-                    << std::ios::scientific << std::setprecision(17) << std::setiosflags(
-              std::ios::right)
+                    << std::setprecision(17) << std::setiosflags( std::ios::right | std::ios::scientific )
                     << protocol->GetDiffusionProtocol().gradients[i][0] << " "
                     << std::setw(9) << std::setiosflags(std::ios::fixed)
-                    << std::ios::scientific << std::setprecision(17) << std::setiosflags(
-              std::ios::right)
+                    << std::setprecision(17) << std::setiosflags( std::ios::right | std::ios::scientific )
                     << protocol->GetDiffusionProtocol().gradients[i][1] << " "
                     << std::setw(9) << std::setiosflags(std::ios::fixed)
-                    << std::ios::scientific << std::setprecision(17) << std::setiosflags(
-              std::ios::right)
+                    << std::setprecision(17) << std::setiosflags( std::ios::right | std::ios::scientific )
                     << protocol->GetDiffusionProtocol().gradients[i][2]
                     << " ]"
                     << "  Colinearity angle (degrees): "
@@ -6195,30 +6189,24 @@ bool CIntensityMotionCheck::DiffusionCheck( DwiImageType::Pointer dwi)
             std::cout << "DWMRI_gradient_" << std::setw(4)
                       << std::setfill('0') << i << " mismatch! DWI: [ "
                       << std::setw(9) << std::setiosflags(std::ios::fixed)
-                      << std::ios::scientific << std::setprecision(17) << std::setiosflags(
-              std::ios::right)
+                      << std::setprecision(17) << std::setiosflags( std::ios::right | std::ios::scientific )
                       << GradContainer->ElementAt(i)[0] << " "
                       << std::setw(9) << std::setiosflags(std::ios::fixed)
-                      << std::ios::scientific << std::setprecision(17) << std::setiosflags(
-              std::ios::right)
+                      << std::setprecision(17) << std::setiosflags( std::ios::right | std::ios::scientific )
                       << GradContainer->ElementAt(i)[1] << " "
                       << std::setw(9) << std::setiosflags(std::ios::fixed)
-                      << std::ios::scientific << std::setprecision(17) << std::setiosflags(
-              std::ios::right)
+                      << std::setprecision(17) << std::setiosflags( std::ios::right | std::ios::scientific )
                       << GradContainer->ElementAt(i)[2] << " ] protocol: [ "
                       << std::setw(9) << std::setiosflags(std::ios::fixed)
-                      << std::ios::scientific << std::setprecision(17) << std::setiosflags(
-              std::ios::right)
+                      << std::setprecision(17) << std::setiosflags( std::ios::right | std::ios::scientific )
                       << protocol->GetDiffusionProtocol().gradients[i][0]
                       << " "
                       << std::setw(9) << std::setiosflags(std::ios::fixed)
-                      << std::ios::scientific << std::setprecision(17) << std::setiosflags(
-              std::ios::right)
+                      << std::setprecision(17) << std::setiosflags( std::ios::right | std::ios::scientific )
                       << protocol->GetDiffusionProtocol().gradients[i][1]
                       << " "
                       << std::setw(9) << std::setiosflags(std::ios::fixed)
-                      << std::ios::scientific << std::setprecision(17) << std::setiosflags(
-              std::ios::right)
+                      << std::setprecision(17) << std::setiosflags( std::ios::right | std::ios::scientific )
                       << protocol->GetDiffusionProtocol().gradients[i][2]
                       << " ]"
                       << "  Colinearity angle (degrees): "
@@ -6235,8 +6223,7 @@ bool CIntensityMotionCheck::DiffusionCheck( DwiImageType::Pointer dwi)
             ossMetaKey << "DWMRI_gradient_" << std::setw(4)
 
                        << std::setfill('0') << i;
-            ossMetaString << std::ios::scientific << std::setprecision(17)
-                          << std::setiosflags(std::ios::right)
+            ossMetaString << std::setprecision(17) << std::setiosflags( std::ios::right | std::ios::scientific )
                           << protocol->GetDiffusionProtocol().gradients[i][0]
                           << "    "
                           << protocol->GetDiffusionProtocol().gradients[i][1]

@@ -223,7 +223,7 @@ DWIEddyCurrentHeadMotionCorrector<TImageType>
 
     ossKeyLocal << "DWMRI_gradient_" << std::setw(4) << std::setfill('0')
                 << i + 1;
-    ossMetaString << std::ios::scientific << std::setprecision(17)
+    ossMetaString << std::setiosflags(std::ios::scientific) << std::setprecision(17)
                   << this->re.GetGradients().at(i)[0]  << "    "
                   << this->re.GetGradients().at(i)[1]  << "    "
                   << this->re.GetGradients().at(i)[2];

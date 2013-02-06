@@ -232,13 +232,13 @@ DWIBaselineAverager<TVectorImageType>
       std::ostringstream ossKey;
       ossKey << "DWMRI_gradient_0000";
       std::ostringstream ossMetaString;
-      ossMetaString << std::ios::scientific << std::setprecision(17) << std::setiosflags(std::ios::right)
+      ossMetaString << std::setprecision(17) << std::setiosflags( std::ios::right | std::ios::scientific )
                     << 0.0 << "    "
                     << std::setw(9) << std::setiosflags(std::ios::fixed)
-                    << std::ios::scientific << std::setprecision(17) << std::setiosflags(std::ios::right)
+                    << std::setprecision(17) << std::setiosflags( std::ios::right | std::ios::scientific )
                     << 0.0 << "    "
                     << std::setw(9) << std::setiosflags(std::ios::fixed)
-                    << std::ios::scientific << std::setprecision(17) << std::setiosflags(std::ios::right)
+                    << std::setprecision(17) << std::setiosflags( std::ios::right | std::ios::scientific )
                     << 0.0;
 
       itk::EncapsulateMetaData<std::string>( outputMetaDictionary,
@@ -262,7 +262,7 @@ DWIBaselineAverager<TVectorImageType>
         '0') << temp;
 
       std::ostringstream ossLocalGradientMetaString;
-      ossLocalGradientMetaString << std::ios::scientific << std::setprecision(17)
+      ossLocalGradientMetaString << std::setiosflags(std::ios::scientific) << std::setprecision(17)
                                  << this->m_GradientDirectionContainer->ElementAt(i)[0]
                                  << "    "
                                  << this->m_GradientDirectionContainer->ElementAt(i)[1] << "    "
@@ -284,7 +284,7 @@ DWIBaselineAverager<TVectorImageType>
       ossKey << "DWMRI_gradient_" << std::setw(4) << std::setfill('0') << i;
 
       std::ostringstream ossMetaString;
-      ossMetaString << std::ios::scientific << std::setprecision(17)
+      ossMetaString << std::setiosflags(std::ios::scientific) << std::setprecision(17)
                     << this->m_GradientDirectionContainer->ElementAt(i)[0]
                     << "    "
                     << this->m_GradientDirectionContainer->ElementAt(i)[1]
@@ -612,13 +612,13 @@ DWIBaselineAverager<TVectorImageType>
         {
         outfile << "\t" << temp << "\t[ "
                 << std::setw(9) << std::setiosflags(std::ios::fixed)
-                << std::ios::scientific << std::setprecision(17) << std::setiosflags(std::ios::right)
+                << std::setprecision(17) << std::setiosflags( std::ios::right | std::ios::scientific )
                 << 0.0 << ", "
                 << std::setw(9) << std::setiosflags(std::ios::fixed)
-                << std::ios::scientific << std::setprecision(17) << std::setiosflags(std::ios::right)
+                << std::setprecision(17) << std::setiosflags( std::ios::right | std::ios::scientific )
                 << 0.0 << ", "
                 << std::setw(9) << std::setiosflags(std::ios::fixed)
-                << std::ios::scientific << std::setprecision(17) << std::setiosflags(std::ios::right)
+                << std::setprecision(17) << std::setiosflags( std::ios::right | std::ios::scientific )
                 << 0.0 << " ]"
                 << std::endl;
         temp = 1;
@@ -632,13 +632,13 @@ DWIBaselineAverager<TVectorImageType>
 
         outfile << "\t" << temp << "\t[ "
                 << std::setw(9) << std::setiosflags(std::ios::fixed)
-                << std::ios::scientific << std::setprecision(17) << std::setiosflags(std::ios::right)
+                << std::setprecision(17) << std::setiosflags( std::ios::right | std::ios::scientific )
                 << m_GradientDirectionContainer->ElementAt(i)[0] << ", "
                 << std::setw(9) << std::setiosflags(std::ios::fixed)
-                << std::ios::scientific << std::setprecision(17) << std::setiosflags(std::ios::right)
+                << std::setprecision(17) << std::setiosflags( std::ios::right | std::ios::scientific )
                 << m_GradientDirectionContainer->ElementAt(i)[1] << ", "
                 << std::setw(9) << std::setiosflags(std::ios::fixed)
-                << std::ios::scientific << std::setprecision(17) << std::setiosflags(std::ios::right)
+                << std::setprecision(17) << std::setiosflags( std::ios::right | std::ios::scientific )
                 << m_GradientDirectionContainer->ElementAt(i)[2] << " ]"
                 << std::endl;
         temp++;
@@ -707,13 +707,13 @@ DWIBaselineAverager<TVectorImageType>
         {
         outfile << "\t" << i << "\t[ "
                 << std::setw(9) << std::setiosflags(std::ios::fixed)
-                << std::ios::scientific << std::setprecision(17) << std::setiosflags(std::ios::right)
+                << std::setprecision(17) << std::setiosflags( std::ios::right | std::ios::scientific )
                 << m_GradientDirectionContainer->ElementAt(i)[0] << ", "
                 << std::setw(9) << std::setiosflags(std::ios::fixed)
-                << std::ios::scientific << std::setprecision(17) << std::setiosflags(std::ios::right)
+                << std::setprecision(17) << std::setiosflags( std::ios::right | std::ios::scientific )
                 << m_GradientDirectionContainer->ElementAt(i)[1] << ", "
                 << std::setw(9) << std::setiosflags(std::ios::fixed)
-                << std::ios::scientific << std::setprecision(17) << std::setiosflags(std::ios::right)
+                << std::setprecision(17) << std::setiosflags( std::ios::right | std::ios::scientific )
                 << m_GradientDirectionContainer->ElementAt(i)[2] << " ]"
                 << std::endl;
         }
@@ -728,13 +728,13 @@ DWIBaselineAverager<TVectorImageType>
         {
         outfile << "\t" << temp << "\t[ "
                 << std::setw(9) << std::setiosflags(std::ios::fixed)
-                << std::ios::scientific << std::setprecision(17) << std::setiosflags(std::ios::right)
+                << std::setprecision(17) << std::setiosflags( std::ios::right | std::ios::scientific )
                 << 0.0 << ", "
                 << std::setw(9) << std::setiosflags(std::ios::fixed)
-                << std::ios::scientific << std::setprecision(17) << std::setiosflags(std::ios::right)
+                << std::setprecision(17) << std::setiosflags( std::ios::right | std::ios::scientific )
                 << 0.0 << ", "
                 << std::setw(9) << std::setiosflags(std::ios::fixed)
-                << std::ios::scientific << std::setprecision(17) << std::setiosflags(std::ios::right)
+                << std::setprecision(17) << std::setiosflags( std::ios::right | std::ios::scientific )
                 << 0.0 << " ]"
                 << std::endl;
         temp = 1;
@@ -748,13 +748,13 @@ DWIBaselineAverager<TVectorImageType>
 
         outfile << "\t" << temp << "\t[ "
                 << std::setw(9) << std::setiosflags(std::ios::fixed)
-                << std::ios::scientific << std::setprecision(17) << std::setiosflags(std::ios::right)
+                << std::setprecision(17) << std::setiosflags( std::ios::right | std::ios::scientific )
                 << m_GradientDirectionContainer->ElementAt(i)[0] << ", "
                 << std::setw(9) << std::setiosflags(std::ios::fixed)
-                << std::ios::scientific << std::setprecision(17) << std::setiosflags(std::ios::right)
+                << std::setprecision(17) << std::setiosflags( std::ios::right | std::ios::scientific )
                 << m_GradientDirectionContainer->ElementAt(i)[1] << ", "
                 << std::setw(9) << std::setiosflags(std::ios::fixed)
-                << std::ios::scientific << std::setprecision(17) << std::setiosflags(std::ios::right)
+                << std::setprecision(17) << std::setiosflags( std::ios::right | std::ios::scientific )
                 << m_GradientDirectionContainer->ElementAt(i)[2] << " ]"
                 << std::endl;
         temp++;
@@ -815,13 +815,13 @@ DWIBaselineAverager<TVectorImageType>
         {
         outfile << "Pre_baseline_avg\t" << i << "\t"
                 << std::setw(9) << std::setiosflags(std::ios::fixed)
-                << std::ios::scientific << std::setprecision(17) << std::setiosflags(std::ios::right)
+                << std::setprecision(17) << std::setiosflags( std::ios::right | std::ios::scientific )
                 << m_GradientDirectionContainer->ElementAt(i)[0] << "\t"
                 << std::setw(9) << std::setiosflags(std::ios::fixed)
-                << std::ios::scientific << std::setprecision(17) << std::setiosflags(std::ios::right)
+                << std::setprecision(17) << std::setiosflags( std::ios::right | std::ios::scientific )
                 << m_GradientDirectionContainer->ElementAt(i)[1] << "\t"
                 << std::setw(9) << std::setiosflags(std::ios::fixed)
-                << std::ios::scientific << std::setprecision(17) << std::setiosflags(std::ios::right)
+                << std::setprecision(17) << std::setiosflags( std::ios::right | std::ios::scientific )
                 << m_GradientDirectionContainer->ElementAt(i)[2]
                 << std::endl;
         }
@@ -836,13 +836,13 @@ DWIBaselineAverager<TVectorImageType>
         {
         outfile << "Post_baseline_avg\t" << temp << "\t"
                 << std::setw(9) << std::setiosflags(std::ios::fixed)
-                << std::ios::scientific << std::setprecision(17) << std::setiosflags(std::ios::right)
+                << std::setprecision(17) << std::setiosflags( std::ios::right | std::ios::scientific )
                 << 0.0 << "\t"
                 << std::setw(9) << std::setiosflags(std::ios::fixed)
-                << std::ios::scientific << std::setprecision(17) << std::setiosflags(std::ios::right)
+                << std::setprecision(17) << std::setiosflags( std::ios::right | std::ios::scientific )
                 << 0.0 << "\t"
                 << std::setw(9) << std::setiosflags(std::ios::fixed)
-                << std::ios::scientific << std::setprecision(17) << std::setiosflags(std::ios::right)
+                << std::setprecision(17) << std::setiosflags( std::ios::right | std::ios::scientific )
                 << 0.0 << std::endl;
         temp = 1;
         }
@@ -855,13 +855,13 @@ DWIBaselineAverager<TVectorImageType>
 
         outfile << "Post_baseline_avg\t" << temp << "\t"
                 << std::setw(9) << std::setiosflags(std::ios::fixed)
-                << std::ios::scientific << std::setprecision(17) << std::setiosflags(std::ios::right)
+                << std::setprecision(17) << std::setiosflags( std::ios::right | std::ios::scientific )
                 << m_GradientDirectionContainer->ElementAt(i)[0] << "\t"
                 << std::setw(9) << std::setiosflags(std::ios::fixed)
-                << std::ios::scientific << std::setprecision(17) << std::setiosflags(std::ios::right)
+                << std::setprecision(17) << std::setiosflags( std::ios::right | std::ios::scientific )
                 << m_GradientDirectionContainer->ElementAt(i)[1] << "\t"
                 << std::setw(9) << std::setiosflags(std::ios::fixed)
-                << std::ios::scientific << std::setprecision(17) << std::setiosflags(std::ios::right)
+                << std::setprecision(17) << std::setiosflags( std::ios::right | std::ios::scientific )
                 << m_GradientDirectionContainer->ElementAt(i)[2]
                 << std::endl;
         temp++;
