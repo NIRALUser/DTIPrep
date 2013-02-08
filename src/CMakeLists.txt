@@ -94,15 +94,8 @@ QT4_WRAP_CPP( MOCSrcs ${DTIPrep_MOC_HDRS} )
 set_source_files_properties(${DTIPrep_SRCS} PROPERTIES
   OBJECT_DEPENDS "${UIHeaders}")
 
-add_executable( DTIPrep
-  MACOSX_BUNDLE
-  ${DTIPrep_SRCS}
-  ${UISrcs}
-  ${MOCSrcs}
-  ${RCC_SRCS}
-)
 
-target_link_libraries( DTIPrep
+set( DTIPrep_Libs
   ModuleDescriptionParser
   QVTK
   ${QT_LIBRARIES}
@@ -112,7 +105,24 @@ target_link_libraries( DTIPrep
   BRAINSCommonLib
 )
 
-if( NOT EXTENSION_SUPERBUILD_BINARY_DIR )
+
+if(EXTENSION_SUPERBUILD_BINARY_DIR)
+  add_executable( DTIPrep
+    ${DTIPrep_SRCS}
+    ${UISrcs}
+    ${MOCSrcs}
+    ${RCC_SRCS}
+  )
+  target_link_libraries( DTIPrep ${DTIPrep_Libs} )
+else()
+  add_executable( DTIPrep
+    MACOSX_BUNDLE
+    ${DTIPrep_SRCS}
+    ${UISrcs}
+    ${MOCSrcs}
+    ${RCC_SRCS}
+  )
+  target_link_libraries( DTIPrep ${DTIPrep_Libs} )
   install(TARGETS
           DTIPrep
                  BUNDLE DESTINATION  bin

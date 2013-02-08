@@ -115,28 +115,30 @@ if( EXTENSION_SUPERBUILD_BINARY_DIR )
   endif()
 
   set( CLIToolsList
-    BRAINSCreateLabelMapFromProbabilityMaps
-    libBRAINSCreateLabelMapFromProbabilityMapsLib.so
-    BRAINSFitEZ
-    libBRAINSFitEZLib.so
-    BRAINSResize
-    libBRAINSResizeLib.so
-    compareTractInclusion
-    DWIConvert
-    libDWIConvertLib.so
-#    ImageCalculator ## Causes problems when loading it in Slicer on Windows
-    ImageGenerate
+#    BRAINSCreateLabelMapFromProbabilityMaps
+##    libBRAINSCreateLabelMapFromProbabilityMapsLib.so
+#    BRAINSFitEZ
+##    libBRAINSFitEZLib.so
+#    BRAINSResize
+##    libBRAINSResizeLib.so
+#    compareTractInclusion
+#    DWIConvert
+##    libDWIConvertLib.so
+##    ImageCalculator ## Causes problems when loading it in Slicer on Windows
+#    ImageGenerate
+    DTIPrep
      ) 
   foreach( tool ${CLIToolsList})
     unset( path_to_tool CACHE )
     find_program( path_to_tool 
        NAMES ${tool}
-       PATHS ${EXTENSION_SUPERBUILD_BINARY_DIR}/bin
+       PATHS ${EXTENSION_SUPERBUILD_BINARY_DIR}/bin ${LOCAL_PROJECT_NAME}_CLI_INSTALL_RUNTIME_DESTINATION
        PATH_SUFFIXES Debug Release RelWithDebInfo MinSizeRel 
        NO_DEFAULT_PATH
        NO_SYSTEM_ENVIRONMENT_PATH
       )
     install(PROGRAMS ${path_to_tool} DESTINATION ${${LOCAL_PROJECT_NAME}_CLI_INSTALL_RUNTIME_DESTINATION} ) 
+# install(FILES ${path_to_tool} DESTINATION ${${LOCAL_PROJECT_NAME}_CLI_INSTALL_RUNTIME_DESTINATION} )
   endforeach()
   set( NotCLIToolsList
     ImageMath
@@ -144,7 +146,6 @@ if( EXTENSION_SUPERBUILD_BINARY_DIR )
      )
   foreach( tool ${NotCLIToolsList})
     unset( path_to_tool CACHE )
-    message( WARNING ${tool} )
     find_program( path_to_tool 
        NAMES ${tool}
        PATHS ${EXTENSION_SUPERBUILD_BINARY_DIR}/bin
@@ -152,8 +153,12 @@ if( EXTENSION_SUPERBUILD_BINARY_DIR )
        NO_DEFAULT_PATH
        NO_SYSTEM_ENVIRONMENT_PATH
       )
-    message( WARNING ${path_to_tool} )
     install(PROGRAMS ${path_to_tool} DESTINATION ${NOCLI_INSTALL_DIR} ) 
+  if(APPLE)
+    install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/InstallApple/lib DESTINATION ${${LOCAL_PROJECT_NAME}_CLI_INSTALL_RUNTIME_DESTINATION}/..)
+    install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/InstallApple/Frameworks DESTINATION ${${LOCAL_PROJECT_NAME}_CLI_INSTALL_RUNTIME_DESTINATION}/..)
+    install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/InstallApple/AppleCreateLinkLibs.sh DESTINATION ${${LOCAL_PROJECT_NAME}_CLI_INSTALL_RUNTIME_DESTINATION}/../share)
+  endif(APPLE)
   endforeach()
   set(CPACK_INSTALL_CMAKE_PROJECTS "${CPACK_INSTALL_CMAKE_PROJECTS};${CMAKE_BINARY_DIR};${EXTENSION_NAME};ALL;/")
   include(${Slicer_EXTENSION_CPACK})
