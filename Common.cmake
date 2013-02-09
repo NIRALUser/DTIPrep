@@ -54,16 +54,6 @@ if(${LOCAL_PROJECT_NAME}_USE_QT AND NOT DTIPrep_BUILD_SLICER_EXTENSION )
   endif()
 endif()
 
-
-# With CMake 2.8.9 or later, the UPDATE_COMMAND is required for updates to occur.
-# For earlier versions, we nullify the update state to prevent updates and
-# undesirable rebuild.
-if(CMAKE_VERSION VERSION_LESS 2.8.9)
-  set(cmakeversion_external_update UPDATE_COMMAND "")
-else()
-  set(cmakeversion_external_update LOG_UPDATE 1)
-endif()
-
 #-----------------------------------------------------------------------------
 # Update CMake module path
 #------------------------------------------------------------------------------
@@ -92,7 +82,6 @@ endif()
 # Platform check
 #-----------------------------------------------------------------------------
 set(PLATFORM_CHECK true)
-
 if(PLATFORM_CHECK)
   # See CMake/Modules/Platform/Darwin.cmake)
   #   6.x == Mac OSX 10.2 (Jaguar)

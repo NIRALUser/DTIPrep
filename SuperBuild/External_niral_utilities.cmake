@@ -37,7 +37,7 @@ ExternalProject_Add(${proj}
   -DITK_DIR:PATH=${ITK_DIR}
   -DGenerateCLP_DIR:PATH=${GenerateCLP_DIR}
   -DVTK_DIR:PATH=${VTK_DIR}
-  "${cmakeversion_external_update}"
+  ${cmakeversion_external_update} "${cmakeversion_external_update_value}"
   INSTALL_COMMAND ""
   )
 

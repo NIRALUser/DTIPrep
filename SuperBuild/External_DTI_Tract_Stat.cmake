@@ -6,7 +6,7 @@ ExternalProject_Add(DTI_Tract_Stat
   SVN_PASSWORD slicer
   SOURCE_DIR DTI_Tract_Stat
   BINARY_DIR DTI_Tract_Stat-build
-  "${cmakeversion_external_update}"
+  ${cmakeversion_external_update} "${cmakeversion_external_update_value}"
   DEPENDS ${DTI_Tract_Stat_DEPENDS}
   CMAKE_GENERATOR ${gen}
 ##  PATCH_COMMAND ${CMAKE_COMMAND}

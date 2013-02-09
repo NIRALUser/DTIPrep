@@ -59,6 +59,19 @@ else()
   set(gen "${CMAKE_GENERATOR}")
 endif()
 
+
+# With CMake 2.8.9 or later, the UPDATE_COMMAND is required for updates to occur.
+# For earlier versions, we nullify the update state to prevent updates and
+# undesirable rebuild.
+option(FORCE_EXTERNAL_BUILDS "Force rebuilding of external project (if they are updated)" OFF)
+if(CMAKE_VERSION VERSION_LESS 2.8.9 OR NOT FORCE_EXTERNAL_BUILDS)
+  set(cmakeversion_external_update UPDATE_COMMAND)
+  set(cmakeversion_external_update_value "" )
+else()
+  set(cmakeversion_external_update LOG_UPDATE )
+  set(cmakeversion_external_update_value 1)
+endif()
+
 #-----------------------------------------------------------------------------
 # Platform check
 #-----------------------------------------------------------------------------
@@ -93,6 +106,8 @@ CMAKE_DEPENDENT_OPTION(
   USE_SYSTEM_Cppcheck "Use system Cppcheck program" OFF
   "BUILD_STYLE_UTILS" OFF
   )
+
+set(EXTERNAL_PROJECT_BUILD_TYPE "Release" CACHE STRING "Default build type for support libraries")
 
 option(USE_SYSTEM_ITK "Build using an externally defined version of ITK" OFF)
 option(USE_SYSTEM_SlicerExecutionModel "Build using an externally defined version of SlicerExecutionModel"  OFF)
@@ -174,9 +189,6 @@ list(APPEND ${CMAKE_PROJECT_NAME}_SUPERBUILD_EP_VARS
   CTEST_NEW_FORMAT:BOOL
   MEMORYCHECK_COMMAND_OPTIONS:STRING
   MEMORYCHECK_COMMAND:PATH
-  CMAKE_SHARED_LINKER_FLAGS:STRING
-  CMAKE_EXE_LINKER_FLAGS:STRING
-  CMAKE_MODULE_LINKER_FLAGS:STRING
   SITE:STRING
   BUILDNAME:STRING
   ${PROJECT_NAME}_BUILD_DICOM_SUPPORT:BOOL

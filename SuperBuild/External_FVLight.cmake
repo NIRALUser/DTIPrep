@@ -4,7 +4,7 @@ ExternalProject_Add(FVLight
   BINARY_DIR FVLight-build
   SVN_USERNAME slicerbot
   SVN_PASSWORD slicer
-  "${cmakeversion_external_update}"
+  ${cmakeversion_external_update} "${cmakeversion_external_update_value}"
   INSTALL_COMMAND ""
   PATCH_COMMAND ${CMAKE_COMMAND}
     -Dfixfile=${CMAKE_CURRENT_BINARY_DIR}/FVLight/CMakeLists.txt

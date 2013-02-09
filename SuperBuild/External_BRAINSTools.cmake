@@ -44,7 +44,7 @@ if(NOT DEFINED BRAINSTools_SOURCE_DIR)
     SOURCE_DIR ${proj}
     BINARY_DIR ${proj}-build
     CMAKE_GENERATOR ${gen}
-    "${cmakeversion_external_update}"
+    ${cmakeversion_external_update} "${cmakeversion_external_update_value}"
     CMAKE_ARGS
       -Wno-dev
       --no-warn-unused-cli

@@ -4,7 +4,7 @@ ExternalProject_add(QWT
 #SVN_REVISION -r "1672"  ## Sourceforge code moved.
   SOURCE_DIR QWT
   BINARY_DIR QWT-build
-  "${cmakeversion_external_update}"
+  ${cmakeversion_external_update} "${cmakeversion_external_update_value}"
   PATCH_COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_LIST_DIR}/CMakeLists.txt.qwt <SOURCE_DIR>/CMakeLists.txt
   CMAKE_ARGS ${COMMON_EXTERNAL_PROJECT_ARGS}
   -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_CURRENT_BINARY_DIR}

@@ -16,7 +16,7 @@ ExternalProject_Add(${proj}
   GIT_TAG "1f5bf4f92e8678c34dc6f7558be5e6613804d988"
   SOURCE_DIR BatchMake
   BINARY_DIR BatchMake-build
-  "${cmakeversion_external_update}"
+  ${cmakeversion_external_update} "${cmakeversion_external_update_value}"
   CMAKE_GENERATOR ${gen}
   CMAKE_ARGS
   --no-warn-unused-cli
