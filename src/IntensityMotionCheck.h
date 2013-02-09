@@ -373,12 +373,12 @@ private:
   std::vector<double> m_baselineDeviations;
 
   // for interlace baseline correlation
-  double m_interlaceBaselineMeans;
-  double m_interlaceBaselineDeviations;
+  //double m_interlaceBaselineMeans;
+  //double m_interlaceBaselineDeviations;
 
   // for interlace gradient correlation
-  double m_interlaceGradientMeans;
-  double m_interlaceGradientDeviations;
+  //double m_interlaceGradientMeans;
+  //double m_interlaceGradientDeviations;
 
   Protocol *protocol;
   QCResult *qcResult;
@@ -393,7 +393,7 @@ private:
 
   // Log File
   std::string m_output;
-  char        m_LogFile[512];
+  //char        m_LogFile[512];
 
 };
 
