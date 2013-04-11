@@ -47,7 +47,8 @@ set( DTIPrep_SRCS
  DominantDirectional/Geometry_Common.cxx
 )
 
-generateclp(DTIPrep_SRCS DTIPrep.xml )
+generateclp(DTIPrep_SRCS_CLP DTIPrep.xml )
+set( DTIPrep_SRCS ${DTIPrep_SRCS} ${DTIPrep_SRCS_CLP} )
 
 set( DTIPrep_MOC_HDRS
   GMainWindow.h
@@ -114,6 +115,7 @@ if(EXTENSION_SUPERBUILD_BINARY_DIR)
     ${RCC_SRCS}
   )
   target_link_libraries( DTIPrep ${DTIPrep_Libs} )
+  add_executable( DTIPrepLauncher Launcher.cxx ${DTIPrep_SRCS_CLP} )
 else()
   add_executable( DTIPrep
     MACOSX_BUNDLE
@@ -186,6 +188,4 @@ else()
   # And then there's ways to customize this as well
   set(CPACK_BINARY_DRAGNDROP ON)
   include(CPack)
-else()
-  install(TARGETS DTIPrep DESTINATION ${${LOCAL_PROJECT_NAME}_CLI_INSTALL_RUNTIME_DESTINATION} )
 endif()

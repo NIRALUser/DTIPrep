@@ -1,4 +1,28 @@
 
+macro(INSTALL_EXECUTABLE)
+  set(options )
+  set( oneValueArgs OUTPUT_DIR )
+  set(multiValueArgs LIST_EXEC )
+  CMAKE_PARSE_ARGUMENTS(LOCAL
+    "${options}"
+    "${oneValueArgs}"
+    "${multiValueArgs}"
+    ${ARGN}
+    )
+  foreach( tool ${LOCAL_LIST_EXEC})
+    unset( path_to_tool CACHE )
+    find_program( path_to_tool 
+       NAMES ${tool}
+       PATHS ${EXTENSION_SUPERBUILD_BINARY_DIR}/bin
+       PATH_SUFFIXES Debug Release RelWithDebInfo MinSizeRel .
+       NO_DEFAULT_PATH
+       NO_SYSTEM_ENVIRONMENT_PATH
+      )
+    install(PROGRAMS ${path_to_tool} DESTINATION ${LOCAL_OUTPUT_DIR} ) 
+  endforeach()
+endmacro()
+
+
 include(${CMAKE_CURRENT_LIST_DIR}/Common.cmake)
 
 set(MODULE_NAME ${EXTENSION_NAME}) # Do not use 'project()'
@@ -108,58 +132,32 @@ IF(BUILD_TESTING)
 ENDIF(BUILD_TESTING)
 
 if( EXTENSION_SUPERBUILD_BINARY_DIR )
+  set(HIDDEN_CLI_INSTALL_DIR ${${LOCAL_PROJECT_NAME}_CLI_INSTALL_RUNTIME_DESTINATION}/../hidden-cli-modules )
   if(APPLE) # On mac, Ext/cli_modules/DTIAtlasBuilder so Ext/ExternalBin is ../ExternalBin
     set(NOCLI_INSTALL_DIR ${${LOCAL_PROJECT_NAME}_CLI_INSTALL_RUNTIME_DESTINATION}/../ExternalBin)
-  else(WIN32) # On Windows : idem Linux : Ext/lib/Slicer4.2/cli_modules/DTIAtlasBuilder so Ext/ExternalBin is ../../../ExternalBin
+    install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/InstallApple/lib DESTINATION ${${LOCAL_PROJECT_NAME}_CLI_INSTALL_RUNTIME_DESTINATION}/..)
+    install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/InstallApple/Frameworks DESTINATION ${${LOCAL_PROJECT_NAME}_CLI_INSTALL_RUNTIME_DESTINATION}/..)
+    install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/InstallApple/AppleCreateLinkLibs.sh DESTINATION ${${LOCAL_PROJECT_NAME}_CLI_INSTALL_RUNTIME_DESTINATION}/../share)
+  else() # On Windows : idem Linux : Ext/lib/Slicer4.2/cli_modules/DTIAtlasBuilder so Ext/ExternalBin is ../../../ExternalBin
     set(NOCLI_INSTALL_DIR ${${LOCAL_PROJECT_NAME}_CLI_INSTALL_RUNTIME_DESTINATION}/../../../ExternalBin)
   endif()
 
   set( CLIToolsList
-#    BRAINSCreateLabelMapFromProbabilityMaps
-##    libBRAINSCreateLabelMapFromProbabilityMapsLib.so
-#    BRAINSFitEZ
-##    libBRAINSFitEZLib.so
-#    BRAINSResize
-##    libBRAINSResizeLib.so
-#    compareTractInclusion
-#    DWIConvert
-##    libDWIConvertLib.so
-##    ImageCalculator ## Causes problems when loading it in Slicer on Windows
-#    ImageGenerate
+    DTIPrepLauncher
+     ) 
+  INSTALL_EXECUTABLE( OUTPUT_DIR ${${LOCAL_PROJECT_NAME}_CLI_INSTALL_RUNTIME_DESTINATION} LIST_EXEC ${CLIToolsList} )
+
+  set( hiddenCLIToolsList
     DTIPrep
      ) 
-  foreach( tool ${CLIToolsList})
-    unset( path_to_tool CACHE )
-    find_program( path_to_tool 
-       NAMES ${tool}
-       PATHS ${EXTENSION_SUPERBUILD_BINARY_DIR}/bin ${LOCAL_PROJECT_NAME}_CLI_INSTALL_RUNTIME_DESTINATION
-       PATH_SUFFIXES Debug Release RelWithDebInfo MinSizeRel 
-       NO_DEFAULT_PATH
-       NO_SYSTEM_ENVIRONMENT_PATH
-      )
-    install(PROGRAMS ${path_to_tool} DESTINATION ${${LOCAL_PROJECT_NAME}_CLI_INSTALL_RUNTIME_DESTINATION} ) 
-# install(FILES ${path_to_tool} DESTINATION ${${LOCAL_PROJECT_NAME}_CLI_INSTALL_RUNTIME_DESTINATION} )
-  endforeach()
+  INSTALL_EXECUTABLE( OUTPUT_DIR ${HIDDEN_CLI_INSTALL_DIR} LIST_EXEC ${hiddenCLIToolsList} )
+
   set( NotCLIToolsList
     ImageMath
     convertITKformats
      )
-  foreach( tool ${NotCLIToolsList})
-    unset( path_to_tool CACHE )
-    find_program( path_to_tool 
-       NAMES ${tool}
-       PATHS ${EXTENSION_SUPERBUILD_BINARY_DIR}/bin
-       PATH_SUFFIXES Debug Release RelWithDebInfo MinSizeRel 
-       NO_DEFAULT_PATH
-       NO_SYSTEM_ENVIRONMENT_PATH
-      )
-    install(PROGRAMS ${path_to_tool} DESTINATION ${NOCLI_INSTALL_DIR} ) 
-  if(APPLE)
-    install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/InstallApple/lib DESTINATION ${${LOCAL_PROJECT_NAME}_CLI_INSTALL_RUNTIME_DESTINATION}/..)
-    install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/InstallApple/Frameworks DESTINATION ${${LOCAL_PROJECT_NAME}_CLI_INSTALL_RUNTIME_DESTINATION}/..)
-    install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/InstallApple/AppleCreateLinkLibs.sh DESTINATION ${${LOCAL_PROJECT_NAME}_CLI_INSTALL_RUNTIME_DESTINATION}/../share)
-  endif(APPLE)
-  endforeach()
+  INSTALL_EXECUTABLE( OUTPUT_DIR ${NOCLI_INSTALL_DIR} LIST_EXEC ${NotCLIToolsList} )
+
   set(CPACK_INSTALL_CMAKE_PROJECTS "${CPACK_INSTALL_CMAKE_PROJECTS};${CMAKE_BINARY_DIR};${EXTENSION_NAME};ALL;/")
   include(${Slicer_EXTENSION_CPACK})
 endif()

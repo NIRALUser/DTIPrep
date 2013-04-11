@@ -62,7 +62,7 @@ int main( int argc, char * *argv )
   [newDelegate setMenuLoader : qtMenuLoader];
   [qtMenuLoader release];
 #endif
-  if( argc == 1 )
+  if( !bcheckByProtocol )
     {
     QApplication app(argc, argv);
     GMainWindow *MainWindow = new GMainWindow;
