@@ -56,7 +56,7 @@ if(NOT ( DEFINED "${extProjName}_DIR" OR ( DEFINED "${USE_SYSTEM_${extProjName}}
   if(${PROJECT_NAME}_BUILD_DICOM_SUPPORT)
     set(${proj}_DCMTK_ARGS
       -DITK_USE_SYSTEM_DCMTK:BOOL=ON
-      -DDCMTK_DIR:PATH=${DCMTK_DIR}
+      -DDCMTK_DIR:PATH=${DCMTK_DIR}/share/dcmtk
       -DModule_ITKIODCMTK:BOOL=ON
       )
   endif()
@@ -124,12 +124,17 @@ if(NOT ( DEFINED "${extProjName}_DIR" OR ( DEFINED "${USE_SYSTEM_${extProjName}}
     )
   ### --- End Project specific additions
   set(${proj}_REPOSITORY ${git_protocol}://itk.org/ITK.git)
-  set(${proj}_GIT_TAG 3c03e162c7e287b81115e2175898482998b50a34) #2013-01-30 New FFTW DCMTK for DWIConvert with clang
+  set(${proj}_GIT_TAG d730c4f610dbd78a1b5a84d45053be5be586fd6b) #2013-04-22 ITK_FUTURE_LEGACY_REMOVE
+
   ExternalProject_Add(${proj}
     GIT_REPOSITORY ${${proj}_REPOSITORY}
     GIT_TAG ${${proj}_GIT_TAG}
     SOURCE_DIR ${proj}
     BINARY_DIR ${proj}-build
+#LOG_CONFIGURE 0  # Wrap configure in script to ignore log output from dashboards
+#LOG_BUILD     0  # Wrap build in script to to ignore log output from dashboards
+#LOG_TEST      0  # Wrap test in script to to ignore log output from dashboards
+#LOG_INSTALL   0  # Wrap install in script to to ignore log output from dashboards
     ${cmakeversion_external_update} "${cmakeversion_external_update_value}"
     CMAKE_GENERATOR ${gen}
     CMAKE_ARGS

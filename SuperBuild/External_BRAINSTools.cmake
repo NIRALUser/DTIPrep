@@ -29,7 +29,7 @@ endif()
 
 if(NOT DEFINED BRAINSTools_SOURCE_DIR)
   #message(STATUS "${__indent}Adding project ${proj}")
-  set(GIT_TAG "c5b78b8cc998ae0b778444f3a5d361c01abbe177")  ## BRAINSTools build
+  set(GIT_TAG "485b20f1cf5eb1af890c14c15af9b0aa092c04e8")  ## Update for Hitachi DWIConvert testing.
 
   if(NOT DEFINED git_protocol)
     set(git_protocol "git")
@@ -39,7 +39,7 @@ if(NOT DEFINED BRAINSTools_SOURCE_DIR)
   #message("ITK_DIR: ${ITK_DIR}")
   #message("SlicerExecutionModel_DIR: ${SlicerExecutionModel_DIR}")
   ExternalProject_Add(${proj}
-    GIT_REPOSITORY "${git_protocol}://github.com/BRAINSia/BRAINSStandAlone.git"
+    GIT_REPOSITORY "${git_protocol}://github.com/BRAINSia/BRAINSTools.git"
     GIT_TAG "${GIT_TAG}"
     SOURCE_DIR ${proj}
     BINARY_DIR ${proj}-build
