@@ -56,7 +56,7 @@ if(NOT ( DEFINED "${extProjName}_DIR" OR ( DEFINED "${USE_SYSTEM_${extProjName}}
   if(${PROJECT_NAME}_BUILD_DICOM_SUPPORT)
     set(${proj}_DCMTK_ARGS
       -DITK_USE_SYSTEM_DCMTK:BOOL=ON
-      -DDCMTK_DIR:PATH=${DCMTK_DIR}/share/dcmtk
+      -DDCMTK_DIR:PATH=${DCMTK_DIR}
       -DModule_ITKIODCMTK:BOOL=ON
       )
   endif()
