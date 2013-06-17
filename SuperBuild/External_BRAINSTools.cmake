@@ -12,7 +12,7 @@ if(DEFINED BRAINSTools_SOURCE_DIR AND NOT EXISTS ${BRAINSTools_SOURCE_DIR})
 endif()
 
 # Set dependency list
-set(BRAINSTools_DEPENDENCIES ${ITK_EXTERNAL_NAME} SlicerExecutionModel VTK )
+set(BRAINSTools_DEPENDENCIES ${ITK_EXTERNAL_NAME} SlicerExecutionModel VTK DCMTK)
 
 # Include dependent projects if any
 SlicerMacroCheckExternalProjectDependency(BRAINSTools)
@@ -54,10 +54,16 @@ if(NOT DEFINED BRAINSTools_SOURCE_DIR)
       -DBUILD_TESTING:BOOL=OFF
       -DUSE_SYSTEM_ITK:BOOL=ON
       -DUSE_SYSTEM_VTK:BOOL=ON
+      -DUSE_SYSTEM_DCMTK:BOOL=ON
+      -DDCMTK_ofstd_INCLUDE_DIR:PATH=${DCMTK_ofstd_INCLUDE_DIR}
+      -DDCMTK_dcmdata_INCLUDE_DIR:PATH=${DCMTK_dcmdata_INCLUDE_DIR}
+      -DDCMTK_dcmimgle_INCLUDE_DIR:PATH=${DCMTK_dcmimgle_INCLUDE_DIR}
       -DUSE_SYSTEM_SlicerExecutionModel:BOOL=ON
       -DSlicerExecutionModel_DIR:PATH=${SlicerExecutionModel_DIR}
+      -DSuperBuild_BRAINSTools_USE_GIT_PROTOCOL=${${CMAKE_PROJECT_NAME}_USE_GIT_PROTOCOL}
       -DITK_DIR:PATH=${ITK_DIR}
       -DVTK_DIR:PATH=${VTK_DIR}
+      -DDCMTK_DIR:PATH=${DCMTK_DIR}
       -DUSE_ANTS:BOOL=OFF
       -DUSE_AutoWorkup:BOOL=OFF
       -DUSE_BRAINSABC:BOOL=OFF
