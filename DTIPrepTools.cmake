@@ -10,15 +10,7 @@ macro(INSTALL_EXECUTABLE)
     ${ARGN}
     )
   foreach( tool ${LOCAL_LIST_EXEC})
-    unset( path_to_tool CACHE )
-    find_program( path_to_tool 
-       NAMES ${tool}
-       PATHS ${EXTENSION_SUPERBUILD_BINARY_DIR}/bin
-       PATH_SUFFIXES Debug Release RelWithDebInfo MinSizeRel .
-       NO_DEFAULT_PATH
-       NO_SYSTEM_ENVIRONMENT_PATH
-      )
-    install(PROGRAMS ${path_to_tool} DESTINATION ${LOCAL_OUTPUT_DIR} ) 
+    install(PROGRAMS ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${tool} DESTINATION ${LOCAL_OUTPUT_DIR} ) 
   endforeach()
 endmacro()
 
