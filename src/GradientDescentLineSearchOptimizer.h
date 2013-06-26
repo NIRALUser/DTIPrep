@@ -46,7 +46,7 @@ namespace itk
  *
  */
 
-class ITK_EXPORT GradientDescentLineSearchOptimizer :
+class GradientDescentLineSearchOptimizer :
   public PowellOptimizer
 {
 public:

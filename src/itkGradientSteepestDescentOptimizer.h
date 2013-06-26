@@ -27,7 +27,7 @@ namespace itk
  * \ingroup Numerics  Optimizers
  *
  */
-class ITK_EXPORT GradientSteepestDescentOptimizer :
+class GradientSteepestDescentOptimizer :
   public GradientSteepestDescentBaseOptimizer
 {
 public:

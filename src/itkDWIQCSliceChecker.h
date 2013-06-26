@@ -41,7 +41,7 @@ namespace itk
 */
 
 template <class TImageType>
-class ITK_EXPORT DWIQCSliceChecker :
+class DWIQCSliceChecker :
   public ImageToImageFilter<TImageType, TImageType>
 {
 public:

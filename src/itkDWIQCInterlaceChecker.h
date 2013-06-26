@@ -43,7 +43,7 @@ namespace itk
 */
 
 template <class TImageType>
-class ITK_EXPORT DWIQCInterlaceChecker :
+class DWIQCInterlaceChecker :
   public ImageToImageFilter<TImageType, TImageType>
 {
 public:

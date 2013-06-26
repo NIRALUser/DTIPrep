@@ -196,7 +196,7 @@ private:
   std::vector<itk::Transform<double, Dimension, Dimension> *> transformArray;
 };
 
-class ITK_EXPORT MultiImageRegistrationFilter :
+class MultiImageRegistrationFilter :
   public Object
 {
 private:

@@ -83,7 +83,7 @@ namespace itk
  * \ingroup RegistrationMetrics
  */
 template <class TFixedImage>
-class ITK_EXPORT UnivariateEntropyMultiImageMetric :
+class UnivariateEntropyMultiImageMetric :
   public MultiImageMetric<TFixedImage>
 {
 public:

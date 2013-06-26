@@ -43,7 +43,7 @@ namespace itk
 */
 
 template <class TImageType>
-class ITK_EXPORT DWIQCGradientChecker :
+class DWIQCGradientChecker :
   public ImageToImageFilter<TImageType, TImageType>
 {
 public:

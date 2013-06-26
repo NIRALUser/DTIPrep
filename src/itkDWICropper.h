@@ -41,7 +41,7 @@ namespace itk
 */
 
 template <class TImageType>
-class ITK_EXPORT DWICropper :
+class DWICropper :
   public ImageToImageFilter<TImageType, TImageType>
 {
 public:

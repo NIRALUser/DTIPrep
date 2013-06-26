@@ -60,7 +60,7 @@ namespace itk
  * \ingroup RegistrationMetrics
  */
 template <class TImage>
-class ITK_EXPORT VarianceMultiImageMetric :
+class VarianceMultiImageMetric :
   public UnivariateEntropyMultiImageMetric<TImage>
 {
 public:

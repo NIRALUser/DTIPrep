@@ -67,7 +67,7 @@ namespace itk
  * \ingroup RegistrationFilters
  */
 template <typename TImage>
-class ITK_EXPORT MultiResolutionMultiImageRegistrationMethod : public ProcessObject
+class MultiResolutionMultiImageRegistrationMethod : public ProcessObject
 {
 public:
   /** Standard class typedefs. */

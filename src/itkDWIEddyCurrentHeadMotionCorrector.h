@@ -44,7 +44,7 @@ namespace itk
 */
 
 template <class TImageType>
-class ITK_EXPORT DWIEddyCurrentHeadMotionCorrector :
+class DWIEddyCurrentHeadMotionCorrector :
   public ImageToImageFilter<TImageType, TImageType>
 {
 public:

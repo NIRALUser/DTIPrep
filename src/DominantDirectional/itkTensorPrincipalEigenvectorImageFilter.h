@@ -118,7 +118,7 @@ public:
  */
 template <typename TInputImage,
           typename TOutputImage>
-class ITK_EXPORT TensorPrincipalEigenvectorImageFilter :
+class TensorPrincipalEigenvectorImageFilter :
   public
   UnaryFunctorImageFilter<TInputImage, TOutputImage,
                           Functor::TensorPrincipalEigenvectorFunction<

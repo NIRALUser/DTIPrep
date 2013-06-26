@@ -53,7 +53,7 @@ typedef enum
 * \ingroup Streamed
 */
 template <class TVectorImageType>
-class ITK_EXPORT DWIBaselineAverager :
+class DWIBaselineAverager :
   public ImageToImageFilter<TVectorImageType, TVectorImageType>
 {
 public:

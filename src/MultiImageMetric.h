@@ -57,7 +57,7 @@ namespace itk
  */
 
 template <class TImage>
-class ITK_EXPORT MultiImageMetric : public SingleValuedCostFunction
+class MultiImageMetric : public SingleValuedCostFunction
 {
 public:
   /** Standard class typedefs. */

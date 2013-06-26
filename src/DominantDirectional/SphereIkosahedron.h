@@ -24,7 +24,7 @@ namespace itk
 {
 
 template <typename T>
-class ITK_EXPORT SphereIkosahedron : public DataObject
+class SphereIkosahedron : public DataObject
 {
 public:
 
