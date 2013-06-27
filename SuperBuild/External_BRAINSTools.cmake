@@ -29,7 +29,7 @@ endif()
 
 if(NOT DEFINED BRAINSTools_SOURCE_DIR)
   #message(STATUS "${__indent}Adding project ${proj}")
-  set(GIT_TAG "0df107b989b415eba3bb8edccd8cc357b46d0a4d")  ## Update for Hitachi DWIConvert testing.
+  set(GIT_TAG "b315af2d1b2b0f11232c08778189ca4c0c8a04eb")  ## Update for Hitachi DWIConvert testing.
 
   if(NOT DEFINED git_protocol)
     set(git_protocol "git")
