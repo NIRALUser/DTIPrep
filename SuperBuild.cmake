@@ -122,9 +122,7 @@ option(${PROJECT_NAME}_BUILD_DICOM_SUPPORT "Build Dicom Support" ON)
 # ${LOCAL_PROJECT_NAME} dependency list
 #------------------------------------------------------------------------------
 
-set(ITK_EXTERNAL_NAME ITKv${ITK_VERSION_MAJOR})
-
-set(${LOCAL_PROJECT_NAME}_DEPENDENCIES DCMTK ${ITK_EXTERNAL_NAME} SlicerExecutionModel VTK BRAINSTools ${NIRAL_UTILITIES_DEPENDS} )
+set(${LOCAL_PROJECT_NAME}_DEPENDENCIES DCMTK ITKv4 SlicerExecutionModel VTK BRAINSTools ${NIRAL_UTILITIES_DEPENDS} )
 
 if(BUILD_STYLE_UTILS)
   list(APPEND ${LOCAL_PROJECT_NAME}_DEPENDENCIES Cppcheck KWStyle Uncrustify)

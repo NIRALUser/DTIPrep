@@ -18,7 +18,7 @@ ExternalProject_Add(FVLight
     -DSlicerExecutionModel_DIR:PATH=${SlicerExecutionModel_DIR}
     -DQWT_LIBRARY:PATH=${QWT_LIBRARY}
     -DQWT_INCLUDE_DIR:PATH=${QWT_INCLUDE_DIR}
-    DEPENDS ${ITK_EXTERNAL_NAME} VTK QWT
+    DEPENDS ITKv4 VTK QWT
   )
 
 ## Force rebuilding of the main subproject every time building from super structure

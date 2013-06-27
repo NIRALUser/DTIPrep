@@ -144,13 +144,17 @@ if(NOT DEFINED ${extProjName}_DIR AND NOT ${USE_SYSTEM_${extProjName}})
       ${VTK_MAC_ARGS}
       )
   ### --- End Project specific additions
-  set(${proj}_REPOSITORY ${git_protocol}://vtk.org/VTK.git CACHE STRING "" FORCE)
-  set(${proj}_GIT_TAG "v5.10.0" CACHE STRING "" FORCE)
+  set(${proj}_REPOSITORY ${git_protocol}://vtk.org/VTK.git)
+  set(${proj}_GIT_TAG "v5.10.0")
   ExternalProject_Add(${proj}
     GIT_REPOSITORY ${${proj}_REPOSITORY}
     GIT_TAG ${${proj}_GIT_TAG}
     SOURCE_DIR ${proj}
     BINARY_DIR ${proj}-build
+    LOG_CONFIGURE 0  # Wrap configure in script to ignore log output from dashboards
+    LOG_BUILD     0  # Wrap build in script to to ignore log output from dashboards
+    LOG_TEST      0  # Wrap test in script to to ignore log output from dashboards
+    LOG_INSTALL   0  # Wrap install in script to to ignore log output from dashboards
     ${cmakeversion_external_update} "${cmakeversion_external_update_value}"
     CMAKE_GENERATOR ${gen}
     CMAKE_ARGS

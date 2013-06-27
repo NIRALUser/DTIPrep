@@ -1,4 +1,4 @@
-set(DTI_Tract_Stat_DEPENDS QWT ${ITK_EXTERNAL_NAME} VTK SlicerExecutionModel)
+set(DTI_Tract_Stat_DEPENDS QWT ITKv4 VTK SlicerExecutionModel)
 
 ExternalProject_Add(DTI_Tract_Stat
   SVN_REPOSITORY "https://www.nitrc.org/svn/dti_tract_stat/trunk"

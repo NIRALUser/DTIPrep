@@ -1,5 +1,5 @@
 
-set(DTIProcess_DEPENDS ${ITK_EXTERNAL_NAME} VTK SlicerExecutionModel Boost)
+set(DTIProcess_DEPENDS ITKv4 VTK SlicerExecutionModel Boost)
 
 ExternalProject_Add(DTIProcess
   SVN_REPOSITORY "https://www.nitrc.org/svn/dtiprocess/trunk"

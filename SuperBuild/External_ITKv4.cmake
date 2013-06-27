@@ -117,6 +117,9 @@ if(NOT ( DEFINED "${extProjName}_DIR" OR ( DEFINED "${USE_SYSTEM_${extProjName}}
       -DKWSYS_USE_MD5:BOOL=ON # Required by SlicerExecutionModel
       -DITK_WRAPPING:BOOL=OFF #${BUILD_SHARED_LIBS} ## HACK:  QUICK CHANGE
       -DITK_USE_SYSTEM_DCMTK:BOOL=${${PROJECT_NAME}_BUILD_DICOM_SUPPORT}
+
+      -DFetch_MGHIO:BOOL=ON  # Allow building of the MGHIO classes
+
       ${${proj}_DCMTK_ARGS}
       ${${proj}_WRAP_ARGS}
       ${${proj}_FFTWF_ARGS}
@@ -124,7 +127,8 @@ if(NOT ( DEFINED "${extProjName}_DIR" OR ( DEFINED "${USE_SYSTEM_${extProjName}}
     )
   ### --- End Project specific additions
   set(${proj}_REPOSITORY ${git_protocol}://itk.org/ITK.git)
-  set(${proj}_GIT_TAG d730c4f610dbd78a1b5a84d45053be5be586fd6b) #2013-04-22 ITK_FUTURE_LEGACY_REMOVE
+  set(${proj}_GIT_TAG ec61e6e2b09aed85c758c173ba0de0a18587c82c)
+  set(ITK_VERSION_ID ITK-4.5)
 
   ExternalProject_Add(${proj}
     GIT_REPOSITORY ${${proj}_REPOSITORY}
@@ -147,7 +151,7 @@ if(NOT ( DEFINED "${extProjName}_DIR" OR ( DEFINED "${USE_SYSTEM_${extProjName}}
     DEPENDS
       ${${proj}_DEPENDENCIES}
   )
-  set(${extProjName}_DIR ${CMAKE_BINARY_DIR}/${proj}-install/lib/cmake/ITK-4.4)
+  set(${extProjName}_DIR ${CMAKE_BINARY_DIR}/${proj}-install/lib/cmake/${ITK_VERSION_ID})
 else()
   if(${USE_SYSTEM_${extProjName}})
     find_package(${extProjName} ${ITK_VERSION_MAJOR} REQUIRED)

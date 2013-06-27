@@ -26,7 +26,7 @@ ExternalProject_Add(${proj}
   -DUSE_SPLASHSCREEN:BOOL=OFF
   INSTALL_COMMAND ""
   DEPENDS
-    ${ITK_EXTERNAL_NAME}
+    ITKv4
   )
 
 set(BatchMake_DEPEND BatchMake )

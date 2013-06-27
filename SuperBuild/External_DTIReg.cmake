@@ -2,7 +2,7 @@ ExternalProject_Add(DTIReg
   SVN_REPOSITORY https://www.nitrc.org/svn/dtireg/trunk/DTI-Reg
   SVN_REVISION -r "32"  ## Fix SlicerExecutionModel find_package
   SOURCE_DIR DTIReg
-  BINARY_DIR DTIReg-build  
+  BINARY_DIR DTIReg-build
   SVN_USERNAME slicerbot
   SVN_PASSWORD slicer
   ${cmakeversion_external_update} "${cmakeversion_external_update_value}"
@@ -14,7 +14,7 @@ ExternalProject_Add(DTIReg
     ${COMMON_EXTERNAL_PROJECT_ARGS}
     -DBatchMake_DIR:PATH=${BatchMake_DIR}
     -DDTIReg_ADDITIONAL_LINK_DIRS:PATH=${CMAKE_CURRENT_BINARY_DIR}/lib
-    DEPENDS ${ITK_EXTERNAL_NAME} BatchMake
+    DEPENDS ITKv4 BatchMake
   )
 
 ## Force rebuilding of the main subproject every time building from super structure

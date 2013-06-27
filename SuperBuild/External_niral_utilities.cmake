@@ -7,7 +7,7 @@ set(${CMAKE_CURRENT_LIST_FILENAME}_FILE_INCLUDED 1)
 
 set(proj niral_utilities)
 
-set(${proj}_DEPENDENCIES ${ITK_EXTERNAL_NAME} SlicerExecutionModel VTK )
+set(${proj}_DEPENDENCIES ITKv4 SlicerExecutionModel VTK )
 
 SlicerMacroCheckExternalProjectDependency(${proj})
 

@@ -61,7 +61,7 @@ if(NOT DEFINED ${extProjName}_DIR OR NOT DEFINED ATLAS_NAME)
                                                                     #  This is ignored by midas, but allows the filename for download
                                                                     #  to be generated.
                                                                     #  It is a hack that seems to work.
-                                                                    #  If the atlas needs to be changed, then the items=#### will 
+                                                                    #  If the atlas needs to be changed, then the items=#### will
                                                                     #  need to be determined from the slicer.kitware.com
                                                                     #  web page and filled in appropriately.
   set(ATLAS_NAME Atlas/Atlas_${ATLAS_VERSION})
@@ -75,6 +75,10 @@ if(NOT DEFINED ${extProjName}_DIR OR NOT DEFINED ATLAS_NAME)
     SVN_TRUST_CERT
     SOURCE_DIR ${proj}
     BINARY_DIR ${proj}-build
+    LOG_CONFIGURE 0  # Wrap configure in script to ignore log output from dashboards
+    LOG_BUILD     0  # Wrap build in script to to ignore log output from dashboards
+    LOG_TEST      0  # Wrap test in script to to ignore log output from dashboards
+    LOG_INSTALL   0  # Wrap install in script to to ignore log output from dashboards
     ${cmakeversion_external_update} "${cmakeversion_external_update_value}"
     CMAKE_GENERATOR ${gen}
     CMAKE_ARGS
