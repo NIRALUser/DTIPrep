@@ -1,6 +1,6 @@
 ExternalProject_Add(DTIReg
   SVN_REPOSITORY https://www.nitrc.org/svn/dtireg/trunk/DTI-Reg
-  SVN_REVISION -r "32"  ## Fix SlicerExecutionModel find_package
+  SVN_REVISION -r "43"  ## Fix SlicerExecutionModel find_package
   SOURCE_DIR DTIReg
   BINARY_DIR DTIReg-build
   SVN_USERNAME slicerbot

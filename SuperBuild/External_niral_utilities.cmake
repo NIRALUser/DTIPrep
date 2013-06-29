@@ -13,7 +13,7 @@ SlicerMacroCheckExternalProjectDependency(${proj})
 
 ExternalProject_Add(${proj}
   SVN_REPOSITORY "https://www.nitrc.org/svn/niral_utilities/trunk"
-  SVN_REVISION -r "42"
+  SVN_REVISION -r "45"
   SVN_USERNAME slicerbot
   SVN_PASSWORD slicer
   SOURCE_DIR ${proj}
