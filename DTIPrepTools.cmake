@@ -10,7 +10,7 @@ macro(INSTALL_EXECUTABLE)
     ${ARGN}
     )
   foreach( tool ${LOCAL_LIST_EXEC})
-    install(PROGRAMS ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${tool} DESTINATION ${LOCAL_OUTPUT_DIR} ) 
+    install(PROGRAMS ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${tool} DESTINATION ${LOCAL_OUTPUT_DIR} )
   endforeach()
 endmacro()
 
@@ -39,7 +39,7 @@ link_directories(${BRAINSCommonLib_LIBRARY_DIRS})
 #)
 
 # No need to add with nothing to compile. add_subdirectory(BRAINSFit_Common)
-##HACK:  
+##HACK:
 #set(BRAINSFit_SOURCE_DIR  ${CMAKE_CURRENT_SOURCE_DIR}/BRAINSFit)
 #include_directories(${BRAINSFit_SOURCE_DIR})
 #include_directories(${BRAINSFit_SOURCE_DIR}/BRAINSFit_Common)
@@ -105,6 +105,23 @@ list(APPEND ExternalData_URL_TEMPLATES
 
 set(TestData_DIR ${CMAKE_CURRENT_SOURCE_DIR}/TestData)
 
+if(USE_ANTS)
+  # find ANTS includes
+  # HACK:
+  set( BOOST_INCLUDE_DIR  /Shared/sinapse/sharedopt/20130601/RHEL6/DTIPrep/BRAINSTools-build/Boost)
+  set( ANTS_SOURCE_DIR    /Shared/sinapse/sharedopt/20130601/RHEL6/DTIPrep/BRAINSTools-build/ANTS )
+  message( STATUS "XXXXXXXXXXXXX ${BOOST_INCLUDE_DIR} XXXXXXX")
+
+  include_directories(${BOOST_INCLUDE_DIR})
+  include_directories(${ANTS_SOURCE_DIR}/Temporary)
+  include_directories(${ANTS_SOURCE_DIR}/Tensor)
+  include_directories(${ANTS_SOURCE_DIR}/Utilities)
+  include_directories(${ANTS_SOURCE_DIR}/Examples)
+  include_directories(${ANTS_SOURCE_DIR}/ImageRegistration)
+  link_directories(${BRAINSTools_LIBRARY_PATH} ${BRAINSTools_CLI_ARCHIVE_OUTPUT_DIRECTORY})
+  set(ANTS_LIBS antsUtilities)
+endif()
+
 
 #-----------------------------------------------------------------------------
 # Add module sub-directory if USE_<MODULENAME> is both defined and true
@@ -136,12 +153,12 @@ if( EXTENSION_SUPERBUILD_BINARY_DIR )
 
   set( CLIToolsList
     DTIPrepLauncher
-     ) 
+     )
   INSTALL_EXECUTABLE( OUTPUT_DIR ${${LOCAL_PROJECT_NAME}_CLI_INSTALL_RUNTIME_DESTINATION} LIST_EXEC ${CLIToolsList} )
 
   set( hiddenCLIToolsList
     DTIPrep
-     ) 
+     )
   INSTALL_EXECUTABLE( OUTPUT_DIR ${HIDDEN_CLI_INSTALL_DIR} LIST_EXEC ${hiddenCLIToolsList} )
 
   set( NotCLIToolsList

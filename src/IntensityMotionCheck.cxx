@@ -4819,13 +4819,10 @@ unsigned char CIntensityMotionCheck::RunPipelineByProtocol()
   this->qcResult->GetOverallQCResult().BMCK = true;
   std::cout << "Brain Mask DONE " << std::endl;
 
-  // .......................................................................Dominant directional artifact detector (
-  // entropy tool )....................................................
+  // .................Dominant directional artifact detector ( entropy tool )............................................
   outfile.open( ReportFileName.c_str(), std::ios_base::app);
   std::cout << "=====================" << std::endl;
   std::cout << "Dominant directional artifact detector... " << std::endl;
-
-
 
   if( protocol->GetBrainMaskProtocol().bMask == false || this->qcResult->GetOverallQCResult().BMCK == false )
     {
@@ -4854,7 +4851,7 @@ unsigned char CIntensityMotionCheck::RunPipelineByProtocol()
   std::cout << "Dominant directional artifact detector DONE " << std::endl;
 
   //
-  // ...........................................................................................DTIComputing............................................................................
+  // ................................DTIComputing.......................................................................
   std::cout << "=====================" << std::endl;
   std::cout << "DTIComputing ... " << std::endl;
   DTIComputing();
@@ -4868,9 +4865,8 @@ unsigned char CIntensityMotionCheck::RunPipelineByProtocol()
   // C: Too many bad gradient directions found!
   // 0: valid
 
-  unsigned char ValidateResult;
   collectLeftDiffusionStatistics( m_DwiForcedConformanceImage, ReportFileName );
-  ValidateResult = validateLeftDiffusionStatistics();
+  const unsigned char ValidateResult = validateLeftDiffusionStatistics();
 
   // this->qcResult->Set_result( ( ValidateResult << 5 ) + this->qcResult->Get_result() );
 
@@ -4886,7 +4882,6 @@ unsigned char CIntensityMotionCheck::RunPipelineByProtocol()
             << std::endl;
 
   return this->qcResult->Get_result();
-
 }
 
 bool CIntensityMotionCheck::validateDiffusionStatistics()
@@ -4895,14 +4890,12 @@ bool CIntensityMotionCheck::validateDiffusionStatistics()
 }
 
 unsigned char CIntensityMotionCheck::validateLeftDiffusionStatistics()
-
+{
 // 00000CBA:
 // A: Gradient direction #is less than 6!
 // B: Single b-value DWI without a b0/baseline!
 // C: Too many bad gradient directions found!
 // 0: valid
-
-{
   bool        bReport = false;
   std::string m_ReportFileName;
 
@@ -4981,62 +4974,60 @@ unsigned char CIntensityMotionCheck::validateLeftDiffusionStatistics()
 
   if( this->m_gradientDirLeftNumber < 6 )
     {
-    std::cout << "Gradient direction #is less than 6!" << std::endl;
+    std::cout << "FAIL: Gradient direction #is less than 6!" << std::endl;
     if( bReport )
       {
-      outfile << "Gradient direction #is less than 6!" << std::endl;
+      outfile << "FAIL: Gradient direction #is less than 6!" << std::endl;
       }
     ret = ret | 1;
     }
   else
     {
-    std::cout << "Gradient direction #is not less than 6!" << std::endl;
+    std::cout << "PASS: Gradient direction #is not less than 6!" << std::endl;
     if( bReport )
       {
-      outfile << "Gradient direction #is not less than 6!" << std::endl;
+      outfile << "PASS: Gradient direction #is not less than 6!" << std::endl;
       }
     }
 
   if( this->m_baselineLeftNumber == 0 && this->m_bValueLeftNumber == 1 )
     {
-    std::cout << "Single b-value DWI without a b0/baseline!" << std::endl;
+    std::cout << "FAIL: Single b-value DWI without a b0/baseline!" << std::endl;
     if( bReport )
       {
-      outfile << "Single b-value DWI without a b0/baseline!" << std::endl;
+      outfile << "FAIL: Single b-value DWI without a b0/baseline!" << std::endl;
       }
     ret = ret | 2;
     }
   else
     {
-    std::cout << "Left Baseline images and the left b-value are ok!" << std::endl;
+    std::cout << "PASS: Left Baseline images and the left b-value are ok!" << std::endl;
     if( bReport )
       {
-      outfile << "Left Baseline images and the left b-value are ok!" << std::endl;
+      outfile << "PASS: Left Baseline images and the left b-value are ok!" << std::endl;
       }
     }
 
   if( ( ( this->m_gradientDirNumber ) - ( this->m_gradientDirLeftNumber ) ) >
       protocol->GetBadGradientPercentageTolerance() * ( this->m_gradientDirNumber ) )
     {
-    std::cout << "Too many bad gradient directions found! " << std::endl;
+    std::cout << "FAIL: Too many bad gradient directions found! " << std::endl;
     if( bReport )
       {
-      outfile << "Too many bad gradient directions found! " << std::endl;
+      outfile << "FAIL: Too many bad gradient directions found! " << std::endl;
       }
     ret = ret | 4;
     }
   else
     {
-    std::cout << "Bad gradient directions #passed in the tolerance! " << std::endl;
+    std::cout << "PASS: Bad gradient directions #passed in the tolerance! " << std::endl;
     if( bReport )
       {
-      outfile << "Bad gradient directions #passed in the tolerance! " << std::endl;
+      outfile << "PASS: Bad gradient directions #passed in the tolerance! " << std::endl;
       }
     }
-
   // std::cout<<"validateDiffusionStatistics(): ret "<<ret<<std::endl;
   outfile.close();
-
   return ret;
 }
 

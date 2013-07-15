@@ -77,6 +77,7 @@ DWIBaselineAverager<TImageType>
         //           std::cout<<"Registering DW gradient #: "<<i<<" to current
         // idwi ... ";
         struRigidRegResult resultLocal;
+        std::cout << "FAILURE IN:" <<  __FILE__ << " at " <<  __LINE__ << std::endl;
         exit(-1); // HACK:  Not valid testing yet.
         typename UnsignedImageType::Pointer dummy = NULL;
         rigidRegistration<UnsignedImageType, itk::Image<double, 3> >( this->idwi,

@@ -67,7 +67,16 @@ int main( int argc, char * *argv )
     QApplication app(argc, argv);
     GMainWindow *MainWindow = new GMainWindow;
     MainWindow->show();
-    return app.exec();
+    const int return_status = app.exec();
+    if ( return_status == EXIT_SUCCESS )
+        {
+        std::cout << "SUCCESSFUL execution of " << argv[0] << std::endl;
+        }
+    else
+        {
+        std::cout << "FAILED execution of " << argv[0] << " in " << __FILE__ << " at " << __LINE__ << std::endl;
+        }
+    return return_status;
     }
   else
     {
@@ -167,8 +176,8 @@ int main( int argc, char * *argv )
       IntensityMotionCheck.GetImagesInformation();
       if( !IntensityMotionCheck.GetDwiLoadStatus() )
         {
-        std::cerr << "Failed to load DWI file "
-                  << DWIFileName << std::endl;
+        std::cerr << "Failed to load DWI file " << DWIFileName << std::endl;
+        std::cout << "FAILURE IN:" <<  __FILE__ << " at " <<  __LINE__ << std::endl;
         exit(1);
         }
       if( bCreateDefaultProtocol || !xmlFile.exists() )
@@ -185,10 +194,11 @@ int main( int argc, char * *argv )
           std::cout << "Create default protocol or check by protocol, at least one of them should be set." << std::endl;
           std::cout << "Neither of them was set. Check by default." << std::endl;
           }
-        
-      if (protocol.GetBrainMaskProtocol().BrainMask_Method == 2 && protocol.GetBrainMaskProtocol().BrainMask_Image.empty() && protocol.GetBrainMaskProtocol().bMask == true)  
+
+      if (protocol.GetBrainMaskProtocol().BrainMask_Method == 2 && protocol.GetBrainMaskProtocol().BrainMask_Image.empty() && protocol.GetBrainMaskProtocol().bMask == true)
       {
     	  std::cerr << "The brain mask procedure needs brain mask image. No brain mask image is used in protocol." << std::endl;
+          std::cout << "FAILURE IN:" <<  __FILE__ << " at " <<  __LINE__ << std::endl;
     	  exit(1);
       }
 
@@ -235,7 +245,8 @@ int main( int argc, char * *argv )
             xmlWriter.writeEndElement();
             xmlWriter.writeEndElement();
             xmlWriter.writeEndDocument();
-            return 0;
+            std::cout << "SUCCESSFUL execution of " << argv[0] << std::endl;
+            return EXIT_SUCCESS;
             }
           xmlWriter.writeStartElement("entry");
           xmlWriter.writeAttribute( "parameter", "file name"  );
@@ -320,7 +331,8 @@ int main( int argc, char * *argv )
               ( (qcResult.Get_result()  & DiffusionCheckBit) !=  0) )
             {
             xmlWriter.writeTextElement("value", "Fail Pipeline Terminated");
-            return 0;
+            std::cout << "SUCCESSFUL execution of " << argv[0] << std::endl;
+            return EXIT_SUCCESS;;
             }
 
           xmlWriter.writeStartElement("entry");
@@ -1134,16 +1146,16 @@ int main( int argc, char * *argv )
 
         xmlWriter.writeStartElement("entry");
         xmlWriter.writeAttribute( "parameter",  "BRAIN_MASK" );
-        
+
 
         //xmlWriter.writeTextElement("value", "Not Set");
-        
+
         if( ( protocol.GetBrainMaskProtocol().bQuitOnCheckFailure &&
               ( (qcResult.Get_result()  & BrainMaskBit) !=  0) ) )
         {
         	xmlWriter.writeTextElement("value", "Fail Pipeline Terminated");
         }
-        else 
+        else
         {
 			if( !protocol.GetBrainMaskProtocol().bMask )
 			{
@@ -1159,12 +1171,12 @@ int main( int argc, char * *argv )
 				{
 				  xmlWriter.writeTextElement("value", "Fail");
 				}
-	
+
 			}
         }
         xmlWriter.writeEndElement();
-        
-        
+
+
         xmlWriter.writeStartElement("entry");
         xmlWriter.writeAttribute( "parameter",  "Dominant_Direction_Detector" );
         if( ( protocol.GetDominantDirectional_Detector().bQuitOnCheckFailure &&
@@ -1184,30 +1196,30 @@ int main( int argc, char * *argv )
 				  if( qcResult.GetOverallQCResult().DDDCK == true )
 				  {
 					  xmlWriter.writeTextElement("value", "Pass");
-					
-					  
+
+
 					  xmlWriter.writeStartElement("entry");
 					  xmlWriter.writeAttribute( "parameter",  "DOMINANT_DIRECTION_Z_SCORE" );
-					  xmlWriter.writeTextElement("value", QString("%1").arg(qcResult.GetDominantDirection_Detector().z_score) );  
+					  xmlWriter.writeTextElement("value", QString("%1").arg(qcResult.GetDominantDirection_Detector().z_score) );
 					  xmlWriter.writeEndElement();
-					  
+
 					  xmlWriter.writeStartElement("entry");
 					  xmlWriter.writeAttribute( "parameter",  "DOMINANT_DIRECTION_ENTROPY" );
-					  xmlWriter.writeTextElement("value", QString("%1").arg(qcResult.GetDominantDirection_Detector().entropy_value)  );  
+					  xmlWriter.writeTextElement("value", QString("%1").arg(qcResult.GetDominantDirection_Detector().entropy_value)  );
 					  xmlWriter.writeEndElement();
-					  
+
 					  xmlWriter.writeStartElement("entry");
 					  xmlWriter.writeAttribute( "parameter",  "DOMINANT_DIRECTION_RESULT" );
 					  if( qcResult.GetDominantDirection_Detector().detection_result == 2 )
 					  {
 						  xmlWriter.writeTextElement("value",  "Reject" );
 					  }
-						
+
 					  if( qcResult.GetDominantDirection_Detector().detection_result == 1 )
 					  {
 						  xmlWriter.writeTextElement("value", "Suspicious" );
 					  }
-					  
+
 					  if( qcResult.GetDominantDirection_Detector().detection_result == 0 )
 					  {
 						  xmlWriter.writeTextElement("value",  "Accept" );
@@ -1218,24 +1230,24 @@ int main( int argc, char * *argv )
 					  xmlWriter.writeTextElement("value", "Fail");
 				  }
 					  xmlWriter.writeEndElement();
-					  
+
 			  }
-	
-				
+
+
         }
-        
-        
-        
-        xmlWriter.writeEndElement();        
-        
-        
-        
-        
-        
-        
-        
-        
-        
+
+
+
+        xmlWriter.writeEndElement();
+
+
+
+
+
+
+
+
+
         xmlWriter.writeEndDocument();
         file.close();
         if( file.error() )
@@ -1431,8 +1443,8 @@ int main( int argc, char * *argv )
           out = out >> 9;
           if( out )
             {
-            std::cout << "Too many bad gradient directions found!" << std::endl;
-            outfile << "\tToo many bad gradient directions found!";
+            std::cout << "Too many bad gradient directions found!:  FAILURE" << std::endl;
+            outfile << "\tToo many bad gradient directions found!:  FAILURE";
             }
           else
             {
@@ -1446,8 +1458,8 @@ int main( int argc, char * *argv )
           out = out >> 9;
           if( out )
             {
-            std::cout << "Single b-value DWI without a b0/baseline!" << std::endl;
-            outfile << "\tSingle b-value DWI without a b0/baseline!";
+            std::cout << "Single b-value DWI without a b0/baseline!: FAILURE" << std::endl;
+            outfile << "\tSingle b-value DWI without a b0/baseline!: FAILURE";
             }
           else
             {
@@ -1461,23 +1473,34 @@ int main( int argc, char * *argv )
           out = out >> 9;
           if( out )
             {
-            std::cout << "Gradient direction #is less than 6!" << std::endl;
-            outfile << "\tGradient direction #is less than 6!";
+            std::cout << "Gradient direction #is less than 6!: FAILURE" << std::endl;
+            outfile << "\tGradient direction #is less than 6!: FAILURE";
             }
           else
             {
             outfile << "\t";
             }
-
           outfile.close();
           }
-        return result;
+        if ( result == EXIT_SUCCESS )
+          {
+          std::cout << "SUCCESSFUL execution of " << argv[0] << std::endl;
+          }
+        else
+          {
+          std::cout << "FAILED execution of " << argv[0] << " in " << __FILE__ << " at " << __LINE__ << " with code " << static_cast<int>(result) << std::endl;
+          }
+         //HACK: Always return success here.
+         return EXIT_SUCCESS;
+
+        //return result;
         }
       }
     else
       {
       std::cout << "No protocol is loaded." << std::endl;
       }
-    return 0;
+    std::cout << "SUCCESSFUL execution of " << argv[0] << std::endl;
+    return EXIT_SUCCESS;
     }
 }

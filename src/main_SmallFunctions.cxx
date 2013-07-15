@@ -30,6 +30,7 @@ void usage()
   "-intravolumecheck correctionThreshold RotationThreshold TranslationThreshold \n"
   << endl;
   cerr << "-intervolumecheck RotationThreshold TranslationThreshold \n" << endl;
+  std::cout << "FAILURE IN:" <<  __FILE__ << " at " <<  __LINE__ << std::endl;
   exit(1);
 }
 

@@ -61,6 +61,7 @@ void Vector::normalize()
   else
     {
     std::cout << "Zero vector, can not normalize!" << std::endl;
+    std::cout << "FAILURE IN:" <<  __FILE__ << " at " <<  __LINE__ << std::endl;
     exit(-1);
     }
 }
@@ -85,6 +86,7 @@ double Vector::operator[](const int index) const
       break;
     default:
       std::cout << "Index out of range!" << std::endl;
+      std::cout << "FAILURE IN:" <<  __FILE__ << " at " <<  __LINE__ << std::endl;
       exit(-1);
       break;
     }

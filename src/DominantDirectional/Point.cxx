@@ -32,7 +32,8 @@ double Point::operator[](const int index) const
       return m_z;
       break;
     default:
-      std::cout << "Index out of range!" << std::endl;
+      std::cout << "Index out of range!: FAILURE" << std::endl;
+      std::cout << "FAILURE IN:" <<  __FILE__ << " at " <<  __LINE__ << std::endl;
       exit(-1);
       break;
     }
@@ -53,7 +54,8 @@ double & Point::getRef(const int index)
       return m_z;
       break;
     default:
-      std::cout << "Index out of range!" << std::endl;
+      std::cout << "Index out of range!: FAILURE" << std::endl;
+      std::cout << "FAILURE IN:" <<  __FILE__ << " at " <<  __LINE__ << std::endl;
       exit(-1);
       break;
     }

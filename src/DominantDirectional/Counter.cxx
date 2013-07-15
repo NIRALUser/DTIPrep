@@ -48,7 +48,8 @@ void Counter::Initialize(const short subdivisionLevel)
 
   if( subdivisionLevel < 0 )
     {
-    std::cout << "The subdivision level must be at least 0!" << std::endl;
+    std::cout << "The subdivision level must be at least 0!: FAILURE" << std::endl;
+    std::cout << "FAILURE IN:" <<  __FILE__ << " at " <<  __LINE__ << std::endl;
     exit(1);
     }
 

@@ -381,6 +381,7 @@ DWIBaselineAverager<TVectorImageType>
               {
               std::cout << "WRONG NUMBER OF BASELINES FOUND: "
                         << this->getBaselineNumber() << " != " << FoundBaselines << std::endl;
+              std::cout << "FAILURE IN:" <<  __FILE__ << " at " <<  __LINE__ << std::endl;
               exit(-1);
               }
             }
@@ -448,6 +449,7 @@ DWIBaselineAverager<TVectorImageType>
               {
               std::cout << "WRONG NUMBER OF BASELINES FOUND: "
                         << this->getBaselineNumber() << " != " << FoundBaselines << std::endl;
+              std::cout << "FAILURE IN:" <<  __FILE__ << " at " <<  __LINE__ << std::endl;
               exit(-1);
               return;
               }
@@ -493,6 +495,7 @@ DWIBaselineAverager<TVectorImageType>
   if( !m_averagedBaseline )
     {
     std::cout << "WARNING:  No m_averagedBaseline" << std::endl;
+    std::cout << "FAILURE IN:" <<  __FILE__ << " at " <<  __LINE__ << std::endl;
     exit(-1);
     return;
     }
@@ -525,6 +528,7 @@ DWIBaselineAverager<TVectorImageType>
       {
       std::cout << "ERROR:  Number of baselines found does not match previous estimates!"
                 << this->getBaselineNumber() << " != " << FoundBaselines << std::endl;
+      std::cout << "FAILURE IN:" <<  __FILE__ << " at " <<  __LINE__ << std::endl;
       exit(-1);
       return;
       }
@@ -1031,6 +1035,7 @@ DWIBaselineAverager<TVectorImageType>
   if( this->m_b0 < 0.0 )
     {
     std::cout << "BValue not specified in header file" << std::endl;
+    std::cout << "FAILURE IN:" <<  __FILE__ << " at " <<  __LINE__ << std::endl;
     exit(-1);    // HACK:  Attempting to debug
     return;
     }
@@ -1059,6 +1064,7 @@ DWIBaselineAverager<TVectorImageType>
   if( m_GradientDirectionContainer->size() <= 6 )
     {
     std::cout << "Gradient Images Less than 6" << std::endl;
+    std::cout << "FAILURE IN:" <<  __FILE__ << " at " <<  __LINE__ << std::endl;
     exit(-1);    // HACK:  Attempting to debug
     return;
     }
