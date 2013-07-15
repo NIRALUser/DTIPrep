@@ -29,7 +29,7 @@ endif()
 
 if(NOT DEFINED BRAINSTools_SOURCE_DIR)
   #message(STATUS "${__indent}Adding project ${proj}")
-  set(GIT_TAG "b0c068312cd4624ce5f56bd0e2add51c6a96c281")
+  set(GIT_TAG "a7ac2c2f0dd48161e357ff3c92be4eb0f4caadbd")
 
   if(NOT DEFINED git_protocol)
     set(git_protocol "git")
