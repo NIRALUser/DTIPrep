@@ -195,12 +195,12 @@ int main( int argc, char * *argv )
           std::cout << "Neither of them was set. Check by default." << std::endl;
           }
 
-      if (protocol.GetBrainMaskProtocol().BrainMask_Method == 2 && protocol.GetBrainMaskProtocol().BrainMask_Image.empty() && protocol.GetBrainMaskProtocol().bMask == true)
-      {
+        if (protocol.GetBrainMaskProtocol().BrainMask_Method == 2 && protocol.GetBrainMaskProtocol().BrainMask_Image.empty() && protocol.GetBrainMaskProtocol().bMask == true)
+          {
     	  std::cerr << "The brain mask procedure needs brain mask image. No brain mask image is used in protocol." << std::endl;
           std::cout << "FAILURE IN:" <<  __FILE__ << " at " <<  __LINE__ << std::endl;
     	  exit(1);
-      }
+          }
 
         const unsigned char result = IntensityMotionCheck.RunPipelineByProtocol();
         unsigned char       out = result;
@@ -419,27 +419,27 @@ int main( int argc, char * *argv )
               xmlWriter.writeTextElement("value", "Fail Pipeline Termination");
               }
             else
+              if( r_SliceWiseCkeck > protocol.GetInterlaceCheckProtocol().correlationThresholdGradient )
+                {
+
+                xmlWriter.writeTextElement("value", "Fail");
+                }
+              else
+                {
+                xmlWriter.writeTextElement("value", "Pass");
+                }
+            }
+          else
             if( r_SliceWiseCkeck > protocol.GetInterlaceCheckProtocol().correlationThresholdGradient )
               {
 
               xmlWriter.writeTextElement("value", "Fail");
+
               }
             else
               {
               xmlWriter.writeTextElement("value", "Pass");
               }
-            }
-          else
-          if( r_SliceWiseCkeck > protocol.GetInterlaceCheckProtocol().correlationThresholdGradient )
-            {
-
-            xmlWriter.writeTextElement("value", "Fail");
-
-            }
-          else
-            {
-            xmlWriter.writeTextElement("value", "Pass");
-            }
           }
         else if( !protocol.GetSliceCheckProtocol().bCheck )
           {
@@ -452,17 +452,8 @@ int main( int argc, char * *argv )
         xmlWriter.writeAttribute( "parameter", "InterlaceWiseCheck"  );
 
         if( !( ( (qcResult.Get_result()  & SliceWiseCheckBit) == SliceWiseCheckBit ) &&
-               protocol.GetSliceCheckProtocol().bQuitOnCheckFailure) && protocol.GetInterlaceCheckProtocol().bCheck )                                                                           //
-                                                                                                                                                                                                //
-                                                                                                                                                                                                // Check
-                                                                                                                                                                                                //
-                                                                                                                                                                                                // protocol
-                                                                                                                                                                                                //
-                                                                                                                                                                                                // whether
-                                                                                                                                                                                                //
-                                                                                                                                                                                                // run
-                                                                                                                                                                                                //
-                                                                                                                                                                                                // InterlaceWiseChecking
+               protocol.GetSliceCheckProtocol().bQuitOnCheckFailure) && protocol.GetInterlaceCheckProtocol().bCheck )
+        // Check protocol whether run InterfaceWiseChecking
           {
           if(  (qcResult.Get_result() & InterlaceWiseCheckBit) == InterlaceWiseCheckBit )
             {
@@ -573,23 +564,23 @@ int main( int argc, char * *argv )
               xmlWriter.writeTextElement("processing", "BASELINE_AVERAGED");
               break;
             case QCResult::GRADIENT_EXCLUDE_SLICECHECK:
-              {
-              xmlWriter.writeTextElement("processing", "EXCLUDE_SLICECHECK");
-              EXCLUDE_SliceWiseCheck = true;
-              }
-              break;
+            {
+            xmlWriter.writeTextElement("processing", "EXCLUDE_SLICECHECK");
+            EXCLUDE_SliceWiseCheck = true;
+            }
+            break;
             case QCResult::GRADIENT_EXCLUDE_INTERLACECHECK:
-              {
-              xmlWriter.writeTextElement("processing", "EXCLUDE_INTERLACECHECK");
-              EXCLUDE_InterlaceWiseCheck = true;
-              }
-              break;
+            {
+            xmlWriter.writeTextElement("processing", "EXCLUDE_INTERLACECHECK");
+            EXCLUDE_InterlaceWiseCheck = true;
+            }
+            break;
             case QCResult::GRADIENT_EXCLUDE_GRADIENTCHECK:
-              {
-              xmlWriter.writeTextElement("processing", "EXCLUDE_GRADIENTCHECK");
-              EXCLUDE_GreadientWiseCheck = true;
-              }
-              break;
+            {
+            xmlWriter.writeTextElement("processing", "EXCLUDE_GRADIENTCHECK");
+            EXCLUDE_GreadientWiseCheck = true;
+            }
+            break;
             case QCResult::GRADIENT_EXCLUDE_MANUALLY:
               xmlWriter.writeTextElement("processing", "EXCLUDE");
               break;
@@ -676,14 +667,14 @@ int main( int argc, char * *argv )
                 xmlWriter.writeTextElement("processing", "EXCLUDE");
                 }
               else
-              if( EXCLUDE_SliceWiseCheck == true )
-                {
-                xmlWriter.writeTextElement("processing", "NA");
-                }
-              else
-                {
-                xmlWriter.writeTextElement("processing", "INCLUDE");
-                }
+                if( EXCLUDE_SliceWiseCheck == true )
+                  {
+                  xmlWriter.writeTextElement("processing", "NA");
+                  }
+                else
+                  {
+                  xmlWriter.writeTextElement("processing", "INCLUDE");
+                  }
 
               xmlWriter.writeStartElement("entry");
               xmlWriter.writeAttribute( "parameter",  "InterlaceAngleX" );
@@ -1127,9 +1118,9 @@ int main( int argc, char * *argv )
             case QCResult::GRADIENT_EXCLUDE_MANUALLY:
               xmlWriter.writeTextElement("value", "EXCLUDE");
               break;
-            // case QCResult::GRADIENT_EDDY_MOTION_CORRECTED:
-            // xmlWriter.writeTextElement("value","EDDY_MOTION_CORRECTED");
-            // break;
+              // case QCResult::GRADIENT_EDDY_MOTION_CORRECTED:
+              // xmlWriter.writeTextElement("value","EDDY_MOTION_CORRECTED");
+              // break;
             case QCResult::GRADIENT_INCLUDE:
               xmlWriter.writeTextElement("value", "INCLUDE");
               break;
@@ -1152,28 +1143,28 @@ int main( int argc, char * *argv )
 
         if( ( protocol.GetBrainMaskProtocol().bQuitOnCheckFailure &&
               ( (qcResult.Get_result()  & BrainMaskBit) !=  0) ) )
-        {
-        	xmlWriter.writeTextElement("value", "Fail Pipeline Terminated");
-        }
+          {
+          xmlWriter.writeTextElement("value", "Fail Pipeline Terminated");
+          }
         else
-        {
-			if( !protocol.GetBrainMaskProtocol().bMask )
-			{
-				xmlWriter.writeTextElement("value", "Not Set");
-			}
-			else
-			{
-			  if( qcResult.GetOverallQCResult().BMCK == true )
-				{
-				  xmlWriter.writeTextElement("value", "Pass");
-				}
-			  else
-				{
-				  xmlWriter.writeTextElement("value", "Fail");
-				}
+          {
+          if( !protocol.GetBrainMaskProtocol().bMask )
+            {
+            xmlWriter.writeTextElement("value", "Not Set");
+            }
+          else
+            {
+            if( qcResult.GetOverallQCResult().BMCK == true )
+              {
+              xmlWriter.writeTextElement("value", "Pass");
+              }
+            else
+              {
+              xmlWriter.writeTextElement("value", "Fail");
+              }
 
-			}
-        }
+            }
+          }
         xmlWriter.writeEndElement();
 
 
@@ -1181,72 +1172,62 @@ int main( int argc, char * *argv )
         xmlWriter.writeAttribute( "parameter",  "Dominant_Direction_Detector" );
         if( ( protocol.GetDominantDirectional_Detector().bQuitOnCheckFailure &&
               ( (qcResult.Get_result()  & DominantDirectionDetectBit) !=  0) ) )
-        {
-        	xmlWriter.writeTextElement("value", "Fail Pipeline Terminated");
-        }
+          {
+          xmlWriter.writeTextElement("value", "Fail Pipeline Terminated");
+          }
 
         else
-        {
-			if( !protocol.GetDominantDirectional_Detector().bCheck )
-			{
-				xmlWriter.writeTextElement("value", "Not Set");
-			}
-			else
-			{
-				  if( qcResult.GetOverallQCResult().DDDCK == true )
-				  {
-					  xmlWriter.writeTextElement("value", "Pass");
+          {
+          if( !protocol.GetDominantDirectional_Detector().bCheck )
+            {
+            xmlWriter.writeTextElement("value", "Not Set");
+            }
+          else
+            {
+            if( qcResult.GetOverallQCResult().DDDCK == true )
+              {
+              xmlWriter.writeTextElement("value", "Pass");
 
 
-					  xmlWriter.writeStartElement("entry");
-					  xmlWriter.writeAttribute( "parameter",  "DOMINANT_DIRECTION_Z_SCORE" );
-					  xmlWriter.writeTextElement("value", QString("%1").arg(qcResult.GetDominantDirection_Detector().z_score) );
-					  xmlWriter.writeEndElement();
+              xmlWriter.writeStartElement("entry");
+              xmlWriter.writeAttribute( "parameter",  "DOMINANT_DIRECTION_Z_SCORE" );
+              xmlWriter.writeTextElement("value", QString("%1").arg(qcResult.GetDominantDirection_Detector().z_score) );
+              xmlWriter.writeEndElement();
 
-					  xmlWriter.writeStartElement("entry");
-					  xmlWriter.writeAttribute( "parameter",  "DOMINANT_DIRECTION_ENTROPY" );
-					  xmlWriter.writeTextElement("value", QString("%1").arg(qcResult.GetDominantDirection_Detector().entropy_value)  );
-					  xmlWriter.writeEndElement();
+              xmlWriter.writeStartElement("entry");
+              xmlWriter.writeAttribute( "parameter",  "DOMINANT_DIRECTION_ENTROPY" );
+              xmlWriter.writeTextElement("value", QString("%1").arg(qcResult.GetDominantDirection_Detector().entropy_value)  );
+              xmlWriter.writeEndElement();
 
-					  xmlWriter.writeStartElement("entry");
-					  xmlWriter.writeAttribute( "parameter",  "DOMINANT_DIRECTION_RESULT" );
-					  if( qcResult.GetDominantDirection_Detector().detection_result == 2 )
-					  {
-						  xmlWriter.writeTextElement("value",  "Reject" );
-					  }
+              xmlWriter.writeStartElement("entry");
+              xmlWriter.writeAttribute( "parameter",  "DOMINANT_DIRECTION_RESULT" );
+              if( qcResult.GetDominantDirection_Detector().detection_result == 2 )
+                {
+                xmlWriter.writeTextElement("value",  "Reject" );
+                }
 
-					  if( qcResult.GetDominantDirection_Detector().detection_result == 1 )
-					  {
-						  xmlWriter.writeTextElement("value", "Suspicious" );
-					  }
+              if( qcResult.GetDominantDirection_Detector().detection_result == 1 )
+                {
+                xmlWriter.writeTextElement("value", "Suspicious" );
+                }
 
-					  if( qcResult.GetDominantDirection_Detector().detection_result == 0 )
-					  {
-						  xmlWriter.writeTextElement("value",  "Accept" );
-					  }
-				  }
-				  else
-				  {
-					  xmlWriter.writeTextElement("value", "Fail");
-				  }
-					  xmlWriter.writeEndElement();
+              if( qcResult.GetDominantDirection_Detector().detection_result == 0 )
+                {
+                xmlWriter.writeTextElement("value",  "Accept" );
+                }
+              }
+            else
+              {
+              xmlWriter.writeTextElement("value", "Fail");
+              }
+            xmlWriter.writeEndElement();
 
-			  }
-
-
-        }
+            }
 
 
+          }
 
         xmlWriter.writeEndElement();
-
-
-
-
-
-
-
-
 
         xmlWriter.writeEndDocument();
         file.close();
@@ -1266,8 +1247,8 @@ int main( int argc, char * *argv )
             {
             outfile.open( resultNotes.c_str(),  std::ios::app);
             outfile
-            <<
-            "DWI\t#AllGrad/#AllGradLeft\t#b0/#b0Left\t#Grad/#GradLeft\t#GradDir/#GradDirLeft\t#Rep/#RepLeft\tImageInfo\tDiffusionInfo\tSliceWise\tInterlaceWise\tGradWise\tGradDirLess6\tSingleBValueNoB0\tTooManyBadDirs";
+              <<
+              "DWI\t#AllGrad/#AllGradLeft\t#b0/#b0Left\t#Grad/#GradLeft\t#GradDir/#GradDirLeft\t#Rep/#RepLeft\tImageInfo\tDiffusionInfo\tSliceWise\tInterlaceWise\tGradWise\tGradDirLess6\tSingleBValueNoB0\tTooManyBadDirs";
             }
           else
             {
@@ -1290,15 +1271,15 @@ int main( int argc, char * *argv )
 
           std::cout << "GradientTotal#/LeftGradientTotal#: "
                     << IntensityMotionCheck.getGradientNumber()
-          + IntensityMotionCheck.getBaselineNumber() << "/"
+            + IntensityMotionCheck.getBaselineNumber() << "/"
                     << IntensityMotionCheck.
-          getGradientLeftNumber()
-          + IntensityMotionCheck.getBaselineLeftNumber() << std::endl;
+            getGradientLeftNumber()
+            + IntensityMotionCheck.getBaselineLeftNumber() << std::endl;
           outfile << "\t" << IntensityMotionCheck.getGradientNumber()
-          + IntensityMotionCheck.getBaselineNumber() << "/"
+            + IntensityMotionCheck.getBaselineNumber() << "/"
                   << IntensityMotionCheck.
-          getGradientLeftNumber()
-          + IntensityMotionCheck.getBaselineLeftNumber();
+            getGradientLeftNumber()
+            + IntensityMotionCheck.getBaselineLeftNumber();
 
           std::cout << "Baseline#/LeftBaseline#: "
                     << IntensityMotionCheck.getBaselineNumber() << "/"

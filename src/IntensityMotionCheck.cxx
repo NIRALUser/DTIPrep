@@ -859,13 +859,13 @@ void CIntensityMotionCheck::ForceCroppingOfImage(const bool bReport, const std::
   CropperType::Pointer Cropper = CropperType::New();
 
   Cropper->SetInput( m_DwiForcedConformanceImage );
-    {
-    int sizePara[3];
-    sizePara[0]  = protocol->GetImageProtocol().size[0];
-    sizePara[1]  = protocol->GetImageProtocol().size[1];
-    sizePara[2]  = protocol->GetImageProtocol().size[2];
-    Cropper->SetSize(sizePara);
-    }
+  {
+  int sizePara[3];
+  sizePara[0]  = protocol->GetImageProtocol().size[0];
+  sizePara[1]  = protocol->GetImageProtocol().size[1];
+  sizePara[2]  = protocol->GetImageProtocol().size[2];
+  Cropper->SetSize(sizePara);
+  }
 
   if( bReport )
     {
@@ -1289,7 +1289,7 @@ bool CIntensityMotionCheck::SliceWiseCheck( DwiImageType::Pointer dwi )
       if( tem_vector[id] == 0 )
         {
         this->qcResult->GetIntensityMotionCheckResult()[(m_Original_ForcedConformance_Mapping[id].index_original)[0]].
-        processing
+          processing
           = QCResult::GRADIENT_EXCLUDE_SLICECHECK;
         tem_vector.erase( tem_vector.begin() + id );
         m_Original_ForcedConformance_Mapping.erase( m_Original_ForcedConformance_Mapping.begin() + id );
@@ -1641,7 +1641,7 @@ bool CIntensityMotionCheck::InterlaceWiseCheck( DwiImageType::Pointer dwi )
       std::cout << "(m_Original_ForcedConformance_Mapping[i].index_original)[0] "
                 << (m_Original_ForcedConformance_Mapping[i].index_original)[0] << " "
                 << qcResult->GetInterlaceWiseCheckResult()[(m_Original_ForcedConformance_Mapping[i].index_original)[0]]
-      .AngleX
+        .AngleX
                 << std::endl;
       qcResult->GetInterlaceWiseCheckResult()[(m_Original_ForcedConformance_Mapping[i].index_original)[0]].AngleX =
         InterlaceChecker->GetResultsContainer()[i].AngleX;
@@ -1678,7 +1678,7 @@ bool CIntensityMotionCheck::InterlaceWiseCheck( DwiImageType::Pointer dwi )
       if( tem_vector[id] == 0 )
         {
         this->qcResult->GetIntensityMotionCheckResult()[(m_Original_ForcedConformance_Mapping[id].index_original)[0]].
-        processing
+          processing
           = QCResult::GRADIENT_EXCLUDE_INTERLACECHECK;
         std::cout << "Original Excluded id: " << (m_Original_ForcedConformance_Mapping[id].index_original)[0]
                   << "id: " << id << std::endl;
@@ -2041,7 +2041,7 @@ bool CIntensityMotionCheck::BaselineAverage( DwiImageType::Pointer dwi )
                                                               [0]].processing ==         QCResult::GRADIENT_INCLUDE )
             {
             this->qcResult->GetIntensityMotionCheckResult()[(m_Original_ForcedConformance_Mapping[id].index_original)[0
-                                                            ]].processing
+                ]].processing
               = QCResult::GRADIENT_BASELINE_AVERAGED;
             }
           tem_vector.erase( tem_vector.begin() + id );
@@ -2308,7 +2308,7 @@ bool CIntensityMotionCheck::EddyMotionCorrectIowa( DwiImageType::Pointer dwi )
       //      std::cout<<"smallestGradient: "<< smallestGradient <<std::endl;
 
       typedef itk::VectorIndexSelectionCastImageFilter<DwiImageType,
-                                                       GradientImageType> FilterType;
+        GradientImageType> FilterType;
       FilterType::Pointer componentExtractor = FilterType::New();
 
       componentExtractor->SetInput( dwi);
@@ -2326,7 +2326,7 @@ bool CIntensityMotionCheck::EddyMotionCorrectIowa( DwiImageType::Pointer dwi )
       fixed->FillBuffer(0);
 
       typedef itk::ImageRegionIteratorWithIndex<GradientImageType>
-      averagedBaselineIterator;
+        averagedBaselineIterator;
       averagedBaselineIterator aIt( fixed, fixed->GetLargestPossibleRegion() );
       aIt.GoToBegin();
 
@@ -2434,8 +2434,8 @@ bool CIntensityMotionCheck::EddyMotionCorrectIowa( DwiImageType::Pointer dwi )
     if( inputGradDirContainer->size() != outputGradDirContainer->size() )
       {
       std::cout
-      << "error: Gradient number mismatch between input and output."
-      << std::endl;
+        << "error: Gradient number mismatch between input and output."
+        << std::endl;
       return false;
       }
 /*for ( unsigned int i = 0; i < inputGradDirContainer->size(); i++ )
@@ -2764,11 +2764,11 @@ bool CIntensityMotionCheck::EddyMotionCorrect( DwiImageType::Pointer dwi )
           {
           if( this->qcResult->GetIntensityMotionCheckResult()[j].processing >
               QCResult::GRADIENT_EDDY_MOTION_CORRECTED )                                                               //
-          //
-          // GRADIENT_EXCLUDE_SLICECHECK,
-          // GRADIENT_EXCLUDE_INTERLACECHECK,
-          // GRADIENT_EXCLUDE_GRADIENTCHECK,
-          // GRADIENT_EXCLUDE_MANUALLY,
+            //
+            // GRADIENT_EXCLUDE_SLICECHECK,
+            // GRADIENT_EXCLUDE_INTERLACECHECK,
+            // GRADIENT_EXCLUDE_GRADIENTCHECK,
+            // GRADIENT_EXCLUDE_MANUALLY,
             {
             // std::cout<< "gradient " << i << " has been excluded!"
             // <<std::endl;
@@ -2779,15 +2779,15 @@ bool CIntensityMotionCheck::EddyMotionCorrect( DwiImageType::Pointer dwi )
               = QCResult::GRADIENT_EDDY_MOTION_CORRECTED;
             this->qcResult->GetIntensityMotionCheckResult()[j].CorrectedDir[0]
               = EddyMotionCorrector->GetOutputGradientDirectionContainer()->at(
-                  i)[
+                i)[
                   0];
             this->qcResult->GetIntensityMotionCheckResult()[j].CorrectedDir[1]
               = EddyMotionCorrector->GetOutputGradientDirectionContainer()->at(
-                  i)[
+                i)[
                   1];
             this->qcResult->GetIntensityMotionCheckResult()[j].CorrectedDir[2]
               = EddyMotionCorrector->GetOutputGradientDirectionContainer()->at(
-                  i)[
+                i)[
                   2];
             }
           }
@@ -2986,7 +2986,7 @@ bool CIntensityMotionCheck::GradientWiseCheck( DwiImageType::Pointer dwi )
       qcResult->GetGradientWiseCheckResult()[(m_Original_ForcedConformance_Mapping[i].index_original)[0]].TranslationZ
         = GradientChecker->GetResultsContainer()[i].TranslationZ;
       qcResult->GetGradientWiseCheckResult()[(m_Original_ForcedConformance_Mapping[i].index_original)[0]].
-      MutualInformation = GradientChecker->GetResultsContainer()[i].MutualInformation;
+        MutualInformation = GradientChecker->GetResultsContainer()[i].MutualInformation;
 
       }
 
@@ -2998,16 +2998,16 @@ bool CIntensityMotionCheck::GradientWiseCheck( DwiImageType::Pointer dwi )
       if( tem_vector[id] == 0 )
         {
         if( this->qcResult->GetIntensityMotionCheckResult()[(m_Original_ForcedConformance_Mapping[id].index_original)[0
-                                                            ]].processing == QCResult::GRADIENT_INCLUDE ||
+                ]].processing == QCResult::GRADIENT_INCLUDE ||
             this->qcResult->GetIntensityMotionCheckResult()[(m_Original_ForcedConformance_Mapping[id].index_original)[0
-                                                            ]].
+                ]].
             processing == QCResult::GRADIENT_BASELINE_AVERAGED ||
             this->qcResult->GetIntensityMotionCheckResult()[(m_Original_ForcedConformance_Mapping[id].index_original)[0
-                                                            ]].
+                ]].
             processing == QCResult::GRADIENT_EDDY_MOTION_CORRECTED )
           {
           this->qcResult->GetIntensityMotionCheckResult()[(m_Original_ForcedConformance_Mapping[id].index_original)[0]]
-          .processing
+            .processing
             = QCResult::GRADIENT_EXCLUDE_GRADIENTCHECK;
           }
         tem_vector.erase( tem_vector.begin() + id );
@@ -3458,9 +3458,9 @@ bool CIntensityMotionCheck::BrainMask()
       str.append( "/" );
       str.append( protocol->GetQCOutputDirectory() );
       if( !itksys::SystemTools::FileIsDirectory( str.c_str() ) )
-      {
+        {
         itksys::SystemTools::MakeDirectory( str.c_str() );
-      }
+        }
       str2 = str ;
       str2.append("/temp/");
       //if( !itksys::SystemTools::FileIsDirectory( str2.c_str() ) )
@@ -3502,10 +3502,10 @@ bool CIntensityMotionCheck::BrainMask()
     {
     str2 = m_DwiFileName.substr( 0, m_DwiFileName.find_last_of('/') );
     str2.append( "/temp/" );
-	//if( !itksys::SystemTools::FileIsDirectory( str2.c_str() ) )
-	//{
-	//   itksys::SystemTools::MakeDirectory( str2.c_str() );
-	//}
+    //if( !itksys::SystemTools::FileIsDirectory( str2.c_str() ) )
+    //{
+    //   itksys::SystemTools::MakeDirectory( str2.c_str() );
+    //}
 
     m_ReportFileName = m_DwiFileName.substr( 0, m_DwiFileName.find_last_of('.') );
     m_ReportFileName.append( "_QCReport.txt");
@@ -3517,12 +3517,12 @@ bool CIntensityMotionCheck::BrainMask()
 
   //if( protocol->GetBrainMaskProtocol().reportFileMode == 1 )
   //  {
-    outfile.open( m_ReportFileName.c_str(), std::ios_base::app);
+  outfile.open( m_ReportFileName.c_str(), std::ios_base::app);
   //  }
   //else
   //  {
   //  outfile.open( m_ReportFileName.c_str() );
- //   }
+  //   }
   if( outfile )
     {
     bReport = true;
@@ -3546,10 +3546,10 @@ bool CIntensityMotionCheck::BrainMask()
   if( protocol->GetBrainMaskProtocol().bMask )
     {
 
-	if( !itksys::SystemTools::FileIsDirectory( str2.c_str() ) )
-	{
-	   itksys::SystemTools::MakeDirectory( str2.c_str() );
-	}
+    if( !itksys::SystemTools::FileIsDirectory( str2.c_str() ) )
+      {
+      itksys::SystemTools::MakeDirectory( str2.c_str() );
+      }
 
     int mask_method = protocol->GetBrainMaskProtocol().BrainMask_Method;
 
@@ -3557,20 +3557,20 @@ bool CIntensityMotionCheck::BrainMask()
       {
 
       case Protocol::BRAINMASK_METHOD_FSL:
-        {
-        ret =  BRAINMASK_METHOD_FSL(m_ReportFileName, str2);
-        break;
-        }
+      {
+      ret =  BRAINMASK_METHOD_FSL(m_ReportFileName, str2);
+      break;
+      }
       case Protocol::BRAINMASK_METHOD_SLICER:
-        {
-        ret = BRAINMASK_METHOD_Slicer( m_ReportFileName);
-        break;
-        }
+      {
+      ret = BRAINMASK_METHOD_Slicer( m_ReportFileName);
+      break;
+      }
       case Protocol::BRAINMASK_METHOD_OPTION:
-        {
-        std::cout << "Brain mask: " << protocol->GetBrainMaskProtocol(). BrainMask_Image << std::endl;
-        break;
-        }
+      {
+      std::cout << "Brain mask: " << protocol->GetBrainMaskProtocol(). BrainMask_Image << std::endl;
+      break;
+      }
       default:
         break;
       }
@@ -3596,12 +3596,12 @@ bool CIntensityMotionCheck::BRAINMASK_METHOD_FSL(std::string m_ReportFileName, s
 
   //if( protocol->GetBrainMaskProtocol().reportFileMode == 1 )
   //  {
-    outfile.open( m_ReportFileName.c_str(), std::ios_base::app );
+  outfile.open( m_ReportFileName.c_str(), std::ios_base::app );
   //  }
- // else
+  // else
   //  {
   //  outfile.open( m_ReportFileName.c_str() );
- //   }
+  //   }
   if( outfile )
     {
     bReport = true;
@@ -3847,14 +3847,14 @@ bool CIntensityMotionCheck::BRAINMASK_METHOD_Slicer(std::string m_ReportFileName
 
   std::ofstream outfile;
 
- // if( protocol->GetBrainMaskProtocol().reportFileMode == 1 )
- //   {
-    outfile.open( m_ReportFileName.c_str(), std::ios_base::app );
- //   }
- // else
- //   {
- //   outfile.open( m_ReportFileName.c_str() );
- //   }
+  // if( protocol->GetBrainMaskProtocol().reportFileMode == 1 )
+  //   {
+  outfile.open( m_ReportFileName.c_str(), std::ios_base::app );
+  //   }
+  // else
+  //   {
+  //   outfile.open( m_ReportFileName.c_str() );
+  //   }
   if( outfile )
     {
     bReport = true;
@@ -4017,16 +4017,16 @@ bool CIntensityMotionCheck::DominantDirectionalCheck()
 
   std::ofstream outfile;
 
- // if( protocol->GetDominantDirectional_Detector().reportFileMode == 1 )
- //   {
-    outfile.open( m_ReportFileName.c_str(), std::ios_base::app);
- //   }
- // else
- //   {
- //   outfile.open( m_ReportFileName.c_str() );
- //   }
+  // if( protocol->GetDominantDirectional_Detector().reportFileMode == 1 )
+  //   {
+  outfile.open( m_ReportFileName.c_str(), std::ios_base::app);
+  //   }
+  // else
+  //   {
+  //   outfile.open( m_ReportFileName.c_str() );
+  //   }
 
-    std::cout << "Dominant outfile" << outfile << std::endl;
+  std::cout << "Dominant outfile" << outfile << std::endl;
   if( outfile )
     {
     bReport = true;
@@ -4329,7 +4329,7 @@ unsigned char CIntensityMotionCheck::RunPipelineByProtocol_FurtherQC()
                                                 .length() - 1 ) == '/'     )
       {
       m_ReportFileName = protocol->GetQCOutputDirectory().substr(
-          0, protocol->GetQCOutputDirectory().find_last_of("/\\") );
+        0, protocol->GetQCOutputDirectory().find_last_of("/\\") );
       }
     else
       {
@@ -4750,7 +4750,7 @@ unsigned char CIntensityMotionCheck::RunPipelineByProtocol()
                 << m_Original_ForcedConformance_Mapping[k_ind].index_original[kk_ind] << " QCIndex: " << k_ind
                 << std::endl;
         qcResult->GetIntensityMotionCheckResult()[m_Original_ForcedConformance_Mapping[k_ind].index_original[kk_ind]].
-        QCIndex = k_ind;
+          QCIndex = k_ind;
         }
       }
     else
@@ -5127,7 +5127,7 @@ void CIntensityMotionCheck::collectLeftDiffusionStatistics(
         for( unsigned int j = 0; j < dirMode.size(); j++ )
           {
           if( vcl_abs(modeSqr - dirMode[j]) < 0.001 )    // 1 DIFFERENCE for b
-          // value
+            // value
             {
             newDirMode = false;
             break;
@@ -5305,7 +5305,7 @@ void CIntensityMotionCheck::collectDiffusionStatistics()
         for( unsigned int j = 0; j < dirMode.size(); j++ )
           {
           if( vcl_abs(modeSqr - dirMode[j]) < 0.001 )    // 1 DIFFERENCE for b
-          // value
+            // value
             {
             newDirMode = false;
             break;
@@ -5962,25 +5962,25 @@ bool CIntensityMotionCheck::DiffusionCheck( DwiImageType::Pointer dwi)
 
     // Mahshid : check with protocol ( bUseDiffusionProtocol ) to apply measurement frame of protocol in DWI image
     if( protocol->GetDiffusionProtocol().bUseDiffusionProtocol )
-        {
+      {
 
-	std::vector<std::vector<double> > Mtx_MeasurementFrameFromProtocol;
+      std::vector<std::vector<double> > Mtx_MeasurementFrameFromProtocol;
 
-	itk::ExposeMetaData<std::vector<std::vector<double> > >( dwi->GetMetaDataDictionary(), "NRRD_measurement frame", Mtx_MeasurementFrameFromProtocol);
+      itk::ExposeMetaData<std::vector<std::vector<double> > >( dwi->GetMetaDataDictionary(), "NRRD_measurement frame", Mtx_MeasurementFrameFromProtocol);
 
-      	Mtx_MeasurementFrameFromProtocol[0][0] = protocol->GetDiffusionProtocol().measurementFrame[0][0];
-	Mtx_MeasurementFrameFromProtocol[0][1] = protocol->GetDiffusionProtocol().measurementFrame[0][1];
-	Mtx_MeasurementFrameFromProtocol[0][2] = protocol->GetDiffusionProtocol().measurementFrame[0][2];
-	Mtx_MeasurementFrameFromProtocol[1][0] = protocol->GetDiffusionProtocol().measurementFrame[1][0];
-	Mtx_MeasurementFrameFromProtocol[1][1] = protocol->GetDiffusionProtocol().measurementFrame[1][1];
-	Mtx_MeasurementFrameFromProtocol[1][2] = protocol->GetDiffusionProtocol().measurementFrame[1][2];
-	Mtx_MeasurementFrameFromProtocol[2][0] = protocol->GetDiffusionProtocol().measurementFrame[2][0];
-	Mtx_MeasurementFrameFromProtocol[2][1] = protocol->GetDiffusionProtocol().measurementFrame[2][1];
-	Mtx_MeasurementFrameFromProtocol[2][2] = protocol->GetDiffusionProtocol().measurementFrame[2][2];
+      Mtx_MeasurementFrameFromProtocol[0][0] = protocol->GetDiffusionProtocol().measurementFrame[0][0];
+      Mtx_MeasurementFrameFromProtocol[0][1] = protocol->GetDiffusionProtocol().measurementFrame[0][1];
+      Mtx_MeasurementFrameFromProtocol[0][2] = protocol->GetDiffusionProtocol().measurementFrame[0][2];
+      Mtx_MeasurementFrameFromProtocol[1][0] = protocol->GetDiffusionProtocol().measurementFrame[1][0];
+      Mtx_MeasurementFrameFromProtocol[1][1] = protocol->GetDiffusionProtocol().measurementFrame[1][1];
+      Mtx_MeasurementFrameFromProtocol[1][2] = protocol->GetDiffusionProtocol().measurementFrame[1][2];
+      Mtx_MeasurementFrameFromProtocol[2][0] = protocol->GetDiffusionProtocol().measurementFrame[2][0];
+      Mtx_MeasurementFrameFromProtocol[2][1] = protocol->GetDiffusionProtocol().measurementFrame[2][1];
+      Mtx_MeasurementFrameFromProtocol[2][2] = protocol->GetDiffusionProtocol().measurementFrame[2][2];
 
-	itk::EncapsulateMetaData<std::vector<std::vector<double> > >(dwi->GetMetaDataDictionary(),"NRRD_measurement frame",Mtx_MeasurementFrameFromProtocol);
+      itk::EncapsulateMetaData<std::vector<std::vector<double> > >(dwi->GetMetaDataDictionary(),"NRRD_measurement frame",Mtx_MeasurementFrameFromProtocol);
 
-        }
+      }
 
 
     bool result = true;
@@ -6174,9 +6174,9 @@ bool CIntensityMotionCheck::DiffusionCheck( DwiImageType::Pointer dwi)
                     << "  Colinearity angle (degrees): "
                     << gradientMinAngle << " > "
                     << gradientToleranceForSameness
-            // << " : "<< gradMagnitude << " - "
-            // << gradProtocolMagnitude
-            << std::endl;
+              // << " : "<< gradMagnitude << " - "
+              // << gradProtocolMagnitude
+                    << std::endl;
 
             std::cout << "DWMRI_gradient_" << std::setw(4)
                       << std::setfill('0') << i << " mismatch! DWI: [ "
@@ -6204,9 +6204,9 @@ bool CIntensityMotionCheck::DiffusionCheck( DwiImageType::Pointer dwi)
                       << "  Colinearity angle (degrees): "
                       <<  gradientMinAngle << " > "
                       << gradientToleranceForSameness
-            // << " : "<< gradMagnitude << " - "
-            // << gradProtocolMagnitude
-            << std::endl;
+              // << " : "<< gradMagnitude << " - "
+              // << gradProtocolMagnitude
+                      << std::endl;
             }
 
           if( protocol->GetDiffusionProtocol().bUseDiffusionProtocol )
@@ -6298,12 +6298,12 @@ bool CIntensityMotionCheck::DiffusionCheck( DwiImageType::Pointer dwi)
     if( !returnValue )
       {
       std::cout
-      << "Diffusion information Check FAILED." << std::endl;
+        << "Diffusion information Check FAILED." << std::endl;
       if( bReport )
         {
         outfile
-        << "Diffusion information Check FAILED."
-        << std::endl;
+          << "Diffusion information Check FAILED."
+          << std::endl;
         }
       }
     }
@@ -6445,39 +6445,39 @@ bool CIntensityMotionCheck::MakeDefaultProtocol( Protocol *_protocol )
 
 
   //space direction
-    // space direction of image = direction (from GetDirection() ) * spacing ( in form of identity matrix )
-    vnl_matrix <double> Image_Direction;
-    Image_Direction.set_size(3,3);
-    Image_Direction [0][0] =  m_DwiOriginalImage->GetDirection() (0,0);
-    Image_Direction [0][1] =  m_DwiOriginalImage->GetDirection() (0,1);
-    Image_Direction [0][2] =  m_DwiOriginalImage->GetDirection() (0,2);
-    Image_Direction [1][0] =  m_DwiOriginalImage->GetDirection() (1,0);
-    Image_Direction [1][1] =  m_DwiOriginalImage->GetDirection() (1,1);
-    Image_Direction [1][2] =  m_DwiOriginalImage->GetDirection() (1,2);
-    Image_Direction [2][0] =  m_DwiOriginalImage->GetDirection() (2,0);
-    Image_Direction [2][1] =  m_DwiOriginalImage->GetDirection() (2,1);
-    Image_Direction [2][2] =  m_DwiOriginalImage->GetDirection() (2,2);
+  // space direction of image = direction (from GetDirection() ) * spacing ( in form of identity matrix )
+  vnl_matrix <double> Image_Direction;
+  Image_Direction.set_size(3,3);
+  Image_Direction [0][0] =  m_DwiOriginalImage->GetDirection() (0,0);
+  Image_Direction [0][1] =  m_DwiOriginalImage->GetDirection() (0,1);
+  Image_Direction [0][2] =  m_DwiOriginalImage->GetDirection() (0,2);
+  Image_Direction [1][0] =  m_DwiOriginalImage->GetDirection() (1,0);
+  Image_Direction [1][1] =  m_DwiOriginalImage->GetDirection() (1,1);
+  Image_Direction [1][2] =  m_DwiOriginalImage->GetDirection() (1,2);
+  Image_Direction [2][0] =  m_DwiOriginalImage->GetDirection() (2,0);
+  Image_Direction [2][1] =  m_DwiOriginalImage->GetDirection() (2,1);
+  Image_Direction [2][2] =  m_DwiOriginalImage->GetDirection() (2,2);
 
-    vnl_matrix <double> imgspacing;
-    imgspacing.set_size(3,3);
-    imgspacing(0,0) =  _protocol->GetImageProtocol().spacing[0];
-    imgspacing(1,1) =  _protocol->GetImageProtocol().spacing[1];
-    imgspacing(2,2) =  _protocol->GetImageProtocol().spacing[2];
-    imgspacing(0,1) =  imgspacing(0,2) = imgspacing(1,0) = imgspacing(1,2) = imgspacing(2,0) = imgspacing(2,1) = 0;
+  vnl_matrix <double> imgspacing;
+  imgspacing.set_size(3,3);
+  imgspacing(0,0) =  _protocol->GetImageProtocol().spacing[0];
+  imgspacing(1,1) =  _protocol->GetImageProtocol().spacing[1];
+  imgspacing(2,2) =  _protocol->GetImageProtocol().spacing[2];
+  imgspacing(0,1) =  imgspacing(0,2) = imgspacing(1,0) = imgspacing(1,2) = imgspacing(2,0) = imgspacing(2,1) = 0;
 
-    vnl_matrix <double> Img_spacedirection;
-    Img_spacedirection.set_size(3,3);
-    Img_spacedirection = ( Image_Direction * imgspacing ).transpose();
+  vnl_matrix <double> Img_spacedirection;
+  Img_spacedirection.set_size(3,3);
+  Img_spacedirection = ( Image_Direction * imgspacing ).transpose();
 
-    _protocol->GetImageProtocol().spacedirection[0][0] = Img_spacedirection [0][0];
-    _protocol->GetImageProtocol().spacedirection[0][1] = Img_spacedirection [0][1];
-    _protocol->GetImageProtocol().spacedirection[0][2] = Img_spacedirection [0][2];
-    _protocol->GetImageProtocol().spacedirection[1][0] = Img_spacedirection [1][0];
-    _protocol->GetImageProtocol().spacedirection[1][1] = Img_spacedirection [1][1];
-    _protocol->GetImageProtocol().spacedirection[1][2] = Img_spacedirection [1][2];
-    _protocol->GetImageProtocol().spacedirection[2][0] = Img_spacedirection [2][0];
-    _protocol->GetImageProtocol().spacedirection[2][1] = Img_spacedirection [2][1];
-    _protocol->GetImageProtocol().spacedirection[2][2] = Img_spacedirection [2][2];
+  _protocol->GetImageProtocol().spacedirection[0][0] = Img_spacedirection [0][0];
+  _protocol->GetImageProtocol().spacedirection[0][1] = Img_spacedirection [0][1];
+  _protocol->GetImageProtocol().spacedirection[0][2] = Img_spacedirection [0][2];
+  _protocol->GetImageProtocol().spacedirection[1][0] = Img_spacedirection [1][0];
+  _protocol->GetImageProtocol().spacedirection[1][1] = Img_spacedirection [1][1];
+  _protocol->GetImageProtocol().spacedirection[1][2] = Img_spacedirection [1][2];
+  _protocol->GetImageProtocol().spacedirection[2][0] = Img_spacedirection [2][0];
+  _protocol->GetImageProtocol().spacedirection[2][1] = Img_spacedirection [2][1];
+  _protocol->GetImageProtocol().spacedirection[2][2] = Img_spacedirection [2][2];
 
   // space
   itk::MetaDataDictionary imgMetaDictionary
@@ -6600,9 +6600,9 @@ bool CIntensityMotionCheck::MakeDefaultProtocol( Protocol *_protocol )
   _protocol->GetSliceCheckProtocol(). headSkipSlicePercentage = 0.1;
   _protocol->GetSliceCheckProtocol(). tailSkipSlicePercentage = 0.1;
   _protocol->GetSliceCheckProtocol().
-  correlationDeviationThresholdbaseline = 3.00;
+    correlationDeviationThresholdbaseline = 3.00;
   _protocol->GetSliceCheckProtocol().
-                                      correlationDeviationThresholdgradient = 3.50;
+    correlationDeviationThresholdgradient = 3.50;
   _protocol->GetSliceCheckProtocol(). outputDWIFileNameSuffix = "";
   _protocol->GetSliceCheckProtocol(). reportFileNameSuffix
     = "_QCReport.txt";
@@ -6782,7 +6782,7 @@ bool CIntensityMotionCheck::GetInterlaceProtocolParameters_B(
   std::vector<double> gradientCorrelation;
 
   typedef itk::VectorIndexSelectionCastImageFilter<DwiImageType,
-                                                   GradientImageType> FilterType;
+    GradientImageType> FilterType;
   FilterType::Pointer componentExtractor = FilterType::New();
 
   componentExtractor->SetInput(m_DwiOriginalImage);
@@ -6801,7 +6801,7 @@ bool CIntensityMotionCheck::GetInterlaceProtocolParameters_B(
     = componentExtractor->GetOutput()->GetLargestPossibleRegion().GetSize()[1];
   sizeLocal[2]
     = componentExtractor->GetOutput()->GetLargestPossibleRegion().GetSize()[2]
-      / 2;
+    / 2;
   region.SetSize( sizeLocal );
 
   InterlaceOdd->CopyInformation( componentExtractor->GetOutput() );
@@ -6928,8 +6928,8 @@ bool CIntensityMotionCheck::GetInterlaceProtocolParameters_B(
     baselineCorrelationDev
       += ( baselineCorrelation[i]
            - meanBaselineCorrelation )
-        * ( baselineCorrelation[i]
-            - meanBaselineCorrelation ) / baselineCorrelation.size();                                                                                           //
+      * ( baselineCorrelation[i]
+          - meanBaselineCorrelation ) / baselineCorrelation.size();                                                                                           //
     //
     // meanBaselineCorrelation
     //
@@ -6952,8 +6952,8 @@ bool CIntensityMotionCheck::GetInterlaceProtocolParameters_B(
     gradientCorrelationDev
       += ( gradientCorrelation[i]
            - meanGradientCorrelation )
-        * ( gradientCorrelation[i]
-            - meanGradientCorrelation ) / gradientCorrelation.size();                                                                                           //
+      * ( gradientCorrelation[i]
+          - meanGradientCorrelation ) / gradientCorrelation.size();                                                                                           //
     //
     // meanBaselineCorrelation
     //

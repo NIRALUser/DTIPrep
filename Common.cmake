@@ -31,7 +31,7 @@ option(USE_DTIPrep  "Build DTIPrep"                       ON)
 
 set(ITK_VERSION_MAJOR 4 CACHE STRING "Choose the expected ITK major version to build DTIPrep (3 or 4).")
 # Set the possible values of ITK major version for cmake-gui
-set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "3" "4")
+set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release" "MinSizeRel" "RelWithDebInfo")
 if(NOT ${ITK_VERSION_MAJOR} STREQUAL "3" AND NOT ${ITK_VERSION_MAJOR} STREQUAL "4")
   message(FATAL_ERROR "ITK_VERSION_MAJOR should be either 3 or 4")
 endif()
