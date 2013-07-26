@@ -104,10 +104,10 @@ set( DTIPrep_Libs
   ${ITK_LIBRARIES}
   ${VTK_LIBRARIES}
   BRAINSCommonLib
-  ${ANTS_LIBS}
+  ${ANTs_LIBS}
 )
 
-message(STATUS "XXXXXXX ${DTIPrep_Libs}")
+#message(STATUS "XXXXXXX ${DTIPrep_Libs}")
 
 
 if(EXTENSION_SUPERBUILD_BINARY_DIR)
