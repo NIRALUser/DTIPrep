@@ -116,6 +116,7 @@ option(USE_SYSTEM_ITK "Build using an externally defined version of ITK" OFF)
 option(USE_SYSTEM_SlicerExecutionModel "Build using an externally defined version of SlicerExecutionModel"  OFF)
 option(USE_SYSTEM_VTK "Build using an externally defined version of VTK" OFF)
 option(USE_SYSTEM_DCMTK "Build using an externally defined version of DCMTK" OFF)
+option(USE_SYSTEM_zlib "Build using external zlib" ON)
 option(${PROJECT_NAME}_BUILD_DICOM_SUPPORT "Build Dicom Support" ON)
 
 #------------------------------------------------------------------------------
@@ -193,6 +194,11 @@ list(APPEND ${CMAKE_PROJECT_NAME}_SUPERBUILD_EP_VARS
   SITE:STRING
   BUILDNAME:STRING
   ${PROJECT_NAME}_BUILD_DICOM_SUPPORT:BOOL
+  USE_ANTS:BOOL
+  ANTs_SOURCE_DIR:PATH
+  ANTs_LIBRARY_DIR:PATH
+  BOOST_INCLUDE_DIR:PATH
+  BOOST_ROOT:PATH
   )
 
 if(${LOCAL_PROJECT_NAME}_USE_QT)

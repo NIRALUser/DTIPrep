@@ -24,6 +24,8 @@ set(EXTENSION_BUILD_SUBDIRECTORY DTIPrepTools-build )
 option(${LOCAL_PROJECT_NAME}_USE_QT "Find and use Qt with VTK to build GUI Tools" ON)
 mark_as_advanced(${LOCAL_PROJECT_NAME}_USE_QT)
 
+set(PRIMARY_PROJECT_NAME ${LOCAL_PROJECT_NAME})
+
 option(${LOCAL_PROJECT_NAME}_INSTALL_DEVELOPMENT "Install development support include and libraries for external packages." OFF)
 mark_as_advanced(${LOCAL_PROJECT_NAME}_INSTALL_DEVELOPMENT)
 

@@ -20,6 +20,21 @@ include(${CMAKE_CURRENT_LIST_DIR}/Common.cmake)
 set(MODULE_NAME ${EXTENSION_NAME}) # Do not use 'project()'
 set(MODULE_TITLE ${MODULE_NAME})
 
+if(USE_ANTS)
+  # find ANTS includes
+  message("ANTs_SOURCE_DIR=${ANTs_SOURCE_DIR}")
+  include_directories(${BOOST_INCLUDE_DIR})
+  include_directories(${ANTs_SOURCE_DIR}/Temporary)
+  include_directories(${ANTs_SOURCE_DIR}/Tensor)
+  include_directories(${ANTs_SOURCE_DIR}/Utilities)
+  include_directories(${ANTs_SOURCE_DIR}/Examples)
+  include_directories(${ANTs_SOURCE_DIR}/ImageRegistration)
+  link_directories(${BRAINSTools_LIBRARY_PATH} ${BRAINSTools_CLI_ARCHIVE_OUTPUT_DIRECTORY} ${ANTs_LIBRARY_DIR})
+  set(ANTS_LIBS antsUtilities)
+endif()
+
+message("BRAINSCommonLib_DIR=${BRAINSCommonLib_DIR}")
+
 find_package(BRAINSCommonLib NO_MODULE REQUIRED)
 include(${BRAINSCommonLib_USE_FILE})
 include_directories(${BRAINSCommonLib_INCLUDE_DIRS})

@@ -17,8 +17,8 @@ ProjectDependancyPush(CACHED_proj ${proj})
 # Make sure that the ExtProjName/IntProjName variables are unique globally
 # even if other External_${ExtProjName}.cmake files are sourced by
 # SlicerMacroCheckExternalProjectDependency
-set(extProjName ReferenceAtlas) #The find_package known name
-set(proj        ReferenceAtlas) #This local name
+set(extProjName OpenCV) #The find_package known name
+set(proj        OpenCV) #This local name
 set(${extProjName}_REQUIRED_VERSION "")  #If a required version is necessary, then set this, else leave blank
 
 #if(${USE_SYSTEM_${extProjName}})
@@ -28,10 +28,6 @@ set(${extProjName}_REQUIRED_VERSION "")  #If a required version is necessary, th
 # Sanity checks
 if(DEFINED ${extProjName}_DIR AND NOT EXISTS ${${extProjName}_DIR})
   message(FATAL_ERROR "${extProjName}_DIR variable is defined but corresponds to non-existing directory (${${extProjName}_DIR})")
-endif()
-
-if(DEFINED ATLAS_NAME AND NOT EXISTS ${${extProjName}_DIR}/${ATLAS_NAME})
-  message(FATAL_ERROR "ATLAS_NAME variable is defined but <${extProjName}_DIR>/<ATLAS_NAME> corresponds to non-existing directory (${${extProjName}_DIR}/${ATLAS_NAME})")
 endif()
 
 # Set dependency list
@@ -53,38 +49,57 @@ if(NOT ( DEFINED "USE_SYSTEM_${extProjName}" AND "${USE_SYSTEM_${extProjName}}" 
   endif()
 
   ### --- Project specific additions here
-  set(ATLAS_VERSION 20130711)
-  set(ATLAS_NAME Atlas/Atlas_${ATLAS_VERSION})
-  # REMOVE set(ATLAS_MIDAS_CODE http://slicer.kitware.com/midas3/download?items=12780)
-  # REMOVE set(ATLAS_MD5 ed9e635ef8681f2b0c666aa72e77021c)
-  set(ATLAS_SVN_REPOSITORY http://www.nitrc.org/svn/brainstestdata/BRAINSAtlas)
-  set(ATLAS_SVN_REVISION 62)
-
-
   set(${proj}_CMAKE_OPTIONS
       -DBUILD_EXAMPLES:BOOL=OFF
       -DBUILD_TESTING:BOOL=OFF
-      -DReferenceAtlas_XML_DIR:PATH=<BINARY_DIR>
-      -DATLAS_VERSION:STRING=${ATLAS_VERSION}
-      )
+      -DBUILD_NEW_PYTHON_SUPPORT:BOOL=OFF
+      -DBUILD_TESTS:BOOL=OFF
+      -DWITH_FFMPEG:BOOL=OFF
+      -DWITH_JASPER:BOOL=OFF
+      -DWITH_OPENEXR:BOOL=OFF
+      -DWITH_PVAPI:BOOL=OFF
+      -DWITH_JPEG:BOOL=OFF
+      -DWITH_TIFF:BOOL=OFF
+      -DWITH_PNG:BOOL=OFF
+## The following might cause build issues, here for testing
+      -DENABLE_SSE:BOOL=ON
+      -DENABLE_SSE2:BOOL=ON
+      -DENABLE_SSE3:BOOL=ON
+      -DENABLE_SSE41:BOOL=ON
+      -DENABLE_SSE42:BOOL=ON
+      -DENABLE_SSSE3:BOOL=ON
+## The follwing tries to get rid of OPENCV build issue
+      -DBUILD_opencv_calib3d:BOOL=OFF
+      -DBUILD_opencv_contrib:BOOL=OFF
+      -DBUILD_opencv_core:BOOL=ON
+      -DBUILD_opencv_features2d:BOOL=OFF
+      -DBUILD_opencv_flann:BOOL=ON
+      -DBUILD_opencv_highgui:BOOL=OFF
+      -DBUILD_opencv_imgproc:BOOL=OFF
+      -DBUILD_opencv_legacy:BOOL=OFF
+      -DBUILD_opencv_ml:BOOL=ON
+      -DBUILD_opencv_nonfree:BOOL=OFF
+      -DBUILD_opencv_objdetect:BOOL=OFF
+      -DBUILD_opencv_photo:BOOL=OFF
+      -DBUILD_opencv_python:BOOL=OFF
+      -DBUILD_opencv_stitching:BOOL=OFF
+      -DBUILD_opencv_ts:BOOL=OFF
+      -DBUILD_opencv_video:BOOL=OFF
+      -DBUILD_opencv_videostab:BOOL=OFF
+      -DBUILD_opencv_world:BOOL=OFF
+
+      -DBUILD_SHARED_LIBS:BOOL=OFF
+      -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_BINARY_DIR}/${proj}-install
+    )
+
   ### --- End Project specific additions
-  ## Midas version of Atlas:  Atlas_${ATLAS_VERSION}.tar.gz
-                                                                    #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-                                                                    #  This is ignored by midas, but allows the filename for download
-                                                                    #  to be generated.
-                                                                    #  It is a hack that seems to work.
-                                                                    #  If the atlas needs to be changed, then the items=#### will
-                                                                    #  need to be determined from the slicer.kitware.com
-                                                                    #  web page and filled in appropriately.
+  set(${proj}_REPOSITORY "${git_protocol}://github.com/BRAINSia/opencv.git") # USE THIS FOR UPDATED VERSION
+  set(${proj}_GIT_TAG "20130601_Upstream") # USE THIS FOR UPDATED VERSION
   ExternalProject_Add(${proj}
-    SVN_REPOSITORY ${ATLAS_SVN_REPOSITORY}
-    SVN_REVISION -r ${ATLAS_SVN_REVISION}
-    SVN_USERNAME slicerbot
-    SVN_PASSWORD slicer
-    SVN_TRUST_CERT
+    GIT_REPOSITORY ${${proj}_REPOSITORY}
+    GIT_TAG ${${proj}_GIT_TAG}
     SOURCE_DIR ${CMAKE_CURRENT_LIST_DIR}/ExternalSources/${proj}
     BINARY_DIR ${proj}-build
-    BUILD_COMMAND ""
     LOG_CONFIGURE 0  # Wrap configure in script to ignore log output from dashboards
     LOG_BUILD     0  # Wrap build in script to to ignore log output from dashboards
     LOG_TEST      0  # Wrap test in script to to ignore log output from dashboards
@@ -92,33 +107,29 @@ if(NOT ( DEFINED "USE_SYSTEM_${extProjName}" AND "${USE_SYSTEM_${extProjName}}" 
     ${cmakeversion_external_update} "${cmakeversion_external_update_value}"
     CMAKE_GENERATOR ${gen}
     CMAKE_ARGS
-      -Wno-dev
-      --no-warn-unused-cli
       ${CMAKE_OSX_EXTERNAL_PROJECT_ARGS}
       ${COMMON_EXTERNAL_PROJECT_ARGS}
       ${${proj}_CMAKE_OPTIONS}
-    INSTALL_COMMAND ""
+## We really do want to install in order to limit # of include paths INSTALL_COMMAND ""
     DEPENDS
       ${${proj}_DEPENDENCIES}
   )
-  set(${extProjName}_DIR ${CMAKE_BINARY_DIR}/${proj}-build)
+  set(${extProjName}_DIR ${CMAKE_BINARY_DIR}/${proj}-install/share/OpenCV/)
 else()
   if(${USE_SYSTEM_${extProjName}})
-    if(NOT IS_DIRECTORY ${${extProjName}_DIR})
-      message(FATAL_ERROR "${extProjName}_DIR is set but doesn't exist: ${${extProjName}_DIR}")
+    if(NOT ${${extProjName}_DIR})
+      message(FATAL_ERROR "${extProjName}_DIR is required but not set.")
     endif()
-    if(NOT EXISTS ${${extProjName}_DIR}/Atlas/${ATLAS_NAME})
-      message(FATAL_ERROR "${${extProjName}_DIR}/${ATLAS_NAME} doesn't exist.
-Atlas is corrupt or missing")
+    if(NOT IS_DIRECTORY "${${extProjName}_DIR}")
+      message(FATAL_ERROR "${extProjName}_DIR is set but doesn't exist: ${${extProjName}_DIR}")
     endif()
   endif()
   # The project is provided using ${extProjName}_DIR, nevertheless since other
-  # project may depend on ${extProjName}v4, let's add an 'empty' one
+  # project may depend on ${extProjName}, let's add an 'empty' one
   SlicerMacroEmptyExternalProject(${proj} "${${proj}_DEPENDENCIES}")
 endif()
 
 list(APPEND ${CMAKE_PROJECT_NAME}_SUPERBUILD_EP_VARS ${extProjName}_DIR:PATH)
-list(APPEND ${CMAKE_PROJECT_NAME}_SUPERBUILD_EP_VARS ATLAS_NAME:STRING)
 
 ProjectDependancyPop(CACHED_extProjName extProjName)
 ProjectDependancyPop(CACHED_proj proj)
