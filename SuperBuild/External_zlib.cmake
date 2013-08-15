@@ -26,8 +26,15 @@ set(${extProjName}_REQUIRED_VERSION "")  #If a required version is necessary, th
 #endif()
 
 # Sanity checks
-if(DEFINED ${extProjName}_DIR AND NOT EXISTS ${${extProjName}_DIR})
-  message(FATAL_ERROR "${extProjName}_DIR variable is defined but corresponds to non-existing directory (${${extProjName}_DIR})")
+if(DEFINED ${extProjName}_DIR)
+  # sometimes on subsequent configure runs, zlib_DIR will be zlib_DIR-NOTFOUND, but
+  # the zlib vars will be set properly
+  if( NOT (IS_DIRECTORY "${ZLIB_INCLUDE_DIR}" AND EXISTS "${ZLIB_LIBRARY}" ) )
+    if(NOT EXISTS ${${extProjName}_DIR})
+      message(FATAL_ERROR
+        "${extProjName}_DIR variable is defined but corresponds to non-existing directory (${${extProjName}_DIR})")
+    endif()
+  endif()
 endif()
 
 # Set dependency list
