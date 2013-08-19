@@ -4387,7 +4387,7 @@ unsigned char CIntensityMotionCheck::RunPipelineByProtocol_FurtherQC()
     m_Original_ForcedConformance_Mapping.push_back( m_map );
     }
 
-  this->qcResult->Set_result(0);  // unsigned char result = 0;
+  this->qcResult->ClearResult();  // unsigned char result = 0;
 
   // ZYXEDCBA:
   // X  QC; Too many bad gradient directions found!
@@ -4427,7 +4427,7 @@ unsigned char CIntensityMotionCheck::RunPipelineByProtocol_FurtherQC()
 
   if( !GradientWiseCheck( m_DwiForcedConformanceImage ) )
     {
-    this->qcResult->Set_result( this->qcResult->Get_result() | 16 );
+    this->qcResult->SetGradientWiseCheckError();
     printf("result of GradientCheck = %d", this->qcResult->Get_result() );
     if( protocol->GetGradientCheckProtocol().bQuitOnCheckFailure )
       {
@@ -4455,7 +4455,7 @@ unsigned char CIntensityMotionCheck::RunPipelineByProtocol_FurtherQC()
 
 }
 
-unsigned char CIntensityMotionCheck::RunPipelineByProtocol()
+unsigned int CIntensityMotionCheck::RunPipelineByProtocol()
 {
 
   if( !protocol )
@@ -4584,7 +4584,7 @@ unsigned char CIntensityMotionCheck::RunPipelineByProtocol()
     m_Original_ForcedConformance_Mapping.push_back( m_map );
     }
 
-  this->qcResult->Set_result(0);  // unsigned char result = 0;
+  this->qcResult->ClearResult();
 
   // ZYXEDCBA:
   // X  QC; Too many bad gradient directions found!
@@ -4613,7 +4613,7 @@ unsigned char CIntensityMotionCheck::RunPipelineByProtocol()
   unsigned char imageCheckResult = ImageCheck( m_DwiForcedConformanceImage );
   if( imageCheckResult )
     {
-    this->qcResult->Set_result( this->qcResult->Get_result() | 1 );
+    this->qcResult->SetImageCheckError();
     printf("result of ImageCheck = %d", this->qcResult->Get_result() );
     if( protocol->GetImageProtocol().bQuitOnCheckSizeFailure && (imageCheckResult & 0x00000001 ) )
       {
@@ -4637,7 +4637,7 @@ unsigned char CIntensityMotionCheck::RunPipelineByProtocol()
   std::cout << "DiffusionCheck ... " << std::endl;
   if( !DiffusionCheck( m_DwiForcedConformanceImage ) )
     {
-    this->qcResult->Set_result( this->qcResult->Get_result() | 2 );
+    this->qcResult->SetDiffusionCheckError();
     // printf("result of DiffusionCheck = %d",this-> qcResult->Get_result());
     if( protocol->GetDiffusionProtocol().bQuitOnCheckFailure )
       {
@@ -4663,7 +4663,7 @@ unsigned char CIntensityMotionCheck::RunPipelineByProtocol()
 
   if( !SliceWiseCheck( m_DwiForcedConformanceImage ) )
     {
-    this->qcResult->Set_result( this->qcResult->Get_result() | 4 );
+    this->qcResult->SetSliceWiseCheckError();
     if( protocol->GetSliceCheckProtocol().bQuitOnCheckFailure )
       {
       std::cout << "SliceWise Check failed, pipeline terminated. " << std::endl;
@@ -4680,7 +4680,7 @@ unsigned char CIntensityMotionCheck::RunPipelineByProtocol()
 
   if( !InterlaceWiseCheck( m_DwiForcedConformanceImage ) )
     {
-    this->qcResult->Set_result( this->qcResult->Get_result() | 8 );
+    this->qcResult->SetInterlaceWiseCheckError();
     // printf("result of InterlaceWiseCheck = %d",this-> qcResult->Get_result());
     if( protocol->GetInterlaceCheckProtocol().bQuitOnCheckFailure )
       {
@@ -4725,7 +4725,7 @@ unsigned char CIntensityMotionCheck::RunPipelineByProtocol()
 
   if( !GradientWiseCheck( m_DwiForcedConformanceImage ) )
     {
-    this->qcResult->Set_result( this->qcResult->Get_result() | 16 );
+    this->qcResult->SetGradientWiseCheckError();
     // printf("result of GradientCheck = %d ",this-> qcResult->Get_result());
     if( protocol->GetGradientCheckProtocol().bQuitOnCheckFailure )
       {
@@ -4811,7 +4811,7 @@ unsigned char CIntensityMotionCheck::RunPipelineByProtocol()
   std::cout << "Brain Mask " << std::endl;;
   if( !BrainMask() )
     {
-    this->qcResult->Set_result( this->qcResult->Get_result() | 32 );
+    this->qcResult->SetBrainMaskCheckError();
     this->qcResult->GetOverallQCResult().BMCK = false;
     // printf("result of GradientCheck = %d ",this-> qcResult->Get_result());
     if( protocol->GetBrainMaskProtocol().bQuitOnCheckFailure )
@@ -4841,7 +4841,7 @@ unsigned char CIntensityMotionCheck::RunPipelineByProtocol()
     {
     if( !DominantDirectionalCheck() )
       {
-      this->qcResult->Set_result( this->qcResult->Get_result() | 64 );
+      this->qcResult->SetDominantDirectionalCheckError();
       this->qcResult->GetOverallQCResult().DDDCK = false;
       // printf("result of GradientCheck = %d ",this-> qcResult->Get_result());
       if( protocol->GetDominantDirectional_Detector().bQuitOnCheckFailure )
@@ -4871,15 +4871,8 @@ unsigned char CIntensityMotionCheck::RunPipelineByProtocol()
   // 0: valid
 
   collectLeftDiffusionStatistics( m_DwiForcedConformanceImage, ReportFileName );
-  const unsigned char ValidateResult = validateLeftDiffusionStatistics();
 
-  // this->qcResult->Set_result( ( ValidateResult << 5 ) + this->qcResult->Get_result() );
-
-  this->qcResult->Set_result( ( ValidateResult << 7 ) + this->qcResult->Get_result() ); // because of adding two
-                                                                                        // processes in the QC pipeline
-                                                                                        // ( brainmask and dominant
-                                                                                        // directional artifact
-
+  this->validateLeftDiffusionStatistics();
   std::cout << "qcResult->GetSliceWiseCheckResult().size() " << qcResult->GetSliceWiseCheckResult().size() << std::endl;
   std::cout << "qcResult->GetInterlaceWiseCheckResult().size() " << qcResult->GetInterlaceWiseCheckResult().size()
             << std::endl;
@@ -4894,7 +4887,7 @@ bool CIntensityMotionCheck::validateDiffusionStatistics()
   return true;
 }
 
-unsigned char CIntensityMotionCheck::validateLeftDiffusionStatistics()
+unsigned CIntensityMotionCheck::validateLeftDiffusionStatistics()
 {
 // 00000CBA:
 // A: Gradient direction #is less than 6!
@@ -4984,7 +4977,7 @@ unsigned char CIntensityMotionCheck::validateLeftDiffusionStatistics()
       {
       outfile << "FAIL: Gradient direction #is less than 6!" << std::endl;
       }
-    ret = ret | 1;
+    this->qcResult->SetGradientLeftCheckError();
     }
   else
     {
@@ -5002,7 +4995,7 @@ unsigned char CIntensityMotionCheck::validateLeftDiffusionStatistics()
       {
       outfile << "FAIL: Single b-value DWI without a b0/baseline!" << std::endl;
       }
-    ret = ret | 2;
+    this->qcResult->SetBaselineLeftCheckError();
     }
   else
     {
@@ -5021,7 +5014,7 @@ unsigned char CIntensityMotionCheck::validateLeftDiffusionStatistics()
       {
       outfile << "FAIL: Too many bad gradient directions found! " << std::endl;
       }
-    ret = ret | 4;
+    this->qcResult->SetBadGradientCheckError();
     }
   else
     {

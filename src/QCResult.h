@@ -183,15 +183,101 @@ public:
 
   }
 
-  void Set_result( unsigned char r )
+  void Set_result( unsigned r )
   {
     result = r;
   }
 
-  unsigned char & Get_result()
+  unsigned & Get_result()
   {
     return result;
   }
+
+  void ClearResult()
+    {
+      this->result = 0;
+    }
+  void SetImageCheckError()
+    {
+      this->result |= 1;
+    }
+  bool GetImageCheckError()
+    {
+      return (this->result & 1) != 0;
+    }
+  void SetDiffusionCheckError()
+    {
+      this->result |= 2;
+    }
+  bool GetDiffusionCheckError()
+    {
+      return (this->result & 2) != 0;
+    }
+  void SetSliceWiseCheckError()
+    {
+      this->result |= 4;
+    }
+  bool GetSliceWiseCheckError()
+    {
+      return (this->result & 4) != 0;
+    }
+  void SetInterlaceWiseCheckError()
+    {
+      this->result |= 8;
+    }
+  bool GetInterlaceWiseCheckError()
+    {
+      return (this->result & 8) != 0;
+    }
+  void SetGradientWiseCheckError()
+    {
+      this->result |= 16;
+    }
+  bool GetGradientWiseCheckError()
+    {
+      return (this->result & 16) != 0;
+    }
+  void SetBrainMaskCheckError()
+    {
+      this->result |= 32;
+    }
+  bool GetBrainMaskCheckError()
+    {
+      return (this->result & 32) != 0;
+    }
+  void SetDominantDirectionalCheckError()
+    {
+      this->result |= 64;
+    }
+  bool GetDominantDirectionalCheckError()
+    {
+      return (this->result & 64) != 0;
+    }
+  void SetGradientLeftCheckError()
+    {
+      this->result |= 128;
+    }
+  bool GetGradientLeftCheckError()
+    {
+      return (this->result & 128) != 0;
+    }
+  void SetBaselineLeftCheckError()
+    {
+      this->result |= 256;
+    }
+  bool GetBaselineLeftCheckError()
+    {
+      return (this->result & 256) != 0;
+    }
+
+  void SetBadGradientCheckError()
+    {
+      this->result |= 512;
+    }
+  bool GetBadGradientCheckError()
+    {
+      return (this->result & 512) != 0;
+    }
 
 private:
   ImageInformationCheckResult imageInformationCheckResult;
@@ -216,6 +302,6 @@ private:
                                                                                 // the conformance image along their
                                                                                 // correspondings in the original image.
 
-  unsigned char result;
+  unsigned result;
 
 };

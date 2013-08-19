@@ -5089,33 +5089,7 @@ void IntensityMotionCheckPanel::on_pushButton_SaveVisualChecking_clicked()
           myFurtherQCThread.SetXmlFileName(lineEdit_Protocol->text().toStdString() );
           myFurtherQCThread.SetProtocol( &protocol);
           myFurtherQCThread.SetQCResult(&qcResult);
-          // myFurtherQCThread.Set_result();
           myFurtherQCThread.start();
-          // result = myFurtherQCThread.Get_result();
-
-          // myIntensityThread.m_IntensityMotionCheck->Setm_DwiForcedConformanceImage( GetDwiOutputImage() );
-          /*myIntensityThread.m_IntensityMotionCheck->SetDwiFileName(DwiFileName);
-          myIntensityThread.m_IntensityMotionCheck->SetXmlFileName(lineEdit_Protocol->text().toStdString());
-
-          myIntensityThread.m_IntensityMotionCheck->SetProtocol( & protocol);
-          myIntensityThread.m_IntensityMotionCheck->SetQCResult( & qcResult);
-
-          myIntensityThread.m_IntensityMotionCheck->Setm_DwiForcedConformanceImage(m_DwiOriginalImage);
-
-          myIntensityThread.m_IntensityMotionCheck->ImageCheck(myIntensityThread.m_IntensityMotionCheck->Getm_DwiForcedConformanceImage());
-          myIntensityThread.m_IntensityMotionCheck->DiffusionCheck(myIntensityThread.m_IntensityMotionCheck->Getm_DwiForcedConformanceImage());
-
-          GenerateCheckOutputImage(myIntensityThread.m_IntensityMotionCheck->Getm_DwiForcedConformanceImage());
-
-          // exclude the "excluded gradients"
-          myIntensityThread.m_IntensityMotionCheck->Setm_DwiForcedConformanceImage(GetDwiOutputImage());
-          myIntensityThread.m_IntensityMotionCheck->BaselineAverage(myIntensityThread.m_IntensityMotionCheck->Getm_DwiForcedConformanceImage());
-          myIntensityThread.m_IntensityMotionCheck->EddyMotionCorrectIowa(myIntensityThread.m_IntensityMotionCheck->Getm_DwiForcedConformanceImage());
-          myIntensityThread.m_IntensityMotionCheck->GradientWiseCheck(myIntensityThread.m_IntensityMotionCheck->Getm_DwiForcedConformanceImage());
-          // SaveDwiForcedConformanceImage ???????
-          myIntensityThread.m_IntensityMotionCheck->DTIComputing();
-          ResultUpdate();
-          */
           }
         }
       }

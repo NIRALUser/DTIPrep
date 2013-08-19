@@ -139,7 +139,7 @@ public:
 
   bool validateDiffusionStatistics();
 
-  unsigned char  validateLeftDiffusionStatistics();  // 00000CBA:
+  unsigned validateLeftDiffusionStatistics();  // 00000CBA:
 
   inline void SetProtocol(Protocol *p)
   {
@@ -225,7 +225,7 @@ public:
   // C: IntraCheck()
   // D:InterlaceCheck()
   // E: InterCheck()
-  unsigned char  RunPipelineByProtocol();
+  unsigned int  RunPipelineByProtocol();
 
   unsigned char  RunPipelineByProtocol_FurtherQC(); // In Further QC step: Runing Baseline Avg, Eddy motion correction,
 

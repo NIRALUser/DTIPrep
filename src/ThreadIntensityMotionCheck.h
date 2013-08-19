@@ -38,16 +38,7 @@ public:
     qcResult = r;
   }
 
-  // void Set_result(unsigned char r)
-  // {
-  //  result = r;
-  // }
-
-  // unsigned char & Get_result()
-  // {
-  //  return result;
-  // }
-signals:
+  signals:
   void allDone(const QString &);
 
   void ResultUpdate();

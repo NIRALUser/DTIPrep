@@ -202,12 +202,9 @@ int main( int argc, char * *argv )
     	  exit(1);
           }
 
-        const unsigned char result = IntensityMotionCheck.RunPipelineByProtocol();
-        unsigned char       out = result;
-        // std::cout << "qcResult.GetIntensityMotionCheckResult()[0].processing" <<
-        // qcResult.GetIntensityMotionCheckResult()[0].processing << std::endl;
-        // std::cout << "qcResult.GetIntensityMotionCheckResult()[0].processing" <<
-        // qcResult.GetIntensityMotionCheckResult()[46].processing << std::endl;
+        const unsigned result = IntensityMotionCheck.RunPipelineByProtocol();
+
+        QCResult *outResult = IntensityMotionCheck.GetQCResult();
 
         // .........................................................................................
         // ...............Building XML QCResult........................................
@@ -233,10 +230,9 @@ int main( int argc, char * *argv )
         xmlWriter.writeAttribute( "parameter", "ImageInformation" );
         if( protocol.GetImageProtocol().bCheck )
           {
-          if( ( protocol.GetImageProtocol().bQuitOnCheckSizeFailure &&
-                ( (qcResult.Get_result()  & ImageCheckBit) !=  0) ) ||
-              (    protocol.GetImageProtocol().bQuitOnCheckSpacingFailure &&
-                   ( (qcResult.Get_result()  & ImageCheckBit) !=  0) ) )
+          if( qcResult.GetImageCheckError() &&
+              ( protocol.GetImageProtocol().bQuitOnCheckSizeFailure ||
+                protocol.GetImageProtocol().bQuitOnCheckSpacingFailure ) )
             {
             xmlWriter.writeTextElement("value", "Fail Pipeline Terminated");
             xmlWriter.writeStartElement("entry");
@@ -327,8 +323,7 @@ int main( int argc, char * *argv )
           {
 
           // DiffusionInformationCheckResult
-          if( protocol.GetDiffusionProtocol().bQuitOnCheckFailure &&
-              ( (qcResult.Get_result()  & DiffusionCheckBit) !=  0) )
+          if( protocol.GetDiffusionProtocol().bQuitOnCheckFailure && qcResult.GetDiffusionCheckError() )
             {
             xmlWriter.writeTextElement("value", "Fail Pipeline Terminated");
             std::cout << "SUCCESSFUL execution of " << argv[0] << std::endl;
@@ -412,7 +407,7 @@ int main( int argc, char * *argv )
 
         if( protocol.GetSliceCheckProtocol().bCheck )    // Check protocol whether run SliceWiseChecking
           {
-          if( (qcResult.Get_result()  & SliceWiseCheckBit) == SliceWiseCheckBit )
+          if( qcResult.GetSliceWiseCheckError() )
             {
             if( protocol.GetSliceCheckProtocol().bQuitOnCheckFailure )
               {
@@ -451,11 +446,11 @@ int main( int argc, char * *argv )
         xmlWriter.writeStartElement("entry");
         xmlWriter.writeAttribute( "parameter", "InterlaceWiseCheck"  );
 
-        if( !( ( (qcResult.Get_result()  & SliceWiseCheckBit) == SliceWiseCheckBit ) &&
-               protocol.GetSliceCheckProtocol().bQuitOnCheckFailure) && protocol.GetInterlaceCheckProtocol().bCheck )
+        if( !( qcResult.GetSliceWiseCheckError() && protocol.GetSliceCheckProtocol().bQuitOnCheckFailure ) &&
+            protocol.GetInterlaceCheckProtocol().bCheck )
         // Check protocol whether run InterfaceWiseChecking
           {
-          if(  (qcResult.Get_result() & InterlaceWiseCheckBit) == InterlaceWiseCheckBit )
+          if(  qcResult.GetInterlaceWiseCheckError() )
             {
             if( protocol.GetInterlaceCheckProtocol().bQuitOnCheckFailure )
               {
@@ -508,7 +503,7 @@ int main( int argc, char * *argv )
                                                                                                                                                                                    //
                                                                                                                                                                                    // GradientWiseChecking
           {
-          if( (qcResult.Get_result() & GradientWiseCheckBit) == GradientWiseCheckBit )
+          if( qcResult.GetGradientWiseCheckError() )
             {
             if( protocol.GetGradientCheckProtocol().bQuitOnCheckFailure )
               {
@@ -657,8 +652,7 @@ int main( int argc, char * *argv )
           xmlWriter.writeEndElement();
           xmlWriter.writeStartElement("entry");
           xmlWriter.writeAttribute( "parameter",  "InterlaceWiseCheck" );
-          if( !( ( (qcResult.Get_result()  & SliceWiseCheckBit) == SliceWiseCheckBit ) &&
-                 protocol.GetSliceCheckProtocol().bQuitOnCheckFailure) )
+          if( !qcResult.GetSliceWiseCheckError() || !protocol.GetSliceCheckProtocol().bQuitOnCheckFailure )
             {
             if( protocol.GetInterlaceCheckProtocol().bCheck )
               {
@@ -913,9 +907,9 @@ int main( int argc, char * *argv )
             xmlWriter.writeEndElement();
             xmlWriter.writeStartElement("entry");
             xmlWriter.writeAttribute( "parameter",  "GradientWiseCheck" );
-            if( ( (!( (qcResult.Get_result()  & InterlaceWiseCheckBit) == InterlaceWiseCheckBit) ) ||
-                  (!(protocol.GetSliceCheckProtocol().bQuitOnCheckFailure ||
-                     protocol.GetInterlaceCheckProtocol().bQuitOnCheckFailure) ) ) )
+            if( !qcResult.GetInterlaceWiseCheckError() ||
+                !( protocol.GetSliceCheckProtocol().bQuitOnCheckFailure ||
+                   protocol.GetInterlaceCheckProtocol().bQuitOnCheckFailure ) )
               {
 
               if( protocol.GetGradientCheckProtocol().bCheck )
@@ -1141,8 +1135,7 @@ int main( int argc, char * *argv )
 
         //xmlWriter.writeTextElement("value", "Not Set");
 
-        if( ( protocol.GetBrainMaskProtocol().bQuitOnCheckFailure &&
-              ( (qcResult.Get_result()  & BrainMaskBit) !=  0) ) )
+        if( protocol.GetBrainMaskProtocol().bQuitOnCheckFailure && qcResult.GetBrainMaskCheckError() )
           {
           xmlWriter.writeTextElement("value", "Fail Pipeline Terminated");
           }
@@ -1170,8 +1163,8 @@ int main( int argc, char * *argv )
 
         xmlWriter.writeStartElement("entry");
         xmlWriter.writeAttribute( "parameter",  "Dominant_Direction_Detector" );
-        if( ( protocol.GetDominantDirectional_Detector().bQuitOnCheckFailure &&
-              ( (qcResult.Get_result()  & DominantDirectionDetectBit) !=  0) ) )
+        if(  protocol.GetDominantDirectional_Detector().bQuitOnCheckFailure &&
+             qcResult.GetDominantDirectionalCheckError() )
           {
           xmlWriter.writeTextElement("value", "Fail Pipeline Terminated");
           }
@@ -1306,12 +1299,7 @@ int main( int argc, char * *argv )
                     << std::endl;
           outfile << "\t" << IntensityMotionCheck.getRepetitionNumber() << "/-";
 
-          out = result;
-          // out = out << 7;
-          // out = out >> 7;
-          out = out << 9;
-          out = out >> 9;
-          if( out )
+          if( outResult->GetImageCheckError())
             {
             std::cout << "Image information check: FAILURE" << std::endl;
             outfile << "Image information check: FAILURE" << std::endl;
@@ -1322,12 +1310,7 @@ int main( int argc, char * *argv )
             outfile << "Image information check: PASS" << std::endl;
             }
 
-          out = result;
-          // out = out << 6;
-          // out = out >> 7;
-          out = out << 8;
-          out = out >> 9;
-          if( out )
+          if( outResult->GetDiffusionCheckError() )
             {
             std::cout << "Diffusion information check: FAILURE" << std::endl;
             outfile << "Diffusion information check: FAILURE" << std::endl;
@@ -1338,12 +1321,7 @@ int main( int argc, char * *argv )
             outfile << "Diffusion information check: PASS" << std::endl;
             }
 
-          out = result;
-          // out = out << 5;
-          // out = out >> 7;
-          out = out << 7;
-          out = out >> 9;
-          if( out  )
+          if( outResult->GetSliceWiseCheckError()  )
             {
             std::cout << "Slice-wise check: FAILURE" << std::endl;
             outfile << "Slice-wise check: FAILURE" << std::endl;
@@ -1354,12 +1332,7 @@ int main( int argc, char * *argv )
             outfile <<  "Slice-wise check: PASS" << std::endl;
             }
 
-          out = result;
-          // out = out << 4;
-          // out = out >> 7;
-          out = out << 6;
-          out = out >> 9;
-          if( out  )
+          if( outResult->GetInterlaceWiseCheckError()  )
             {
             std::cout << "Interlace-wise check: FAILURE" <<  std::endl;
             outfile << "Interlace-wise check: FAILURE" <<  std::endl;
@@ -1370,12 +1343,7 @@ int main( int argc, char * *argv )
             outfile << "Interlace-wise check: PASS" << std::endl;
             }
 
-          out = result;
-          // out = out << 3;
-          // out = out >> 7;
-          out = out << 5;
-          out = out >> 9;
-          if( out )
+          if( outResult->GetGradientWiseCheckError() )
             {
             std::cout << "Gradient-wise check: FAILURE" << std::endl;
             outfile << "Gradient-wise check: FAILURE" << std::endl;
@@ -1386,10 +1354,7 @@ int main( int argc, char * *argv )
             outfile << "\tGradient-wise check: PASS";
             }
 
-          out = result;
-          out = out << 4;
-          out = out >> 9;
-          if( out )
+          if( outResult->GetBrainMaskCheckError() )
             {
             std::cout << "Brain mask check:\t\tFAILURE" << std::endl;
             outfile << "Brain mask check:\t\tFAILURE";
@@ -1400,10 +1365,7 @@ int main( int argc, char * *argv )
             outfile << "Brain mask check: PASS" << std::endl;
             }
 
-          out = result;
-          out = out << 3;
-          out = out >> 9;
-          if( out )
+          if( outResult->GetDominantDirectionalCheckError() )
             {
             std::cout << "Dominant Directional Detector:\t\tFAILURE" << std::endl;
             outfile << "Dominant Directional Detector:\t\tFAILURE";
@@ -1418,11 +1380,7 @@ int main( int argc, char * *argv )
           // X QC;Too many bad gradient directions found!
           // Y QC; Single b-value DWI without a b0/baseline!
           // Z QC: Gradient direction #is less than 6!
-
-          out = result;
-          // out = out >> 7;
-          out = out >> 9;
-          if( out )
+          if( outResult->GetBadGradientCheckError() )
             {
             std::cout << "Too many bad gradient directions found!:  FAILURE" << std::endl;
             outfile << "\tToo many bad gradient directions found!:  FAILURE";
@@ -1432,12 +1390,7 @@ int main( int argc, char * *argv )
             outfile << "\t";
             }
 
-          out = result;
-          // out = out << 1;
-          // out = out >> 7;
-          out = out << 1;
-          out = out >> 9;
-          if( out )
+          if( outResult->GetBaselineLeftCheckError() )
             {
             std::cout << "Single b-value DWI without a b0/baseline!: FAILURE" << std::endl;
             outfile << "\tSingle b-value DWI without a b0/baseline!: FAILURE";
@@ -1447,12 +1400,7 @@ int main( int argc, char * *argv )
             outfile << "\t";
             }
 
-          out = result;
-          // out = out << 2;
-          // out = out >> 7;
-          out = out << 2;
-          out = out >> 9;
-          if( out )
+          if( outResult->GetGradientLeftCheckError() )
             {
             std::cout << "Gradient direction #is less than 6!: FAILURE" << std::endl;
             outfile << "\tGradient direction #is less than 6!: FAILURE";
@@ -1473,8 +1421,6 @@ int main( int argc, char * *argv )
           }
          //HACK: Always return success here.
          return EXIT_SUCCESS;
-
-        //return result;
         }
       }
     else
