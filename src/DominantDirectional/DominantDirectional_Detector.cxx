@@ -52,7 +52,6 @@ double DiffusionTensorEstimation::EstimateTensor_Whitematter_GrayMatter(std::str
                                                                         std::string buffer4)
 {
 
-  bool      ret = true;
   QProcess *process = new QProcess();
 
   std::string buffer_tensor;
@@ -70,16 +69,16 @@ double DiffusionTensorEstimation::EstimateTensor_Whitematter_GrayMatter(std::str
 
     std::cout << "dtiestim_dominant " << buffer2.c_str() << (str8.join(" ") ).toStdString() << std::endl;
 
-    ret = process->execute( buffer2.c_str(), str8);
+    int rval = process->execute( buffer2.c_str(), str8);
 
-    std::cout << "ret dominant" << ret << std::endl;
+    std::cout << "rval dominant" << rval << std::endl;
 
-    if( ret == -1 )
+    if( rval == -1 )
       {
       std::cout << buffer2.c_str() << "crashes." << std::endl;
       return false;
       }
-    if( ret == -2 )
+    if( rval == -2 )
       {
       std::cout << buffer2.c_str() << "cannot be started." << std::endl;
       return false;
@@ -185,9 +184,9 @@ double DiffusionTensorEstimation::EstimateTensor_Whitematter_GrayMatter(std::str
 
   std::cout << "rm dominant " << (rm_DTI_name.join(" ") ).toStdString() << std::endl;
 
-  ret = process->execute( "rm", rm_DTI_name );
+  int rval = process->execute( "rm", rm_DTI_name );
 
-  std::cout << "ret dominant" << ret << std::endl;
+  std::cout << "rval dominant" << rval << std::endl;
 
   return true;
 

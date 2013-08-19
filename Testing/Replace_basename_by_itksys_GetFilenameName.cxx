@@ -5,7 +5,7 @@
 
 
 
-int main( int argc , char* argv[] )
+int main( int , char* [] )
 {
   std::string filename = "/test/path/filename.cxx" ;
   std::cout << "'filename' variable original value: \n" << filename << std::endl << std::endl ;

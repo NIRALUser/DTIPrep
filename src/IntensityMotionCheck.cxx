@@ -3653,22 +3653,23 @@ bool CIntensityMotionCheck::BRAINMASK_METHOD_FSL(std::string m_ReportFileName, s
 
   std::cout << "dtiestim " << protocol->GetDTIProtocol().dtiestimCommand << (str_dtiestim.join(" ") ).toStdString()
             << std::endl;
-  ret = process->execute( protocol->GetDTIProtocol().dtiestimCommand.c_str(), str_dtiestim);
-  std::cout << "ret" << ret << std::endl;
+  {
+  int rval = process->execute( protocol->GetDTIProtocol().dtiestimCommand.c_str(), str_dtiestim);
+  std::cout << "rval" << rval << std::endl;
 
-  if( ret == -1 )
+  if( rval == -1 )
     {
     std::cout << protocol->GetDTIProtocol().dtiestimCommand << "crashes." << std::endl;
     outfile << protocol->GetDTIProtocol().dtiestimCommand << "crashes." << std::endl;
     return false;
     }
-  if( ret == -2 )
+  if( rval == -2 )
     {
     std::cout << protocol->GetDTIProtocol().dtiestimCommand << "cannot be started." << std::endl;
     outfile << protocol->GetDTIProtocol().dtiestimCommand << "cannot be started." << std::endl;
     return false;
     }
-
+  }
   // converting to nii
   QStringList str_convertitk;
 
@@ -3678,42 +3679,44 @@ bool CIntensityMotionCheck::BRAINMASK_METHOD_FSL(std::string m_ReportFileName, s
 
   std::cout << protocol->GetBrainMaskProtocol().BrainMask_SystemPath_convertITK
             << (str_convertitk.join(" ") ).toStdString() << std::endl;
-  ret = process->execute( protocol->GetBrainMaskProtocol().BrainMask_SystemPath_convertITK.c_str(), str_convertitk);
-  std::cout << " ret convert itk" << ret << std::endl;
+  {
+  int rval = process->execute( protocol->GetBrainMaskProtocol().BrainMask_SystemPath_convertITK.c_str(), str_convertitk);
+  std::cout << " rval convert itk" << rval << std::endl;
 
-  if( ret == -1 )
+  if( rval == -1 )
     {
     std::cout << protocol->GetBrainMaskProtocol().BrainMask_SystemPath_convertITK << "crashes." << std::endl;
     outfile << protocol->GetBrainMaskProtocol().BrainMask_SystemPath_convertITK << "crashes." << std::endl;
     return false;
     }
-  if( ret == -2 )
+  if( rval == -2 )
     {
     std::cout << protocol->GetBrainMaskProtocol().BrainMask_SystemPath_convertITK << "cannot be started." << std::endl;
     outfile << protocol->GetBrainMaskProtocol().BrainMask_SystemPath_convertITK << "cannot be started." << std::endl;
     return false;
     }
-
+  }
   // ImageMath
   QStringList str_imagemath;
 
   str_imagemath << QString::fromStdString(str_B0nii.c_str() ) << "-outfile" << QString::fromStdString(str_B0niigz.c_str() ) << "-constOper" << "3,10000" << "-type" << "float";
 
-  ret = process->execute( protocol->GetBrainMaskProtocol().BrainMask_SystemPath_imagemath.c_str(), str_imagemath);
-  std::cout << "ret ImageMath " << ret << std::endl;
-  if( ret == -1 )
+  {
+  int rval = process->execute( protocol->GetBrainMaskProtocol().BrainMask_SystemPath_imagemath.c_str(), str_imagemath);
+  std::cout << "rval ImageMath " << rval << std::endl;
+  if( rval == -1 )
     {
     std::cout << protocol->GetBrainMaskProtocol().BrainMask_SystemPath_imagemath << "crashes." << std::endl;
     outfile << protocol->GetBrainMaskProtocol().BrainMask_SystemPath_imagemath << "crashes." << std::endl;
     return false;
     }
-  if( ret == -2 )
+  if( rval == -2 )
     {
     std::cout << protocol->GetBrainMaskProtocol().BrainMask_SystemPath_imagemath << "cannot be started." << std::endl;
     outfile << protocol->GetBrainMaskProtocol().BrainMask_SystemPath_imagemath << "cannot be started." << std::endl;
     return false;
     }
-
+  }
   //
 
   QStringList rm_temp;
@@ -3729,21 +3732,22 @@ bool CIntensityMotionCheck::BRAINMASK_METHOD_FSL(std::string m_ReportFileName, s
 
   std::cout << "bet2 " << protocol->GetBrainMaskProtocol().BrainMask_SystemPath_FSL.c_str()
             << (str_bet2.join(" ") ).toStdString() << std::endl;
-  ret = process->execute( protocol->GetBrainMaskProtocol().BrainMask_SystemPath_FSL.c_str(), str_bet2);
-  std::cout << "ret bet2 " << ret << std::endl;
-  if( ret == -1 )
+  {
+  int rval = process->execute( protocol->GetBrainMaskProtocol().BrainMask_SystemPath_FSL.c_str(), str_bet2);
+  std::cout << "rval bet2 " << rval << std::endl;
+  if( rval == -1 )
     {
     std::cout << protocol->GetBrainMaskProtocol().BrainMask_SystemPath_FSL << "crashes." << std::endl;
     outfile << protocol->GetBrainMaskProtocol().BrainMask_SystemPath_FSL << "crashes." << std::endl;
     return false;
     }
-  if( ret == -2 )
+  if( rval == -2 )
     {
     std::cout << protocol->GetBrainMaskProtocol().BrainMask_SystemPath_FSL << "cannot be started." << std::endl;
     outfile << protocol->GetBrainMaskProtocol().BrainMask_SystemPath_FSL << "cannot be started." << std::endl;
     return false;
     }
-
+  }
   // Finding the proper path for output brain mask
 
   std::string Result_b0_masked;
@@ -3805,21 +3809,22 @@ bool CIntensityMotionCheck::BRAINMASK_METHOD_FSL(std::string m_ReportFileName, s
 
   //std::cout << "mahshid1" << protocol->GetBrainMaskProtocol().BrainMask_SystemPath_imagemath.c_str()
   //          << (str_imagemath2.join(" ") ).toStdString() << std::endl;
-  ret = process->execute( protocol->GetBrainMaskProtocol().BrainMask_SystemPath_imagemath.c_str(), str_imagemath2);
-  std::cout << "ret ImageMath2 " << ret << std::endl;
-  if( ret == -1 )
+  {
+  int rval = process->execute( protocol->GetBrainMaskProtocol().BrainMask_SystemPath_imagemath.c_str(), str_imagemath2);
+  std::cout << "rval ImageMath2 " << rval << std::endl;
+  if( rval == -1 )
     {
     std::cout << protocol->GetBrainMaskProtocol().BrainMask_SystemPath_imagemath << "crashes." << std::endl;
     outfile << protocol->GetBrainMaskProtocol().BrainMask_SystemPath_imagemath << "crashes." << std::endl;
     return false;
     }
-  if( ret == -2 )
+  if( rval == -2 )
     {
     std::cout << protocol->GetBrainMaskProtocol().BrainMask_SystemPath_imagemath << "cannot be started." << std::endl;
     outfile << protocol->GetBrainMaskProtocol().BrainMask_SystemPath_imagemath << "cannot be started." << std::endl;
     return false;
     }
-
+  }
   protocol->GetBrainMaskProtocol(). BrainMask_Image = Result_b0_masked; // brain mask image
 
   //QStringList rm_temp2;
@@ -3932,15 +3937,15 @@ bool CIntensityMotionCheck::BRAINMASK_METHOD_Slicer(std::string m_ReportFileName
     Result_b0_masked.c_str() );
 
   std::cout << (str_slicerMask.join(" ") ).toStdString() << std::endl;
-  ret =  process->execute( protocol->GetBrainMaskProtocol().BrainMask_SystemPath_Slicer.c_str(), str_slicerMask );
+  int rval  =  process->execute( protocol->GetBrainMaskProtocol().BrainMask_SystemPath_Slicer.c_str(), str_slicerMask );
 
-  if( ret == -1 )
+  if( rval == -1 )
     {
     std::cout << protocol->GetBrainMaskProtocol().BrainMask_SystemPath_Slicer << "crashes." << std::endl;
     outfile << protocol->GetBrainMaskProtocol().BrainMask_SystemPath_Slicer << "crashes." << std::endl;
     return false;
     }
-  if( ret == -2 )
+  if( rval == -2 )
     {
     std::cout << protocol->GetBrainMaskProtocol().BrainMask_SystemPath_imagemath << "cannot be started." << std::endl;
     outfile << protocol->GetBrainMaskProtocol().BrainMask_SystemPath_imagemath << "cannot be started." << std::endl;
@@ -5530,16 +5535,16 @@ bool CIntensityMotionCheck::dtiestim()
   std::cout << "===============  Starting dtiestim command ===============" << std::endl;
   std::cout << "dtiestim command: " << (dtiestim_str.join(" ") ).toStdString() << std::endl;
   QProcess *process = new QProcess();
-  ret =  process->execute( protocol->GetDTIProtocol().dtiestimCommand.c_str(), dtiestim_str );
+  int rval =  process->execute( protocol->GetDTIProtocol().dtiestimCommand.c_str(), dtiestim_str );
   std::cout << "ret " << ret << std::endl;
 
-  if( ret == -1 )
+  if( rval == -1 )
     {
     std::cout << protocol->GetDTIProtocol().dtiestimCommand << "crashes." << std::endl;
     // outfile << protocol->GetDTIProtocol().dtiestimCommand << "crashes." << std::endl;
     return false;
     }
-  if( ret == -2 )
+  if( rval == -2 )
     {
     std::cout << protocol->GetDTIProtocol().dtiestimCommand << "cannot be started." << std::endl;
     // outfile << protocol->GetDTIProtocol().dtiestimCommand << "cannot be started." << std::endl;
