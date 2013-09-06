@@ -180,7 +180,7 @@ double DiffusionTensorEstimation::EstimateTensor_Whitematter_GrayMatter(std::str
   // SaveEntropyResult_beta( buffer2, buffer3, buffer1 );
 
   QStringList rm_DTI_name;
-  rm_DTI_name << "rm" << "tensor.nrrd" << "_PD_Counter.vtk" << "Icosahedron.vtk";
+  rm_DTI_name << "tensor.nrrd" << "_PD_Counter.vtk" << "Icosahedron.vtk";
 
   std::cout << "rm dominant " << (rm_DTI_name.join(" ") ).toStdString() << std::endl;
 
