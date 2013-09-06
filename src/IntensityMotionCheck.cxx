@@ -3721,7 +3721,7 @@ bool CIntensityMotionCheck::BRAINMASK_METHOD_FSL(std::string m_ReportFileName, s
 
   QStringList rm_temp;
 
-  rm_temp << QString::fromStdString(str_B0nii.c_str() ) << "B0.nii";
+  rm_temp << QString::fromStdString(str_B0nii.c_str() ) << "B0.nii.gz";
 
   ret = process->execute( "rm", rm_temp);
 
@@ -3805,7 +3805,7 @@ bool CIntensityMotionCheck::BRAINMASK_METHOD_FSL(std::string m_ReportFileName, s
   str_imagemath2 << QString::fromStdString(str_B0nrrd.c_str() ) << "-mask" << QString::fromStdString(str_B0bet.c_str() );
 
   str_imagemath2 << "-outfile" << QString::fromStdString(Result_b0_masked);
-  std::cout << "Result_b0_masked" << Result_b0_masked.c_str() << std::endl;
+  std::cout << "Result_b0_masked: " << Result_b0_masked.c_str() << std::endl;
 
   //std::cout << "mahshid1" << protocol->GetBrainMaskProtocol().BrainMask_SystemPath_imagemath.c_str()
   //          << (str_imagemath2.join(" ") ).toStdString() << std::endl;
@@ -3824,7 +3824,13 @@ bool CIntensityMotionCheck::BRAINMASK_METHOD_FSL(std::string m_ReportFileName, s
     outfile << protocol->GetBrainMaskProtocol().BrainMask_SystemPath_imagemath << "cannot be started." << std::endl;
     return false;
     }
+  if (ret > 0)
+    {
+    std::cout << protocol->GetBrainMaskProtocol().BrainMask_SystemPath_imagemath << "had an issue." << std::endl;
+    outfile << protocol->GetBrainMaskProtocol().BrainMask_SystemPath_imagemath << "had an issue." << std::endl;
+    }
   }
+
   protocol->GetBrainMaskProtocol(). BrainMask_Image = Result_b0_masked; // brain mask image
 
   //QStringList rm_temp2;
