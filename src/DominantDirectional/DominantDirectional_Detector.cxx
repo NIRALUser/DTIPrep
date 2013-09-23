@@ -182,7 +182,7 @@ double DiffusionTensorEstimation::EstimateTensor_Whitematter_GrayMatter(std::str
   QStringList rm_DTI_name;
   rm_DTI_name << "tensor.nrrd" << "_PD_Counter.vtk" << "Icosahedron.vtk";
 
-  std::cout << "rm dominant " << (rm_DTI_name.join(" ") ).toStdString() << std::endl;
+  std::cout << "rm dominant: " << (rm_DTI_name.join(" ") ).toStdString() << std::endl;
 
   int rval = process->execute( "rm", rm_DTI_name );
 

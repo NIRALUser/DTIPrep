@@ -150,12 +150,28 @@ IntensityMotionCheckPanel::IntensityMotionCheckPanel(QMainWindow *parentNew) :
            this,
            SLOT( Set_QCedDWI() ) );
 
+  connect( this,
+           SIGNAL( ProtocolChanged() ),
+           this,
+           SLOT( protocolLoaded_SetPath() ) );
+
   connect( this, SIGNAL( Set_init_Path_Signal() ), this, SLOT( Set_init_Path() ) );
 
 }
 
 IntensityMotionCheckPanel::~IntensityMotionCheckPanel()
 {
+}
+
+
+void IntensityMotionCheckPanel::protocolLoaded_SetPath()
+{
+    lineEdit_FSL->setText( this->GetTreeWidgetProtocol()->topLevelItem(14)->child(1)->text(1)) ;
+    lineEdit_Slicer->setText( this->GetTreeWidgetProtocol()->topLevelItem(14)->child(4)->text(1)) ;
+    lineEdit_dtiestim->setText( this->GetTreeWidgetProtocol()->topLevelItem(16)->child(0)->text(1)) ;
+    lineEdit_dtiprocess->setText( this->GetTreeWidgetProtocol()->topLevelItem(16)->child(1)->text(1)) ;
+    lineEdit_convertitk->setText( this->GetTreeWidgetProtocol()->topLevelItem(14)->child(2)->text(1)) ;
+    lineEdit_imagemath->setText( this->GetTreeWidgetProtocol()->topLevelItem(14)->child(3)->text(1)) ;
 }
 
 void IntensityMotionCheckPanel::StartProgressSlot()
@@ -279,19 +295,24 @@ void IntensityMotionCheckPanel::on_treeWidget_itemDoubleClicked(
     QMessageBox msgBox3;
 
     msgBox.setText( str_brainmask );
-    QPushButton * FSL = msgBox.addButton( tr("FSL_bet"), QMessageBox::ActionRole);
+    QPushButton * FSL = msgBox.addButton( tr("FSL bet (B0)"), QMessageBox::ActionRole);
+    QPushButton * FSL_IDWI = msgBox.addButton( tr("FSL bet (IDWI)"), QMessageBox::ActionRole);
     QPushButton * Slicer = msgBox.addButton( tr("Slicer"), QMessageBox::ActionRole);
     QPushButton * Option = msgBox.addButton( tr("User mask"), QMessageBox::ActionRole);
     QPushButton * Cancel = msgBox.addButton( tr("Cancel"), QMessageBox::ActionRole);
     msgBox.exec();
 
-    if( msgBox.clickedButton() == FSL )
+    if( msgBox.clickedButton() == FSL || msgBox.clickedButton() == FSL_IDWI )
       {
       std::cout << "Protocol Tree child 14 " << std::endl;
-      this->GetProtocol().GetBrainMaskProtocol().BrainMask_Method = 0;
-      // std::cout << "Protocol Tree child 14 " <<
-      // this->GetTreeWidgetProtocol()->topLevelItem(14)->child(1)->text(1).toStdString().c_str() << std::endl;
-
+      if( msgBox.clickedButton() == FSL )
+      {
+        this->GetProtocol().GetBrainMaskProtocol().BrainMask_Method = Protocol::BRAINMASK_METHOD_FSL ;
+      }
+      else
+      {
+        this->GetProtocol().GetBrainMaskProtocol().BrainMask_Method = Protocol::BRAINMASK_METHOD_FSL_IDWI ;
+      }
       // Set BrainMask parameters in the protocol
       this->GetTreeWidgetProtocol()->topLevelItem(14)->child(0)->setText( 1,
                                                                           QString("%1").arg(this->GetProtocol().
@@ -504,9 +525,7 @@ void IntensityMotionCheckPanel::SetName( QString nrrd_path )
 void IntensityMotionCheckPanel::on_toolButton_ProtocolFileOpen_clicked()
 {
   OpenXML();
-
   bProtocolTreeEditable = true;
-  emit ProtocolChanged();
 }
 
 void IntensityMotionCheckPanel::on_toolButton_ResultFileOpen_clicked()
@@ -828,7 +847,7 @@ void IntensityMotionCheckPanel::OpenXML()
   pushButton_Save->setEnabled( 1 );
   pushButton_SaveProtocolAs->setEnabled( 1 );
   pushButton_RunPipeline->setEnabled(1);
-
+  emit ProtocolChanged();
   // protocol.printProtocols();
 }
 

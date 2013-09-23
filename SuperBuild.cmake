@@ -16,19 +16,19 @@ include(${CMAKE_CURRENT_SOURCE_DIR}/Common.cmake)
 #-----------------------------------------------------------------------------
 #If it is build as an extension
 #-----------------------------------------------------------------------------
-
 if( DTIPrep_BUILD_SLICER_EXTENSION )
-  set( USE_SYSTEM_VTK ON )
-  set( USE_SYSTEM_DCMTK ON )
-  set( USE_SYSTEM_ITK ON )
-  set( USE_SYSTEM_SlicerExecutionModel ON )
-  set( BUILD_SHARED_LIBS OFF )
+  set( USE_SYSTEM_VTK ON CACHE BOOL "Use system VTK" FORCE )
+  set( USE_SYSTEM_DCMTK ON CACHE BOOL "Use system DCMTK" FORCE )
+  set( USE_SYSTEM_Teem ON CACHE BOOL "Use system Teem" FORCE )
+#  set( USE_SYSTEM_ITK ON CACHE BOOL "Use system ITK" FORCE)
+#  set( USE_SYSTEM_SlicerExecutionModel ON CACHE BOOL "Use system ITK" FORCE)
+  set( BUILD_SHARED_LIBS OFF CACHE BOOL "Use system ITK" FORCE)
   set(EXTENSION_SUPERBUILD_BINARY_DIR ${${EXTENSION_NAME}_BINARY_DIR} )
-  unsetForSlicer(NAMES CMAKE_MODULE_PATH CMAKE_C_COMPILER CMAKE_CXX_COMPILER DCMTK_DIR ITK_DIR SlicerExecutionModel_DIR VTK_DIR QT_QMAKE_EXECUTABLE ITK_VERSION_MAJOR CMAKE_CXX_FLAGS CMAKE_C_FLAGS )
+  unsetForSlicer(NAMES CMAKE_MODULE_PATH CMAKE_C_COMPILER CMAKE_CXX_COMPILER DCMTK_DIR ITK_DIR SlicerExecutionModel_DIR VTK_DIR QT_QMAKE_EXECUTABLE ITK_VERSION_MAJOR CMAKE_CXX_FLAGS CMAKE_C_FLAGS Teem_DIR)
   find_package(Slicer REQUIRED)
   include(${Slicer_USE_FILE})
-  unsetAllForSlicerBut( NAMES VTK_DIR QT_QMAKE_EXECUTABLE ITK_DIR DCMTK_DIR ITK_VERSION_MAJOR SlicerExecutionModel_DIR )
-  resetForSlicer(NAMES CMAKE_MODULE_PATH CMAKE_C_COMPILER CMAKE_CXX_COMPILER ITK_VERSION_MAJOR CMAKE_CXX_FLAGS CMAKE_C_FLAGS)
+  unsetAllForSlicerBut( NAMES VTK_DIR QT_QMAKE_EXECUTABLE DCMTK_DIR Teem_DIR)
+  resetForSlicer(NAMES CMAKE_MODULE_PATH CMAKE_C_COMPILER CMAKE_CXX_COMPILER ITK_VERSION_MAJOR ITK_DIR SlicerExecutionModel_DIR CMAKE_CXX_FLAGS CMAKE_C_FLAGS)
   set( NIRAL_UTILITIES_DEPENDS niral_utilities)
 endif()
 #-----------------------------------------------------------------------------
@@ -116,6 +116,7 @@ option(USE_SYSTEM_ITK "Build using an externally defined version of ITK" OFF)
 option(USE_SYSTEM_SlicerExecutionModel "Build using an externally defined version of SlicerExecutionModel"  OFF)
 option(USE_SYSTEM_VTK "Build using an externally defined version of VTK" OFF)
 option(USE_SYSTEM_DCMTK "Build using an externally defined version of DCMTK" OFF)
+option(USE_SYSTEM_Teem "Build using external Teem" ON)
 option(USE_SYSTEM_zlib "Build using external zlib" ON)
 option(${PROJECT_NAME}_BUILD_DICOM_SUPPORT "Build Dicom Support" ON)
 
@@ -259,7 +260,7 @@ list(APPEND ${CMAKE_PROJECT_NAME}_SUPERBUILD_EP_VARS
   GenerateCLP_DIR:PATH
   SlicerExecutionModel_DIR:PATH
   BRAINSCommonLib_DIR:PATH
-
+  Teem_DIR:PATH
   USE_GTRACT:BOOL
   USE_BRAINSFit:BOOL
   USE_BRAINSABC:BOOL
@@ -291,7 +292,6 @@ if( DTIPrep_BUILD_SLICER_EXTENSION )
     EXTENSION_SUPERBUILD_BINARY_DIR:PATH
     )
 endif()
-
 _expand_external_project_vars()
 set(COMMON_EXTERNAL_PROJECT_ARGS ${${CMAKE_PROJECT_NAME}_SUPERBUILD_EP_ARGS})
 

@@ -89,6 +89,8 @@ private slots:
 
   void on_pushButton_Pathdefault_clicked();
 
+  void protocolLoaded_SetPath();
+
   // void on_pushButton_SaveDWIAs_clicked( );
 
   //void on_pushButton_DefaultQCResult_clicked();

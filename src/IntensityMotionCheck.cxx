@@ -22,7 +22,7 @@
 #include <vcl_algorithm.h>
 
 // The version of DTI prep should be incremented with each algorithm changes
-static const std::string DTIPREP_VERSION("1.2");
+static const std::string DTIPREP_VERSION("1.2.1");
 
 vnl_matrix_fixed<double, 3, 3>
 CIntensityMotionCheck::GetMeasurementFrame(
@@ -1164,19 +1164,15 @@ bool CIntensityMotionCheck::SliceWiseCheck( DwiImageType::Pointer dwi )
   std::string m_ReportFileName;
 
   std::string Dwi_file_name = FNameBase(this->m_DwiFileName);
-
   if( protocol->GetSliceCheckProtocol().reportFileNameSuffix.length() > 0 )
     {
-
     if( protocol->GetQCOutputDirectory().length() > 0 )
       {
-
       std::string str_QCOutputDirectory = protocol->GetQCOutputDirectory();
       size_t      found_SeparateChar = str_QCOutputDirectory.find_first_of("/");
       if( int (found_SeparateChar) == -1 ) // "/" does not exist in the protocol->GetQCOutputDirectory() and interpreted
                                            // as the relative path and creates the folder
         {
-
         size_t found;
         found = m_DwiFileName.find_last_of("/\\");
         std::string str;
@@ -1216,7 +1212,6 @@ bool CIntensityMotionCheck::SliceWiseCheck( DwiImageType::Pointer dwi )
       }
 
     }
-
   // validate the SliceWise output
   std::ofstream outfile;
   outfile.open(m_ReportFileName.c_str(), std::ios::app);
@@ -1226,7 +1221,6 @@ bool CIntensityMotionCheck::SliceWiseCheck( DwiImageType::Pointer dwi )
 
   if( protocol->GetSliceCheckProtocol().bCheck )
     {
-
     SliceCheckerType::Pointer SliceChecker = SliceCheckerType::New();
     SliceChecker->SetInput( dwi );
     SliceChecker->SetCheckTimes( protocol->GetSliceCheckProtocol().checkTimes );
@@ -1244,7 +1238,6 @@ bool CIntensityMotionCheck::SliceWiseCheck( DwiImageType::Pointer dwi )
     SliceChecker->SetReportType(protocol->GetReportType() );
 
     SliceChecker->SetQuadFit(0);
-
     SliceChecker->SetSubRegionalCheck( protocol->GetSliceCheckProtocol().bSubregionalCheck );
     SliceChecker->SetSubregionalCheckRelaxationFactor(
       protocol->GetSliceCheckProtocol().subregionalCheckRelaxationFactor );
@@ -1261,7 +1254,6 @@ bool CIntensityMotionCheck::SliceWiseCheck( DwiImageType::Pointer dwi )
       {
       std::cout << e.GetDescription() << std::endl;
       }
-
     m_DwiForcedConformanceImage = SliceChecker->GetOutput();
 
     // .......Mapping between input gradeints and DWIForcedComformance gradeints
@@ -1282,7 +1274,6 @@ bool CIntensityMotionCheck::SliceWiseCheck( DwiImageType::Pointer dwi )
       }
     }*/
     std::vector<bool> tem_vector = SliceChecker->getQCResults();
-
     unsigned int id = 0;
     while(  id < tem_vector.size()  )
       {
@@ -1297,7 +1288,6 @@ bool CIntensityMotionCheck::SliceWiseCheck( DwiImageType::Pointer dwi )
         }
       id++;
       }
-
     // ........
     SliceWiseCheckResult SliceWise;    // Updating qcresult for SliceWise cheking information
     for( unsigned int i = 0; i < SliceChecker->GetSliceWiseCheckResult().size(); i++ )
@@ -1347,7 +1337,6 @@ bool CIntensityMotionCheck::SliceWiseCheck( DwiImageType::Pointer dwi )
         }
       }
     }*/
-
     // save slicechecked DWI
     if( protocol->GetSliceCheckProtocol().outputDWIFileNameSuffix.length() > 0 )
       {
@@ -3571,6 +3560,12 @@ bool CIntensityMotionCheck::BrainMask()
       std::cout << "Brain mask: " << protocol->GetBrainMaskProtocol(). BrainMask_Image << std::endl;
       break;
       }
+      case Protocol::BRAINMASK_METHOD_FSL_IDWI:
+      {
+        ret =  BRAINMASK_METHOD_FSL(m_ReportFileName, str2);
+        break;
+      }
+
       default:
         break;
       }
@@ -3631,217 +3626,162 @@ bool CIntensityMotionCheck::BRAINMASK_METHOD_FSL(std::string m_ReportFileName, s
   std::string str_tensor = str2;
   str_tensor.append("tensor.nrrd");
 
-  std::string str_B0nii = str2;
-  str_B0nii.append("B0.nii");
-
-  std::string str_B0nrrd = str2;
-  str_B0nrrd.append("B0.nrrd");
-
-  std::string str_B0niigz = str2;
-  str_B0niigz.append("B0.nii.gz");
-
-  std::string str_B0betmask = str2;
-  str_B0betmask.append("B0_bet_mask.nii.gz");
-
-  std::string str_B0bet = str2;
-  str_B0bet.append("B0_bet.nii.gz");
-
-
-
-  str_dtiestim << "--dwi_image " << QString::fromStdString(m_outputDWIFileName.c_str() ) << "--B0" <<  QString::fromStdString(str_B0nrrd.c_str() )
+  std::string str_computeMaskFrom ;
+  std::string maskFrom ;
+  if( protocol->GetBrainMaskProtocol().BrainMask_Method == Protocol::BRAINMASK_METHOD_FSL )
+  {
+    str_computeMaskFrom = str2 + "B0" ;
+    str_dtiestim << "--dwi_image " << QString::fromStdString(m_outputDWIFileName.c_str() ) << "--B0" <<  QString::fromStdString(str_computeMaskFrom+".nrrd" )
                << "--tensor_output" << QString::fromStdString(str_tensor.c_str() );
-
-  std::cout << "dtiestim " << protocol->GetDTIProtocol().dtiestimCommand << (str_dtiestim.join(" ") ).toStdString()
+    maskFrom = "_B0" ;
+  }
+  else //Protocol::BRAINMASK_METHOD_FSL_IDWI
+  {
+      str_computeMaskFrom = str2 + "IDWI" ;
+      str_dtiestim << "--dwi_image " << QString::fromStdString(m_outputDWIFileName.c_str() ) << "--idwi" <<  QString::fromStdString(str_computeMaskFrom+".nrrd" )
+                 << "--tensor_output" << QString::fromStdString(str_tensor.c_str() );
+      maskFrom = "_IDWI" ;
+  }
+  std::cout << "dtiestim cmd: " << protocol->GetDTIProtocol().dtiestimCommand << (str_dtiestim.join(" ") ).toStdString()
             << std::endl;
   {
   int rval = process->execute( protocol->GetDTIProtocol().dtiestimCommand.c_str(), str_dtiestim);
-  std::cout << "rval" << rval << std::endl;
+  std::cout << "rval: " << rval << std::endl;
 
   if( rval == -1 )
     {
-    std::cout << protocol->GetDTIProtocol().dtiestimCommand << "crashes." << std::endl;
-    outfile << protocol->GetDTIProtocol().dtiestimCommand << "crashes." << std::endl;
+    std::cout << protocol->GetDTIProtocol().dtiestimCommand << " crashes." << std::endl;
+    outfile << protocol->GetDTIProtocol().dtiestimCommand << " crashes." << std::endl;
     return false;
     }
   if( rval == -2 )
     {
-    std::cout << protocol->GetDTIProtocol().dtiestimCommand << "cannot be started." << std::endl;
-    outfile << protocol->GetDTIProtocol().dtiestimCommand << "cannot be started." << std::endl;
-    return false;
-    }
-  }
-  // converting to nii
-  QStringList str_convertitk;
-
-  str_convertitk << QString::fromStdString(str_B0nrrd.c_str() );
-
-  str_convertitk << QString::fromStdString(str_B0nii.c_str() );
-
-  std::cout << protocol->GetBrainMaskProtocol().BrainMask_SystemPath_convertITK
-            << (str_convertitk.join(" ") ).toStdString() << std::endl;
-  {
-  int rval = process->execute( protocol->GetBrainMaskProtocol().BrainMask_SystemPath_convertITK.c_str(), str_convertitk);
-  std::cout << " rval convert itk" << rval << std::endl;
-
-  if( rval == -1 )
-    {
-    std::cout << protocol->GetBrainMaskProtocol().BrainMask_SystemPath_convertITK << "crashes." << std::endl;
-    outfile << protocol->GetBrainMaskProtocol().BrainMask_SystemPath_convertITK << "crashes." << std::endl;
-    return false;
-    }
-  if( rval == -2 )
-    {
-    std::cout << protocol->GetBrainMaskProtocol().BrainMask_SystemPath_convertITK << "cannot be started." << std::endl;
-    outfile << protocol->GetBrainMaskProtocol().BrainMask_SystemPath_convertITK << "cannot be started." << std::endl;
+    std::cout << protocol->GetDTIProtocol().dtiestimCommand << " cannot be started." << std::endl;
+    outfile << protocol->GetDTIProtocol().dtiestimCommand << " cannot be started." << std::endl;
     return false;
     }
   }
   // ImageMath
   QStringList str_imagemath;
 
-  str_imagemath << QString::fromStdString(str_B0nii.c_str() ) << "-outfile" << QString::fromStdString(str_B0niigz.c_str() ) << "-constOper" << "3,10000" << "-type" << "float";
+  str_imagemath << QString::fromStdString(str_computeMaskFrom+".nrrd" ) << "-outfile" << QString::fromStdString(str_computeMaskFrom+".nii.gz" ) << "-constOper" << "3,10000" << "-type" << "float";
 
   {
   int rval = process->execute( protocol->GetBrainMaskProtocol().BrainMask_SystemPath_imagemath.c_str(), str_imagemath);
-  std::cout << "rval ImageMath " << rval << std::endl;
+  std::cout << "rval ImageMath: " << rval << std::endl;
   if( rval == -1 )
     {
-    std::cout << protocol->GetBrainMaskProtocol().BrainMask_SystemPath_imagemath << "crashes." << std::endl;
-    outfile << protocol->GetBrainMaskProtocol().BrainMask_SystemPath_imagemath << "crashes." << std::endl;
+    std::cout << protocol->GetBrainMaskProtocol().BrainMask_SystemPath_imagemath << " crashes." << std::endl;
+    outfile << protocol->GetBrainMaskProtocol().BrainMask_SystemPath_imagemath << " crashes." << std::endl;
     return false;
     }
   if( rval == -2 )
     {
-    std::cout << protocol->GetBrainMaskProtocol().BrainMask_SystemPath_imagemath << "cannot be started." << std::endl;
-    outfile << protocol->GetBrainMaskProtocol().BrainMask_SystemPath_imagemath << "cannot be started." << std::endl;
+    std::cout << protocol->GetBrainMaskProtocol().BrainMask_SystemPath_imagemath << " cannot be started." << std::endl;
+    outfile << protocol->GetBrainMaskProtocol().BrainMask_SystemPath_imagemath << " cannot be started." << std::endl;
     return false;
     }
   }
   //
 
-  QStringList rm_temp;
-
-  rm_temp << QString::fromStdString(str_B0nii.c_str() ) << "B0.nii.gz";
-
-  ret = process->execute( "rm", rm_temp);
-
   // bet2
   QStringList str_bet2;
-
-  str_bet2 << QString::fromStdString(str_B0niigz.c_str() ) << QString::fromStdString(str_B0bet.c_str() ) << "-m";
-
-  std::cout << "bet2 " << protocol->GetBrainMaskProtocol().BrainMask_SystemPath_FSL.c_str()
+  std::string str_betMask = str_computeMaskFrom + "_bet" ;
+  str_bet2 << QString::fromStdString(str_computeMaskFrom + ".nii.gz" ) << QString::fromStdString( str_betMask ) << "-m";
+  std::cout << "bet2 cmd: " << protocol->GetBrainMaskProtocol().BrainMask_SystemPath_FSL.c_str()
             << (str_bet2.join(" ") ).toStdString() << std::endl;
   {
-  int rval = process->execute( protocol->GetBrainMaskProtocol().BrainMask_SystemPath_FSL.c_str(), str_bet2);
-  std::cout << "rval bet2 " << rval << std::endl;
-  if( rval == -1 )
-    {
-    std::cout << protocol->GetBrainMaskProtocol().BrainMask_SystemPath_FSL << "crashes." << std::endl;
-    outfile << protocol->GetBrainMaskProtocol().BrainMask_SystemPath_FSL << "crashes." << std::endl;
-    return false;
-    }
-  if( rval == -2 )
-    {
-    std::cout << protocol->GetBrainMaskProtocol().BrainMask_SystemPath_FSL << "cannot be started." << std::endl;
-    outfile << protocol->GetBrainMaskProtocol().BrainMask_SystemPath_FSL << "cannot be started." << std::endl;
-    return false;
-    }
+      int rval = process->execute( protocol->GetBrainMaskProtocol().BrainMask_SystemPath_FSL.c_str(), str_bet2);
+      std::cout << "rval bet2: " << rval << std::endl;
+      if( rval == -1 )
+      {
+          std::cout << protocol->GetBrainMaskProtocol().BrainMask_SystemPath_FSL << " crashes." << std::endl;
+          outfile << protocol->GetBrainMaskProtocol().BrainMask_SystemPath_FSL << " crashes." << std::endl;
+          return false;
+      }
+      if( rval == -2 )
+      {
+          std::cout << protocol->GetBrainMaskProtocol().BrainMask_SystemPath_FSL << " cannot be started." << std::endl;
+          outfile << protocol->GetBrainMaskProtocol().BrainMask_SystemPath_FSL << " cannot be started." << std::endl;
+          return false;
+      }
   }
   // Finding the proper path for output brain mask
 
-  std::string Result_b0_masked;
+  std::string Result_FSL_masked;
 
   std::string Dwi_file_name = FNameBase(this->m_DwiFileName);
 
   if( protocol->GetQCOutputDirectory().length() > 0 )
-    {
+  {
 
-    std::string str_QCOutputDirectory = protocol->GetQCOutputDirectory();
-    size_t      found_SeparateChar = str_QCOutputDirectory.find_first_of("/");
-    if( int (found_SeparateChar) == -1 )   // "/" does not exist in the protocol->GetQCOutputDirectory() and interpreted
-                                           // as the relative path and creates the folder
+      std::string str_QCOutputDirectory = protocol->GetQCOutputDirectory();
+      size_t      found_SeparateChar = str_QCOutputDirectory.find_first_of("/");
+      std::string str ;
+      if( int (found_SeparateChar) == -1 )   // "/" does not exist in the protocol->GetQCOutputDirectory() and interpreted
+          // as the relative path and creates the folder
       {
-      size_t found;
-      found = m_DwiFileName.find_last_of("/\\");
-      std::string str;
-      str = m_DwiFileName.substr( 0, found ); // str : path of QCed outputs
-      str.append( "/" );
-      str.append( protocol->GetQCOutputDirectory() );
-      if( !itksys::SystemTools::FileIsDirectory( str.c_str() ) )
-        {
-        itksys::SystemTools::MakeDirectory( str.c_str() );
-        }
-      str.append( "/" );
-      Result_b0_masked = str;
-      Result_b0_masked.append( Dwi_file_name );
-      Result_b0_masked.append( "_B0_masked.nrrd");
-
+          size_t found;
+          found = m_DwiFileName.find_last_of("/\\");
+          str = m_DwiFileName.substr( 0, found ); // str : path of QCed outputs
+          str.append( "/" );
+          str.append( protocol->GetQCOutputDirectory() );
+          if( !itksys::SystemTools::FileIsDirectory( str.c_str() ) )
+          {
+              itksys::SystemTools::MakeDirectory( str.c_str() );
+          }
       }
-
-    else  // "/" exists in the the protocol->GetQCOutputDirectory() and interpreted as the absolute path
+      else  // "/" exists in the the protocol->GetQCOutputDirectory() and interpreted as the absolute path
       {
-      std::string str;
-      str.append(protocol->GetQCOutputDirectory() );
-      if( !itksys::SystemTools::FileIsDirectory( str.c_str() ) )
-        {
-        itksys::SystemTools::MakeDirectory( str.c_str() );
-        }
-      str.append( "/" );
-      Result_b0_masked = str;
-      Result_b0_masked.append( Dwi_file_name );
-      Result_b0_masked.append( "_B0_masked.nrrd");
+          str.append(protocol->GetQCOutputDirectory() );
+          if( !itksys::SystemTools::FileIsDirectory( str.c_str() ) )
+          {
+              itksys::SystemTools::MakeDirectory( str.c_str() );
+          }
       }
+      str.append( "/" );
+      Result_FSL_masked = str;
+      Result_FSL_masked.append( Dwi_file_name );
+      Result_FSL_masked.append( maskFrom ) ;
+      Result_FSL_masked.append( "_masked.nrrd");
 
-    }
+  }
   else
-    {
-    Result_b0_masked = m_DwiFileName.substr( 0, m_DwiFileName.find_last_of('.') );
-    Result_b0_masked.append( "_B0_masked.nrrd");
-    }
+  {
+      Result_FSL_masked = m_DwiFileName.substr( 0, m_DwiFileName.find_last_of('.') );
+      Result_FSL_masked.append( maskFrom ) ;
+      Result_FSL_masked.append( "_masked.nrrd");
+  }
 
   QStringList str_imagemath2;
 
-  str_imagemath2 << QString::fromStdString(str_B0nrrd.c_str() ) << "-mask" << QString::fromStdString(str_B0bet.c_str() );
+  str_imagemath2 << QString::fromStdString(str_computeMaskFrom+".nrrd" ) << "-mask" << QString::fromStdString( str_betMask+"_mask.nii.gz" );
 
-  str_imagemath2 << "-outfile" << QString::fromStdString(Result_b0_masked);
-  std::cout << "Result_b0_masked: " << Result_b0_masked.c_str() << std::endl;
+  str_imagemath2 << "-outfile" << QString::fromStdString(Result_FSL_masked);
+  std::cout << "Result_FSL_masked: " << Result_FSL_masked.c_str() << std::endl;
 
-  //std::cout << "mahshid1" << protocol->GetBrainMaskProtocol().BrainMask_SystemPath_imagemath.c_str()
-  //          << (str_imagemath2.join(" ") ).toStdString() << std::endl;
   {
-  int rval = process->execute( protocol->GetBrainMaskProtocol().BrainMask_SystemPath_imagemath.c_str(), str_imagemath2);
-  std::cout << "rval ImageMath2 " << rval << std::endl;
-  if( rval == -1 )
-    {
-    std::cout << protocol->GetBrainMaskProtocol().BrainMask_SystemPath_imagemath << "crashes." << std::endl;
-    outfile << protocol->GetBrainMaskProtocol().BrainMask_SystemPath_imagemath << "crashes." << std::endl;
-    return false;
-    }
-  if( rval == -2 )
-    {
-    std::cout << protocol->GetBrainMaskProtocol().BrainMask_SystemPath_imagemath << "cannot be started." << std::endl;
-    outfile << protocol->GetBrainMaskProtocol().BrainMask_SystemPath_imagemath << "cannot be started." << std::endl;
-    return false;
-    }
-  if (ret > 0)
-    {
-    std::cout << protocol->GetBrainMaskProtocol().BrainMask_SystemPath_imagemath << "had an issue." << std::endl;
-    outfile << protocol->GetBrainMaskProtocol().BrainMask_SystemPath_imagemath << "had an issue." << std::endl;
-    }
+      int rval = process->execute( protocol->GetBrainMaskProtocol().BrainMask_SystemPath_imagemath.c_str(), str_imagemath2);
+      std::cout << "rval ImageMath2: " << rval << std::endl;
+      if( rval == -1 )
+      {
+          std::cout << protocol->GetBrainMaskProtocol().BrainMask_SystemPath_imagemath << " crashes." << std::endl;
+          outfile << protocol->GetBrainMaskProtocol().BrainMask_SystemPath_imagemath << " crashes." << std::endl;
+          return false;
+      }
+      if( rval == -2 )
+      {
+          std::cout << protocol->GetBrainMaskProtocol().BrainMask_SystemPath_imagemath << " cannot be started." << std::endl;
+          outfile << protocol->GetBrainMaskProtocol().BrainMask_SystemPath_imagemath << " cannot be started." << std::endl;
+          return false;
+      }
+      if (rval > 0)
+      {
+          std::cout << protocol->GetBrainMaskProtocol().BrainMask_SystemPath_imagemath << " had an issue." << std::endl;
+          outfile << protocol->GetBrainMaskProtocol().BrainMask_SystemPath_imagemath << " had an issue." << std::endl;
+      }
   }
-
-  protocol->GetBrainMaskProtocol(). BrainMask_Image = Result_b0_masked; // brain mask image
-
-  //QStringList rm_temp2;
-  //rm_temp2.append("B0.nrrd");
-  //rm_temp2.append("B0.nii.gz");
-  //rm_temp2.append("tensor.nrrd");
-  //rm_temp2.append("B0_bet_mask.nii.gz");
-  //rm_temp2.append("B0_bet.nii.gz");
-
-  //std::cout << "rm "  << (rm_temp2.join(" ") ).toStdString() << std::endl;
-  //ret = process->execute( "rm", rm_temp2);
+  protocol->GetBrainMaskProtocol(). BrainMask_Image = Result_FSL_masked; // brain mask image
 
   outfile.close();
 

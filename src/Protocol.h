@@ -163,7 +163,7 @@ struct EddyMotionCorrectionProtocol
 struct BrainMaskProtocol
   {
   bool bMask;
-  int BrainMask_Method; // 0 : FSL_bet 1:Slicer DiffusionWeightedVolumeMasking 2:user
+  int BrainMask_Method; // 0 : FSL_bet_using_B0 1:Slicer DiffusionWeightedVolumeMasking 2:user 3:FSL_bet_using_IDWI
   std::string BrainMask_SystemPath_FSL;
   std::string BrainMask_SystemPath_Slicer;
   std::string BrainMask_SystemPath_convertITK;
@@ -259,7 +259,7 @@ public:
     BRAINMASK_METHOD_FSL = 0,
     BRAINMASK_METHOD_SLICER,
     BRAINMASK_METHOD_OPTION,
-
+    BRAINMASK_METHOD_FSL_IDWI,
     };
 
   struct DiffusionDir
