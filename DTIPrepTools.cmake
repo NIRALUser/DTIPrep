@@ -179,6 +179,8 @@ if( EXTENSION_SUPERBUILD_BINARY_DIR )
   set( NotCLIToolsList
     ImageMath
     convertITKformats
+    dtiestim
+    dtiprocess
      )
   INSTALL_EXECUTABLE( OUTPUT_DIR ${NOCLI_INSTALL_DIR} LIST_EXEC ${NotCLIToolsList} )
 

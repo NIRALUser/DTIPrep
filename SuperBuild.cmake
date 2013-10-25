@@ -22,14 +22,15 @@ if( DTIPrep_BUILD_SLICER_EXTENSION )
   set( USE_SYSTEM_Teem ON CACHE BOOL "Use system Teem" FORCE )
 #  set( USE_SYSTEM_ITK ON CACHE BOOL "Use system ITK" FORCE)
 #  set( USE_SYSTEM_SlicerExecutionModel ON CACHE BOOL "Use system ITK" FORCE)
-  set( BUILD_SHARED_LIBS OFF CACHE BOOL "Use system ITK" FORCE)
+  set( BUILD_SHARED_LIBS OFF CACHE BOOL "Use shared libraries" FORCE)
   set(EXTENSION_SUPERBUILD_BINARY_DIR ${${EXTENSION_NAME}_BINARY_DIR} )
   unsetForSlicer(NAMES CMAKE_MODULE_PATH CMAKE_C_COMPILER CMAKE_CXX_COMPILER DCMTK_DIR ITK_DIR SlicerExecutionModel_DIR VTK_DIR QT_QMAKE_EXECUTABLE ITK_VERSION_MAJOR CMAKE_CXX_FLAGS CMAKE_C_FLAGS Teem_DIR)
   find_package(Slicer REQUIRED)
   include(${Slicer_USE_FILE})
-  unsetAllForSlicerBut( NAMES VTK_DIR QT_QMAKE_EXECUTABLE DCMTK_DIR Teem_DIR)
-  resetForSlicer(NAMES CMAKE_MODULE_PATH CMAKE_C_COMPILER CMAKE_CXX_COMPILER ITK_VERSION_MAJOR ITK_DIR SlicerExecutionModel_DIR CMAKE_CXX_FLAGS CMAKE_C_FLAGS)
-  set( NIRAL_UTILITIES_DEPENDS niral_utilities)
+  unsetAllForSlicerBut( NAMES VTK_DIR QT_QMAKE_EXECUTABLE DCMTK_DIR Teem_DIR )
+  resetForSlicer(NAMES CMAKE_MODULE_PATH CMAKE_C_COMPILER CMAKE_CXX_COMPILER CMAKE_CXX_FLAGS CMAKE_C_FLAGS ITK_DIR SlicerExecutionModel_DIR ITK_VERSION_MAJOR )
+  set( USE_NIRALUtilities ON CACHE BOOL "Build NIRALUtilities" FORCE )
+  set( USE_DTIProcess ON CACHE BOOL "Build DTIProcess" FORCE )
 endif()
 #-----------------------------------------------------------------------------
 # Git protocole option
@@ -124,7 +125,7 @@ option(${PROJECT_NAME}_BUILD_DICOM_SUPPORT "Build Dicom Support" ON)
 # ${LOCAL_PROJECT_NAME} dependency list
 #------------------------------------------------------------------------------
 
-set(${LOCAL_PROJECT_NAME}_DEPENDENCIES DCMTK ITKv4 SlicerExecutionModel VTK BRAINSTools ${NIRAL_UTILITIES_DEPENDS} )
+set(${LOCAL_PROJECT_NAME}_DEPENDENCIES DCMTK ITKv4 SlicerExecutionModel VTK BRAINSTools )
 
 if(BUILD_STYLE_UTILS)
   list(APPEND ${LOCAL_PROJECT_NAME}_DEPENDENCIES Cppcheck KWStyle Uncrustify)
@@ -363,7 +364,6 @@ endif()
 
 option(USE_DTIProcess "Build DTIProcess" OFF)
 if(USE_DTIProcess)
-  include(${CMAKE_CURRENT_LIST_DIR}/SuperBuild/External_Boost.cmake)
   include(${CMAKE_CURRENT_LIST_DIR}/SuperBuild/External_DTIProcess.cmake)
 endif()
 

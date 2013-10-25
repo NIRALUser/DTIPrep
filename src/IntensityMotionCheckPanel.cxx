@@ -6165,12 +6165,14 @@ void IntensityMotionCheckPanel::on_pushButton_Pathdefault_clicked()
   //std::cout << "Test mahshid " << std::endl;
   std::string program;
   std::string notFound;
-
+  std::vector< std::string > defaultPaths ;
+  defaultPaths.push_back( "../ExternalBin" );
+  defaultPaths.push_back( "../../../ExternalBin" );
   // The protocol paths are bet2,DiffusionWeightedVolumeMasking,dtiestim,dtiprocess and denoisingfilter.
   // They are saved in protocol in BrainMaskProtocol and DTIProtocol structures.
 
   // BrainMask: FSL_bet
-  program = itksys::SystemTools::FindProgram("bet2");
+  program = itksys::SystemTools::FindProgram("bet2",defaultPaths);
   //std::cout << "Test mahshid " << program.c_str() << std::endl;
   if( program.empty() )
     {
@@ -6193,7 +6195,7 @@ void IntensityMotionCheckPanel::on_pushButton_Pathdefault_clicked()
     }
 
   // convertitk
-  program = itksys::SystemTools::FindProgram("convertITKformats");
+  program = itksys::SystemTools::FindProgram("convertITKformats",defaultPaths);
   //std::cout << "Test mahshid " << program.c_str() << std::endl;
   if( program.empty() )
     {
@@ -6210,7 +6212,7 @@ void IntensityMotionCheckPanel::on_pushButton_Pathdefault_clicked()
     }
 
   // convertitk
-  program = itksys::SystemTools::FindProgram("ImageMath");
+  program = itksys::SystemTools::FindProgram("ImageMath",defaultPaths);
  // std::cout << "Test mahshid " << program.c_str() << std::endl;
   if( program.empty() )
     {
@@ -6243,7 +6245,7 @@ void IntensityMotionCheckPanel::on_pushButton_Pathdefault_clicked()
     }
 
   // DTI estimation: dtiestim and dtiprocess
-  program = itksys::SystemTools::FindProgram("dtiestim");
+  program = itksys::SystemTools::FindProgram("dtiestim",defaultPaths);
   if( program.empty() )
     {
     if( lineEdit_dtiestim->text().isEmpty() )
@@ -6258,7 +6260,7 @@ void IntensityMotionCheckPanel::on_pushButton_Pathdefault_clicked()
     this->GetTreeWidgetProtocol()->topLevelItem(16)->child(0)->setText( 1, QString::fromStdString(program) );
     }
 
-  program = itksys::SystemTools::FindProgram("dtiprocess");
+  program = itksys::SystemTools::FindProgram("dtiprocess",defaultPaths);
   if( program.empty() )
     {
     if( lineEdit_dtiprocess->text().isEmpty() )
