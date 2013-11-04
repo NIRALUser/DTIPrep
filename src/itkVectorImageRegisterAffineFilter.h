@@ -32,6 +32,8 @@
 #include <itkImageRegistrationMethod.h>
 #include <itkMattesMutualInformationImageToImageMetric.h>
 #include <itkLinearInterpolateImageFunction.h>
+#include <itkBSplineInterpolateImageFunction.h>
+#include "itkWindowedSincInterpolateImageFunction.h"
 #include <itkAffineTransform.h>
 #include <itkCenteredTransformInitializer.h>
 #include <itkTimeProbesCollectorBase.h>
@@ -133,10 +135,23 @@ public:
   typedef itk::MattesMutualInformationImageToImageMetric<
     FixedImageType,
     FixedImageType>        MetricType;
-
+  typedef InterpolateImageFunction<
+    FixedImageType,
+    double >   InterpolatorType;
   typedef itk::LinearInterpolateImageFunction<
     FixedImageType,
-    double>         InterpolatorType;
+    double>    LinearInterpolatorType;
+  typedef BSplineInterpolateImageFunction<
+    FixedImageType,
+    double>    BSplineInterpolatorType;//we will use order 3
+  typedef WindowedSincInterpolateImageFunction<
+    FixedImageType,
+    4,
+    Function::HammingWindowFunction< 4 >,
+    ZeroFluxNeumannBoundaryCondition< FixedImageType, FixedImageType > ,
+    double>   WindowedSincInterpolatorType ;//default is Hamming/ZeroFluxNeumannBoundaryCondition
+
+
 
   typedef itk::ImageRegistrationMethod<
     FixedImageType,
@@ -207,6 +222,8 @@ public:
   // itkSetObjectMacro (MovingImage, InputImageType);
   itkGetObjectMacro(Output, OutputImageType);
 
+  itkGetMacro(InterpolationMethod, int);
+  itkSetMacro(InterpolationMethod, int);
   itkSetMacro(NumberOfSpatialSamples, int);
   itkSetMacro(NumberOfIterations, int);
   itkSetMacro(TranslationScale, float);
@@ -239,6 +256,7 @@ private:
   float       m_RelaxationFactor;
   int         m_NumberOfSpatialSamples;
   int         m_NumberOfIterations;
+  int         m_InterpolationMethod ;
   std::string m_OutputParameterFile;
 };   // end of class
 } // end namespace itk

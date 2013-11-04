@@ -22,7 +22,7 @@
 #include <vcl_algorithm.h>
 
 // The version of DTI prep should be incremented with each algorithm changes
-static const std::string DTIPREP_VERSION("1.2.1");
+static const std::string DTIPREP_VERSION("1.2.2");
 
 vnl_matrix_fixed<double, 3, 3>
 CIntensityMotionCheck::GetMeasurementFrame(
@@ -2273,7 +2273,7 @@ bool CIntensityMotionCheck::EddyMotionCorrectIowa( DwiImageType::Pointer dwi )
     EddyMotionCorrectorTypeIowa::Pointer EddyMotionCorrectorIowa
       = EddyMotionCorrectorTypeIowa::New();
     EddyMotionCorrectorIowa->SetInput( dwi );
-
+    EddyMotionCorrectorIowa->SetInterpolationMethod( protocol->GetEddyMotionCorrectionProtocol().interpolation);
     // find the gradient with the smallest b-value
     int smallestGradient = -1;
     if( baselineNumberLocal == 0 )
@@ -2694,6 +2694,7 @@ bool CIntensityMotionCheck::EddyMotionCorrect( DwiImageType::Pointer dwi )
     EddyMotionCorrectorType::Pointer EddyMotionCorrector
       = EddyMotionCorrectorType::New();
     EddyMotionCorrector->SetInput( dwi);
+    EddyMotionCorrector->SetInterpolationMethod( protocol->GetEddyMotionCorrectionProtocol().interpolation );
     EddyMotionCorrector->SetReportFileName(m_ReportFileName );
     EddyMotionCorrector->SetReportFileMode(
       protocol->GetEddyMotionCorrectionProtocol().reportFileMode );

@@ -339,8 +339,22 @@ bool DWIHeadMotionEddyCurrentCorrection::RegistrationSingleDWI(
   // TODO:  Resample filter should provide options on the command line
   // TODO: for selecting INTERPLATOR as windowed sinc, bspline, or linear interpolation
   // TODO: resampler->SetInterpolator( windowSincInterpoloator );
-  resampler->SetInterpolator( linearInterpolator );
-
+  InterpolatorType::Pointer interpolator ;//= InterpolatorType::New();
+  if( m_InterpolationMethod == 1 )
+  {
+      BSplineInterpolatorType::Pointer bsinterpolator = BSplineInterpolatorType::New() ;
+      bsinterpolator->SetSplineOrder( 3 ) ;
+      interpolator = bsinterpolator ;
+  }
+  else if( m_InterpolationMethod == 2 )
+  {
+      interpolator = WindowedSincInterpolatorType::New() ;
+  }
+  else
+  {
+      interpolator = LinearInterpolatorType::New() ;
+  }
+  resampler->SetInterpolator( interpolator );
     {
     //
     // TODO:  Describe what is happening with the ShiftScaleFilter.  I don't understand this.

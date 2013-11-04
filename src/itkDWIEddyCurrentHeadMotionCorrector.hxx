@@ -55,7 +55,7 @@ DWIEddyCurrentHeadMotionCorrector<TImageType>
   m_ReportFileMode = DWIEddyCurrentHeadMotionCorrector::REPORT_FILE_NEW;
 
   bValues.clear();
-
+  m_InterpolationMethod = 0 ;
   CorrectDoneOff();
 }
 
@@ -351,6 +351,7 @@ DWIEddyCurrentHeadMotionCorrector<TImageType>
 
   this->re.SetGradients( DiffusionVectors );
   this->re.SetFixedImage( b0Image );
+  this->re.SetInterpolationMethod( m_InterpolationMethod ) ;
   // set baseline images
   for( int kLocal = 0; kLocal < nBaseline; kLocal++ )
     {

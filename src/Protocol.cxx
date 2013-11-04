@@ -244,6 +244,7 @@ void Protocol::initEddyMotionCorrectionProtocol()
   eddyMotionCorrectionProtocol.outputDWIFileNameSuffix = "";
   eddyMotionCorrectionProtocol.reportFileNameSuffix = "_QCReport.txt";
   eddyMotionCorrectionProtocol.reportFileMode = 1; // 0: new   1: append
+  eddyMotionCorrectionProtocol.interpolation = LINEAR_INTERPOLATION ;
 }
 
 void Protocol::initDTIProtocol()
@@ -840,7 +841,21 @@ void Protocol::printEddyMotionCorrectionProtocol()
     {
     std::cout << "\treportFileMode: new" << std::endl;
     }
-
+  switch( GetEddyMotionCorrectionProtocol().interpolation )
+  {
+    case LINEAR_INTERPOLATION:
+      std::cout << "\tEddy motion correction interpolation method: Linear" << std::endl ;
+      break ;
+    case BSPLINE_INTERPOLATION:
+      std::cout << "\tEddy motion correction interpolation method: BSpline (order 3)" << std::endl ;
+      break ;
+    case WINDOWEDSINC_INTERPOLATION:
+      std::cout << "\tEddy motion correction interpolation method: Windowed Sync (Hamming)" << std::endl ;
+      break ;
+    default:
+      std::cout << "\tEddy motion correction interpolation method: Error, type not supported" << std::endl ;
+      break ;
+  }
   if( GetEddyMotionCorrectionProtocol().reportFileMode == 1 )
     {
     std::cout << "\treportFileMode: append" << std::endl;
@@ -1606,6 +1621,23 @@ void Protocol::Save( std::string xml)
   outfile << "        </entry>" << std::endl;
   outfile << "        <entry parameter=\"EDDYMOTION_reportFileNameSuffix\">" << std::endl;
   outfile << "            <value>" << GetEddyMotionCorrectionProtocol().reportFileNameSuffix << "</value>" << std::endl;
+  outfile << "        </entry>" << std::endl;
+  outfile << "        <entry parameter=\"EDDYMOTION_InterpolationMethod\">" << std::endl;
+  switch( GetEddyMotionCorrectionProtocol().interpolation )
+    {
+    case Protocol::LINEAR_INTERPOLATION:
+      outfile << "            <value>Linear</value>" << std::endl;
+      break;
+    case Protocol::BSPLINE_INTERPOLATION:
+      outfile << "            <value>BSpline</value>" << std::endl;
+      break;
+    case Protocol::WINDOWEDSINC_INTERPOLATION:
+      outfile << "            <value>WindowedSync</value>" << std::endl;
+      break;
+    default:
+      outfile << "            <value></value>" << std::endl;
+      break;
+    }
   outfile << "        </entry>" << std::endl;
   outfile << "        <entry parameter=\"EDDYMOTION_reportFileMode\">" << std::endl;
   outfile << "            <value>" << GetEddyMotionCorrectionProtocol().reportFileMode << "</value>" << std::endl;

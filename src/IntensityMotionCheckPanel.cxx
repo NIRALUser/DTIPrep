@@ -378,7 +378,7 @@ BSplineOptimized,
 }
 
 
-void IntensityMotionCheckPanel::SetBaselineAverageInterpolationMethod()
+void IntensityMotionCheckPanel::SetInterpolationMethod(int & interpolation , int parentID , int childID )
 {
     QString str_average = QString("Please select the interpolation method used to compute the average baseline" );
     QMessageBox msgBox;
@@ -386,30 +386,29 @@ void IntensityMotionCheckPanel::SetBaselineAverageInterpolationMethod()
     QPushButton * linear = msgBox.addButton( tr("Linear"), QMessageBox::ActionRole);
     QPushButton * bspline = msgBox.addButton( tr("BSpline (order 3)"), QMessageBox::ActionRole);
     QPushButton * hamming = msgBox.addButton( tr("Windowedsinc (Hamming)"), QMessageBox::ActionRole);
-    QPushButton * Cancel = msgBox.addButton( tr("Cancel"), QMessageBox::ActionRole);
+    msgBox.addButton( tr("Cancel"), QMessageBox::ActionRole);
     msgBox.exec();
     bool setAverageInterpolationMethod = false ;
     if( msgBox.clickedButton() == linear )
     {
-        this->GetProtocol().GetBaselineAverageProtocol().interpolation = Protocol::LINEAR_INTERPOLATION ;
+        interpolation = Protocol::LINEAR_INTERPOLATION ;
         setAverageInterpolationMethod = true ;
     }
     else if( msgBox.clickedButton() == bspline)
     {
-        this->GetProtocol().GetBaselineAverageProtocol().interpolation = Protocol::BSPLINE_INTERPOLATION ;
+        interpolation = Protocol::BSPLINE_INTERPOLATION ;
         setAverageInterpolationMethod = true ;
     }
     else if( msgBox.clickedButton() == hamming )
     {
-        this->GetProtocol().GetBaselineAverageProtocol().interpolation = Protocol::WINDOWEDSINC_INTERPOLATION ;
+        interpolation = Protocol::WINDOWEDSINC_INTERPOLATION ;
         setAverageInterpolationMethod = true ;
     }
     if( setAverageInterpolationMethod )
     {
         // Set BrainMask parameters in the protocol
-        this->GetTreeWidgetProtocol()->topLevelItem(10)
-                ->child(1)->setText( 1,QString("%1").arg(
-                                         this->GetProtocol().GetBaselineAverageProtocol().interpolation, 0, 10) );
+        this->GetTreeWidgetProtocol()->topLevelItem(parentID)
+                ->child(childID)->setText( 1,QString("%1").arg(interpolation, 0, 10) );
     }
 }
 
@@ -436,7 +435,12 @@ void IntensityMotionCheckPanel::on_treeWidget_itemDoubleClicked(
     }
     if( item->text(0) == tr("BASELINE_averageInterpolationMethod") )
     {
-        SetBaselineAverageInterpolationMethod() ;
+        SetInterpolationMethod(this->GetProtocol().GetBaselineAverageProtocol().interpolation,10,1) ;
+    }
+    if( item->text(0) == tr("EDDYMOTION_interpolationMethod") )
+    {
+        SetInterpolationMethod(this->GetProtocol().GetEddyMotionCorrectionProtocol().
+                                              interpolation,11,8) ;
     }
 }
 
@@ -2896,6 +2900,13 @@ void IntensityMotionCheckPanel::UpdateProtocolToTreeWidget()
                                                                       GetEddyMotionCorrectionProtocol()
                                                                       .
                                                                       reportFileNameSuffix) );
+
+  QTreeWidgetItem *itemEddyMotionInterpolationMethod = new QTreeWidgetItem(
+      itemEddyMotionCorrection);
+  itemEddyMotionInterpolationMethod->setText( 0, tr("EDDYMOTION_interpolationMethod") );
+  itemEddyMotionInterpolationMethod->setText( 1,
+                                      QString("%1").arg(this->GetProtocol().GetEddyMotionCorrectionProtocol().
+                                                        interpolation,  0, 10) );
 
   QTreeWidgetItem *itemEddyMotionReportFileMode = new QTreeWidgetItem(
       itemEddyMotionCorrection);

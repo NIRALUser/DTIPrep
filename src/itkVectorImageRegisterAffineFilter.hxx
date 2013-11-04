@@ -45,6 +45,7 @@ VectorImageRegisterAffineFilter<TInputImage, TOutputImage>
   m_MinimumStepLength = 0.0001;
   m_RelaxationFactor = 0.5;
   m_OutputParameterFile = "";
+  m_InterpolationMethod = 0 ;
 }
 
 template <class TInputImage, class TOutputImage>
@@ -60,9 +61,22 @@ void VectorImageRegisterAffineFilter<TInputImage, TOutputImage>
 
   MetricTypePointer       metric        = MetricType::New();
   OptimizerTypePointer    optimizer     = OptimizerType::New();
-  InterpolatorTypePointer interpolator  = InterpolatorType::New();
+  InterpolatorTypePointer interpolator  ;
   RegistrationTypePointer registration  = RegistrationType::New();
-
+  if( m_InterpolationMethod == 1 )
+  {
+      typename BSplineInterpolatorType::Pointer bsinterpolator = BSplineInterpolatorType::New() ;
+      bsinterpolator->SetSplineOrder( 3 ) ;
+      interpolator = bsinterpolator ;
+  }
+  else if( m_InterpolationMethod == 2 )
+  {
+      interpolator = WindowedSincInterpolatorType::New() ;
+  }
+  else
+  {
+      interpolator = LinearInterpolatorType::New() ;
+  }
   /* Allocate Output Image*/
   m_Output = OutputImageType::New();
 #if 0

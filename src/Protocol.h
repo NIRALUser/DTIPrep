@@ -159,6 +159,7 @@ struct EddyMotionCorrectionProtocol
   std::string outputDWIFileNameSuffix;
   std::string reportFileNameSuffix;
   int reportFileMode; // 0: new   1: append
+  int interpolation; //0: linear , 1:bspline of order 3, 2: WindowedSinc (hamming)
   };
 
 struct BrainMaskProtocol

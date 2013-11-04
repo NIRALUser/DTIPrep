@@ -142,6 +142,10 @@ public:
   itkGetConstMacro( ReportType, int );
   itkSetMacro( ReportType, int  );
 
+  /** Get & Set the interpolation method type */
+  itkGetConstMacro( InterpolationMethod, int );
+  itkSetMacro( InterpolationMethod, int  );
+
   /** DWIEddyCurrentHeadMotionCorrector produces an image which corrects the eddy-motion and head motion artifacts and updates the diffusion wieghting. As such, DWIEddyCurrentHeadMotionCorrector needs to provide
   * an implementation for GenerateOutputInformation() in order to set the correct mete
   * information.The original documentation of this method is below.
@@ -168,6 +172,7 @@ private:
 
   /** parameters */
   int   m_NumberOfBins;
+  int   m_InterpolationMethod;
   int   m_Samples;
   float m_TranslationScale;
   float m_StepLength;

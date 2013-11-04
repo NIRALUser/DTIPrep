@@ -288,7 +288,7 @@ public:
 private:
   void SetBrainMaskProtocol() ;
   void SetBaselineAverageMethod() ;
-  void SetBaselineAverageInterpolationMethod() ;
+  void SetInterpolationMethod(int &interpolation, int parentID, int childID) ;
 
 
   bool     bProtocol;

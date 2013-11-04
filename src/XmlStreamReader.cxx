@@ -252,6 +252,8 @@ void XmlStreamReader::InitializeProtocolStringValues()
     = EDDYMOTION_minStepLength;
   s_mapProtocolStringValues["EDDYMOTION_relaxFactor"]
     = EDDYMOTION_relaxFactor;
+  s_mapProtocolStringValues["EDDYMOTION_interpolation"]
+    = EDDYMOTION_interpolation;
   // s_mapProtocolStringValues["EDDYMOTION_maxNumberOfIterations"]
   // = EDDYMOTION_maxNumberOfIterations;
 
@@ -2109,6 +2111,20 @@ void XmlStreamReader::parseXMLParametersToProtocol()
           protocol->GetEddyMotionCorrectionProtocol().reportFileNameSuffix
             =  paremeters[i].value.toStdString();
           break;
+      case EDDYMOTION_interpolation:
+        if( paremeters[i].value.toLower().toStdString() == "bspline" )
+        {
+          protocol->GetEddyMotionCorrectionProtocol().interpolation = Protocol::BSPLINE_INTERPOLATION ;
+        }
+        else if( paremeters[i].value.toLower().toStdString() == "windowedsync" )
+        {
+          protocol->GetEddyMotionCorrectionProtocol().interpolation = Protocol::WINDOWEDSINC_INTERPOLATION ;
+        }
+        else
+        {
+          //if "linear" or anything we do not know, set to linear
+          protocol->GetEddyMotionCorrectionProtocol().interpolation = Protocol::LINEAR_INTERPOLATION ;
+        }
         case EDDYMOTION_reportFileMode:
           protocol->GetEddyMotionCorrectionProtocol().reportFileMode
             =  paremeters[i].value.toInt();

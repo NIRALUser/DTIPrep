@@ -6,7 +6,7 @@
 #include "itkLinearInterpolateImageFunction.h"
 #include "itkGradientSteepestDescentOptimizer.h"
 #include "itkGradientSteepestDescentBaseOptimizer.h"
-
+#include <itkBSplineInterpolateImageFunction.h>
 #include "itkWindowedSincInterpolateImageFunction.h"
 #include "itkCenteredTransformInitializer.h"
 #include "itkAffineTransform.h"
@@ -78,6 +78,15 @@ public:
     this->header = header;
       }
   */
+  inline int GetInterpolationMethod()
+  {
+      return m_InterpolationMethod ;
+  }
+
+  inline void SetInterpolationMethod( int interpolationMethod )
+  {
+      m_InterpolationMethod = interpolationMethod ;
+  }
 
   inline GradientContainerType GetGradients()
   {
@@ -149,6 +158,7 @@ private:
   unsigned int numberOfBins;
   unsigned int samples;
   unsigned int maxNumberOfIterations;
+  int m_InterpolationMethod;
 
   TextType fixedImageFileName;
   TextType movingImageFileName;
@@ -187,10 +197,23 @@ private:
   typedef itk::MattesMutualInformationImageToImageMetric<
     ImageType,
     ImageType>    MetricType;
-
+  typedef InterpolateImageFunction<
+    ImageType,
+    PrecisionType >   InterpolatorType;
   typedef itk::LinearInterpolateImageFunction<
     ImageType,
     PrecisionType>    LinearInterpolatorType;
+
+  typedef BSplineInterpolateImageFunction<
+    ImageType,
+    PrecisionType>    BSplineInterpolatorType;//we will use order 3
+
+  typedef WindowedSincInterpolateImageFunction<
+    ImageType,
+    4,
+    Function::HammingWindowFunction< 4 >,
+    ZeroFluxNeumannBoundaryCondition< ImageType, ImageType > ,
+    PrecisionType>   WindowedSincInterpolatorType ;//default is Hamming/ZeroFluxNeumannBoundaryCondition
 
   typedef itk::ImageRegistrationMethod<
     ImageType,
