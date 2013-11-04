@@ -286,6 +286,10 @@ public:
   }
 
 private:
+  void SetBrainMaskProtocol() ;
+  void SetBaselineAverageMethod() ;
+  void SetBaselineAverageInterpolationMethod() ;
+
 
   bool     bProtocol;
   Protocol protocol;

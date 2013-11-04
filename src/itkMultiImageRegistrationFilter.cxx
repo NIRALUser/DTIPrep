@@ -44,6 +44,7 @@ MultiImageRegistrationFilter
   m_BsplineRegularizationFactor = 1e-1;
   m_ParzenWindowStandardDeviation = 0.4;
   m_GaussianFilterKernelWidth = 2.0;
+  m_InterpolationMethod = 0 ;
 }
 
 MultiImageRegistrationFilter
@@ -86,7 +87,7 @@ void MultiImageRegistrationFilter
     AffineTransformType::Pointer    affineTransform = AffineTransformType::New();
     BSplineTransformType::Pointer   bsplineTransform = BSplineTransformType::New();
     BSplineInitializerType::Pointer bsplineInitializer = BSplineInitializerType::New();
-    InterpolatorType::Pointer       interpolator = InterpolatorType::New();
+    LinearInterpolatorType::Pointer       interpolator = LinearInterpolatorType::New();
     m_AffineTransformArray.push_back(affineTransform);
     m_BsplineTransformArray.push_back(bsplineTransform);
     m_InterpolatorArray.push_back(interpolator);
@@ -305,7 +306,21 @@ MultiImageRegistrationFilter
     {
     ResampleFilterType::Pointer imageResample = ResampleFilterType::New();
 
-    InterpolatorType::Pointer interpolator = InterpolatorType::New();
+    InterpolatorType::Pointer interpolator ;//= InterpolatorType::New();
+    if( m_InterpolationMethod == 1 )
+    {
+        BSplineInterpolatorType::Pointer bsinterpolator = BSplineInterpolatorType::New() ;
+        bsinterpolator->SetSplineOrder( 3 ) ;
+        interpolator = bsinterpolator ;
+    }
+    else if( m_InterpolationMethod == 2 )
+    {
+        interpolator = WindowedSincInterpolatorType::New() ;
+    }
+    else
+    {
+        interpolator = LinearInterpolatorType::New() ;
+    }
     imageResample->SetInterpolator( interpolator );
     imageResample->SetTransform( m_BsplineTransformArray[i] );
 
@@ -316,6 +331,10 @@ MultiImageRegistrationFilter
     imageResample->SetOutputDirection( m_InputImageArray[0]->GetDirection() );
     imageResample->SetDefaultPixelValue( 0 );
     imageResample->Update();
+    typedef itk::ClampImageFilter< ImageType, ImageType > ClampImageFilterType ;
+    ClampImageFilterType::Pointer clampFilter = ClampImageFilterType::New() ;
+    clampFilter->SetInput( imageResample->GetOutput() ) ;
+    clampFilter->SetBounds( 0.0 , std::numeric_limits<InternalPixelType>::max() ) ;
     naryMeanImageFilter->SetInput(i, imageResample->GetOutput() );
     }
   naryMeanImageFilter->Update();

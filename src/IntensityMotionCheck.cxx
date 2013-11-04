@@ -2000,6 +2000,7 @@ bool CIntensityMotionCheck::BaselineAverage( DwiImageType::Pointer dwi )
     BaselineAverager->SetStopThreshold(
       protocol->GetBaselineAverageProtocol().stopThreshold );
     BaselineAverager->SetMaxIteration( 2 );
+    BaselineAverager->SetAverageInterpolationMethod( protocol->GetBaselineAverageProtocol().interpolation );
     BaselineAverager->SetReportType(protocol->GetReportType() );
 
     try

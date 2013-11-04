@@ -267,33 +267,10 @@ void IntensityMotionCheckPanel::on_treeWidget_Results_currentItemChanged(
   // }
 }
 
-void IntensityMotionCheckPanel::on_treeWidget_itemDoubleClicked(
-  QTreeWidgetItem *item,
-  int col)
+void IntensityMotionCheckPanel::SetBrainMaskProtocol()
 {
-
-  if( col == 1 && bProtocolTreeEditable )
-    {
-    treeWidget->openPersistentEditor(item, col);
-    }
-
-  if( item == NULL )
-    {
-    return;
-    }
-
-  if( item->text(0).left(22) == tr("BRAINMASK_method") )
-    {
-    std::string str = item->text(0).toStdString();
-
     QString str_brainmask = QString("Please select brain masking approach." );
-    QString str_brainmask2 = QString("Please select path." );
-    QString str_brainmask3 = QString("No path was selected." );
-
     QMessageBox msgBox;
-    QMessageBox msgBox2;
-    QMessageBox msgBox3;
-
     msgBox.setText( str_brainmask );
     QPushButton * FSL = msgBox.addButton( tr("FSL bet (B0)"), QMessageBox::ActionRole);
     QPushButton * FSL_IDWI = msgBox.addButton( tr("FSL bet (IDWI)"), QMessageBox::ActionRole);
@@ -301,94 +278,168 @@ void IntensityMotionCheckPanel::on_treeWidget_itemDoubleClicked(
     QPushButton * Option = msgBox.addButton( tr("User mask"), QMessageBox::ActionRole);
     QPushButton * Cancel = msgBox.addButton( tr("Cancel"), QMessageBox::ActionRole);
     msgBox.exec();
-
+    bool setBrainMaskProtocol = false ;
     if( msgBox.clickedButton() == FSL || msgBox.clickedButton() == FSL_IDWI )
-      {
-      std::cout << "Protocol Tree child 14 " << std::endl;
-      if( msgBox.clickedButton() == FSL )
-      {
-        this->GetProtocol().GetBrainMaskProtocol().BrainMask_Method = Protocol::BRAINMASK_METHOD_FSL ;
-      }
-      else
-      {
-        this->GetProtocol().GetBrainMaskProtocol().BrainMask_Method = Protocol::BRAINMASK_METHOD_FSL_IDWI ;
-      }
-      // Set BrainMask parameters in the protocol
-      this->GetTreeWidgetProtocol()->topLevelItem(14)->child(0)->setText( 1,
-                                                                          QString("%1").arg(this->GetProtocol().
-                                                                                            GetBrainMaskProtocol().
-                                                                                            BrainMask_Method, 0, 10) );
-
-      // msgBox2.setText( str_brainmask2 );
-      // msgBox2.exec();
-
-      // Finding systempath and running the brain masking method
-      this->GetProtocol().GetBrainMaskProtocol().BrainMask_SystemPath_FSL = lineEdit_FSL->text().toStdString();
-
-      if( lineEdit_FSL->text() == NULL )
+    {
+        std::cout << "Protocol Tree child 14 " << std::endl;
+        if( msgBox.clickedButton() == FSL )
         {
-        msgBox3.setText( str_brainmask3 );
-        msgBox3.exec();
-        std::cerr << "No system path was selected. " << std::endl;
-        return;
+            this->GetProtocol().GetBrainMaskProtocol().BrainMask_Method = Protocol::BRAINMASK_METHOD_FSL ;
         }
-
-     
-
-      }
+        else
+        {
+            this->GetProtocol().GetBrainMaskProtocol().BrainMask_Method = Protocol::BRAINMASK_METHOD_FSL_IDWI ;
+        }
+        setBrainMaskProtocol = true ;
+        // Finding systempath and running the brain masking method
+        this->GetProtocol().GetBrainMaskProtocol().BrainMask_SystemPath_FSL = lineEdit_FSL->text().toStdString();
+        if( lineEdit_FSL->text() == NULL )
+        {
+            QString str_brainmask3 = QString("No path was selected." );
+            QMessageBox msgBox3;
+            msgBox3.setText( str_brainmask3 );
+            msgBox3.exec();
+            std::cerr << "Set FSL_bet (bet2) path first" << std::endl;
+            return;
+        }
+    }
     if( msgBox.clickedButton() == Slicer )
-      {
-      this->GetProtocol().GetBrainMaskProtocol().BrainMask_Method = 1;
-      this->GetTreeWidgetProtocol()->topLevelItem(14)->child(0)->setText( 1,
-                                                                          QString("%1").arg(this->GetProtocol().
-                                                                                            GetBrainMaskProtocol().
-                                                                                            BrainMask_Method, 0, 10) );
-      std::cout << "brainMask Test New:" << "Slicer" << std::endl;
-      }
+    {
+        this->GetProtocol().GetBrainMaskProtocol().BrainMask_Method = Protocol::BRAINMASK_METHOD_SLICER;
+        setBrainMaskProtocol= true ;
+        std::cout << "brainMask Test New:" << "Slicer" << std::endl;
+    }
     if( msgBox.clickedButton() == Option )
-      {
-      this->GetProtocol().GetBrainMaskProtocol().BrainMask_Method = 2;
-      this->GetTreeWidgetProtocol()->topLevelItem(14)->child(0)->setText( 1,
-                                                                          QString("%1").arg(this->GetProtocol().
-                                                                                            GetBrainMaskProtocol().
-                                                                                            BrainMask_Method, 0, 10) );
-      std::cout << "brainMask Test New:" << "Option" << std::endl;
-
-      /*QString Mask_image = QFileDialog::getOpenFileName( this, tr(
-                                                           "Open nrrd masked brain image"), QDir::currentPath(),
-                                                         tr("Nrrd Files (*.nhdr *.nrrd)") );
-
-      /if( Mask_image.length() > 0 )
-        {
-        this->GetProtocol().GetBrainMaskProtocol().BrainMask_Image = Mask_image.toStdString();
-        std::cout << "brain mask Option " << this->GetProtocol().GetBrainMaskProtocol().BrainMask_Image << std::endl;
-        }
-      else
-        {
-        std::cout << "No masked brain is selected." << std::endl;
-        return;
-        }
-		*/
-      }
+    {
+        this->GetProtocol().GetBrainMaskProtocol().BrainMask_Method = Protocol::BRAINMASK_METHOD_OPTION ;
+        setBrainMaskProtocol = true ;
+        std::cout << "brainMask Test New:" << "Option" << std::endl;
+    }
+    if( setBrainMaskProtocol )
+    {
+        // Set BrainMask parameters in the protocol
+        this->GetTreeWidgetProtocol()->topLevelItem(14)
+                ->child(0)->setText( 1,QString("%1").arg(
+                                         this->GetProtocol().GetBrainMaskProtocol().BrainMask_Method, 0, 10) );
+    }
     if( msgBox.clickedButton() == Cancel )
-      {
-      std::cout << "brainMask Test New:" << "Cancel" << std::endl;
-      return;
-      }
-
+    {
+        std::cout << "brainMask Test New:" << "Cancel" << std::endl;
+        return;
     }
 }
 
-/*void IntensityMotionCheckPanel::on_treeWidget_Results_itemDoubleClicked(
-  QTreeWidgetItem *item,
-  int column)
+void IntensityMotionCheckPanel::SetBaselineAverageMethod()
 {
-  if ( bResultTreeEditable && column == 2 && item->text(0).left(8) ==
-    tr("gradient") )
-  {
-    treeWidget_Results->openPersistentEditor(item, column);
-  }
-}*/
+/*
+ *in itk::DWIBaselineAverager:
+Direct = 0,
+BaselineOptimized,
+GradientOptamized,
+BSplineOptimized,
+*/
+    QString str_average = QString("Please select the method used to compute the average baseline" );
+    QMessageBox msgBox;
+    msgBox.setText( str_average );
+    QPushButton * direct = msgBox.addButton( tr("Direct"), QMessageBox::ActionRole);
+    QPushButton * baseline = msgBox.addButton( tr("Baseline Optimized"), QMessageBox::ActionRole);
+    QPushButton * gradient = msgBox.addButton( tr("Gradient Optimized"), QMessageBox::ActionRole);
+    QPushButton * bspline = msgBox.addButton( tr("BSpline Optimized"), QMessageBox::ActionRole);
+    QPushButton * Cancel = msgBox.addButton( tr("Cancel"), QMessageBox::ActionRole);
+    msgBox.exec();
+    bool setAverageMethod = false ;
+    if( msgBox.clickedButton() == direct )
+    {
+        this->GetProtocol().GetBaselineAverageProtocol().averageMethod = 0 ;
+        setAverageMethod = true ;
+    }
+    else if( msgBox.clickedButton() == baseline)
+    {
+        this->GetProtocol().GetBaselineAverageProtocol().averageMethod = 1 ;
+        setAverageMethod = true ;
+    }
+    else if( msgBox.clickedButton() == gradient )
+    {
+        this->GetProtocol().GetBaselineAverageProtocol().averageMethod = 2 ;
+        setAverageMethod = true ;
+    }
+    if( msgBox.clickedButton() == bspline )
+    {
+        this->GetProtocol().GetBaselineAverageProtocol().averageMethod = 3 ;
+        setAverageMethod = true ;
+    }
+    if( setAverageMethod )
+    {
+        // Set BrainMask parameters in the protocol
+        this->GetTreeWidgetProtocol()->topLevelItem(10)
+                ->child(0)->setText( 1,QString("%1").arg(
+                                         this->GetProtocol().GetBaselineAverageProtocol().averageMethod, 0, 10) );
+    }
+}
+
+
+void IntensityMotionCheckPanel::SetBaselineAverageInterpolationMethod()
+{
+    QString str_average = QString("Please select the interpolation method used to compute the average baseline" );
+    QMessageBox msgBox;
+    msgBox.setText( str_average );
+    QPushButton * linear = msgBox.addButton( tr("Linear"), QMessageBox::ActionRole);
+    QPushButton * bspline = msgBox.addButton( tr("BSpline (order 3)"), QMessageBox::ActionRole);
+    QPushButton * hamming = msgBox.addButton( tr("Windowedsinc (Hamming)"), QMessageBox::ActionRole);
+    QPushButton * Cancel = msgBox.addButton( tr("Cancel"), QMessageBox::ActionRole);
+    msgBox.exec();
+    bool setAverageInterpolationMethod = false ;
+    if( msgBox.clickedButton() == linear )
+    {
+        this->GetProtocol().GetBaselineAverageProtocol().interpolation = Protocol::LINEAR_INTERPOLATION ;
+        setAverageInterpolationMethod = true ;
+    }
+    else if( msgBox.clickedButton() == bspline)
+    {
+        this->GetProtocol().GetBaselineAverageProtocol().interpolation = Protocol::BSPLINE_INTERPOLATION ;
+        setAverageInterpolationMethod = true ;
+    }
+    else if( msgBox.clickedButton() == hamming )
+    {
+        this->GetProtocol().GetBaselineAverageProtocol().interpolation = Protocol::WINDOWEDSINC_INTERPOLATION ;
+        setAverageInterpolationMethod = true ;
+    }
+    if( setAverageInterpolationMethod )
+    {
+        // Set BrainMask parameters in the protocol
+        this->GetTreeWidgetProtocol()->topLevelItem(10)
+                ->child(1)->setText( 1,QString("%1").arg(
+                                         this->GetProtocol().GetBaselineAverageProtocol().interpolation, 0, 10) );
+    }
+}
+
+void IntensityMotionCheckPanel::on_treeWidget_itemDoubleClicked(
+  QTreeWidgetItem *item,
+  int col)
+{
+    if( col == 1 && bProtocolTreeEditable )
+    {
+        treeWidget->openPersistentEditor(item, col);
+    }
+    if( item == NULL )
+    {
+        return;
+    }
+
+    if( item->text(0).left(22) == tr("BRAINMASK_method") )
+    {
+        SetBrainMaskProtocol() ;
+    }
+    if( item->text(0) == tr("BASELINE_averageMethod") )
+    {
+        SetBaselineAverageMethod() ;
+    }
+    if( item->text(0) == tr("BASELINE_averageInterpolationMethod") )
+    {
+        SetBaselineAverageInterpolationMethod() ;
+    }
+}
+
 
 void IntensityMotionCheckPanel::on_treeWidget_Results_itemChanged(
   QTreeWidgetItem *item,
@@ -1490,6 +1541,7 @@ void IntensityMotionCheckPanel::DefaultProtocol()
   this->GetProtocol().GetBaselineAverageProtocol().bAverage = true;
 
   this->GetProtocol().GetBaselineAverageProtocol().averageMethod = 1;
+  this->GetProtocol().GetBaselineAverageProtocol().interpolation = 0;
   this->GetProtocol().GetBaselineAverageProtocol().stopThreshold = 0.02;
 
   this->GetProtocol().GetBaselineAverageProtocol().outputDWIFileNameSuffix
@@ -2690,6 +2742,14 @@ void IntensityMotionCheckPanel::UpdateProtocolToTreeWidget()
   itemBaselineAverageMethod->setText( 1,
                                       QString("%1").arg(this->GetProtocol().GetBaselineAverageProtocol().
                                                         averageMethod,  0, 10) );
+
+  QTreeWidgetItem *itemBaselineAverageInterpolationMethod = new QTreeWidgetItem(
+      itemBaselineAverage);
+  itemBaselineAverageInterpolationMethod->setText( 0, tr("BASELINE_averageInterpolationMethod") );
+  itemBaselineAverageInterpolationMethod->setText( 1,
+                                      QString("%1").arg(this->GetProtocol().GetBaselineAverageProtocol().
+                                                        interpolation,  0, 10) );
+
 
   QTreeWidgetItem *itemBaselineAverageStopThreshold = new QTreeWidgetItem(
       itemBaselineAverage);

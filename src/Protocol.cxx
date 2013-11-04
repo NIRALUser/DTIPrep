@@ -227,6 +227,7 @@ void Protocol::initBaselineAverageProtocol()
   baselineAverageProtocol.outputDWIFileNameSuffix = "";
   baselineAverageProtocol.reportFileNameSuffix = "_QCReport.txt";
   baselineAverageProtocol.reportFileMode = 1; // 0: new   1: append
+  baselineAverageProtocol.interpolation = LINEAR_INTERPOLATION ;
 }
 
 void Protocol::initEddyMotionCorrectionProtocol()
@@ -754,7 +755,21 @@ void Protocol::printBaselineAverageProtocol()
     default:
       break;
     }
-
+  switch( GetBaselineAverageProtocol().interpolation )
+  {
+    case LINEAR_INTERPOLATION:
+      std::cout << "\tAverage interpolation method: Linear" << std::endl ;
+      break ;
+    case BSPLINE_INTERPOLATION:
+      std::cout << "\tAverage interpolation method: BSpline (order 3)" << std::endl ;
+      break ;
+    case WINDOWEDSINC_INTERPOLATION:
+      std::cout << "\tAverage interpolation method: Windowed Sync (Hamming)" << std::endl ;
+      break ;
+    default:
+      std::cout << "\tAverage interpolation method: Error, type not supported" << std::endl ;
+      break ;
+  }
   std::cout << "\tstopThreshold: "
             << GetBaselineAverageProtocol().stopThreshold << std::endl;
 
@@ -773,7 +788,6 @@ void Protocol::printBaselineAverageProtocol()
     {
     std::cout << "\treportFileMode: append" << std::endl;
     }
-
   std::cout << std::endl;
 }
 
@@ -1524,6 +1538,23 @@ void Protocol::Save( std::string xml)
     }
   outfile << "        <entry parameter=\"BASELINE_averageMethod\">" << std::endl;
   outfile << "            <value>" << GetBaselineAverageProtocol().averageMethod << "</value>" << std::endl;
+  outfile << "        </entry>" << std::endl;
+  outfile << "        <entry parameter=\"BASELINE_averageInterpolationMethod\">" << std::endl;
+  switch( GetBaselineAverageProtocol().interpolation )
+    {
+    case Protocol::LINEAR_INTERPOLATION:
+      outfile << "            <value>Linear</value>" << std::endl;
+      break;
+    case Protocol::BSPLINE_INTERPOLATION:
+      outfile << "            <value>BSpline</value>" << std::endl;
+      break;
+    case Protocol::WINDOWEDSINC_INTERPOLATION:
+      outfile << "            <value>WindowedSync</value>" << std::endl;
+      break;
+    default:
+      outfile << "            <value></value>" << std::endl;
+      break;
+    }
   outfile << "        </entry>" << std::endl;
   outfile << "        <entry parameter=\"BASELINE_stopThreshold\">" << std::endl;
   outfile << "            <value>" << GetBaselineAverageProtocol().stopThreshold << "</value>" << std::endl;

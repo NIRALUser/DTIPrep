@@ -1,6 +1,7 @@
 #ifndef __itkMultiImageRegistrationFilter_h
 #define __itkMultiImageRegistrationFilter_h
 
+#include <limits>
 #include <itkImage.h>
 #include "MultiResolutionMultiImageRegistrationMethod.h"
 #include "UnivariateEntropyMultiImageMetric.h"
@@ -14,8 +15,11 @@
 
 // Interpolator headers
 #include "itkLinearInterpolateImageFunction.h"
+#include <itkBSplineInterpolateImageFunction.h>
+#include <itkWindowedSincInterpolateImageFunction.h>
 #include "itkRecursiveMultiResolutionPyramidImageFilter.h"
 #include "GradientDescentLineSearchOptimizer.h"
+#include <itkClampImageFilter.h>//We clamp values under 0 that could appear after bspline of windowedsinc interpolation
 
 // header for creating mask
 #include "itkImageMaskSpatialObject.h"
@@ -215,8 +219,10 @@ public:
   typedef GradientDescentLineSearchOptimizer LineSearchOptimizerType;
 
   // Interpolator typedef
-  // typedef InterpolateImageFunction<ImageType,ScalarType        >       InterpolatorType;
-  typedef LinearInterpolateImageFunction<ImageType, ScalarType>            InterpolatorType;
+  typedef InterpolateImageFunction<ImageType,ScalarType        >           InterpolatorType;
+  typedef LinearInterpolateImageFunction<ImageType, ScalarType>            LinearInterpolatorType;
+  typedef BSplineInterpolateImageFunction<ImageType, ScalarType>           BSplineInterpolatorType;//we will use order 3
+  typedef WindowedSincInterpolateImageFunction< ImageType , 4 >            WindowedSincInterpolatorType ;//default is Hamming
   typedef UnivariateEntropyMultiImageMetric<ImageType>                     EntropyMetricType;
   typedef OptimizerType::ScalesType                                        OptimizerScalesType;
   typedef MultiResolutionMultiImageRegistrationMethod<ImageType>           RegistrationType;
@@ -252,6 +258,9 @@ public:
   itkGetObjectMacro( Output, ImageType );
   itkGetMacro(MultiLevelAffine, int);
   itkSetMacro(MultiLevelAffine, int);
+
+  itkGetMacro(InterpolationMethod, int);
+  itkSetMacro(InterpolationMethod, int);
 
   itkGetMacro(MultiLevelBspline, int);
   itkSetMacro(MultiLevelBspline, int);
@@ -317,11 +326,11 @@ private:
   std::vector<ImagePyramidType::Pointer>       m_ImagePyramidArray;
   std::vector<AffineTransformType::Pointer>    m_AffineTransformArray;
   std::vector<BSplineTransformType::Pointer>   m_BsplineTransformArray;
-  std::vector<InterpolatorType::Pointer>       m_InterpolatorArray;
+  std::vector<LinearInterpolatorType::Pointer>       m_InterpolatorArray;
   std::vector<BSplineInitializerType::Pointer> m_BsplineInitializerArray;
   int                                          m_MultiLevelAffine;
   int                                          m_MultiLevelBspline;
-
+  int                                          m_InterpolationMethod;
   double m_OptAffineLearningRate;
   double m_OptBsplineLearningRate;
 

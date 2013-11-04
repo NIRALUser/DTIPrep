@@ -220,6 +220,8 @@ void XmlStreamReader::InitializeProtocolStringValues()
     = BASELINE_averageMethod;
   s_mapProtocolStringValues["BASELINE_stopThreshold"]
     = BASELINE_stopThreshold;
+  s_mapProtocolStringValues["BASELINE_interpolation"]
+    = BASELINE_interpolation;
   s_mapProtocolStringValues["BASELINE_outputDWIFileNameSuffix"]
     = BASELINE_outputDWIFileNameSuffix;
   s_mapProtocolStringValues["BASELINE_reportFileNameSuffix"]
@@ -2015,6 +2017,21 @@ void XmlStreamReader::parseXMLParametersToProtocol()
           protocol->GetBaselineAverageProtocol().averageMethod
             =  paremeters[i].value.toInt();
           break;
+        case BASELINE_interpolation:
+          if( paremeters[i].value.toLower().toStdString() == "bspline" )
+          {
+            protocol->GetBaselineAverageProtocol().interpolation = Protocol::BSPLINE_INTERPOLATION ;
+          }
+          else if( paremeters[i].value.toLower().toStdString() == "windowedsync" )
+          {
+            protocol->GetBaselineAverageProtocol().interpolation = Protocol::WINDOWEDSINC_INTERPOLATION ;
+          }
+          else
+          {
+            //if "linear" or anything we do not know, set to linear
+            protocol->GetBaselineAverageProtocol().interpolation = Protocol::LINEAR_INTERPOLATION ;
+          }
+        break;
         case BASELINE_stopThreshold:
           protocol->GetBaselineAverageProtocol().stopThreshold
             = paremeters[i].value.toDouble();

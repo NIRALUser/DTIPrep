@@ -19,6 +19,8 @@ PURPOSE.  See the above copyright notices for more information.
 #ifndef _itkDWIBaseLineAverager_hxx
 #define _itkDWIBaseLineAverager_hxx
 
+#include "Protocol.h"
+
 #include "itkImageFileWriter.h"
 
 #include "itkDWIBaselineAverager.h"
@@ -71,6 +73,7 @@ DWIBaselineAverager<TVectorImageType>
   m_StopThreshold = 0.02;
   m_MaxIteration = 2;
   m_ReportFileMode = DWIBaselineAverager::REPORT_FILE_NEW;
+  m_AverageInterpolationMethod = Protocol::LINEAR_INTERPOLATION ;
   AverageDoneOff();
 }
 
@@ -388,6 +391,7 @@ DWIBaselineAverager<TVectorImageType>
           std::cout << "BSplineOptimized" << std::endl;
           MultiImageRegistrationFilter::Pointer registration = MultiImageRegistrationFilter::New();
           registration->SetImages(baselineContainer);
+          registration->SetInterpolationMethod(m_AverageInterpolationMethod);
           // registration->SetOptAffineNumberOfIterations(10);
           // registration->SetOptBsplineNumberOfIterations(10);
           // registration->SetNumberOfSpatialSamplesBsplinePercentage(0.005);

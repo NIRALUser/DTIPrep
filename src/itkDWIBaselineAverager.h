@@ -126,6 +126,10 @@ public:
   itkGetConstMacro( AverageMethod, int );
   itkSetMacro( AverageMethod, int );
 
+  /** Get & Set the Average interpolation Method */
+  itkGetConstMacro( AverageInterpolationMethod, int );
+  itkSetMacro( AverageInterpolationMethod, int );
+
   /** Get & Set the ReportFilename */
   itkGetConstMacro( ReportFileName, std::string );
   itkSetMacro( ReportFileName, std::string  );
@@ -203,6 +207,9 @@ private:
 
   /** average method */
   int m_AverageMethod;
+
+  /** average interpolation method */
+  int m_AverageInterpolationMethod;
 
   /** Stop Criteria */
   StopCriteriaEnum m_StopCriteria;

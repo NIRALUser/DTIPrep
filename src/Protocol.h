@@ -142,6 +142,7 @@ struct BaselineAverageProtocol
   std::string outputDWIFileNameSuffix;
   std::string reportFileNameSuffix;
   int reportFileMode; // 0: new   1: append
+  int interpolation; //0: linear , 1:bspline of order 3, 2: WindowedSinc (hamming)
   };
 
 struct EddyMotionCorrectionProtocol
@@ -261,6 +262,13 @@ public:
     BRAINMASK_METHOD_OPTION,
     BRAINMASK_METHOD_FSL_IDWI,
     };
+
+  enum
+  {
+      LINEAR_INTERPOLATION = 0,
+      BSPLINE_INTERPOLATION,
+      WINDOWEDSINC_INTERPOLATION
+  };
 
   struct DiffusionDir
     {
