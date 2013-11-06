@@ -14,7 +14,8 @@ bool BaselineOptimizedAverage(
   typename itk::Image<float, 3>::Pointer & InitialAndReturnedAverageBaseline,
   int OptimizationStopCriteria,
   float OptimiationStopThreshold,
-  unsigned int MaxIterations
+  unsigned int MaxIterations,
+  int interpolationMethod
   )
 {
 
@@ -88,7 +89,8 @@ bool BaselineOptimizedAverage(
                                                                            allImageRegistrations[i],
                                                                            0 /* baseline */,
                                                                            temporaryDeformedImages[i],
-                                                                           NULL
+                                                                           NULL,
+                                                                           interpolationMethod
                                                                            );
         //         std::cout<<" done "<<std::endl;
 

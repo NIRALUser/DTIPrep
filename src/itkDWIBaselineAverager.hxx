@@ -461,7 +461,10 @@ DWIBaselineAverager<TVectorImageType>
           std::cout << "BaselineOptimized" << std::endl;
           if( BaselineOptimizedAverage<UnsignedImageType>(baselineContainer, this->m_averagedBaseline,
                                                           this->m_StopCriteria, this->m_StopThreshold,
-                                                          this->GetMaxIteration() ) == false )
+                                                          this->GetMaxIteration() ,
+                                                          m_AverageInterpolationMethod
+                                                          ) == false
+            )
             {
             std::cout << "Since BaselineOptimized is failed, DirectAverging is applied!" << std::endl;
             this->DirectAverage();

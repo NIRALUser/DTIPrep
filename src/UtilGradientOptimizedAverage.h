@@ -85,7 +85,8 @@ DWIBaselineAverager<TImageType>
                                                                       resultLocal,
                                                                       1 /* DW gradient */,
                                                                       dummy,
-                                                                      this->m_tempIDWI
+                                                                      this->m_tempIDWI,
+                                                                      0//linear interpolation for the ID
                                                                       );
         std::cout << " done " << std::endl;
 
@@ -203,7 +204,8 @@ DWIBaselineAverager<TImageType>
                                                                     resultLocal,
                                                                     0 /* baseline */,
                                                                     temporaryDeformedImage,
-                                                                    NULL
+                                                                    NULL,
+                                                                    m_InterpolationMethod
                                                                     );
       //         std::cout<<" done "<<std::endl;
       }

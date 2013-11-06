@@ -133,7 +133,8 @@ struRigidRegResult rigidRegistration(
   const struRigidRegResult &  regResult,
   int /* baselineORidwi */,       // 0: baseline; otherwise: idwi
   typename TOutputImageType::Pointer & OutputBaselineImage,
-  typename TOutputImageType::Pointer     /* outputIDWIImage */
+  typename TOutputImageType::Pointer     /* outputIDWIImage */,
+  int interpolationMethod
   )
 {
   typedef itk::BRAINSFitHelper HelperType;
@@ -209,7 +210,26 @@ struRigidRegResult rigidRegistration(
   resampler->SetOutputDirection( fixedImage->GetDirection() );
   resampler->SetOutputStartIndex( fixedImage->GetLargestPossibleRegion().GetIndex() );
   resampler->SetSize( fixedImage->GetLargestPossibleRegion().GetSize() );
-
+  typedef InterpolateImageFunction< TMovingImageType , double > InterpolatorType ;
+  typedef LinearInterpolateImageFunction< TMovingImageType , double > LinearInterpolatorType ;
+  typedef BSplineInterpolateImageFunction< TMovingImageType , double > BSplineInterpolatorType ;//we will use order 3
+  typedef WindowedSincInterpolateImageFunction< TMovingImageType , 4 > WindowedSincInterpolatorType ;//default is Hamming
+  typename InterpolatorType::Pointer interpolator ;
+  if( interpolationMethod == 1 )
+  {
+      typename BSplineInterpolatorType::Pointer bsinterpolator = BSplineInterpolatorType::New() ;
+      bsinterpolator->SetSplineOrder( 3 ) ;
+      interpolator = bsinterpolator ;
+  }
+  else if( interpolationMethod == 2 )
+  {
+      interpolator = WindowedSincInterpolatorType::New() ;
+  }
+  else
+  {
+      interpolator = LinearInterpolatorType::New() ;
+  }
+  resampler->SetInterpolator( interpolator );
   resampler->SetDefaultPixelValue( 0 );
   resampler->Update();
 
