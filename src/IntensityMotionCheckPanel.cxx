@@ -342,10 +342,16 @@ BSplineOptimized,
     QMessageBox msgBox;
     msgBox.setText( str_average );
     QPushButton * direct = msgBox.addButton( tr("Direct"), QMessageBox::ActionRole);
-    QPushButton * baseline = msgBox.addButton( tr("Baseline Optimized"), QMessageBox::ActionRole);
+    QPushButton * baseline = msgBox.addButton( tr("Baseline Optimized (default)"), QMessageBox::ActionRole);
     QPushButton * gradient = msgBox.addButton( tr("Gradient Optimized"), QMessageBox::ActionRole);
     QPushButton * bspline = msgBox.addButton( tr("BSpline Optimized"), QMessageBox::ActionRole);
     QPushButton * Cancel = msgBox.addButton( tr("Cancel"), QMessageBox::ActionRole);
+ //#########those two methods (Gradient Optimized and BSpline Optimized) have not been tested or are not compiling correctly. We disable them.###################
+    gradient->setDisabled( true ) ;
+    bspline->setDisabled( true ) ;
+    gradient->setToolTip( "Disabled because it is not compiling correctly" ) ;
+    bspline->setToolTip( "Disabled because it has not be thoroughly tested" ) ;
+ //####################################################################################################3
     msgBox.exec();
     bool setAverageMethod = false ;
     if( msgBox.clickedButton() == direct )
@@ -383,7 +389,7 @@ void IntensityMotionCheckPanel::SetInterpolationMethod(int & interpolation , int
     QString str_average = QString("Please select the interpolation method used to compute the average baseline" );
     QMessageBox msgBox;
     msgBox.setText( str_average );
-    QPushButton * linear = msgBox.addButton( tr("Linear"), QMessageBox::ActionRole);
+    QPushButton * linear = msgBox.addButton( tr("Linear (default)"), QMessageBox::ActionRole);
     QPushButton * bspline = msgBox.addButton( tr("BSpline (order 3)"), QMessageBox::ActionRole);
     QPushButton * hamming = msgBox.addButton( tr("Windowedsinc (Hamming)"), QMessageBox::ActionRole);
     msgBox.addButton( tr("Cancel"), QMessageBox::ActionRole);

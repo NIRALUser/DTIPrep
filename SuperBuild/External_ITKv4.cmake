@@ -26,9 +26,9 @@ set(${extProjName}_REQUIRED_VERSION ${${extProjName}_VERSION_MAJOR})  #If a requ
 #endif()
 
 # Sanity checks
-if(DEFINED ${extProjName}_DIR AND NOT EXISTS ${${extProjName}_DIR})
-  message(FATAL_ERROR "${extProjName}_DIR variable is defined but corresponds to non-existing directory (${${extProjName}_DIR})")
-endif()
+#if(DEFINED ${extProjName}_DIR AND NOT EXISTS ${${extProjName}_DIR})
+#  message(FATAL_ERROR "${extProjName}_DIR variable is defined but corresponds to non-existing directory (${${extProjName}_DIR})")
+#endif()
 
 # Set dependency list
 set(${proj}_DEPENDENCIES DCMTK JPEG TIFF zlib)
