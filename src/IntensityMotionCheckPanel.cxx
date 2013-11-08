@@ -384,11 +384,10 @@ BSplineOptimized,
 }
 
 
-void IntensityMotionCheckPanel::SetInterpolationMethod(int & interpolation , int parentID , int childID )
+void IntensityMotionCheckPanel::SetInterpolationMethod(int & interpolation , int parentID , int childID , QString str_interpolation )
 {
-    QString str_average = QString("Please select the interpolation method used to compute the average baseline" );
     QMessageBox msgBox;
-    msgBox.setText( str_average );
+    msgBox.setText( str_interpolation );
     QPushButton * linear = msgBox.addButton( tr("Linear (default)"), QMessageBox::ActionRole);
     QPushButton * bspline = msgBox.addButton( tr("BSpline (order 3)"), QMessageBox::ActionRole);
     QPushButton * hamming = msgBox.addButton( tr("Windowedsinc (Hamming)"), QMessageBox::ActionRole);
@@ -410,12 +409,28 @@ void IntensityMotionCheckPanel::SetInterpolationMethod(int & interpolation , int
         interpolation = Protocol::WINDOWEDSINC_INTERPOLATION ;
         setAverageInterpolationMethod = true ;
     }
+    this->GetProtocol().GetBaselineAverageProtocol().interpolation = interpolation ;
     if( setAverageInterpolationMethod )
     {
         // Set BrainMask parameters in the protocol
         this->GetTreeWidgetProtocol()->topLevelItem(parentID)
                 ->child(childID)->setText( 1,QString("%1").arg(interpolation, 0, 10) );
     }
+}
+
+void IntensityMotionCheckPanel::SetBrainMaskFileName()
+{
+    QString file = QFileDialog::getOpenFileName(this,tr("Select a mask"),
+                         QDir::currentPath(),"Image (*.nrrd *.nhdr *mha *mhd *.gipl *.gipl.gz *.hdr *.img *.nii *.nii.gz)",
+                                                0 ) ;
+    if( file.isEmpty() )
+    {
+        return ;
+    }
+    this->GetProtocol().GetBrainMaskProtocol().BrainMask_Image = file.toStdString() ;
+    // Set brain mask in the protocol
+    this->GetTreeWidgetProtocol()->topLevelItem(14)
+            ->child(5)->setText( 1, file );
 }
 
 void IntensityMotionCheckPanel::on_treeWidget_itemDoubleClicked(
@@ -441,12 +456,18 @@ void IntensityMotionCheckPanel::on_treeWidget_itemDoubleClicked(
     }
     if( item->text(0) == tr("BASELINE_averageInterpolationMethod") )
     {
-        SetInterpolationMethod(this->GetProtocol().GetBaselineAverageProtocol().interpolation,10,1) ;
+        QString str_interpolation = QString("Please select the interpolation method used to compute the average baseline" );
+        SetInterpolationMethod(this->GetProtocol().GetBaselineAverageProtocol().interpolation,10,1,str_interpolation) ;
     }
     if( item->text(0) == tr("EDDYMOTION_interpolationMethod") )
     {
+        QString str_interpolation = QString("Please select the interpolation method used after Eddy motion correction step" );
         SetInterpolationMethod(this->GetProtocol().GetEddyMotionCorrectionProtocol().
-                                              interpolation,11,8) ;
+                                              interpolation,11,8,str_interpolation) ;
+    }
+    if( item->text(0) == tr("BRAINMASK_MaskedImage") )
+    {
+        SetBrainMaskFileName() ;
     }
 }
 
@@ -529,27 +550,17 @@ void IntensityMotionCheckPanel::on_pushButton_RunPipeline_clicked()
 	  
 	  if( m_msgBox.clickedButton() == Option )
 	  {
-	      
-	      QString Mask_image = QFileDialog::getOpenFileName( this, tr(
-	                                                             "Open nrrd masked brain image"), QDir::currentPath(),
-	                                                           tr("Nrrd Files (*.nhdr *.nrrd)") );
-
-	      if( Mask_image.length() > 0 )
+          SetBrainMaskFileName() ;
+          if( this->GetProtocol().GetBrainMaskProtocol().BrainMask_Image.empty() )
 	      {
-	          this->GetProtocol().GetBrainMaskProtocol().BrainMask_Image = Mask_image.toStdString();
-	          //std::cout << "brain mask Option " << this->GetProtocol().GetBrainMaskProtocol().BrainMask_Image << std::endl;
+              std::cout << "No masked brain is selected." << std::endl ;
+              return ;
 	      }
-	      else
-	      {
-	          std::cout << "No masked brain is selected." << std::endl;
-	          return;
-	      }
-
 	   }
 	   if( m_msgBox.clickedButton() == Cancel )
 	   {
 	        std::cout << "brainMask Test New:" << "Cancel" << std::endl;
-	        return;
+            return ;
 	   }
 
   }
@@ -6371,13 +6382,13 @@ void IntensityMotionCheckPanel::on_pushButton_FSL_clicked()
     }
 
   QString executable_file = QFileDialog::getOpenFileName( this, tr(
-                                                            "Open program executable file"), QDir::currentPath(),
-                                                          tr("Executable Files") );
-  if( executable_file.length() == 0 )
+                                                            "Open program executable file"), QDir::currentPath() ) ;
+  QFileInfo execInfo( executable_file ) ;
+  if( executable_file.length() == 0 || !execInfo.isExecutable() )
     {
     std::string text = "No file is set";
-    QMessageBox::warning(this, "Program missing", QString(text.c_str() ) );
-    return;
+    QMessageBox::warning(this, "Program missing", QString(text.c_str() ) ) ;
+    return ;
     }
 
   lineEdit_FSL->setText(executable_file);
@@ -6397,9 +6408,9 @@ void IntensityMotionCheckPanel::on_pushButton_Slicer_clicked()
     }
 
   QString executable_file = QFileDialog::getOpenFileName( this, tr(
-                                                            "Open program executable file"), QDir::currentPath(),
-                                                          tr("Executable Files") );
-  if( executable_file.length() == 0 )
+                                                            "Open program executable file"), QDir::currentPath() ) ;
+  QFileInfo execInfo( executable_file ) ;
+  if( executable_file.length() == 0 || !execInfo.isExecutable() )
     {
     std::string text = "No file is set";
     QMessageBox::warning(this, "Program missing", QString(text.c_str() ) );
@@ -6424,9 +6435,9 @@ void IntensityMotionCheckPanel::on_pushButton_dtiestim_clicked()
     }
 
   QString executable_file = QFileDialog::getOpenFileName( this, tr(
-                                                            "Open program executable file"), QDir::currentPath(),
-                                                          tr("Executable Files") );
-  if( executable_file.length() == 0 )
+                                                            "Open program executable file"), QDir::currentPath() ) ;
+  QFileInfo execInfo( executable_file ) ;
+  if( executable_file.length() == 0 || !execInfo.isExecutable() )
     {
     std::string text = "No file is set";
     QMessageBox::warning(this, "Program missing", QString(text.c_str() ) );
@@ -6451,9 +6462,9 @@ void IntensityMotionCheckPanel::on_pushButton_dtiprocess_clicked()
     }
 
   QString executable_file = QFileDialog::getOpenFileName( this, tr(
-                                                            "Open program executable file"), QDir::currentPath(),
-                                                          tr("Executable Files") );
-  if( executable_file.length() == 0 )
+                                                            "Open program executable file"), QDir::currentPath() ) ;
+  QFileInfo execInfo( executable_file ) ;
+  if( executable_file.length() == 0 || !execInfo.isExecutable() )
     {
     std::string text = "No file is set";
     QMessageBox::warning(this, "Program missing", QString(text.c_str() ) );
@@ -6477,9 +6488,9 @@ void IntensityMotionCheckPanel::on_pushButton_convertitk_clicked()
     return;
     }
   QString executable_file = QFileDialog::getOpenFileName( this, tr(
-                                                            "Open program executable file"), QDir::currentPath(),
-                                                          tr("Executable Files") );
-  if( executable_file.length() == 0 )
+                                                            "Open program executable file"), QDir::currentPath() ) ;
+  QFileInfo execInfo( executable_file ) ;
+  if( executable_file.length() == 0 || !execInfo.isExecutable() )
     {
     std::string text = "No file is set";
     QMessageBox::warning(this, "Program missing", QString(text.c_str() ) );
@@ -6505,9 +6516,9 @@ void IntensityMotionCheckPanel::on_pushButton_imagemath_clicked()
     }
 
   QString executable_file = QFileDialog::getOpenFileName( this, tr(
-                                                            "Open program executable file"), QDir::currentPath(),
-                                                          tr("Executable Files") );
-  if( executable_file.length() == 0 )
+                                                            "Open program executable file"), QDir::currentPath() ) ;
+  QFileInfo execInfo( executable_file ) ;
+  if( executable_file.length() == 0 || !execInfo.isExecutable() )
     {
     std::string text = "No file is set";
     QMessageBox::warning(this, "Program missing", QString(text.c_str() ) );

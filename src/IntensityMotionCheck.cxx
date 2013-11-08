@@ -4038,22 +4038,22 @@ bool CIntensityMotionCheck::DominantDirectionalCheck()
       this->qcResult->GetDominantDirection_Detector().z_score =  (Z_score_value);
       outfile << "Z-score: " << this->qcResult->GetDominantDirection_Detector().z_score << std::endl;
 
-      if( this->qcResult->GetDominantDirection_Detector().z_score >=
+      if( abs(this->qcResult->GetDominantDirection_Detector().z_score) >=
           protocol->GetDominantDirectional_Detector().Threshold_Suspicion_Unacceptance )
         {
         this->qcResult->GetDominantDirection_Detector().detection_result = 2;
         outfile << "Detection result: " << "Reject." << std::endl;
 
         }
-      if( this->qcResult->GetDominantDirection_Detector().z_score <=
+      else if( abs(this->qcResult->GetDominantDirection_Detector().z_score) <
           protocol->GetDominantDirectional_Detector().Threshold_Suspicion_Unacceptance &&
-          this->qcResult->GetDominantDirection_Detector().z_score >=
+          abs(this->qcResult->GetDominantDirection_Detector().z_score) >=
           protocol->GetDominantDirectional_Detector().Threshold_Acceptance )
         {
         this->qcResult->GetDominantDirection_Detector().detection_result = 1;
         outfile << "Detection result: " << "Suspicious." << std::endl;
         }
-      if( this->qcResult->GetDominantDirection_Detector().z_score <=
+      else if( abs(this->qcResult->GetDominantDirection_Detector().z_score) <
           protocol->GetDominantDirectional_Detector().Threshold_Acceptance )
         {
         this->qcResult->GetDominantDirection_Detector().detection_result = 0;

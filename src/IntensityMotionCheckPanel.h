@@ -288,8 +288,8 @@ public:
 private:
   void SetBrainMaskProtocol() ;
   void SetBaselineAverageMethod() ;
-  void SetInterpolationMethod(int &interpolation, int parentID, int childID) ;
-
+  void SetInterpolationMethod(int &interpolation, int parentID, int childID, QString str_interpolation) ;
+  void SetBrainMaskFileName() ;
 
   bool     bProtocol;
   Protocol protocol;
