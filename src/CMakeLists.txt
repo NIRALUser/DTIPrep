@@ -109,8 +109,7 @@ set( DTIPrep_Libs
 
 #message(STATUS "XXXXXXX ${DTIPrep_Libs}")
 
-
-if(EXTENSION_SUPERBUILD_BINARY_DIR)
+if(EXTENSION_SUPERBUILD_BINARY_DIR OR SUPERBUILD_NOT_EXTENSION )
   add_executable( DTIPrep
     ${DTIPrep_SRCS}
     ${UISrcs}

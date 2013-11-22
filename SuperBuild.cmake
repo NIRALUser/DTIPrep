@@ -31,6 +31,10 @@ if( DTIPrep_BUILD_SLICER_EXTENSION )
   resetForSlicer(NAMES CMAKE_MODULE_PATH CMAKE_C_COMPILER CMAKE_CXX_COMPILER CMAKE_CXX_FLAGS CMAKE_C_FLAGS ITK_DIR SlicerExecutionModel_DIR ITK_VERSION_MAJOR )
   set( USE_NIRALUtilities ON CACHE BOOL "Build NIRALUtilities" FORCE )
   set( USE_DTIProcess ON CACHE BOOL "Build DTIProcess" FORCE )
+else()
+  set( SUPERBUILD_NOT_EXTENSION TRUE )
+  set( USE_NIRALUtilities ON CACHE BOOL "Build NIRALUtilities" )
+  set( USE_DTIProcess ON CACHE BOOL "Build DTIProcess" )
 endif()
 #-----------------------------------------------------------------------------
 # Git protocole option
@@ -292,6 +296,10 @@ if( DTIPrep_BUILD_SLICER_EXTENSION )
     Slicer_DIR:PATH
     EXTENSION_SUPERBUILD_BINARY_DIR:PATH
     )
+else()
+  list(APPEND ${CMAKE_PROJECT_NAME}_SUPERBUILD_EP_VARS
+    SUPERBUILD_NOT_EXTENSION:BOOL
+    )
 endif()
 _expand_external_project_vars()
 set(COMMON_EXTERNAL_PROJECT_ARGS ${${CMAKE_PROJECT_NAME}_SUPERBUILD_EP_ARGS})
@@ -329,6 +337,8 @@ ExternalProject_Add(${proj}
     ${CMAKE_OSX_EXTERNAL_PROJECT_ARGS}
     ${COMMON_EXTERNAL_PROJECT_ARGS}
     -D${LOCAL_PROJECT_NAME}_SUPERBUILD:BOOL=OFF
+    -DUSE_NIRALUtilities:BOOL=${USE_NIRALUtilities}
+    -DUSE_DTIProcess:BOOL=${USE_DTIProcess}
   INSTALL_COMMAND ""
   )
 

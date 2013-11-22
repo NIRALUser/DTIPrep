@@ -155,36 +155,39 @@ IF(BUILD_TESTING)
   ADD_SUBDIRECTORY(Testing)
 ENDIF(BUILD_TESTING)
 
+if(USE_DTIProcess)
+  set( NotCLIToolsList
+    dtiestim
+    dtiprocess
+  )
+endif()
+if(USE_NIRALUtilities)
+  list(APPEND NotCLIToolsList
+    ImageMath
+    convertITKformats
+  )
+endif()
+
 if( EXTENSION_SUPERBUILD_BINARY_DIR )
   set(HIDDEN_CLI_INSTALL_DIR ${${LOCAL_PROJECT_NAME}_CLI_INSTALL_RUNTIME_DESTINATION}/../hidden-cli-modules )
   if(APPLE) # On mac, Ext/cli_modules/DTIAtlasBuilder so Ext/ExternalBin is ../ExternalBin
     set(NOCLI_INSTALL_DIR ${${LOCAL_PROJECT_NAME}_CLI_INSTALL_RUNTIME_DESTINATION}/../ExternalBin)
-#    install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/InstallApple/lib DESTINATION ${${LOCAL_PROJECT_NAME}_CLI_INSTALL_RUNTIME_DESTINATION}/..)
-#    install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/InstallApple/Frameworks DESTINATION ${${LOCAL_PROJECT_NAME}_CLI_INSTALL_RUNTIME_DESTINATION}/..)
-#    install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/InstallApple/AppleCreateLinkLibs.sh DESTINATION ${${LOCAL_PROJECT_NAME}_CLI_INSTALL_RUNTIME_DESTINATION}/../share)
   else() # On Windows : idem Linux : Ext/lib/Slicer4.2/cli_modules/DTIAtlasBuilder so Ext/ExternalBin is ../../../ExternalBin
     set(NOCLI_INSTALL_DIR ${${LOCAL_PROJECT_NAME}_CLI_INSTALL_RUNTIME_DESTINATION}/../../../ExternalBin)
   endif()
-
   set( CLIToolsList
     DTIPrepLauncher
      )
   INSTALL_EXECUTABLE( OUTPUT_DIR ${${LOCAL_PROJECT_NAME}_CLI_INSTALL_RUNTIME_DESTINATION} LIST_EXEC ${CLIToolsList} )
-
   set( hiddenCLIToolsList
     DTIPrep
      )
   INSTALL_EXECUTABLE( OUTPUT_DIR ${HIDDEN_CLI_INSTALL_DIR} LIST_EXEC ${hiddenCLIToolsList} )
-
-  set( NotCLIToolsList
-    ImageMath
-    convertITKformats
-    dtiestim
-    dtiprocess
-     )
   INSTALL_EXECUTABLE( OUTPUT_DIR ${NOCLI_INSTALL_DIR} LIST_EXEC ${NotCLIToolsList} )
-
   set(CPACK_INSTALL_CMAKE_PROJECTS "${CPACK_INSTALL_CMAKE_PROJECTS};${CMAKE_BINARY_DIR};${EXTENSION_NAME};ALL;/")
   include(${Slicer_EXTENSION_CPACK})
 endif()
-
+if( SUPERBUILD_NOT_EXTENSION )
+  INSTALL_EXECUTABLE( OUTPUT_DIR . LIST_EXEC DTIPrep )
+  INSTALL_EXECUTABLE( OUTPUT_DIR . LIST_EXEC ${NotCLIToolsList} )
+endif()
