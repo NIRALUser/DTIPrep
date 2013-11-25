@@ -117,6 +117,8 @@ private slots:
 
   void on_pushButton_SaveVisualChecking_clicked();
 
+  void MaskAndDTIScalarMeasurementsRecomputed();
+
 public slots:
 
   void StartProgressSlot();

@@ -38,7 +38,11 @@ public:
     qcResult = r;
   }
 
-  signals:
+  bool HasComputed() ;
+  void SetRecompute( bool val ) ;
+  void SetRecomputeOutputFileName( std::string filename ) ;
+
+signals:
   void allDone(const QString &);
 
   void ResultUpdate();
@@ -63,6 +67,12 @@ public:
 
   void LoadQCedDWI( QString qcdwiname);
 
+  void SignalRecomputationDone();
+
+  void f_StartProgressSignal() ;
+
+  void f_StopProgressSignal() ;
+
 protected:
   void run();
 
@@ -73,6 +83,9 @@ private:
   Protocol *protocol;
   QCResult *qcResult;
 
+  bool m_hasComputedOnce ;
+  bool m_Recompute ;
+  std::string m_RecomputeOutputFileName ;
   // unsigned char result; // the result of RunPipelineByProtocol
 
 };

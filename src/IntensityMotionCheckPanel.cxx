@@ -60,7 +60,9 @@ IntensityMotionCheckPanel::IntensityMotionCheckPanel(QMainWindow *parentNew) :
   connect(&myFurtherQCThread, SIGNAL(f_StartProgressSignal() ), this, SLOT(
             f_StartProgressSlot() ), Qt::QueuedConnection);
   connect(&myFurtherQCThread, SIGNAL(f_StopProgressSignal() ), this, SLOT(f_StopProgressSlot() ), Qt::QueuedConnection);
-
+  connect(&myIntensityThread, SIGNAL(f_StartProgressSignal() ), this, SLOT(
+            f_StartProgressSlot() ), Qt::QueuedConnection);
+  connect(&myIntensityThread, SIGNAL(f_StopProgressSignal() ), this, SLOT(f_StopProgressSlot() ), Qt::QueuedConnection);
   m_DwiOriginalImage = NULL;
   protocol.clear();
   bDwiLoaded = false;
@@ -139,7 +141,6 @@ IntensityMotionCheckPanel::IntensityMotionCheckPanel(QMainWindow *parentNew) :
            SIGNAL( Set_VCStatus() ),
            this,
            SLOT( Set_VCStatus() ) );
-
   connect( &myIntensityThread,
            SIGNAL( Set_Original_ForcedConformance_Mapping() ),
            this,
@@ -157,12 +158,21 @@ IntensityMotionCheckPanel::IntensityMotionCheckPanel(QMainWindow *parentNew) :
 
   connect( this, SIGNAL( Set_init_Path_Signal() ), this, SLOT( Set_init_Path() ) );
 
+  connect( &myIntensityThread,
+           SIGNAL( SignalRecomputationDone() ),
+           this,
+           SLOT( MaskAndDTIScalarMeasurementsRecomputed() ) );
 }
 
 IntensityMotionCheckPanel::~IntensityMotionCheckPanel()
 {
 }
 
+
+void IntensityMotionCheckPanel::MaskAndDTIScalarMeasurementsRecomputed()
+{
+  myIntensityThread.SetRecompute( false ) ;
+}
 
 void IntensityMotionCheckPanel::protocolLoaded_SetPath()
 {
@@ -5219,7 +5229,25 @@ void IntensityMotionCheckPanel::on_pushButton_SaveVisualChecking_clicked()
 
 void IntensityMotionCheckPanel::SaveVisualCheckingResult()
 {
-
+    bool doNotSave = false ;
+    QString Messg ;
+    if( !GetDwiOutputImage() || DwiFilePath.isEmpty() )
+  {
+      Messg = QString( "No QCed DWI to be saved" );
+      doNotSave = true ;
+  }
+    if( !myIntensityThread.HasComputed() )
+    {
+      Messg = QString( "No processing done" );
+      doNotSave = true ;
+    }
+    if( doNotSave )
+    {
+      QMessageBox msgBox;
+      msgBox.setText( Messg );
+      msgBox.exec();
+      return ;
+    }
   pushButton_SaveVisualChecking->setEnabled( 1 );
   // Saving QC Result in associated xml file
   ResultUpdate();
@@ -5234,38 +5262,33 @@ void IntensityMotionCheckPanel::SaveVisualCheckingResult()
   // }
 
   // Saving Output
+  QString qced_Suffix( protocol.GetQCedDWIFileNameSuffix().c_str() );
+  qced_Suffix = qced_Suffix.section('.', -2, 0) ;
 
   QString VisualChecking_DwiFileName;
   if( protocol.GetQCOutputDirectory().length() > 0 )
     {
-
     QString str_QCOutputDirectory = QString(protocol.GetQCOutputDirectory().c_str() );
     bool    found_SeparateChar = str_QCOutputDirectory.contains("/");
+    QString Full_name = DwiFilePath.section('/', -1);
+    QString Full_path;
     if( !found_SeparateChar ) // "/" does not exist in the protocol->GetQCOutputDirectory() and interpreted as the
                               // relative path and creates the folder
       {
-      QString Full_path = DwiFilePath;
-      QString Full_name = DwiFilePath.section('/', -1);
+      Full_path = DwiFilePath;
 
       Full_path.remove(Full_name);
       Full_path.append( "/" );
       Full_path.append( QString( protocol.GetQCOutputDirectory().c_str() ) );
-
       if( !QDir( Full_path ).exists() )
         {
         QDir().mkdir( Full_path );
         }
-
       Full_path.append( "/" );
       Full_path.append( Full_name.section('.', -2, 0) );
-      Full_path.remove("_QCed");
-      Full_path.append(QString(tr("_VC.nrrd") ) );
-      VisualChecking_DwiFileName = Full_path;
       }
     else
       {
-      QString Full_name = DwiFilePath.section('/', -1);
-      QString Full_path;
       Full_path.append( QString( protocol.GetQCOutputDirectory().c_str() ) );
       if( !QDir( Full_path ).exists() )
         {
@@ -5273,19 +5296,18 @@ void IntensityMotionCheckPanel::SaveVisualCheckingResult()
         }
       Full_path.append( "/" );
       Full_path.append( Full_name );
-      Full_path.remove("_QCed");
-      Full_path.append(QString(tr("_VC.nrrd") ) );
-      VisualChecking_DwiFileName = Full_path;
-
       }
+    VisualChecking_DwiFileName = Full_path;
     }
-
   else
     {
-    VisualChecking_DwiFileName = DwiFilePath.section('.', -2, 0);
-    VisualChecking_DwiFileName.remove("_QCed");
-    VisualChecking_DwiFileName.append(QString(tr("_VC.nrrd") ) );
+    VisualChecking_DwiFileName = (DwiFilePath.toStdString().substr(0, DwiFilePath.toStdString().find_last_of(".") ) ).c_str() ;
     }
+  if( m_DwiOutputImage != m_DwiOriginalImage )
+  {
+    VisualChecking_DwiFileName.append( qced_Suffix ) ;
+  }
+  VisualChecking_DwiFileName.append(QString(tr("_VC.nrrd") ) );
 
   QString DWIFile = QFileDialog::getSaveFileName( this, tr(
                                                     "Save Visual Checking DWI File As"), VisualChecking_DwiFileName,
@@ -5294,13 +5316,18 @@ void IntensityMotionCheckPanel::SaveVisualCheckingResult()
   if( DWIFile.length() > 0 )
     {
     std::cout << "Save Visual Checking DWI into file: " << DWIFile.toStdString() << std::endl;
+    GenerateOutput_VisualCheckingResult2( DWIFile.toStdString() );
+    //Recomputing the brain mask from the VCed DWI
+    emit status("Recomputing mask and DTI scalar measurements from VC ...");
+    myIntensityThread.SetRecompute( true ) ;
+    myIntensityThread.SetRecomputeOutputFileName( DWIFile.toStdString() ) ;
+    myIntensityThread.start() ;
     }
   else
     {
     std::cout << "Visual Checking DWI file name NOT set" << std::endl;
     }
 
-  GenerateOutput_VisualCheckingResult2( DWIFile.toStdString() );
 
   // VC_Status.clear();
   emit UpdateOutputDWIDiffusionVectorActors();
@@ -5518,7 +5545,7 @@ void IntensityMotionCheckPanel::GenerateOutput_VisualCheckingResult2( std::strin
     bDwi_VisualCheckLoad = false;
     return;
     }
-  std::cout << "QC dwi Savd" << std::endl;
+  std::cout << "QC dwi Saved" << std::endl;
   bDwi_VisualCheckLoad = true;
   return;
 

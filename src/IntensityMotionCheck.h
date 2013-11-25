@@ -119,11 +119,11 @@ public:
 
   bool GradientWiseCheck( DwiImageType::Pointer dwi );
 
-  bool BrainMask();
+  bool BrainMask(std::string dwiFileName , std::string outputFileName , bool noQCOutputDir = false );
 
-  bool BRAINMASK_METHOD_FSL( std::string reportFileName, std::string str2);
+  bool BRAINMASK_METHOD_FSL( std::string reportFileName, std::string str2 , std::string dwiFileName , std::string outputFileName , bool noQCOutputDir = false );
 
-  bool BRAINMASK_METHOD_Slicer(std::string reportFileName );
+  bool BRAINMASK_METHOD_Slicer(std::string reportFileName ,  std::string dwiFileName , std::string outputFileName , bool noQCOutputDir = false );
 
   bool DominantDirectionalCheck();
 
@@ -131,11 +131,16 @@ public:
 
   bool SaveDwiForcedConformanceImage_FurtherQC(void) const;
 
-  bool DTIComputing();
+  bool DTIComputing( std::string dwiFileName , std::string brainMask , bool noQCOutputDir = false );
 
-  bool dtiprocess();
+  bool dtiprocess( std::string dwiFileName , bool noQCOutputDir = false  );
 
-  bool dtiestim();
+  bool dtiestim( std::string dwiFileName , std::string brainMask , bool noQCOutputDir = false );
+
+  std::string GetLastComputedMask()
+  {
+      return m_LastComputedMask ;
+  }
 
   bool validateDiffusionStatistics();
 
@@ -352,6 +357,7 @@ private:
   bool m_bGetGradientDirections;
   bool m_bGetGradientDirections_FurtherQC;
 
+  std::string m_LastComputedMask ;
   std::string m_DwiFileName;
   std::string m_XmlFileName;
   // std::string m_outputDWIFileName;	// the name of QCed DWI file

@@ -3422,7 +3422,7 @@ int CIntensityMotionCheck::JointDenoising( DwiImageType::Pointer dwi )
 }
 
 // Brain Masking
-bool CIntensityMotionCheck::BrainMask()
+bool CIntensityMotionCheck::BrainMask( std::string dwiFileName , std::string outputFileName , bool noQCOutputDir )
 {
 
   bool bReport = false;
@@ -3432,9 +3432,9 @@ bool CIntensityMotionCheck::BrainMask()
   std::string str;			 // str : path of QCed outputs
   std::string str2;			 // str2 : path of temp results ;
 
-  std::string Dwi_file_name = FNameBase(this->m_DwiFileName);
+  std::string Dwi_file_name = FNameBase(outputFileName);
 
-  if( protocol->GetQCOutputDirectory().length() > 0 )
+  if( !noQCOutputDir && protocol->GetQCOutputDirectory().length() > 0 )
     {
 
     std::string str_QCOutputDirectory = protocol->GetQCOutputDirectory();
@@ -3444,76 +3444,31 @@ bool CIntensityMotionCheck::BrainMask()
       {
 
       size_t found;
-      found = m_DwiFileName.find_last_of("/\\");
-      str = m_DwiFileName.substr( 0, found );
+      found = outputFileName.find_last_of("/\\");
+      str = outputFileName.substr( 0, found );
       str.append( "/" );
-      str.append( protocol->GetQCOutputDirectory() );
-      if( !itksys::SystemTools::FileIsDirectory( str.c_str() ) )
-        {
-        itksys::SystemTools::MakeDirectory( str.c_str() );
-        }
-      str2 = str ;
-      str2.append("/temp/");
-      //if( !itksys::SystemTools::FileIsDirectory( str2.c_str() ) )
-      //{
-      //  itksys::SystemTools::MakeDirectory( str2.c_str() );
-      //}
-      str.append( "/" );
-      //str2.append( "/" );
-      m_ReportFileName = str;
-      m_ReportFileName.append( Dwi_file_name );
-      m_ReportFileName.append( "_QCReport.txt");
-
       }
-
-    else    // "/" exists in the the protocol->GetQCOutputDirectory() and interpreted as the absolute path
+    str.append(protocol->GetQCOutputDirectory() );
+    if( !itksys::SystemTools::FileIsDirectory( str.c_str() ) )
       {
-
-      str.append(protocol->GetQCOutputDirectory() );
-      if( !itksys::SystemTools::FileIsDirectory( str.c_str() ) )
-        {
-        itksys::SystemTools::MakeDirectory( str.c_str() );
-        }
-
-      str2 = str;
-      str2.append( "/temp/" );
-      //if( !itksys::SystemTools::FileIsDirectory( str2.c_str() ) )
-      //{
-      //   itksys::SystemTools::MakeDirectory( str2.c_str() );
-      //}
-      str.append( "/" );
-      //str2.append( "/" );
-      m_ReportFileName = str;
-      m_ReportFileName.append( Dwi_file_name );
-      m_ReportFileName.append( "_QCReport.txt");
+      itksys::SystemTools::MakeDirectory( str.c_str() );
       }
-
+    str2 = str;
+    m_ReportFileName = str.append( "/" ) ;
+    m_ReportFileName.append( Dwi_file_name );
     }
   else
     {
-    str2 = m_DwiFileName.substr( 0, m_DwiFileName.find_last_of('/') );
-    str2.append( "/temp/" );
-    //if( !itksys::SystemTools::FileIsDirectory( str2.c_str() ) )
-    //{
-    //   itksys::SystemTools::MakeDirectory( str2.c_str() );
-    //}
-
-    m_ReportFileName = m_DwiFileName.substr( 0, m_DwiFileName.find_last_of('.') );
-    m_ReportFileName.append( "_QCReport.txt");
+    str2 = outputFileName.substr( 0, outputFileName.find_last_of('/') );
+    m_ReportFileName = outputFileName.substr( 0, outputFileName.find_last_of('.') );
     }
-
+  str2.append( "/temp/" );
+  m_ReportFileName.append( "_QCReport.txt");
   std::ofstream outfile;
 
   std::cout << "protocol->GetBrainMaskProtocol().reportFileMode " << protocol->GetBrainMaskProtocol().reportFileMode << std::endl;
 
-  //if( protocol->GetBrainMaskProtocol().reportFileMode == 1 )
-  //  {
   outfile.open( m_ReportFileName.c_str(), std::ios_base::app);
-  //  }
-  //else
-  //  {
-  //  outfile.open( m_ReportFileName.c_str() );
-  //   }
   if( outfile )
     {
     bReport = true;
@@ -3524,7 +3479,6 @@ bool CIntensityMotionCheck::BrainMask()
     outfile << std::endl;
     outfile << "=====================" << std::endl;
     outfile << " Brain Mask " << std::endl;
-
     }
   else if( !bReport )
     {
@@ -3541,7 +3495,7 @@ bool CIntensityMotionCheck::BrainMask()
       {
       itksys::SystemTools::MakeDirectory( str2.c_str() );
       }
-
+    str2.append( Dwi_file_name.c_str() ) ;
     int mask_method = protocol->GetBrainMaskProtocol().BrainMask_Method;
 
     switch( mask_method )
@@ -3549,12 +3503,12 @@ bool CIntensityMotionCheck::BrainMask()
 
       case Protocol::BRAINMASK_METHOD_FSL:
       {
-      ret =  BRAINMASK_METHOD_FSL(m_ReportFileName, str2);
+      ret =  BRAINMASK_METHOD_FSL(m_ReportFileName, str2 , dwiFileName , outputFileName , noQCOutputDir );
       break;
       }
       case Protocol::BRAINMASK_METHOD_SLICER:
       {
-      ret = BRAINMASK_METHOD_Slicer( m_ReportFileName);
+      ret = BRAINMASK_METHOD_Slicer( m_ReportFileName , dwiFileName , outputFileName , noQCOutputDir );
       break;
       }
       case Protocol::BRAINMASK_METHOD_OPTION:
@@ -3564,7 +3518,7 @@ bool CIntensityMotionCheck::BrainMask()
       }
       case Protocol::BRAINMASK_METHOD_FSL_IDWI:
       {
-        ret =  BRAINMASK_METHOD_FSL(m_ReportFileName, str2);
+        ret =  BRAINMASK_METHOD_FSL(m_ReportFileName, str2 , dwiFileName , outputFileName , noQCOutputDir );
         break;
       }
 
@@ -3584,21 +3538,15 @@ bool CIntensityMotionCheck::BrainMask()
   return ret;
 }
 
-bool CIntensityMotionCheck::BRAINMASK_METHOD_FSL(std::string m_ReportFileName, std::string str2 )
+bool CIntensityMotionCheck::BRAINMASK_METHOD_FSL(std::string m_ReportFileName, std::string str2 , std::string dwiFileName , std::string outputFileName , bool noQCOutputDir )
 {
   bool      ret = true;
   bool      bReport = false;
   QProcess *process = new QProcess();
   std::ofstream outfile;
 
-  //if( protocol->GetBrainMaskProtocol().reportFileMode == 1 )
-  //  {
   outfile.open( m_ReportFileName.c_str(), std::ios_base::app );
-  //  }
-  // else
-  //  {
-  //  outfile.open( m_ReportFileName.c_str() );
-  //   }
+
   if( outfile )
     {
     bReport = true;
@@ -3607,9 +3555,7 @@ bool CIntensityMotionCheck::BRAINMASK_METHOD_FSL(std::string m_ReportFileName, s
   if( bReport )
     {
     outfile << std::endl;
-
     outfile << " Brain Mask FSL " << std::endl;
-
     }
   else if( !bReport )
     {
@@ -3632,15 +3578,15 @@ bool CIntensityMotionCheck::BRAINMASK_METHOD_FSL(std::string m_ReportFileName, s
   std::string maskFrom ;
   if( protocol->GetBrainMaskProtocol().BrainMask_Method == Protocol::BRAINMASK_METHOD_FSL )
   {
-    str_computeMaskFrom = str2 + "B0" ;
-    str_dtiestim << "--dwi_image " << QString::fromStdString(m_outputDWIFileName.c_str() ) << "--B0" <<  QString::fromStdString(str_computeMaskFrom+".nrrd" )
+    str_computeMaskFrom = str2 + "_B0" ;
+    str_dtiestim << "--dwi_image " << QString::fromStdString(dwiFileName.c_str() ) << "--B0" <<  QString::fromStdString(str_computeMaskFrom+".nrrd" )
                << "--tensor_output" << QString::fromStdString(str_tensor.c_str() );
     maskFrom = "_B0" ;
   }
   else //Protocol::BRAINMASK_METHOD_FSL_IDWI
   {
-      str_computeMaskFrom = str2 + "IDWI" ;
-      str_dtiestim << "--dwi_image " << QString::fromStdString(m_outputDWIFileName.c_str() ) << "--idwi" <<  QString::fromStdString(str_computeMaskFrom+".nrrd" )
+      str_computeMaskFrom = str2 + "_IDWI" ;
+      str_dtiestim << "--dwi_image " << QString::fromStdString(dwiFileName.c_str() ) << "--idwi" <<  QString::fromStdString(str_computeMaskFrom+".nrrd" )
                  << "--tensor_output" << QString::fromStdString(str_tensor.c_str() );
       maskFrom = "_IDWI" ;
   }
@@ -3712,9 +3658,9 @@ bool CIntensityMotionCheck::BRAINMASK_METHOD_FSL(std::string m_ReportFileName, s
 
   std::string Result_FSL_masked;
 
-  std::string Dwi_file_name = FNameBase(this->m_DwiFileName);
+  std::string Dwi_file_name = FNameBase(outputFileName);
 
-  if( protocol->GetQCOutputDirectory().length() > 0 )
+  if( !noQCOutputDir && protocol->GetQCOutputDirectory().length() > 0 )
   {
 
       std::string str_QCOutputDirectory = protocol->GetQCOutputDirectory();
@@ -3724,8 +3670,8 @@ bool CIntensityMotionCheck::BRAINMASK_METHOD_FSL(std::string m_ReportFileName, s
           // as the relative path and creates the folder
       {
           size_t found;
-          found = m_DwiFileName.find_last_of("/\\");
-          str = m_DwiFileName.substr( 0, found ); // str : path of QCed outputs
+          found = outputFileName.find_last_of("/\\");
+          str = outputFileName.substr( 0, found ); // str : path of QCed outputs
           str.append( "/" );
           str.append( protocol->GetQCOutputDirectory() );
           if( !itksys::SystemTools::FileIsDirectory( str.c_str() ) )
@@ -3750,15 +3696,14 @@ bool CIntensityMotionCheck::BRAINMASK_METHOD_FSL(std::string m_ReportFileName, s
   }
   else
   {
-      Result_FSL_masked = m_DwiFileName.substr( 0, m_DwiFileName.find_last_of('.') );
+      Result_FSL_masked = outputFileName.substr( 0, outputFileName.find_last_of('.') );
       Result_FSL_masked.append( maskFrom ) ;
       Result_FSL_masked.append( "_masked.nrrd");
   }
 
   QStringList str_imagemath2;
-
-  str_imagemath2 << QString::fromStdString(str_computeMaskFrom+".nrrd" ) << "-mask" << QString::fromStdString( str_betMask+"_mask.nii.gz" );
-
+  m_LastComputedMask = str_betMask+"_mask.nii.gz" ;
+  str_imagemath2 << QString::fromStdString(str_computeMaskFrom+".nrrd" ) << "-mask" << QString::fromStdString( m_LastComputedMask );
   str_imagemath2 << "-outfile" << QString::fromStdString(Result_FSL_masked);
   std::cout << "Result_FSL_masked: " << Result_FSL_masked.c_str() << std::endl;
 
@@ -3791,7 +3736,7 @@ bool CIntensityMotionCheck::BRAINMASK_METHOD_FSL(std::string m_ReportFileName, s
 
 }
 
-bool CIntensityMotionCheck::BRAINMASK_METHOD_Slicer(std::string m_ReportFileName)
+bool CIntensityMotionCheck::BRAINMASK_METHOD_Slicer(std::string m_ReportFileName , std::string dwiFileName , std::string outputFileName , bool noQCOutputDir )
 {
 
   bool      ret = true;
@@ -3800,14 +3745,8 @@ bool CIntensityMotionCheck::BRAINMASK_METHOD_Slicer(std::string m_ReportFileName
 
   std::ofstream outfile;
 
-  // if( protocol->GetBrainMaskProtocol().reportFileMode == 1 )
-  //   {
   outfile.open( m_ReportFileName.c_str(), std::ios_base::app );
-  //   }
-  // else
-  //   {
-  //   outfile.open( m_ReportFileName.c_str() );
-  //   }
+
   if( outfile )
     {
     bReport = true;
@@ -3832,9 +3771,9 @@ bool CIntensityMotionCheck::BRAINMASK_METHOD_Slicer(std::string m_ReportFileName
 
   std::string Result_b0_masked;
 
-  std::string Dwi_file_name = FNameBase(this->m_DwiFileName);
+  std::string Dwi_file_name = FNameBase(dwiFileName);
 
-  if( protocol->GetQCOutputDirectory().length() > 0 )
+  if( !noQCOutputDir && protocol->GetQCOutputDirectory().length() > 0 )
     {
     std::string str_QCOutputDirectory = protocol->GetQCOutputDirectory();
     size_t      found_SeparateChar = str_QCOutputDirectory.find_first_of("/");
@@ -3842,9 +3781,9 @@ bool CIntensityMotionCheck::BRAINMASK_METHOD_Slicer(std::string m_ReportFileName
                                           // as the relative path and creates the folder
       {
       size_t found;
-      found = m_DwiFileName.find_last_of("/\\");
+      found = outputFileName.find_last_of("/\\");
       std::string str;
-      str = m_DwiFileName.substr( 0, found ); // str : path of QCed outputs
+      str = outputFileName.substr( 0, found ); // str : path of QCed outputs
       str.append( "/" );
       str.append( protocol->GetQCOutputDirectory() );
       if( !itksys::SystemTools::FileIsDirectory( str.c_str() ) )
@@ -3875,13 +3814,13 @@ bool CIntensityMotionCheck::BRAINMASK_METHOD_Slicer(std::string m_ReportFileName
 
   else
     {
-    Result_b0_masked = m_DwiFileName.substr( 0, m_DwiFileName.find_last_of('.') );
+    Result_b0_masked = outputFileName.substr( 0, outputFileName.find_last_of('.') );
     Result_b0_masked.append( "_B0_threshold_masked.nrrd");
     }
 
   QStringList str_slicerMask;
-
-  str_slicerMask << QString::fromStdString(m_outputDWIFileName.c_str() ) << "B0_Slicer.nrrd" << QString::fromStdString(
+  m_LastComputedMask = Result_b0_masked ;
+  str_slicerMask << QString::fromStdString(dwiFileName.c_str() ) << "B0_Slicer.nrrd" << QString::fromStdString(
     Result_b0_masked.c_str() );
 
   std::cout << (str_slicerMask.join(" ") ).toStdString() << std::endl;
@@ -4010,6 +3949,12 @@ bool CIntensityMotionCheck::DominantDirectionalCheck()
       return false;
       }
 
+//    std::cout<< "Dominant debug"<<std::endl;
+//    std::cout<<protocol->GetDominantDirectional_Detector().Mean<<std:endl;
+//    std::cout<<protocol->GetDominantDirectional_Detector().Deviation<<std:endl;
+
+//    std::cout<<protocol->GetDominantDirectional_Detector().Threshold_Suspicion_Unacceptance<<std::endl;
+//    std::cout<<protocol->GetDominantDirectional_Detector().Threshold_Acceptance<<std::endl;
     DiffusionTensorEstimation m_DominantDirectionDetector;
     ret = m_DominantDirectionDetector.EstimateTensor_Whitematter_GrayMatter(str_mask,
                                                                             protocol->GetDTIProtocol().dtiestimCommand,
@@ -4757,7 +4702,7 @@ unsigned int CIntensityMotionCheck::RunPipelineByProtocol()
   // Mask.....................................................................
   std::cout << "=====================" << std::endl;
   std::cout << "Brain Mask " << std::endl;;
-  if( !BrainMask() )
+  if( !BrainMask(m_outputDWIFileName , m_DwiFileName) )
     {
     this->qcResult->SetBrainMaskCheckError();
     this->qcResult->GetOverallQCResult().BMCK = false;
@@ -4807,7 +4752,7 @@ unsigned int CIntensityMotionCheck::RunPipelineByProtocol()
   // ................................DTIComputing.......................................................................
   std::cout << "=====================" << std::endl;
   std::cout << "DTIComputing ... " << std::endl;
-  DTIComputing();
+  DTIComputing( this->m_DwiFileName , protocol->GetBrainMaskProtocol().BrainMask_Image );
   std::cout << "DTIComputing DONE" << std::endl;
 
   //outfile.close();
@@ -5311,7 +5256,7 @@ void CIntensityMotionCheck::collectDiffusionStatistics()
   return;
 }
 
-bool CIntensityMotionCheck::dtiestim()
+bool CIntensityMotionCheck::dtiestim( std::string dwiFileName , std::string brainMask , bool noQCOutputDir )
 {
 
   bool ret = true;
@@ -5335,66 +5280,63 @@ bool CIntensityMotionCheck::dtiestim()
 
   std::string outputDWIFileName;
 
-  std::string Dwi_file_name = FNameBase(this->m_DwiFileName);
-
-  if( protocol->GetQCedDWIFileNameSuffix().length() > 0 )
+  std::string Dwi_file_name = FNameBase(dwiFileName);
+  if( !noQCOutputDir )
+  {
+    if(protocol->GetQCedDWIFileNameSuffix().length() > 0 )
     {
-
-    if( protocol->GetQCOutputDirectory().length() > 0 )
+      if( protocol->GetQCOutputDirectory().length() > 0 )
       {
-
-      std::string str_QCOutputDirectory = protocol->GetQCOutputDirectory();
-      size_t      found_SeparateChar = str_QCOutputDirectory.find_first_of("/");
-      if( int (found_SeparateChar) == -1 )    // "/" does not exist in the protocol->GetQCOutputDirectory() and
-                                              // interpreted as the relative path and creates the folder
+        std::string str_QCOutputDirectory = protocol->GetQCOutputDirectory();
+        size_t      found_SeparateChar = str_QCOutputDirectory.find_first_of("/");
+        if( int (found_SeparateChar) == -1 )    // "/" does not exist in the protocol->GetQCOutputDirectory() and
+                  // interpreted as the relative path and creates the folder
         {
-
-        std::string str3;
-        size_t      found;
-        found = m_DwiFileName.find_last_of("/\\");
-        str3 = m_DwiFileName.substr( 0, found ); // str : path of QCed outputs
-        str3.append( "/" );
-        str3.append( protocol->GetQCOutputDirectory() );
-        if( !itksys::SystemTools::FileIsDirectory( str3.c_str() ) )
+          std::string str3;
+          size_t      found;
+          found = dwiFileName.find_last_of("/\\");
+          str3 = dwiFileName.substr( 0, found ); // str : path of QCed outputs
+          str3.append( "/" );
+          str3.append( protocol->GetQCOutputDirectory() );
+          if( !itksys::SystemTools::FileIsDirectory( str3.c_str() ) )
           {
-          itksys::SystemTools::MakeDirectory( str3.c_str() );
+            itksys::SystemTools::MakeDirectory( str3.c_str() );
           }
-        str3.append( "/" );
-        outputDWIFileName = str3;
-        outputDWIFileName.append( Dwi_file_name );
-        outputDWIFileName.append( protocol->GetQCedDWIFileNameSuffix() );
-
+          str3.append( "/" );
+          outputDWIFileName = str3;
+          outputDWIFileName.append( Dwi_file_name );
+          outputDWIFileName.append( protocol->GetQCedDWIFileNameSuffix() );
         }
-
-      else    // "/" exists in the the protocol->GetQCOutputDirectory() and interpreted as the absolute path
+        else    // "/" exists in the the protocol->GetQCOutputDirectory() and interpreted as the absolute path
         {
-        std::string str2;
-        str2.append( protocol->GetQCOutputDirectory() );
-        str2.append( "/" );
-        if( !itksys::SystemTools::FileIsDirectory( str2.c_str() ) )
+          std::string str2;
+          str2.append( protocol->GetQCOutputDirectory() );
+          str2.append( "/" );
+          if( !itksys::SystemTools::FileIsDirectory( str2.c_str() ) )
           {
-          itksys::SystemTools::MakeDirectory( str2.c_str() );
+            itksys::SystemTools::MakeDirectory( str2.c_str() );
           }
-        outputDWIFileName = str2;
-        outputDWIFileName.append( Dwi_file_name );
-        outputDWIFileName.append( protocol->GetQCedDWIFileNameSuffix() );
-
+          outputDWIFileName = str2;
+          outputDWIFileName.append( Dwi_file_name );
+          outputDWIFileName.append( protocol->GetQCedDWIFileNameSuffix() );
         }
-
       }
+      else
+      {
+        outputDWIFileName = dwiFileName.substr( 0, dwiFileName.find_last_of('.') );
+        outputDWIFileName.append( protocol->GetQCedDWIFileNameSuffix() );
+      }
+    }
     else
-      {
-      outputDWIFileName = m_DwiFileName.substr( 0, m_DwiFileName.find_last_of('.') );
-      outputDWIFileName.append( protocol->GetQCedDWIFileNameSuffix() );
-      }
-
-    }
-  else
     {
-    outputDWIFileName = m_DwiFileName.substr( 0, m_DwiFileName.find_last_of('.') );
-    outputDWIFileName.append( protocol->GetQCedDWIFileNameSuffix() );
+      outputDWIFileName = dwiFileName.substr( 0, dwiFileName.find_last_of('.') );
+      outputDWIFileName.append( protocol->GetQCedDWIFileNameSuffix() );
     }
-
+  }
+  else
+  {
+    outputDWIFileName = dwiFileName ;
+  }
   dtiestim_str << QString::fromStdString(outputDWIFileName);
   // str.append(outputDWIFileName);
 
@@ -5402,7 +5344,7 @@ bool CIntensityMotionCheck::dtiestim()
 
   std::string OutputTensor;
   OutputTensor
-    = outputDWIFileName.substr( 0, outputDWIFileName.find_last_of('.') );
+          = outputDWIFileName.substr( 0, outputDWIFileName.find_last_of('.') );
   OutputTensor.append( protocol->GetDTIProtocol().tensorSuffix);
   dtiestim_str << "--tensor_output";
 
@@ -5410,7 +5352,6 @@ bool CIntensityMotionCheck::dtiestim()
   // str.append(" ");
   // str.append(OutputTensor);
   dtiestim_str << QString::fromStdString(OutputTensor);
-
   if( protocol->GetDTIProtocol().method == Protocol::METHOD_WLS )
     {
     // str.append(" -m wls ");
@@ -5432,11 +5373,11 @@ bool CIntensityMotionCheck::dtiestim()
     dtiestim_str << "-m lls";
     }
 
-  if( protocol->GetBrainMaskProtocol().BrainMask_Image.length() > 0 )
+  if( brainMask.length() > 0 )
     {
     // str.append(" -M ");
     // str.append( protocol->GetDTIProtocol().mask );
-    dtiestim_str << "-M" << QString::fromStdString(protocol->GetBrainMaskProtocol().BrainMask_Image);
+    dtiestim_str << "-M" << QString::fromStdString( brainMask );
     }
 
   // str.append(" -t ");
@@ -5495,7 +5436,10 @@ bool CIntensityMotionCheck::dtiestim()
   return true;
 }
 
-bool CIntensityMotionCheck::DTIComputing()
+
+//this->m_DwiFileName
+//protocol->GetBrainMaskProtocol().BrainMask_Image
+bool CIntensityMotionCheck::DTIComputing( std::string dwiFileName , std::string brainMask , bool noQCOutputDir )
 {
   if( !protocol->GetDTIProtocol().bCompute )
     {
@@ -5503,12 +5447,12 @@ bool CIntensityMotionCheck::DTIComputing()
     return true;
     }
 
-  dtiestim();
-  dtiprocess();
+  dtiestim( dwiFileName , brainMask , noQCOutputDir );
+  dtiprocess( dwiFileName , noQCOutputDir );
   return true;
 }
 
-bool CIntensityMotionCheck::dtiprocess()
+bool CIntensityMotionCheck::dtiprocess( std::string dwiFileName , bool noQCOutputDir)
 {
   std::string string;
 
@@ -5516,65 +5460,63 @@ bool CIntensityMotionCheck::dtiprocess()
   string.append(" ");
 
   std::string outputDWIFileName;
-  std::string Dwi_file_name = FNameBase(this->m_DwiFileName);
-
-  if( protocol->GetQCedDWIFileNameSuffix().length() > 0 )
+  std::string Dwi_file_name = FNameBase(dwiFileName);
+  if( !noQCOutputDir )
+  {
+    if( protocol->GetQCedDWIFileNameSuffix().length() > 0 )
     {
-
-    if( protocol->GetQCOutputDirectory().length() > 0 )
+      if( protocol->GetQCOutputDirectory().length() > 0 )
       {
-
-      std::string str_QCOutputDirectory = protocol->GetQCOutputDirectory();
-      size_t      found_SeparateChar = str_QCOutputDirectory.find_first_of("/");
-      if( int (found_SeparateChar) == -1 ) // "/" does not exist in the protocol->GetQCOutputDirectory() and interpreted
-                                           // as the relative path and creates the folder
+        std::string str_QCOutputDirectory = protocol->GetQCOutputDirectory();
+        size_t      found_SeparateChar = str_QCOutputDirectory.find_first_of("/");
+        if( int (found_SeparateChar) == -1 ) // "/" does not exist in the protocol->GetQCOutputDirectory() and interpreted
+                  // as the relative path and creates the folder
         {
-        size_t found;
-        found = m_DwiFileName.find_last_of("/\\");
-        std::string str;
-        str = m_DwiFileName.substr( 0, found ); // str : path of QCed outputs
-        str.append( "/" );
-        str.append( protocol->GetQCOutputDirectory() );
-        if( !itksys::SystemTools::FileIsDirectory( str.c_str() ) )
+          size_t found;
+          found = dwiFileName.find_last_of("/\\");
+          std::string str;
+          str = dwiFileName.substr( 0, found ); // str : path of QCed outputs
+          str.append( "/" );
+          str.append( protocol->GetQCOutputDirectory() );
+          if( !itksys::SystemTools::FileIsDirectory( str.c_str() ) )
           {
-          itksys::SystemTools::MakeDirectory( str.c_str() );
+            itksys::SystemTools::MakeDirectory( str.c_str() );
           }
-        str.append( "/" );
-        outputDWIFileName = str;
-        outputDWIFileName.append( Dwi_file_name );
-        outputDWIFileName.append( protocol->GetQCedDWIFileNameSuffix()  );
-
+          str.append( "/" );
+          outputDWIFileName = str;
+          outputDWIFileName.append( Dwi_file_name );
+          outputDWIFileName.append( protocol->GetQCedDWIFileNameSuffix()  );
         }
-
-      else // "/" exists in the the protocol->GetQCOutputDirectory() and interpreted as the absolute path
+        else // "/" exists in the the protocol->GetQCOutputDirectory() and interpreted as the absolute path
         {
-        std::string str;
-        str.append(protocol->GetQCOutputDirectory() );
-        if( !itksys::SystemTools::FileIsDirectory( str.c_str() ) )
+          std::string str;
+          str.append(protocol->GetQCOutputDirectory() );
+          if( !itksys::SystemTools::FileIsDirectory( str.c_str() ) )
           {
-          itksys::SystemTools::MakeDirectory( str.c_str() );
+            itksys::SystemTools::MakeDirectory( str.c_str() );
           }
-        str.append( "/" );
-        outputDWIFileName = str;
-        outputDWIFileName.append( Dwi_file_name );
-        outputDWIFileName.append( protocol->GetQCedDWIFileNameSuffix()  );
-
+          str.append( "/" );
+          outputDWIFileName = str;
+          outputDWIFileName.append( Dwi_file_name );
+          outputDWIFileName.append( protocol->GetQCedDWIFileNameSuffix()  );
         }
-
       }
+      else
+      {
+        outputDWIFileName = dwiFileName.substr( 0, dwiFileName.find_last_of('.') );
+        outputDWIFileName.append( protocol->GetQCedDWIFileNameSuffix()  );
+      }
+    }
     else
-      {
-      outputDWIFileName = m_DwiFileName.substr( 0, m_DwiFileName.find_last_of('.') );
-      outputDWIFileName.append( protocol->GetQCedDWIFileNameSuffix()  );
-      }
-
-    }
-  else
     {
-    outputDWIFileName = m_DwiFileName.substr( 0, m_DwiFileName.find_last_of('.') );
-    outputDWIFileName.append( protocol->GetQCedDWIFileNameSuffix() );
+      outputDWIFileName = dwiFileName.substr( 0, dwiFileName.find_last_of('.') );
+      outputDWIFileName.append( protocol->GetQCedDWIFileNameSuffix() );
     }
-
+  }
+  else
+  {
+    outputDWIFileName = dwiFileName ;
+  }
   std::string dtiprocessInput;
   dtiprocessInput
     = outputDWIFileName.substr( 0, outputDWIFileName.find_last_of('.') );

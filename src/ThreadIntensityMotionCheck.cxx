@@ -12,14 +12,48 @@ CThreadIntensityMotionCheck::CThreadIntensityMotionCheck(QObject *parentLocal) :
   protocol = NULL;
   qcResult = NULL;
   m_IntensityMotionCheck = new CIntensityMotionCheck;
+  m_Recompute = false ;
+  m_RecomputeOutputFileName = "" ;
+  m_hasComputedOnce = false ;
 }
 
 CThreadIntensityMotionCheck::~CThreadIntensityMotionCheck()
 {
 }
 
+void CThreadIntensityMotionCheck::SetRecompute( bool val )
+{
+  m_Recompute = val ;
+}
+
+bool CThreadIntensityMotionCheck::HasComputed()
+{
+  return m_hasComputedOnce ;
+}
+
+void CThreadIntensityMotionCheck::SetRecomputeOutputFileName( std::string filename )
+{
+    m_RecomputeOutputFileName = filename ;
+}
+
 void CThreadIntensityMotionCheck::run()
 {
+  if( m_Recompute && m_hasComputedOnce )
+  {
+    emit f_StartProgressSignal() ;
+    if( m_RecomputeOutputFileName.empty() )
+    {
+      std::string dwiFileName = m_IntensityMotionCheck->GetDwiFileName() ;
+      m_RecomputeOutputFileName =  dwiFileName.substr( 0, dwiFileName.find_last_of('.') ) ;
+      m_RecomputeOutputFileName.append("_VC.nrrd") ;
+    }
+    m_IntensityMotionCheck->BrainMask(m_RecomputeOutputFileName , m_RecomputeOutputFileName , true );
+    m_IntensityMotionCheck->DTIComputing( m_RecomputeOutputFileName , m_IntensityMotionCheck->GetLastComputedMask() , true );
+    emit f_StopProgressSignal();
+    emit allDone("Recomputing mask and DTI scalar measurements from VC done");
+    emit SignalRecomputationDone();
+    return ;
+  }
   if( DWINrrdFilename.length() == 0 )
     {
     std::cout << "DWI file name not set!" << std::endl;
@@ -191,5 +225,5 @@ void CThreadIntensityMotionCheck::run()
   emit LoadQCedDWI( QString::fromStdString( m_IntensityMotionCheck->GetOutputDWIFileName() ) );
   emit QCedResultUpdate();
   emit Set_VCStatus();  // initialize the VC_Status in DTIPanel
-
+  m_hasComputedOnce = true ;
 }
