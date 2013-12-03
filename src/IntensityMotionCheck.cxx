@@ -5525,7 +5525,7 @@ bool CIntensityMotionCheck::dtiprocess( std::string dwiFileName , bool noQCOutpu
   string.append("--dti_image");
   string.append(" ");
   string.append(dtiprocessInput);
-
+  string.append(" --scalar_float ");
   if( protocol->GetDTIProtocol().bfa )
     {
     string.append(" -f ");

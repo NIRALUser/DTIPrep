@@ -6275,121 +6275,55 @@ bool IntensityMotionCheckPanel::OpenMappingXML()
 
 }
 
+void IntensityMotionCheckPanel::FindProgram( std::string name , QLineEdit *lineEdit , std::string &SystemPath , int parentID , int childID , std::string &notFound )
+{
+    std::string program ;
+    std::vector< std::string > defaultPaths ;
+    defaultPaths.push_back( "../ExternalBin" );
+    defaultPaths.push_back( "../../../ExternalBin" ) ;
+    // Find Tool on system
+    program = itksys::SystemTools::FindProgram( name.c_str() ,defaultPaths , true ) ;
+    if( program.empty() )
+    {
+      program = itksys::SystemTools::FindProgram( name.c_str() ) ;
+    }
+    if( program.empty() )
+    {
+      if( lineEdit_FSL->text().isEmpty() )
+      {
+        notFound = notFound + "> " + name + "\n";
+      }
+    }
+    else
+    {
+      lineEdit->setText(QString::fromStdString(program) );
+      SystemPath = program ;
+      if( !bProtocol )
+      {
+        std::string text_er = "No protocol has been loaded. Please Load Protocol." ;
+        QMessageBox::warning(this, "Protocol missing", QString(text_er.c_str() ) ) ;
+        return ;
+      }
+      this->GetTreeWidgetProtocol()->topLevelItem( parentID )->child( childID )->setText( 1, QString::fromStdString( program ) ) ;
+    }
+}
+
 void IntensityMotionCheckPanel::on_pushButton_Pathdefault_clicked()
 {
-  //std::cout << "Test mahshid " << std::endl;
-  std::string program;
-  std::string notFound;
-  std::vector< std::string > defaultPaths ;
-  defaultPaths.push_back( "../ExternalBin" );
-  defaultPaths.push_back( "../../../ExternalBin" );
+    std::string notFound;
   // The protocol paths are bet2,DiffusionWeightedVolumeMasking,dtiestim,dtiprocess and denoisingfilter.
   // They are saved in protocol in BrainMaskProtocol and DTIProtocol structures.
-
   // BrainMask: FSL_bet
-  program = itksys::SystemTools::FindProgram("bet2",defaultPaths);
-  //std::cout << "Test mahshid " << program.c_str() << std::endl;
-  if( program.empty() )
-    {
-    if( lineEdit_FSL->text().isEmpty() )
-      {
-      notFound = notFound + "> bet2\n";
-      }
-    }
-  else
-    {
-    lineEdit_FSL->setText(QString::fromStdString(program) );
-    this->GetProtocol().GetBrainMaskProtocol().BrainMask_SystemPath_FSL = program;
-    if( !bProtocol )
-      {
-      std::string text_er = "No protocol has been loaded. Please Load Protocol.";
-      QMessageBox::warning(this, "Protocol missing", QString(text_er.c_str() ) );
-      return;
-      }
-    this->GetTreeWidgetProtocol()->topLevelItem(14)->child(1)->setText( 1, QString::fromStdString(program) );
-    }
-
+  FindProgram( "bet2" , lineEdit_FSL , this->GetProtocol().GetBrainMaskProtocol().BrainMask_SystemPath_FSL , 14 , 1 , notFound ) ;
   // convertitk
-  program = itksys::SystemTools::FindProgram("convertITKformats",defaultPaths);
-  //std::cout << "Test mahshid " << program.c_str() << std::endl;
-  if( program.empty() )
-    {
-    if( lineEdit_convertitk->text().isEmpty() )
-      {
-      notFound = notFound + "> convertITKformats\n";
-      }
-    }
-  else
-    {
-    lineEdit_convertitk->setText(QString::fromStdString(program) );
-    this->GetProtocol().GetBrainMaskProtocol().BrainMask_SystemPath_convertITK = program;
-    this->GetTreeWidgetProtocol()->topLevelItem(14)->child(2)->setText( 1, QString::fromStdString(program) );
-    }
-
-  // convertitk
-  program = itksys::SystemTools::FindProgram("ImageMath",defaultPaths);
- // std::cout << "Test mahshid " << program.c_str() << std::endl;
-  if( program.empty() )
-    {
-    if( lineEdit_imagemath->text().isEmpty() )
-      {
-      notFound = notFound + "> ImageMath\n";
-      }
-    }
-  else
-    {
-    lineEdit_imagemath->setText(QString::fromStdString(program) );
-    this->GetProtocol().GetBrainMaskProtocol().BrainMask_SystemPath_imagemath = program;
-    this->GetTreeWidgetProtocol()->topLevelItem(14)->child(3)->setText( 1, QString::fromStdString(program) );
-    }
-
+  FindProgram( "convertITKformats" , lineEdit_convertitk , this->GetProtocol().GetBrainMaskProtocol().BrainMask_SystemPath_convertITK , 14 , 2 , notFound ) ;
+  // ImageMath
+  FindProgram( "ImageMath" , lineEdit_imagemath , this->GetProtocol().GetBrainMaskProtocol().BrainMask_SystemPath_imagemath , 14 , 3 , notFound ) ;
   // BrainMask: Slicer/DiffusionWeightedVolumeMasking
-  program = itksys::SystemTools::FindProgram("DiffusionWeightedVolumeMasking");
-  if( program.empty() )
-    {
-    if( lineEdit_Slicer->text().isEmpty() )
-      {
-      notFound = notFound + "> DiffusionWeightedVolumeMasking\n";
-      }
-    }
-  else
-    {
-    lineEdit_Slicer->setText(QString::fromStdString(program) );
-    this->GetProtocol().GetBrainMaskProtocol().BrainMask_SystemPath_Slicer = program;
-    this->GetTreeWidgetProtocol()->topLevelItem(14)->child(4)->setText( 1, QString::fromStdString(program) );
-    }
-
+  FindProgram( "DiffusionWeightedVolumeMasking" , lineEdit_Slicer , this->GetProtocol().GetBrainMaskProtocol().BrainMask_SystemPath_Slicer , 14 , 4 , notFound ) ;
   // DTI estimation: dtiestim and dtiprocess
-  program = itksys::SystemTools::FindProgram("dtiestim",defaultPaths);
-  if( program.empty() )
-    {
-    if( lineEdit_dtiestim->text().isEmpty() )
-      {
-      notFound = notFound + "> dtiestim\n";
-      }
-    }
-  else
-    {
-    lineEdit_dtiestim->setText(QString::fromStdString(program) );
-    this->GetProtocol().GetDTIProtocol().dtiestimCommand = program;
-    this->GetTreeWidgetProtocol()->topLevelItem(16)->child(0)->setText( 1, QString::fromStdString(program) );
-    }
-
-  program = itksys::SystemTools::FindProgram("dtiprocess",defaultPaths);
-  if( program.empty() )
-    {
-    if( lineEdit_dtiprocess->text().isEmpty() )
-      {
-      notFound = notFound + "> dtiprocess\n";
-      }
-    }
-  else
-    {
-    lineEdit_dtiprocess->setText(QString::fromStdString(program) );
-    this->GetProtocol().GetDTIProtocol().dtiprocessCommand = program;
-    this->GetTreeWidgetProtocol()->topLevelItem(16)->child(1)->setText( 1, QString::fromStdString(program) );
-    }
-
+  FindProgram( "dtiestim" , lineEdit_dtiestim , this->GetProtocol().GetDTIProtocol().dtiestimCommand , 16 , 0 , notFound ) ;
+  FindProgram( "dtiprocess" , lineEdit_dtiprocess , this->GetProtocol().GetDTIProtocol().dtiprocessCommand , 16 , 1 , notFound ) ;
   if( !notFound.empty() )
     {
     std::string text = "The following programs have not been found.\nPlease enter the path manually:\n" + notFound;

@@ -288,6 +288,7 @@ public:
   }
 
 private:
+  void FindProgram( std::string name , QLineEdit *lineEdit , std::string &SystemPath , int parentID , int childID , std::string &notFound  ) ;
   void SetBrainMaskProtocol() ;
   void SetBaselineAverageMethod() ;
   void SetInterpolationMethod(int &interpolation, int parentID, int childID, QString str_interpolation) ;
