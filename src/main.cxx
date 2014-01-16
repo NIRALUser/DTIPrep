@@ -67,6 +67,7 @@ int main( int argc, char * *argv )
     QApplication app(argc, argv);
     GMainWindow *MainWindow = new GMainWindow;
     MainWindow->show();
+    MainWindow->raise();
     const int return_status = app.exec();
     if ( return_status == EXIT_SUCCESS )
         {

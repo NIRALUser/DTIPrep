@@ -20,17 +20,28 @@ if( DTIPrep_BUILD_SLICER_EXTENSION )
   set( USE_SYSTEM_VTK ON CACHE BOOL "Use system VTK" FORCE )
   set( USE_SYSTEM_DCMTK ON CACHE BOOL "Use system DCMTK" FORCE )
   set( USE_SYSTEM_Teem ON CACHE BOOL "Use system Teem" FORCE )
-#  set( USE_SYSTEM_ITK ON CACHE BOOL "Use system ITK" FORCE)
-#  set( USE_SYSTEM_SlicerExecutionModel ON CACHE BOOL "Use system ITK" FORCE)
   set( BUILD_SHARED_LIBS OFF CACHE BOOL "Use shared libraries" FORCE)
-  set(EXTENSION_SUPERBUILD_BINARY_DIR ${${EXTENSION_NAME}_BINARY_DIR} )
+  set( EXTENSION_SUPERBUILD_BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR} )
   unsetForSlicer(NAMES CMAKE_MODULE_PATH CMAKE_C_COMPILER CMAKE_CXX_COMPILER DCMTK_DIR ITK_DIR SlicerExecutionModel_DIR VTK_DIR QT_QMAKE_EXECUTABLE ITK_VERSION_MAJOR CMAKE_CXX_FLAGS CMAKE_C_FLAGS Teem_DIR)
   find_package(Slicer REQUIRED)
-  include(${Slicer_USE_FILE})
-  unsetAllForSlicerBut( NAMES VTK_DIR QT_QMAKE_EXECUTABLE DCMTK_DIR Teem_DIR )
-  resetForSlicer(NAMES CMAKE_MODULE_PATH CMAKE_C_COMPILER CMAKE_CXX_COMPILER CMAKE_CXX_FLAGS CMAKE_C_FLAGS ITK_DIR SlicerExecutionModel_DIR ITK_VERSION_MAJOR )
+  set( ITKvar ITK_DIR SlicerExecutionModel_DIR  ITK_VERSION_MAJOR )
+  #if( ${ITK_VERSION_MAJOR} GREATER 3 AND ${ITK_VERSION_MINOR} GREATER 4 )
+  #  set( KeepSlicerITK ${ITKvar} )
+  #  set( USE_SYSTEM_ITK ON CACHE BOOL "Use system ITK" FORCE )
+  #  set( USE_SYSTEM_SlicerExecutionModel ON CACHE BOOL "Use system SlicerExecutionModel" FORCE )
+  #  message(STATUS "ITK version used by Slicer is at least 4.5. No need to recompile ITK. Using ITK from Slicer")
+  #else()
+    #ITK and SlicerExecutionModel have to be rebuilt because ANTS needs ITK 4.5
+    set( RemoveSlicerITK ${ITKvar} )
+    message(STATUS "ITK version used by Slicer is less than 4.5. Recompiling ITK")
+  #endif()
+  unsetAllForSlicerBut( NAMES VTK_DIR QT_QMAKE_EXECUTABLE DCMTK_DIR Teem_DIR ${KeepSlicerITK} )
+  resetForSlicer(NAMES CMAKE_MODULE_PATH CMAKE_C_COMPILER CMAKE_CXX_COMPILER CMAKE_CXX_FLAGS CMAKE_C_FLAGS ${RemoveSlicerITK} )
   set( USE_NIRALUtilities ON CACHE BOOL "Build NIRALUtilities" FORCE )
   set( USE_DTIProcess ON CACHE BOOL "Build DTIProcess" FORCE )
+  if( APPLE )
+    set( CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,-rpath,@loader_path/../../../../../")
+  endif()
 else()
   set( SUPERBUILD_NOT_EXTENSION TRUE )
   set( USE_NIRALUtilities ON CACHE BOOL "Build NIRALUtilities" )
@@ -121,8 +132,8 @@ option(USE_SYSTEM_ITK "Build using an externally defined version of ITK" OFF)
 option(USE_SYSTEM_SlicerExecutionModel "Build using an externally defined version of SlicerExecutionModel"  OFF)
 option(USE_SYSTEM_VTK "Build using an externally defined version of VTK" OFF)
 option(USE_SYSTEM_DCMTK "Build using an externally defined version of DCMTK" OFF)
-option(USE_SYSTEM_Teem "Build using external Teem" ON)
-option(USE_SYSTEM_zlib "Build using external zlib" ON)
+option(USE_SYSTEM_Teem "Build using external Teem" OFF)
+option(USE_SYSTEM_zlib "Build using external zlib" OFF)
 option(${PROJECT_NAME}_BUILD_DICOM_SUPPORT "Build Dicom Support" ON)
 
 #------------------------------------------------------------------------------
@@ -236,15 +247,7 @@ endif()
 set(${LOCAL_PROJECT_NAME}_CLI_RUNTIME_DESTINATION  bin)
 set(${LOCAL_PROJECT_NAME}_CLI_LIBRARY_DESTINATION  lib)
 set(${LOCAL_PROJECT_NAME}_CLI_ARCHIVE_DESTINATION  lib)
-if( DTIPrep_BUILD_SLICER_EXTENSION )
-  set(${LOCAL_PROJECT_NAME}_CLI_INSTALL_RUNTIME_DESTINATION  ${SlicerExecutionModel_DEFAULT_CLI_INSTALL_RUNTIME_DESTINATION} )
-  set(${LOCAL_PROJECT_NAME}_CLI_INSTALL_LIBRARY_DESTINATION  ${SlicerExecutionModel_DEFAULT_CLI_INSTALL_LIBRARY_DESTINATION} )
-  set(${LOCAL_PROJECT_NAME}_CLI_INSTALL_ARCHIVE_DESTINATION  ${SlicerExecutionModel_DEFAULT_CLI_INSTALL_ARCHIVE_DESTINATION} )
-else()
-  set(${LOCAL_PROJECT_NAME}_CLI_INSTALL_RUNTIME_DESTINATION  bin)
-  set(${LOCAL_PROJECT_NAME}_CLI_INSTALL_LIBRARY_DESTINATION  lib)
-  set(${LOCAL_PROJECT_NAME}_CLI_INSTALL_ARCHIVE_DESTINATION  lib)
-endif()
+
 #-----------------------------------------------------------------------------
 # Add external project CMake args
 #-----------------------------------------------------------------------------
@@ -257,9 +260,6 @@ list(APPEND ${CMAKE_PROJECT_NAME}_SUPERBUILD_EP_VARS
   ${LOCAL_PROJECT_NAME}_CLI_LIBRARY_DESTINATION:PATH
   ${LOCAL_PROJECT_NAME}_CLI_ARCHIVE_DESTINATION:PATH
   ${LOCAL_PROJECT_NAME}_CLI_RUNTIME_DESTINATION:PATH
-  ${LOCAL_PROJECT_NAME}_CLI_INSTALL_LIBRARY_DESTINATION:PATH
-  ${LOCAL_PROJECT_NAME}_CLI_INSTALL_ARCHIVE_DESTINATION:PATH
-  ${LOCAL_PROJECT_NAME}_CLI_INSTALL_RUNTIME_DESTINATION:PATH
 
   VTK_DIR:PATH
   GenerateCLP_DIR:PATH
