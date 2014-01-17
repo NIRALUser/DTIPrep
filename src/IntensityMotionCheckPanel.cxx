@@ -355,7 +355,7 @@ BSplineOptimized,
     QPushButton * baseline = msgBox.addButton( tr("Baseline Optimized (default)"), QMessageBox::ActionRole);
     QPushButton * gradient = msgBox.addButton( tr("Gradient Optimized"), QMessageBox::ActionRole);
     QPushButton * bspline = msgBox.addButton( tr("BSpline Optimized"), QMessageBox::ActionRole);
-    QPushButton * Cancel = msgBox.addButton( tr("Cancel"), QMessageBox::ActionRole);
+    // NEVER USEDQPushButton * Cancel = msgBox.addButton( tr("Cancel"), QMessageBox::ActionRole);
  //#########those two methods (Gradient Optimized and BSpline Optimized) have not been tested or are not compiling correctly. We disable them.###################
     gradient->setDisabled( true ) ;
     bspline->setDisabled( true ) ;
@@ -548,7 +548,7 @@ void IntensityMotionCheckPanel::on_pushButton_RunPipeline_clicked()
     QMessageBox::critical( this, tr("Warning"), tr("DWI file name not set!") );
     return;
     }
-  
+
   if (this->GetProtocol().GetBrainMaskProtocol().BrainMask_Method == 2 && this->GetProtocol().GetBrainMaskProtocol().BrainMask_Image.empty() && this->GetProtocol().GetBrainMaskProtocol().bMask == true)
   {
 	  QString m_user_option = "The brain mask procedure needs brain mask image is loaded:";
@@ -557,7 +557,7 @@ void IntensityMotionCheckPanel::on_pushButton_RunPipeline_clicked()
 	  QPushButton * Option = m_msgBox.addButton( tr("Load"), QMessageBox::ActionRole);
 	  QPushButton * Cancel = m_msgBox.addButton( tr("Cancel"), QMessageBox::ActionRole);
 	  m_msgBox.exec();
-	  
+
 	  if( m_msgBox.clickedButton() == Option )
 	  {
           SetBrainMaskFileName() ;
@@ -1318,18 +1318,18 @@ void IntensityMotionCheckPanel::DefaultProtocol()
   Image_Direction [2][0] =  m_DwiOriginalImage->GetDirection() (2,0);
   Image_Direction [2][1] =  m_DwiOriginalImage->GetDirection() (2,1);
   Image_Direction [2][2] =  m_DwiOriginalImage->GetDirection() (2,2);
-  
+
   vnl_matrix <double> imgspacing;
   imgspacing.set_size(3,3);
   imgspacing(0,0) =  this->GetProtocol().GetImageProtocol().spacing[0];
   imgspacing(1,1) =  this->GetProtocol().GetImageProtocol().spacing[1];
   imgspacing(2,2) =  this->GetProtocol().GetImageProtocol().spacing[2];
   imgspacing(0,1) =  imgspacing(0,2) = imgspacing(1,0) = imgspacing(1,2) = imgspacing(2,0) = imgspacing(2,1) = 0;
-  
+
   vnl_matrix <double> Img_spacedirection;
   Img_spacedirection.set_size(3,3);
   Img_spacedirection = ( Image_Direction * imgspacing ).transpose();
-  
+
   this->GetProtocol().GetImageProtocol().spacedirection[0][0] = Img_spacedirection [0][0];
   this->GetProtocol().GetImageProtocol().spacedirection[0][1] = Img_spacedirection [0][1];
   this->GetProtocol().GetImageProtocol().spacedirection[0][2] = Img_spacedirection [0][2];
@@ -1339,10 +1339,10 @@ void IntensityMotionCheckPanel::DefaultProtocol()
   this->GetProtocol().GetImageProtocol().spacedirection[2][0] = Img_spacedirection [2][0];
   this->GetProtocol().GetImageProtocol().spacedirection[2][1] = Img_spacedirection [2][1];
   this->GetProtocol().GetImageProtocol().spacedirection[2][2] = Img_spacedirection [2][2];
-  
- 
-  
-  
+
+
+
+
   // space
   itk::MetaDataDictionary imgMetaDictionary
     = m_DwiOriginalImage->GetMetaDataDictionary();
@@ -1413,10 +1413,10 @@ void IntensityMotionCheckPanel::DefaultProtocol()
 
     this->GetProtocol().GetDiffusionProtocol().gradients.push_back(vect);
     }
-  
-  
+
+
   if( imgMetaDictionary.HasKey("NRRD_measurement frame") )
-    { 
+    {
       {
       std::vector<std::vector<double> > nrrdmf;
       itk::ExposeMetaData<std::vector<std::vector<double> > >(
