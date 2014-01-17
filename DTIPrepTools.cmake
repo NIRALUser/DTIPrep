@@ -1,4 +1,3 @@
-
 macro(INSTALL_EXECUTABLE)
   set(options )
   set( oneValueArgs OUTPUT_DIR )
@@ -169,16 +168,12 @@ if(USE_NIRALUtilities)
 endif()
 
 if( EXTENSION_SUPERBUILD_BINARY_DIR )
-  set(HIDDEN_CLI_INSTALL_DIR ${SlicerExecutionModel_DEFAULT_CLI_INSTALL_RUNTIME_DESTINATION}/../hidden-cli-modules )
-  if(APPLE) # On mac, Ext/cli_modules/DTIAtlasBuilder so Ext/ExternalBin is ../ExternalBin
-    set(NOCLI_INSTALL_DIR ${SlicerExecutionModel_DEFAULT_CLI_INSTALL_RUNTIME_DESTINATION}/../ExternalBin)
-  else() # On Windows : idem Linux : Ext/lib/Slicer4.2/cli_modules/DTIAtlasBuilder so Ext/ExternalBin is ../../../ExternalBin
-    set(NOCLI_INSTALL_DIR ${SlicerExecutionModel_DEFAULT_CLI_INSTALL_RUNTIME_DESTINATION}/../../../ExternalBin)
-  endif()
+  set(HIDDEN_CLI_INSTALL_DIR ${Slicer_INSTALL_CLIMODULES_BIN_DIR}/../hidden-cli-modules )
+  set(NOCLI_INSTALL_DIR ${Slicer_INSTALL_CLIMODULES_BIN_DIR}/../ExternalBin)
   set( CLIToolsList
     DTIPrepLauncher
      )
-  INSTALL_EXECUTABLE( OUTPUT_DIR ${SlicerExecutionModel_DEFAULT_CLI_INSTALL_RUNTIME_DESTINATION} LIST_EXEC ${CLIToolsList} )
+  INSTALL_EXECUTABLE( OUTPUT_DIR ${Slicer_INSTALL_CLIMODULES_BIN_DIR} LIST_EXEC ${CLIToolsList} )
   set( hiddenCLIToolsList
     DTIPrep
      )
