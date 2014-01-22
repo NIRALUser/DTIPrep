@@ -64,7 +64,7 @@
            <item>
             <widget class="QLineEdit" name="lineEdit_DicomToNrrdConverterCommand">
              <property name="text">
-              <string>DicomToNrrdConverter</string>
+              <string>DWIConvert</string>
              </property>
             </widget>
            </item>
