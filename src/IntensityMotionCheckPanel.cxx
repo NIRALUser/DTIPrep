@@ -1263,7 +1263,7 @@ void IntensityMotionCheckPanel::on_pushButton_DefaultProtocol_clicked()
 
   DefaultProtocol();
   UpdateProtocolToTreeWidget();
-
+  on_pushButton_Pathdefault_clicked() ;
   pushButton_RunPipeline->setEnabled(1);
   pushButton_Save->setEnabled( 1 );
   pushButton_SaveProtocolAs->setEnabled( 1 );
@@ -1613,11 +1613,11 @@ void IntensityMotionCheckPanel::DefaultProtocol()
 
   // Brain Mask
   this->GetProtocol().initBrainMaskProtocol();
-  this->GetProtocol().GetBrainMaskProtocol().BrainMask_SystemPath_FSL = lineEdit_FSL->text().toStdString();  //
+//  this->GetProtocol().GetBrainMaskProtocol().BrainMask_SystemPath_FSL = lineEdit_FSL->text().toStdString();  //
                                                                                                              // ???????????????????????????????????????????????????????????????????????????????????????????
-  this->GetProtocol().GetBrainMaskProtocol().BrainMask_SystemPath_Slicer = lineEdit_Slicer->text().toStdString();
-  this->GetProtocol().GetBrainMaskProtocol().BrainMask_SystemPath_convertITK = lineEdit_convertitk->text().toStdString();
-  this->GetProtocol().GetBrainMaskProtocol().BrainMask_SystemPath_imagemath = lineEdit_imagemath->text().toStdString();
+//  this->GetProtocol().GetBrainMaskProtocol().BrainMask_SystemPath_Slicer = lineEdit_Slicer->text().toStdString();
+//  this->GetProtocol().GetBrainMaskProtocol().BrainMask_SystemPath_convertITK = lineEdit_convertitk->text().toStdString();
+//  this->GetProtocol().GetBrainMaskProtocol().BrainMask_SystemPath_imagemath = lineEdit_imagemath->text().toStdString();
   //std::cout << "Test 2 Brain mask " << this->GetProtocol().GetBrainMaskProtocol().BrainMask_SystemPath_FSL << std::endl;
   emit Set_init_Path_Signal();
 
@@ -1626,10 +1626,10 @@ void IntensityMotionCheckPanel::DefaultProtocol()
 
   // ***** DTI
   this->GetProtocol().GetDTIProtocol().bCompute = true;
-  this->GetProtocol().GetDTIProtocol().dtiestimCommand
-    = "/tools/bin_linux64/dtiestim";
-  this->GetProtocol().GetDTIProtocol().dtiprocessCommand
-    = "/tools/bin_linux64/dtiprocess";
+//  this->GetProtocol().GetDTIProtocol().dtiestimCommand
+//    = "/tools/bin_linux64/dtiestim";
+//  this->GetProtocol().GetDTIProtocol().dtiprocessCommand
+//    = "/tools/bin_linux64/dtiprocess";
   this->GetProtocol().GetDTIProtocol().method = Protocol::METHOD_WLS;
   this->GetProtocol().GetDTIProtocol().baselineThreshold = 50; //
 //  this->GetProtocol().GetDTIProtocol().mask = "";
@@ -6280,7 +6280,7 @@ void IntensityMotionCheckPanel::FindProgram( std::string name , QLineEdit *lineE
     std::string program ;
     std::vector< std::string > defaultPaths ;
     defaultPaths.push_back( "../ExternalBin" );
-    defaultPaths.push_back( "../../../ExternalBin" ) ;
+
     // Find Tool on system
     program = itksys::SystemTools::FindProgram( name.c_str() ,defaultPaths , true ) ;
     if( program.empty() )
@@ -6289,7 +6289,7 @@ void IntensityMotionCheckPanel::FindProgram( std::string name , QLineEdit *lineE
     }
     if( program.empty() )
     {
-      if( lineEdit_FSL->text().isEmpty() )
+      if( lineEdit->text().isEmpty() )
       {
         notFound = notFound + "> " + name + "\n";
       }
@@ -6298,19 +6298,19 @@ void IntensityMotionCheckPanel::FindProgram( std::string name , QLineEdit *lineE
     {
       lineEdit->setText(QString::fromStdString(program) );
       SystemPath = program ;
-      if( !bProtocol )
-      {
-        std::string text_er = "No protocol has been loaded. Please Load Protocol." ;
-        QMessageBox::warning(this, "Protocol missing", QString(text_er.c_str() ) ) ;
-        return ;
-      }
       this->GetTreeWidgetProtocol()->topLevelItem( parentID )->child( childID )->setText( 1, QString::fromStdString( program ) ) ;
     }
 }
 
 void IntensityMotionCheckPanel::on_pushButton_Pathdefault_clicked()
 {
-    std::string notFound;
+  if( !bProtocol )
+  {
+    std::string text_er = "No protocol has been loaded. Please Load Protocol." ;
+    QMessageBox::warning(this, "Protocol missing", QString(text_er.c_str() ) ) ;
+    return ;
+  }
+  std::string notFound;
   // The protocol paths are bet2,DiffusionWeightedVolumeMasking,dtiestim,dtiprocess and denoisingfilter.
   // They are saved in protocol in BrainMaskProtocol and DTIProtocol structures.
   // BrainMask: FSL_bet
@@ -6326,7 +6326,7 @@ void IntensityMotionCheckPanel::on_pushButton_Pathdefault_clicked()
   FindProgram( "dtiprocess" , lineEdit_dtiprocess , this->GetProtocol().GetDTIProtocol().dtiprocessCommand , 16 , 1 , notFound ) ;
   if( !notFound.empty() )
     {
-    std::string text = "The following programs have not been found.\nPlease enter the path manually:\n" + notFound;
+    std::string text = "The following programs have not been found.\nPlease enter the path manually if necessary:\n" + notFound;
     QMessageBox::warning(this, "Program missing", QString(text.c_str() ) );
 
     }
