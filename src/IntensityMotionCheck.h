@@ -32,6 +32,7 @@
 
 #include <QObject>
 #include <QProcess>
+#include <itksys/SystemTools.hxx>
 
 class CIntensityMotionCheck // : public QObject
 {
@@ -73,6 +74,7 @@ public:
   // eddy-motion Iowa
   typedef itk::VectorImageRegisterAffineFilter<DwiImageType, DwiImageType>
   EddyMotionCorrectorTypeIowa;
+  typedef EddyMotionCorrectorTypeIowa::TransformType TransformType ;
 
   void GetImagesInformation();
 
@@ -326,7 +328,10 @@ public:
 private:
 
   // DiffusionTensorEstimation	m_DominantDirectionDetector;
-
+  std::string MergeOutputDirectoryAndFileName( std::string suffix ) ;
+  void ParametersTypeToVectors( TransformType::ParametersType parameters , std::vector<double> &parametersVec ) ;
+  void SetTranslationResults( TransformType::Pointer transform , TransformStruct *resultTransform );
+  void ComputeAngleDifference( GradientIntensityMotionCheckResult *results ) ;
   void collectDiffusionStatistics();
 
   void collectLeftDiffusionStatistics( DwiImageType::Pointer dwi, std::string reportfilename );

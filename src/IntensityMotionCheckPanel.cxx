@@ -473,7 +473,7 @@ void IntensityMotionCheckPanel::on_treeWidget_itemDoubleClicked(
     {
         QString str_interpolation = QString("Please select the interpolation method used after Eddy motion correction step" );
         SetInterpolationMethod(this->GetProtocol().GetEddyMotionCorrectionProtocol().
-                                              interpolation,11,8,str_interpolation) ;
+                                              interpolation,11,9,str_interpolation) ;
     }
     if( item->text(0) == tr("BRAINMASK_MaskedImage") )
     {
@@ -1603,6 +1603,8 @@ void IntensityMotionCheckPanel::DefaultProtocol()
   //  =  500;
 
   this->GetProtocol().GetEddyMotionCorrectionProtocol().outputDWIFileNameSuffix
+    = "";
+  this->GetProtocol().GetEddyMotionCorrectionProtocol().finalTransformFileSuffix
     = "";
   this->GetProtocol().GetEddyMotionCorrectionProtocol().reportFileNameSuffix
     = "_QCReport.txt";
@@ -2917,7 +2919,15 @@ void IntensityMotionCheckPanel::UpdateProtocolToTreeWidget()
                                                                          GetEddyMotionCorrectionProtocol()
                                                                          .
                                                                          outputDWIFileNameSuffix) );
-
+  QTreeWidgetItem *itemEddyMotionFinalTransformFileSuffix = new QTreeWidgetItem(
+      itemEddyMotionCorrection);
+  itemEddyMotionFinalTransformFileSuffix->setText( 0,
+                                                  tr("EDDYMOTION_finalTransformFileSuffix") );
+  itemEddyMotionFinalTransformFileSuffix->setText( 1,
+                                                  QString::fromStdString(this->GetProtocol().
+                                                                         GetEddyMotionCorrectionProtocol()
+                                                                         .
+                                                                         finalTransformFileSuffix) );
   QTreeWidgetItem *itemEddyMotionReportFileNameSuffix = new QTreeWidgetItem(
       itemEddyMotionCorrection);
   itemEddyMotionReportFileNameSuffix->setText( 0,
@@ -4078,6 +4088,53 @@ void IntensityMotionCheckPanel::ResultUpdate()
                                       .arg(qcResult.GetIntensityMotionCheckResult()[i].CorrectedDir[2], 0,
                                            'f', 6)
                                       );
+    std::vector< double > parameters = qcResult.GetIntensityMotionCheckResult()[i].EddyCurrentCorrectionTransform.Parameters ;
+    if( !parameters.empty() )
+    {
+      QTreeWidgetItem *itemEddyCurrentTransform = new QTreeWidgetItem(gradient);
+      itemEddyCurrentTransform->setText( 0, tr("TransformParameters") );
+      QString transformToString = QString("%1").arg(parameters[0], 0, 'f', 8);
+      for( size_t j = 1 ; j < parameters.size() ; j++ )
+      {
+        transformToString += " " + QString("%1").arg(parameters[j], 0, 'f', 8);
+      }
+      itemEddyCurrentTransform->setText(1, transformToString ) ;
+    }
+    std::vector< double > fixedParameters = qcResult.GetIntensityMotionCheckResult()[i].EddyCurrentCorrectionTransform.FixedParameters ;
+    if( !fixedParameters.empty() )
+    {
+      QTreeWidgetItem *itemEddyCurrentFixedTransform = new QTreeWidgetItem(gradient);
+      itemEddyCurrentFixedTransform->setText( 0, tr("TransformFixedParameters") );
+      QString transformToString = QString("%1").arg(fixedParameters[0], 0, 'f', 8);
+      for( size_t j = 1 ; j < fixedParameters.size() ; j++ )
+      {
+        transformToString += " " + QString("%1").arg(fixedParameters[j], 0, 'f', 8);
+      }
+      itemEddyCurrentFixedTransform->setText(1, transformToString ) ;
+    }
+    QTreeWidgetItem *itemEddyCurrentTranslation = new QTreeWidgetItem(gradient);
+    itemEddyCurrentTranslation->setText( 0, tr("Translation") );
+    double *translation = qcResult.GetIntensityMotionCheckResult()[i].EddyCurrentCorrectionTransform.Translation ;
+    itemEddyCurrentTranslation->setText(1, QString("%1 %2 %3")
+                                      .arg(translation[0], 0,
+                                           'f', 8)
+                                      .arg(translation[1], 0,
+                                           'f', 8)
+                                      .arg(translation[2], 0,
+                                           'f', 8)
+                                      );
+    QTreeWidgetItem *itemEddyCurrentTranslationNorm = new QTreeWidgetItem(gradient);
+    itemEddyCurrentTranslationNorm->setText( 0, tr("TranslationNorm") );
+    itemEddyCurrentTranslationNorm->setText(1, QString("%1")
+                                      .arg(qcResult.GetIntensityMotionCheckResult()[i].EddyCurrentCorrectionTransform.TranslationNorm, 0,
+                                           'f', 8)
+                                     );
+    QTreeWidgetItem *itemEddyCurrentAngle = new QTreeWidgetItem(gradient);
+    itemEddyCurrentAngle->setText( 0, tr("Angle") );
+    itemEddyCurrentAngle->setText(1, QString("%1")
+                                      .arg(qcResult.GetIntensityMotionCheckResult()[i].EddyCurrentCorrectionTransform.Angle, 0,
+                                           'f', 8)
+                                     );
 
     QTreeWidgetItem * itemSliceWiseCheck = new QTreeWidgetItem(gradient);
     itemSliceWiseCheck->setText( 0, tr("SliceWiseCheck") );

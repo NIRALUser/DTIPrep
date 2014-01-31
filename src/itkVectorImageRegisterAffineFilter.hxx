@@ -54,7 +54,7 @@ void VectorImageRegisterAffineFilter<TInputImage, TOutputImage>
 {
 
   itkDebugMacro("VectorImageRegisterAffineFilter::GenerateData()");
-
+  m_FinalTransforms.clear() ;
   // Create a process accumulator for tracking the progress of this minipipeline
   typename ProgressAccumulator::Pointer progress = ProgressAccumulator::New();
   progress->SetMiniPipelineFilter(this);
@@ -122,7 +122,6 @@ void VectorImageRegisterAffineFilter<TInputImage, TOutputImage>
     transformWriter =  TransformWriterType::New();
     transformWriter->SetFileName( m_OutputParameterFile.c_str() );
     }
-
   std::cout << "Register Volume "; // liuzx
   for( int i = 0; i < static_cast<int>(this->GetInput()->GetVectorLength() ); i++ )
     {
@@ -222,7 +221,7 @@ void VectorImageRegisterAffineFilter<TInputImage, TOutputImage>
     TransformTypePointer finalTransform = TransformType::New();
     finalTransform->SetCenter( transform->GetCenter() );
     finalTransform->SetParameters( transform->GetParameters() );
-
+    m_FinalTransforms.push_back(finalTransform) ;
     /* Add Transform To Writer */
     if( m_OutputParameterFile.length() != 0 )
       {

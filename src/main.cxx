@@ -619,6 +619,54 @@ int main( int argc, char * *argv )
                                      .arg(qcResult.GetIntensityMotionCheckResult()[i].CorrectedDir[2], 0, 'f',
                                           6) );
           xmlWriter.writeEndElement();
+          std::vector< double > parameters = qcResult.GetIntensityMotionCheckResult()[i].EddyCurrentCorrectionTransform.Parameters ;
+          if( !parameters.empty() )
+          {
+            xmlWriter.writeStartElement("entry");
+            xmlWriter.writeAttribute( "parameter",  "TransformParameters" );
+            QString transformToString = QString("%1").arg(parameters[0], 0, 'f', 8);
+            for( size_t j = 1 ; j < parameters.size() ; j++ )
+            {
+              transformToString += " " + QString("%1").arg(parameters[j], 0, 'f', 8);
+            }
+            xmlWriter.writeTextElement("value", transformToString ) ;
+            xmlWriter.writeEndElement();
+          }
+          std::vector< double > fixedParameters = qcResult.GetIntensityMotionCheckResult()[i].EddyCurrentCorrectionTransform.FixedParameters ;
+          if( !fixedParameters.empty() )
+          {
+            xmlWriter.writeStartElement("entry");
+            xmlWriter.writeAttribute( "parameter",  "TransformFixedParameters" );
+            QString transformToString = QString("%1").arg(fixedParameters[0], 0, 'f', 8);
+            for( size_t j = 1 ; j < fixedParameters.size() ; j++ )
+            {
+              transformToString += " " + QString("%1").arg(fixedParameters[j], 0, 'f', 8);
+            }
+            xmlWriter.writeTextElement("value", transformToString ) ;
+            xmlWriter.writeEndElement();
+          }
+          xmlWriter.writeStartElement("entry");
+          xmlWriter.writeAttribute( "parameter",  "Translation" );
+          double *translation = qcResult.GetIntensityMotionCheckResult()[i].EddyCurrentCorrectionTransform.Translation ;
+          QString translationToString = QString("%1").arg(translation[0], 0, 'f', 8);
+          for( int j = 1 ; j < 3 ; j++ )
+          {
+            translationToString += " " + QString("%1").arg(translation[j], 0, 'f', 8);
+          }
+          xmlWriter.writeTextElement("value", translationToString ) ;
+          xmlWriter.writeEndElement();
+
+          xmlWriter.writeStartElement("entry");
+          xmlWriter.writeAttribute( "parameter",  "TranslationNorm" );
+          QString translationNormToString = QString("%1").arg(qcResult.GetIntensityMotionCheckResult()[i].EddyCurrentCorrectionTransform.TranslationNorm, 0, 'f', 8);
+          xmlWriter.writeTextElement("value", translationNormToString ) ;
+          xmlWriter.writeEndElement();
+
+          xmlWriter.writeStartElement("entry");
+          xmlWriter.writeAttribute( "parameter",  "Angle" );
+          QString AngleToString = QString("%1").arg(qcResult.GetIntensityMotionCheckResult()[i].EddyCurrentCorrectionTransform.Angle, 0, 'f', 8);
+          xmlWriter.writeTextElement("value", AngleToString ) ;
+          xmlWriter.writeEndElement();
 
           xmlWriter.writeStartElement("entry");
           xmlWriter.writeAttribute( "parameter",  "SliceWiseCheck" );

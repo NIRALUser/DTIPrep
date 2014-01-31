@@ -259,6 +259,8 @@ void XmlStreamReader::InitializeProtocolStringValues()
 
   s_mapProtocolStringValues["EDDYMOTION_outputDWIFileNameSuffix"]
     = EDDYMOTION_outputDWIFileNameSuffix;
+  s_mapProtocolStringValues["EDDYMOTION_finalTransformFileSuffix"]
+    = EDDYMOTION_finalTransformFileSuffix;
   s_mapProtocolStringValues["EDDYMOTION_reportFileNameSuffix"]
     = EDDYMOTION_reportFileNameSuffix;
   s_mapProtocolStringValues["EDDYMOTION_reportFileMode"]
@@ -1233,7 +1235,15 @@ void XmlStreamReader::LoadQCResultFromDWICheckGradientParsing(int Grd_num)
         ii++;
         }
       }
-
+    if( parametersQCResult_Gradient[i].parameter.left(13) ==
+        QObject::tr("TransformParameters") )
+      {
+      values = parametersQCResult_Gradient[i].value.split(" ");
+      foreach(QString value, values)
+        {
+        GrdIntMotionChk.EddyCurrentCorrectionTransform.Parameters.push_back( value.toDouble() );
+        }
+      }
     switch( s_mapQCRESULTStringValue[parametersQCResult_Gradient[i].parameter.toStdString()] )
       {
       case DWI_SLICE:
@@ -2107,6 +2117,10 @@ void XmlStreamReader::parseXMLParametersToProtocol()
           protocol->GetEddyMotionCorrectionProtocol().outputDWIFileNameSuffix
             =  paremeters[i].value.toStdString();
           break;
+        case EDDYMOTION_finalTransformFileSuffix:
+          protocol->GetEddyMotionCorrectionProtocol().finalTransformFileSuffix
+            =  paremeters[i].value.toStdString();
+        break;
         case EDDYMOTION_reportFileNameSuffix:
           protocol->GetEddyMotionCorrectionProtocol().reportFileNameSuffix
             =  paremeters[i].value.toStdString();

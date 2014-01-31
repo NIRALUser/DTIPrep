@@ -28,6 +28,9 @@ set( DTIPrep_SRCS
   XmlStreamWriter.cxx
   Protocol.cxx
   QCResult.cxx
+  UtilBaselineOptimizedAverage.h
+  itkDWIBaselineAverager.h
+  itkDWIBaselineAverager.hxx
 # Utah
   itkDWIHeadMotionEddyCurrentCorrection.cxx
   itkGradientSteepestDescentBaseOptimizer.cxx
@@ -46,6 +49,14 @@ set( DTIPrep_SRCS
  DominantDirectional/Vector.cxx
  DominantDirectional/Geometry_Common.cxx
 )
+
+file(READ DTIPrep.xml var)
+
+string(REGEX MATCH "<version>.*</version>" ext "${var}")
+string(REPLACE "<version>" "" version_number ${ext} )
+string(REPLACE "</version>" "" version_number ${version_number})
+
+ADD_DEFINITIONS(-DDTIPREP_VERSION="${version_number}")
 
 generateclp(DTIPrep_SRCS_CLP DTIPrep.xml )
 set( DTIPrep_SRCS ${DTIPrep_SRCS} ${DTIPrep_SRCS_CLP} )

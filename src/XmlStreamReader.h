@@ -150,10 +150,12 @@ enum ProtocolStringValue
 
   EDDYMOTION_numberOfIterations,
   EDDYMOTION_numberOfSamples,
+  EDDYMOTION_finalTransformFileSuffix,
   EDDYMOTION_translationScale,
   EDDYMOTION_maxStepLength,
   EDDYMOTION_minStepLength,
   EDDYMOTION_relaxFactor,
+  EDDYMOTION_transform,
   // EDDYMOTION_maxNumberOfIterations,
   EDDYMOTION_interpolation,
   EDDYMOTION_outputDWIFileNameSuffix,

@@ -2,6 +2,7 @@
 
 #include <vector>
 #include <QString>
+
 struct ImageInformationCheckResult
   {
   QString info;
@@ -19,12 +20,22 @@ struct DiffusionInformationCheckResult
   bool measurementFrame;
   };
 
+struct TransformStruct
+{
+   std::vector<double> Parameters ;
+   std::vector<double> FixedParameters ;
+   double Translation[3] ;
+   double TranslationNorm ;
+   double Angle ;
+};
+
 struct GradientIntensityMotionCheckResult
   {
   int processing;
   double OriginalDir[3];
   double ReplacedDir[3];
   double CorrectedDir[3];
+  TransformStruct EddyCurrentCorrectionTransform ;
   int VisualChecking;
   int QCIndex;    // mapped to the index of QCed gradeint
   };

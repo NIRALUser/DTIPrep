@@ -223,6 +223,7 @@ public:
   itkGetObjectMacro(Output, OutputImageType);
 
   itkGetMacro(InterpolationMethod, int);
+  itkGetMacro(FinalTransforms, std::vector<TransformTypePointer>);
   itkSetMacro(InterpolationMethod, int);
   itkSetMacro(NumberOfSpatialSamples, int);
   itkSetMacro(NumberOfIterations, int);
@@ -248,6 +249,7 @@ private:
   // Input and Output Image
   FixedImagePointer  m_FixedImage;
   OutputImagePointer m_Output;
+  std::vector<TransformTypePointer> m_FinalTransforms ;
 
   // Internally used Parameters
   float       m_TranslationScale;

@@ -22,7 +22,10 @@
 #include <vcl_algorithm.h>
 
 // The version of DTI prep should be incremented with each algorithm changes
-static const std::string DTIPREP_VERSION("1.2.2");
+
+#ifndef DTIPREP_VERSION
+#define DTIPREP_VERSION "unknown"
+#endif
 
 vnl_matrix_fixed<double, 3, 3>
 CIntensityMotionCheck::GetMeasurementFrame(
@@ -1924,63 +1927,7 @@ bool CIntensityMotionCheck::BaselineAverage( DwiImageType::Pointer dwi )
 {
 
   std::string m_ReportFileName;
-
-  std::string Dwi_file_name = FNameBase(this->m_DwiFileName);
-
-  if( protocol->GetBaselineAverageProtocol().reportFileNameSuffix.length() >
-      0 )
-    {
-
-    if( protocol->GetQCOutputDirectory().length() > 0 )
-      {
-
-      std::string str_QCOutputDirectory = protocol->GetQCOutputDirectory();
-      size_t      found_SeparateChar = str_QCOutputDirectory.find_first_of("/");
-      if( int (found_SeparateChar) == -1 ) // "/" does not exist in the protocol->GetQCOutputDirectory() and interpreted
-                                           // as the relative path and creates the folder
-        {
-
-        size_t found;
-        found = m_DwiFileName.find_last_of("/\\");
-        std::string str;
-        str = m_DwiFileName.substr( 0, found ); // str : path of QCed outputs
-        str.append( "/" );
-        str.append( protocol->GetQCOutputDirectory() );
-        if( !itksys::SystemTools::FileIsDirectory( str.c_str() ) )
-          {
-          itksys::SystemTools::MakeDirectory( str.c_str() );
-          }
-        str.append( "/" );
-        m_ReportFileName = str;
-        m_ReportFileName.append( Dwi_file_name );
-        m_ReportFileName.append( protocol->GetBaselineAverageProtocol().reportFileNameSuffix );
-
-        }
-
-      else // "/" exists in the the protocol->GetQCOutputDirectory() and interpreted as the absolute path
-        {
-        std::string str;
-        str.append( protocol->GetQCOutputDirectory() );
-        if( !itksys::SystemTools::FileIsDirectory( str.c_str() ) )
-          {
-          itksys::SystemTools::MakeDirectory( str.c_str() );
-          }
-        str.append( "/" );
-        m_ReportFileName = str;
-        m_ReportFileName.append( Dwi_file_name );
-        m_ReportFileName.append( protocol->GetBaselineAverageProtocol().reportFileNameSuffix );
-
-        }
-
-      }
-    else
-      {
-      m_ReportFileName = m_DwiFileName.substr( 0, m_DwiFileName.find_last_of('.') );
-      m_ReportFileName.append( protocol->GetBaselineAverageProtocol().reportFileNameSuffix );
-      }
-
-    }
-
+  m_ReportFileName = MergeOutputDirectoryAndFileName( protocol->GetEddyMotionCorrectionProtocol().reportFileNameSuffix ) ;
   std::ofstream outfile;
   outfile.open(m_ReportFileName.c_str(), std::ios::app);
 
@@ -2073,25 +2020,52 @@ bool CIntensityMotionCheck::BaselineAverage( DwiImageType::Pointer dwi )
     }*/
 
     if( protocol->GetBaselineAverageProtocol().outputDWIFileNameSuffix.length()
-        > 0 )
-      {
-      std::string outputDWIFileName;
-      //
-      //
-      //
-      //
-      //    outputDWIFileName=m_DwiFileName.substr(0,m_DwiFileName.find_last_of('.')
-      // );
-      //       outputDWIFileName.append(
-      // protocol->GetBaselineAverageProtocol().outputDWIFileNameSuffix );
+            > 0 )
+    {
+        std::string outputDWIFileName;
+        outputDWIFileName = MergeOutputDirectoryAndFileName( protocol->GetEddyMotionCorrectionProtocol().outputDWIFileNameSuffix ) ;
+        try
+        {
+            std::cout << "Saving output of baseline average: "
+                      << outputDWIFileName << " ... ";
+            DwiWriterType::Pointer    DwiWriter = DwiWriterType::New();
+            itk::NrrdImageIO::Pointer myNrrdImageIO = itk::NrrdImageIO::New();
+            DwiWriter->SetImageIO(myNrrdImageIO);
+            DwiWriter->SetFileName( outputDWIFileName );
+            DwiWriter->SetInput( m_DwiForcedConformanceImage );
+            DwiWriter->UseCompressionOn();
+            DwiWriter->Update();
+        }
+        catch( itk::ExceptionObject & e )
+        {
+            std::cout << e.GetDescription() << std::endl;
+            return -1;
+        }
+        std::cout << "DONE" << std::endl;
+    }
+  }
+  else
+  {
+      std::cout << "Baseline average NOT set." << std::endl;
+      outfile << "Baseline average NOT set." << std::endl;
+  }
+  outfile.close();
+  return true;
+}
 
+std::string CIntensityMotionCheck::MergeOutputDirectoryAndFileName( std::string suffix )
+{
+    std::string m_ReportFileName ;
+    if( suffix.length() > 0 )
+      {
+      std::string Dwi_file_name = FNameBase(this->m_DwiFileName);
       if( protocol->GetQCOutputDirectory().length() > 0 )
         {
 
         std::string str_QCOutputDirectory = protocol->GetQCOutputDirectory();
         size_t      found_SeparateChar = str_QCOutputDirectory.find_first_of("/");
-        if( int (found_SeparateChar) == -1 ) // "/" does not exist in the protocol->GetQCOutputDirectory() and
-                                             // interpreted as the relative path and creates the folder
+        if( int (found_SeparateChar) == -1 ) // "/" does not exist in the protocol->GetQCOutputDirectory() and interpreted
+                                             // as the relative path and creates the folder
           {
 
           size_t found;
@@ -2105,12 +2079,11 @@ bool CIntensityMotionCheck::BaselineAverage( DwiImageType::Pointer dwi )
             itksys::SystemTools::MakeDirectory( str.c_str() );
             }
           str.append( "/" );
-          outputDWIFileName = str;
-          outputDWIFileName.append( Dwi_file_name );
-          outputDWIFileName.append( protocol->GetBaselineAverageProtocol().outputDWIFileNameSuffix );
+          m_ReportFileName = str;
+          m_ReportFileName.append( Dwi_file_name );
+          m_ReportFileName.append( suffix );
 
           }
-
         else // "/" exists in the the protocol->GetQCOutputDirectory() and interpreted as the absolute path
           {
           std::string str;
@@ -2120,48 +2093,55 @@ bool CIntensityMotionCheck::BaselineAverage( DwiImageType::Pointer dwi )
             itksys::SystemTools::MakeDirectory( str.c_str() );
             }
           str.append( "/" );
-          outputDWIFileName = str;
-          outputDWIFileName.append( Dwi_file_name );
-          outputDWIFileName.append( protocol->GetBaselineAverageProtocol().outputDWIFileNameSuffix );
-
+          m_ReportFileName = str;
+          m_ReportFileName.append( Dwi_file_name );
+          m_ReportFileName.append( suffix );
           }
 
         }
       else
         {
-        outputDWIFileName = m_DwiFileName.substr( 0, m_DwiFileName.find_last_of('.') );
-        outputDWIFileName.append( protocol->GetBaselineAverageProtocol().outputDWIFileNameSuffix );
+        m_ReportFileName = m_DwiFileName.substr( 0, m_DwiFileName.find_last_of('.') );
+        m_ReportFileName.append( suffix );
         }
-
-      try
-        {
-        std::cout << "Saving output of baseline average: "
-                  << outputDWIFileName << " ... ";
-        DwiWriterType::Pointer    DwiWriter = DwiWriterType::New();
-        itk::NrrdImageIO::Pointer myNrrdImageIO = itk::NrrdImageIO::New();
-        DwiWriter->SetImageIO(myNrrdImageIO);
-        DwiWriter->SetFileName( outputDWIFileName );
-        DwiWriter->SetInput( m_DwiForcedConformanceImage );
-        DwiWriter->UseCompressionOn();
-        DwiWriter->Update();
-        }
-      catch( itk::ExceptionObject & e )
-        {
-        std::cout << e.GetDescription() << std::endl;
-        return -1;
-        }
-      std::cout << "DONE" << std::endl;
       }
-    }
-  else
+    return m_ReportFileName ;
+}
+
+void CIntensityMotionCheck::ParametersTypeToVectors( TransformType::ParametersType parameters ,
+                                                     std::vector<double> &parametersVec
+                                                   )
+{
+  parametersVec.clear() ;
+  for( itk::SizeValueType j = 0 ; j < parameters.GetSize() ; j++ )
+  {
+      parametersVec.push_back( parameters[ j ] ) ;
+  }
+}
+
+void CIntensityMotionCheck::SetTranslationResults( TransformType::Pointer transform , TransformStruct *resultTransform )
+{
+   typedef TransformType::OffsetType OffsetType ;
+   OffsetType offset = transform->GetOffset() ;
+   for( int i = 0 ; i < 3 ; i++ )
+   {
+       resultTransform->Translation[ i ] = offset[ i ] ;
+   }
+   resultTransform->TranslationNorm = offset.GetNorm() ;
+}
+
+void CIntensityMotionCheck::ComputeAngleDifference( GradientIntensityMotionCheckResult *results )
+{
+    typedef itk::Vector<double,3> VectorType ;
+    VectorType replaced ;
+    VectorType corrected ;
+    for( unsigned int i = 0 ; i < 3 ; i++ )
     {
-    std::cout << "Baseline average NOT set." << std::endl;
-    outfile << "Baseline average NOT set." << std::endl;
+        replaced[ i ] = results->ReplacedDir[ i ] ;
+        corrected[ i ] = results->CorrectedDir[ i ] ;
     }
-
-  outfile.close();
-
-  return true;
+    double valAngle = angle( replaced.GetVnlVector() , corrected.GetVnlVector() ) ;
+    results->EddyCurrentCorrectionTransform.Angle = valAngle ;
 }
 
 bool CIntensityMotionCheck::EddyMotionCorrectIowa( DwiImageType::Pointer dwi )
@@ -2170,64 +2150,8 @@ bool CIntensityMotionCheck::EddyMotionCorrectIowa( DwiImageType::Pointer dwi )
   std::cout << "Eddy-current and head motion correction using IOWA tool."
             << std::endl;
 
-  std::string m_ReportFileName;
-
-  if( protocol->GetEddyMotionCorrectionProtocol().reportFileNameSuffix.
-      length() > 0 )
-    {
-    std::string Dwi_file_name = FNameBase(this->m_DwiFileName);
-    //       ReportFileName=m_DwiFileName.substr(0,m_DwiFileName.find_last_of('.')
-    // );
-    //       ReportFileName.append(
-    // protocol->GetEddyMotionCorrectionProtocol().reportFileNameSuffix );
-
-    if( protocol->GetQCOutputDirectory().length() > 0 )
-      {
-
-      std::string str_QCOutputDirectory = protocol->GetQCOutputDirectory();
-      size_t      found_SeparateChar = str_QCOutputDirectory.find_first_of("/");
-      if( int (found_SeparateChar) == -1 ) // "/" does not exist in the protocol->GetQCOutputDirectory() and interpreted
-                                           // as the relative path and creates the folder
-        {
-
-        size_t found;
-        found = m_DwiFileName.find_last_of("/\\");
-        std::string str;
-        str = m_DwiFileName.substr( 0, found ); // str : path of QCed outputs
-        str.append( "/" );
-        str.append( protocol->GetQCOutputDirectory() );
-        if( !itksys::SystemTools::FileIsDirectory( str.c_str() ) )
-          {
-          itksys::SystemTools::MakeDirectory( str.c_str() );
-          }
-        str.append( "/" );
-        m_ReportFileName = str;
-        m_ReportFileName.append( Dwi_file_name );
-        m_ReportFileName.append( protocol->GetEddyMotionCorrectionProtocol().reportFileNameSuffix );
-
-        }
-      else // "/" exists in the the protocol->GetQCOutputDirectory() and interpreted as the absolute path
-        {
-        std::string str;
-        str.append(protocol->GetQCOutputDirectory() );
-        if( !itksys::SystemTools::FileIsDirectory( str.c_str() ) )
-          {
-          itksys::SystemTools::MakeDirectory( str.c_str() );
-          }
-        str.append( "/" );
-        m_ReportFileName = str;
-        m_ReportFileName.append( Dwi_file_name );
-        m_ReportFileName.append( protocol->GetEddyMotionCorrectionProtocol().reportFileNameSuffix );
-        }
-
-      }
-    else
-      {
-      m_ReportFileName = m_DwiFileName.substr( 0, m_DwiFileName.find_last_of('.') );
-      m_ReportFileName.append( protocol->GetEddyMotionCorrectionProtocol().reportFileNameSuffix );
-      }
-    }
-
+  std::string m_ReportFileName ;
+  m_ReportFileName = MergeOutputDirectoryAndFileName( protocol->GetEddyMotionCorrectionProtocol().reportFileNameSuffix ) ;
   std::ofstream outfile;
   outfile.open(m_ReportFileName.c_str(), std::ios::app);
 
@@ -2380,9 +2304,17 @@ bool CIntensityMotionCheck::EddyMotionCorrectIowa( DwiImageType::Pointer dwi )
     EddyMotionCorrectorIowa->SetMinimumStepLength(protocol->GetEddyMotionCorrectionProtocol().minStepLength );
     // EddyMotionCorrectorIowa->SetStepLength(protocol->GetEddyMotionCorrectionProtocol().stepLength );
     EddyMotionCorrectorIowa->SetRelaxationFactor( protocol->GetEddyMotionCorrectionProtocol().relaxFactor );
-    EddyMotionCorrectorIowa->SetOutputParameterFile(
-      protocol->GetEddyMotionCorrectionProtocol().outputDWIFileNameSuffix );
-
+    if( !protocol->GetEddyMotionCorrectionProtocol().finalTransformFileSuffix.empty() )
+    {
+      std::string finalTransformFileName ;
+      finalTransformFileName = MergeOutputDirectoryAndFileName( protocol->GetEddyMotionCorrectionProtocol().finalTransformFileSuffix ) ;
+      std::string extension = itksys::SystemTools::GetFilenameLastExtension(finalTransformFileName) ;
+      if( extension != ".mat" && extension != ".txt" && extension != ".tfm" )
+      {
+          finalTransformFileName.append( ".txt" ) ;
+      }
+      EddyMotionCorrectorIowa->SetOutputParameterFile( finalTransformFileName );
+    }
     // .....................................................................................................
 
     try
@@ -2393,6 +2325,16 @@ bool CIntensityMotionCheck::EddyMotionCorrectIowa( DwiImageType::Pointer dwi )
       {
       std::cout << e.GetDescription() << std::endl;
       }
+
+    typedef TransformType::Pointer TransformTypePointer ;
+    std::vector<TransformTypePointer> eddyMotionTransforms ;
+    eddyMotionTransforms = EddyMotionCorrectorIowa->GetFinalTransforms();
+    outfile << "Transforms: " << std::endl ;
+    for( size_t i = 0 ; i < eddyMotionTransforms.size() ; i++ )
+    {
+        outfile << i << " - Parameters: " << eddyMotionTransforms[ i ]->GetParameters() << std::endl ;
+        outfile << i << " - Fixed Parameters: " << eddyMotionTransforms[ i ]->GetFixedParameters() << std::endl ;
+    }
 
     this->m_DwiForcedConformanceImage = EddyMotionCorrectorIowa->GetOutput();
 
@@ -2539,7 +2481,14 @@ bool CIntensityMotionCheck::EddyMotionCorrectIowa( DwiImageType::Pointer dwi )
               = outputGradDirContainer->at(i)[1];
             this->qcResult->GetIntensityMotionCheckResult()[j].CorrectedDir[2]
               = outputGradDirContainer->at(i)[2];
+            //this->qcResult->GetIntensityMotionCheckResult()[j].EddyCurrentCorrectionTransform
+            //  = eddyMotionTransforms.at(i) ;
             gradientFound = true;
+            TransformStruct *resultTransform = &this->qcResult->GetIntensityMotionCheckResult()[j].EddyCurrentCorrectionTransform ;
+            ParametersTypeToVectors( eddyMotionTransforms.at(i)->GetParameters() , resultTransform->Parameters ) ;
+            ParametersTypeToVectors( eddyMotionTransforms.at(i)->GetFixedParameters() , resultTransform->FixedParameters ) ;
+            SetTranslationResults(eddyMotionTransforms.at(i) , resultTransform ) ;
+            ComputeAngleDifference( &this->qcResult->GetIntensityMotionCheckResult()[j] ) ;
             // std::cout << "Matching " << i <<" th Iowa gradient to " << j << " th original gradient" << std:: endl;
             }
           }
@@ -2550,56 +2499,7 @@ bool CIntensityMotionCheck::EddyMotionCorrectIowa( DwiImageType::Pointer dwi )
         > 0 )
       {
       std::string outputDWIFileName;
-
-      std::string Dwi_file_name = FNameBase(this->m_DwiFileName);
-
-      if( protocol->GetQCOutputDirectory().length() > 0 )
-        {
-
-        std::string str_QCOutputDirectory = protocol->GetQCOutputDirectory();
-        size_t      found_SeparateChar = str_QCOutputDirectory.find_first_of("/");
-        if( int (found_SeparateChar) == -1 ) // "/" does not exist in the protocol->GetQCOutputDirectory() and
-                                             // interpreted as the relative path and creates the folder
-          {
-
-          size_t found;
-          found = m_DwiFileName.find_last_of("/\\");
-          std::string str;
-          str = m_DwiFileName.substr( 0, found ); // str : path of QCed outputs
-          str.append( "/" );
-          str.append( protocol->GetQCOutputDirectory() );
-          if( !itksys::SystemTools::FileIsDirectory( str.c_str() ) )
-            {
-            itksys::SystemTools::MakeDirectory( str.c_str() );
-            }
-          str.append( "/" );
-          outputDWIFileName = str;
-          outputDWIFileName.append( Dwi_file_name );
-          outputDWIFileName.append( protocol->GetEddyMotionCorrectionProtocol().outputDWIFileNameSuffix );
-
-          }
-
-        else // "/" exists in the the protocol->GetQCOutputDirectory() and interpreted as the absolute path
-          {
-          std::string str;
-          str.append(protocol->GetQCOutputDirectory() );
-          if( !itksys::SystemTools::FileIsDirectory( str.c_str() ) )
-            {
-            itksys::SystemTools::MakeDirectory( str.c_str() );
-            }
-          str.append( "/" );
-          outputDWIFileName = str;
-          outputDWIFileName.append( Dwi_file_name );
-          outputDWIFileName.append( protocol->GetEddyMotionCorrectionProtocol().outputDWIFileNameSuffix );
-          }
-
-        }
-      else
-        {
-        outputDWIFileName = m_DwiFileName.substr( 0, m_DwiFileName.find_last_of('.') );
-        outputDWIFileName.append( protocol->GetEddyMotionCorrectionProtocol().outputDWIFileNameSuffix );
-        }
-
+      outputDWIFileName = MergeOutputDirectoryAndFileName( protocol->GetEddyMotionCorrectionProtocol().outputDWIFileNameSuffix ) ;
       try
         {
         std::cout << "Saving output of eddy current motion correction: "
@@ -4608,7 +4508,6 @@ unsigned int CIntensityMotionCheck::RunPipelineByProtocol()
 
   EddyMotionCorrectIowa(m_DwiForcedConformanceImage);
   std::cout << "EddyCurrentHeadMotionCorrect DONE " << std::endl;
-
   //
   // .....................................................................GradientChecker...........................................................................................
   std::cout << "=====================" << std::endl;

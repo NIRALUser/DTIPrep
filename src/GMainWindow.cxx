@@ -716,18 +716,17 @@ void GMainWindow::save()
 
 void GMainWindow::about()
 {
-  QMessageBox::about( this, tr("About DTIPrep"),
-                      tr("A Tool to do QC/Prep work for DWI/DTI. "
-                         "\nCopyright(c) UNC. All rights reserved. "
-                         "\nSee http://www.nitrc.org/projects/dtiprep for details.") );
+  QString text = "Version: " ;
+  text += DTIPREP_VERSION ;
+  text += "\nA Tool to do QC/Prep work for DWI/DTI. " ;
+  text += "\nCopyright(c) UNC. All rights reserved. " ;
+  text += "\nSee http://www.nitrc.org/projects/dtiprep for details." ;
+  QMessageBox::about( this, tr("About DTIPrep"), tr( text.toStdString().c_str() ) );
 }
 
 void GMainWindow::help()
 {
-  QUrl url("http://www.niral.unc.edu");
-
-  //  QUrl
-  // url("http://www.ia.unc.edu/wiki/index.php/DTI:_Group_Analysis_Pipeline");
+  QUrl url("http://www.nitrc.org/docman/index.php?group_id=283&selected_doc_group_id=2743&language_id=1#folder");
   url.setScheme("http");
   QDesktopServices::openUrl(url);
 }

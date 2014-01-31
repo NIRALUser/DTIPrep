@@ -5,7 +5,7 @@
   <description>
     The DWI/DTI Quality Control Processes from dicom data to qualified dwi image.
   </description>
-  <version>1.2.2</version>
+  <version>1.2.3</version>
   <license></license>
   <contributor>Mahshid Farzinfar (1), Zhexing Liu (1), Martin Styner(1),Hans Johnson(2,3,4), Joy Matsui(2), Kent Williams(2); (1=Department of Psychiatry, University of North Carolina at Chapel Hill, 2=University of Iowa Department of Psychiatry, 3=University of Iowa Department of Biomedical Engineering, 4=University of Iowa Department of Electrical and Computer Engineering)
 </contributor>

@@ -242,6 +242,7 @@ void Protocol::initEddyMotionCorrectionProtocol()
   eddyMotionCorrectionProtocol.relaxFactor    = 0.5;
 
   eddyMotionCorrectionProtocol.outputDWIFileNameSuffix = "";
+  eddyMotionCorrectionProtocol.finalTransformFileSuffix = "" ;
   eddyMotionCorrectionProtocol.reportFileNameSuffix = "_QCReport.txt";
   eddyMotionCorrectionProtocol.reportFileMode = 1; // 0: new   1: append
   eddyMotionCorrectionProtocol.interpolation = LINEAR_INTERPOLATION ;
@@ -1618,6 +1619,9 @@ void Protocol::Save( std::string xml)
   outfile << "        <entry parameter=\"EDDYMOTION_outputDWIFileNameSuffix\">" << std::endl;
   outfile << "            <value>" << GetEddyMotionCorrectionProtocol().outputDWIFileNameSuffix << "</value>"
           << std::endl;
+  outfile << "        </entry>" << std::endl;
+  outfile << "        <entry parameter=\"EDDYMOTION_finalTransformFileSuffix\">" << std::endl;
+  outfile << "            <value>" << GetEddyMotionCorrectionProtocol().finalTransformFileSuffix << "</value>" << std::endl;
   outfile << "        </entry>" << std::endl;
   outfile << "        <entry parameter=\"EDDYMOTION_reportFileNameSuffix\">" << std::endl;
   outfile << "            <value>" << GetEddyMotionCorrectionProtocol().reportFileNameSuffix << "</value>" << std::endl;

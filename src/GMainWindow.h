@@ -44,6 +44,10 @@ class QPushButton;
 #include "vtkTubeFilter.h"
 #include "vtkLight.h"
 
+#ifndef DTIPREP_VERSION
+#define DTIPREP_VERSION "unknown"
+#endif
+
 class QStyleFactory;
 
 class vtkEventQtSlotConnect;
