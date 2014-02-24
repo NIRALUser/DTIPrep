@@ -23,6 +23,7 @@
 #include "XmlStreamReader.h"
 #include "XmlStreamWriter.h"
 #include "DTIPrepCLP.h"
+#include <sstream>
 
 // Defining Checking bits
 #define ImageCheckBit 1
@@ -43,6 +44,9 @@ int r_GradWiseCheck;      // the overall GradientWiseChecking result
 int main( int argc, char * *argv )
 {
   PARSE_ARGS;
+  std::ostringstream ssNumberOfThreads ;
+  ssNumberOfThreads << "ITK_GLOBAL_DEFAULT_NUMBER_OF_THREADS=" << numberOfThreads ;
+  itksys::SystemTools::PutEnv( ssNumberOfThreads.str().c_str() ) ;
 // BUG: When loading the DTIPrep GUI, the following error would appear: "Qt internal error: qt_menu.nib could not be
 // loaded. The .nib file should be placed in QtGui.framework/Versions/Current/Resources/ or in the resources directory
 // of your applicaiton bundle." Qt is aware of this problem (http://bugreports.qt.nokia.com/browse/QTBUG-5952) and has
