@@ -3818,7 +3818,7 @@ bool CIntensityMotionCheck::DominantDirectionalCheck()
   //   outfile.open( m_ReportFileName.c_str() );
   //   }
 
-  std::cout << "Dominant outfile" << outfile << std::endl;
+  std::cout << "Dominant outfile " << m_ReportFileName << std::endl;
   if( outfile )
     {
     bReport = true;
