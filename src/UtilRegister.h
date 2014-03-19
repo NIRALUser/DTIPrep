@@ -1,6 +1,6 @@
 #ifndef __UTILREGISTER_H__
 #define __UTILREGISTER_H__
-
+#include "itkCompositeTransform.h"
 namespace itk
 {
 class struRigidRegResult
@@ -175,7 +175,14 @@ struRigidRegResult rigidRegistration(
     intraSubjectRegistrationHelper->SetTransformType(transformType);
     }
 #if 1
-  intraSubjectRegistrationHelper->SetCurrentGenericTransform(regResult.GetTransform().GetPointer() );
+    {
+    // apparently some API drift -- SetCurrentGenericTransform now
+    // wants a composite transform...
+    typedef itk::CompositeTransform<double,3> CompositeType;
+    CompositeType::Pointer composite = CompositeType::New();
+    composite->AddTransform(regResult.GetTransform().GetPointer());
+    intraSubjectRegistrationHelper->SetCurrentGenericTransform(composite.GetPointer());
+    }
 #else
     {
     const std::string initializeTransformMode("MomentsOn");
@@ -184,7 +191,6 @@ struRigidRegResult rigidRegistration(
 #endif
   //  intraSubjectRegistrationHelper->SetUseWindowedSinc(useWindowedSinc);
 
-  intraSubjectRegistrationHelper->SetCurrentGenericTransform( regResult.GetTransform().GetPointer() );
   // if( this->m_DebugLevel > 7 )
   //  {
   // intraSubjectRegistrationHelper->PrintCommandLine(true);

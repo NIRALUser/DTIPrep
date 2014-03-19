@@ -161,7 +161,11 @@ void ImageView2DPanelWithControls::Setup( vtkImageData *image,
   this->ImageViewer2->SetupInteractor(
     qvtkWidget->GetRenderWindow()->GetInteractor() );
 
+#if (VTK_MAJOR_VERSION < 6)
   this->ImageViewer2->SetInput( vtkImage );
+#else
+  this->ImageViewer2->SetInputData( vtkImage );
+#endif
   // this->ImageViewer2->GetImageActor()->SetOpacity(0.2);
 
   int index;

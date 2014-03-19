@@ -115,7 +115,11 @@ void Counter::WriteCounterToVTKFile(const char *fname) const
   vtkSmartPointer<vtkPolyData> data = GetVTKPolyData();
 
   vtkSmartPointer<vtkPolyDataWriter> writer = vtkSmartPointer<vtkPolyDataWriter>::New();
+#if (VTK_MAJOR_VERSION < 6)
   writer->SetInput(data);
+#else
+  writer->SetInputData(data);
+#endif
   writer->SetFileName(fname);
   std::stringstream ss;
   ss << "Counter";

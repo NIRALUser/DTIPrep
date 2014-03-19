@@ -118,7 +118,11 @@ GMainWindow::GMainWindow()
   this->doubleSpinBox_SphereOpacity->setMaximum(1);
 
   vtkPolyDataMapper *mapperSphere = vtkPolyDataMapper::New();
+#if (VTK_MAJOR_VERSION < 6)
   mapperSphere->SetInput( SphereSource->GetOutput() );
+#else
+  mapperSphere->SetInputData( SphereSource->GetOutput() );
+#endif
 
   actorSphere  = vtkActor::New();
   actorSphere->SetMapper(mapperSphere);
@@ -411,7 +415,11 @@ void GMainWindow::ProbeWithSplineWidget()
 
   // The plot of the profile data.
   vtkXYPlotActor *profile = vtkXYPlotActor::New();
+#if (VTK_MAJOR_VERSION < 6)
   profile->AddInput( myPointSet);
+#else
+  profile->AddDataSetInput( myPointSet);
+#endif
   profile->GetPositionCoordinate()->SetValue(0.05, 0.05, 0);
   profile->GetPosition2Coordinate()->SetValue(0.95, 0.95, 0);
   profile->SetXValuesToNormalizedArcLength();
@@ -1356,7 +1364,11 @@ void GMainWindow::UpdateDWIDiffusionVectorActors( DwiImageType::Pointer _DWIImag
         }
 
       vtkTubeFilter *TubeFilter = vtkTubeFilter::New();
+#if (VTK_MAJOR_VERSION < 6)
       TubeFilter->SetInput( LineSource->GetOutput() );
+#else
+      TubeFilter->SetInputData( LineSource->GetOutput() );
+#endif
       TubeFilter->SetRadius(0.01);
       TubeFilter->SetNumberOfSides(10);
       TubeFilter->SetVaryRadiusToVaryRadiusOff();
@@ -1364,7 +1376,11 @@ void GMainWindow::UpdateDWIDiffusionVectorActors( DwiImageType::Pointer _DWIImag
       TubeFilter->Update(); // /
 
       vtkPolyDataMapper *mapperLocal = vtkPolyDataMapper::New();
+#if (VTK_MAJOR_VERSION < 6)
       mapperLocal->SetInput( TubeFilter->GetOutput() );
+#else
+      mapperLocal->SetInputData( TubeFilter->GetOutput() );
+#endif
 
       vtkActor *actorLocal = vtkActor::New();
       actorLocal->SetMapper(mapperLocal);
@@ -1481,7 +1497,11 @@ void GMainWindow::UpdateOutputDWIDiffusionVectorActors()
         CorrectedDir[2] );
 
       vtkTubeFilter *TubeFilter = vtkTubeFilter::New();
+#if (VTK_MAJOR_VERSION < 6)
       TubeFilter->SetInput( LineSource->GetOutput() );
+#else
+      TubeFilter->SetInputData( LineSource->GetOutput() );
+#endif
       TubeFilter->SetRadius(0.01);
       TubeFilter->SetNumberOfSides(10);
       TubeFilter->SetVaryRadiusToVaryRadiusOff();
@@ -1489,7 +1509,11 @@ void GMainWindow::UpdateOutputDWIDiffusionVectorActors()
       TubeFilter->Update();
 
       vtkPolyDataMapper *mapperLocal = vtkPolyDataMapper::New();
+#if (VTK_MAJOR_VERSION < 6)
       mapperLocal->SetInput( TubeFilter->GetOutput() );
+#else
+      mapperLocal->SetInputData( TubeFilter->GetOutput() );
+#endif
 
       vtkActor *actorLocal = vtkActor::New();
       actorLocal->SetMapper(mapperLocal);
@@ -1553,7 +1577,11 @@ void GMainWindow::UpdateOutputDWIDiffusionVectorActors_VC()
         CorrectedDir[2] );
 
       vtkTubeFilter *TubeFilter = vtkTubeFilter::New();
+#if (VTK_MAJOR_VERSION < 6)
       TubeFilter->SetInput( LineSource->GetOutput() );
+#else
+      TubeFilter->SetInputData( LineSource->GetOutput() );
+#endif
       TubeFilter->SetRadius(0.01);
       TubeFilter->SetNumberOfSides(10);
       TubeFilter->SetVaryRadiusToVaryRadiusOff();
@@ -1561,7 +1589,11 @@ void GMainWindow::UpdateOutputDWIDiffusionVectorActors_VC()
       TubeFilter->Update();
 
       vtkPolyDataMapper *mapperLocal = vtkPolyDataMapper::New();
+#if (VTK_MAJOR_VERSION < 6)
       mapperLocal->SetInput( TubeFilter->GetOutput() );
+#else
+      mapperLocal->SetInputData( TubeFilter->GetOutput() );
+#endif
 
       vtkActor *actorLocal = vtkActor::New();
       actorLocal->SetMapper(mapperLocal);
@@ -1613,7 +1645,11 @@ void GMainWindow::UpdateProtocolDiffusionVectorActors()
       );
 
     vtkTubeFilter *TubeFilter = vtkTubeFilter::New();
+#if (VTK_MAJOR_VERSION < 6)
     TubeFilter->SetInput( LineSource->GetOutput() );
+#else
+    TubeFilter->SetInputData( LineSource->GetOutput() );
+#endif
     TubeFilter->SetRadius(0.01);
     TubeFilter->SetNumberOfSides(10);
     TubeFilter->SetVaryRadiusToVaryRadiusOff();
@@ -1621,7 +1657,11 @@ void GMainWindow::UpdateProtocolDiffusionVectorActors()
     TubeFilter->Update(); // /
 
     vtkPolyDataMapper *mapperLocal = vtkPolyDataMapper::New();
+#if (VTK_MAJOR_VERSION < 6)
     mapperLocal->SetInput( TubeFilter->GetOutput() );
+#else
+    mapperLocal->SetInputData( TubeFilter->GetOutput() );
+#endif
 
     vtkActor *actorLocal = vtkActor::New();
     actorLocal->SetMapper(mapperLocal);
@@ -1707,7 +1747,11 @@ bool GMainWindow::CreateImagePlaneWidgets(vtkImageData *GradientImage)
   planeWidgetX->SetTexturePlaneProperty(ipwProp);
   planeWidgetX->TextureInterpolateOff();
   // planeWidgetX->SetResliceInterpolateToNearestNeighbour();
+#if (VTK_MAJOR_VERSION < 6)
   planeWidgetX->SetInput(GradientImage);
+#else
+  planeWidgetX->SetInputData(GradientImage);
+#endif
   planeWidgetX->SetPlaneOrientationToXAxes();
   planeWidgetX->SetSliceIndex(dims[0] / 2);
   planeWidgetX->DisplayTextOn();
@@ -1730,7 +1774,11 @@ bool GMainWindow::CreateImagePlaneWidgets(vtkImageData *GradientImage)
   planeWidgetY->SetTexturePlaneProperty(ipwProp);
   planeWidgetY->TextureInterpolateOff();
   // planeWidgetY->SetResliceInterpolateToNearestNeighbour();
+#if (VTK_MAJOR_VERSION < 6)
   planeWidgetY->SetInput(GradientImage);
+#else
+  planeWidgetY->SetInputData(GradientImage);
+#endif
   planeWidgetY->SetPlaneOrientationToYAxes();
   planeWidgetY->SetSliceIndex(dims[1] / 2);
   planeWidgetY->SetLookupTable( planeWidgetX->GetLookupTable() );
@@ -1755,7 +1803,11 @@ bool GMainWindow::CreateImagePlaneWidgets(vtkImageData *GradientImage)
   planeWidgetZ->SetTexturePlaneProperty(ipwProp);
   planeWidgetZ->TextureInterpolateOff();
   // planeWidgetZ->SetResliceInterpolateToNearestNeighbour();
+#if (VTK_MAJOR_VERSION < 6)
   planeWidgetZ->SetInput(GradientImage);
+#else
+  planeWidgetZ->SetInputData(GradientImage);
+#endif
   planeWidgetZ->SetPlaneOrientationToZAxes();
   planeWidgetZ->SetSliceIndex(dims[2] / 2);
   planeWidgetZ->SetLookupTable( planeWidgetX->GetLookupTable() );
@@ -1798,7 +1850,11 @@ bool GMainWindow::CreateImagePlaneWidgets( vtkImageData *GradientImage1,
   planeWidgetX->SetTexturePlaneProperty(ipwProp);
   planeWidgetX->TextureInterpolateOff();
   // planeWidgetX->SetResliceInterpolateToNearestNeighbour();
+#if (VTK_MAJOR_VERSION < 6)
   planeWidgetX->SetInput(GradientImage1);
+#else
+  planeWidgetX->SetInputData(GradientImage1);
+#endif
   planeWidgetX->SetPlaneOrientationToXAxes();
   planeWidgetX->SetSliceIndex(dims1[0] / 2);
   planeWidgetX->DisplayTextOn();
@@ -1824,7 +1880,11 @@ bool GMainWindow::CreateImagePlaneWidgets( vtkImageData *GradientImage1,
   planeWidgetY->SetTexturePlaneProperty(ipwProp);
   planeWidgetY->TextureInterpolateOff();
   // planeWidgetY->SetResliceInterpolateToNearestNeighbour();
+#if (VTK_MAJOR_VERSION < 6)
   planeWidgetY->SetInput(GradientImage2);
+#else
+  planeWidgetY->SetInputData(GradientImage2);
+#endif
   planeWidgetY->SetPlaneOrientationToYAxes();
   planeWidgetY->SetSliceIndex(dims2[1] / 2);
   // planeWidgetY->SetLookupTable( planeWidgetX->GetLookupTable());
@@ -1852,7 +1912,11 @@ bool GMainWindow::CreateImagePlaneWidgets( vtkImageData *GradientImage1,
   planeWidgetZ->SetTexturePlaneProperty(ipwProp);
   planeWidgetZ->TextureInterpolateOff();
   // planeWidgetZ->SetResliceInterpolateToNearestNeighbour();
+#if (VTK_MAJOR_VERSION < 6)
   planeWidgetZ->SetInput(GradientImage3);
+#else
+  planeWidgetZ->SetInputData(GradientImage3);
+#endif
   planeWidgetZ->SetPlaneOrientationToZAxes();
   planeWidgetZ->SetSliceIndex(dims3[2] / 2);
   // planeWidgetZ->SetLookupTable( planeWidgetX->GetLookupTable());

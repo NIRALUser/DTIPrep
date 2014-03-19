@@ -566,7 +566,11 @@ void SphereIkosahedron<T>::WriteIcosahedronToVTKFile(const char *fname)
 
   vtkSmartPointer<vtkPolyData>       data = CreateVTKPolyData();
   vtkSmartPointer<vtkPolyDataWriter> writer = vtkSmartPointer<vtkPolyDataWriter>::New();
+#if (VTK_MAJOR_VERSION < 6)
   writer->SetInput(data);
+#else
+  writer->SetInputData(data);
+#endif
   writer->SetFileName(fname);
   std::stringstream ss;
   ss << "Icosahedron subdivision level: " << m_SubdivisionLevel;
