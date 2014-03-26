@@ -26,9 +26,9 @@ set(${extProjName}_REQUIRED_VERSION)  #If a required version is necessary, then 
 #endif()
 
 # Sanity checks
-#if(DEFINED ${extProjName}_DIR AND NOT EXISTS ${${extProjName}_DIR})
-#  message(FATAL_ERROR "${extProjName}_DIR variable is defined but corresponds to non-#existing directory (${${extProjName}_DIR})")
-#endif()
+if(DEFINED ${extProjName}_DIR AND NOT EXISTS ${${extProjName}_DIR})
+  message(FATAL_ERROR "${extProjName}_DIR variable is defined but corresponds to non-existing directory (${${extProjName}_DIR})")
+endif()
 
 # Set dependency list
 set(${proj}_DEPENDENCIES zlib)
@@ -54,12 +54,16 @@ if(NOT ( DEFINED "USE_SYSTEM_${extProjName}" AND "${USE_SYSTEM_${extProjName}}" 
   ### --- Project specific additions here
   set(${proj}_CMAKE_OPTIONS
     -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_CURRENT_BINARY_DIR}/${proj}-install
+    -DBUILD_TESTING:BOOL=OFF
+    -DBUILD_EXPERIMENTAL_LIBS:BOOL=OFF
+    -DBUILD_EXPERIMENTAL_APPS:BOOL=OFF
     -DTeem_USE_LIB_INSTALL_SUBDIR:BOOL=ON
     -DCMAKE_VERBOSE_MAKEFILE:BOOL=OFF
     -DTeem_PTHREAD:BOOL=OFF
     -DTeem_BZIP2:BOOL=OFF
     -DTeem_ZLIB:BOOL=ON
     -DTeem_PNG:BOOL=OFF
+    # ZLIB
     -DZLIB_ROOT:PATH=${SLICER_ZLIB_ROOT}
     -DZLIB_INCLUDE_DIR:PATH=${ZLIB_INCLUDE_DIR}
     -DZLIB_LIBRARY:FILEPATH=${ZLIB_LIBRARY}
@@ -67,11 +71,11 @@ if(NOT ( DEFINED "USE_SYSTEM_${extProjName}" AND "${USE_SYSTEM_${extProjName}}" 
     )
 
   ### --- End Project specific additions
-  set(${proj}_URL http://svn.slicer.org/Slicer3-lib-mirrors/trunk/teem-1.10.0-src.tar.gz)
-  set(${proj}_MD5 efe219575adc89f6470994154d86c05b)
+  set(${proj}_REPOSITORY "${git_protocol}://github.com/BRAINSia/teem.git")
+  set(${proj}_TAG "9db65f15e554119989bb49d12b404e7e44f150e4")
   ExternalProject_Add(${proj}
-    URL ${${proj}_URL}
-    URL_MD5 ${${proj}_MD5}
+    GIT_REPOSITORY ${${proj}_REPOSITORY}
+    GIT_TAG ${${proj}_GIT_TAG}
     SOURCE_DIR ${CMAKE_CURRENT_LIST_DIR}/ExternalSources/${proj}
     BINARY_DIR ${proj}-build
     LOG_CONFIGURE 0  # Wrap configure in script to ignore log output from dashboards
@@ -88,7 +92,16 @@ if(NOT ( DEFINED "USE_SYSTEM_${extProjName}" AND "${USE_SYSTEM_${extProjName}}" 
     DEPENDS
       ${${proj}_DEPENDENCIES}
   )
-  set(${extProjName}_DIR ${CMAKE_BINARY_DIR}/${proj}-install/lib/Teem-1.10.0)
+  ExternalProject_Add_Step(${proj} fix_AIR_EXISTS
+    COMMAND ${CMAKE_COMMAND} -DAIR_FILE=${CMAKE_CURRENT_LIST_DIR}/ExternalSources/teem/src/air/air.h
+    -P ${CMAKE_CURRENT_LIST_DIR}/TeemPatch.cmake
+    COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_CURRENT_LIST_DIR}/ExternalSources/teem/include/teem
+    COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_LIST_DIR}/ExternalSources/teem/src/bane/bane.h
+    ${CMAKE_CURRENT_LIST_DIR}/ExternalSources/teem/include/teem/bane.h
+    DEPENDEES download
+    DEPENDERS configure
+    )
+  set(${extProjName}_DIR ${CMAKE_BINARY_DIR}/${proj}-install/lib/Teem-1.11.1)
 else()
   if(${USE_SYSTEM_${extProjName}})
     find_package(${extProjName} ${${extProjName}_REQUIRED_VERSION} REQUIRED)

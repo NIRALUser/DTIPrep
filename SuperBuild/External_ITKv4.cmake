@@ -26,12 +26,12 @@ set(${extProjName}_REQUIRED_VERSION ${${extProjName}_VERSION_MAJOR})  #If a requ
 #endif()
 
 # Sanity checks
-#if(DEFINED ${extProjName}_DIR AND NOT EXISTS ${${extProjName}_DIR})
-#  message(FATAL_ERROR "${extProjName}_DIR variable is defined but corresponds to non-existing directory (${${extProjName}_DIR})")
-#endif()
+if(DEFINED ${extProjName}_DIR AND NOT EXISTS ${${extProjName}_DIR})
+  message(FATAL_ERROR "${extProjName}_DIR variable is defined but corresponds to non-existing directory (${${extProjName}_DIR})")
+endif()
 
 # Set dependency list
-set(${proj}_DEPENDENCIES DCMTK JPEG TIFF zlib)
+set(${proj}_DEPENDENCIES DCMTK JPEG TIFF zlib OpenJPEG)
 if(${PROJECT_NAME}_BUILD_DICOM_SUPPORT)
   list(APPEND ${proj}_DEPENDENCIES DCMTK JPEG TIFF)
 endif()
@@ -62,13 +62,18 @@ if(NOT ( DEFINED "USE_SYSTEM_${extProjName}" AND "${USE_SYSTEM_${extProjName}}" 
       )
   endif()
 
+  set(${PROJECT_NAME}_BUILD_FFTWF_SUPPORT ON)
+  set(${PROJECT_NAME}_BUILD_FFTWD_SUPPORT ON)
+
+  set(${PROJECT_NAME}_FFTW_ARGS)
+
   if(${PROJECT_NAME}_BUILD_FFTWF_SUPPORT)
-    set(${proj}_FFTWF_ARGS
+    list(APPEND ${proj}_FFTW_ARGS
       -DITK_USE_FFTWF:BOOL=ON
       )
   endif()
   if(${PROJECT_NAME}_BUILD_FFTWD_SUPPORT)
-    set(${proj}_FFTWD_ARGS
+    list(APPEND ${proj}_FFTW_ARGS
       -DITK_USE_FFTWD:BOOL=ON
       )
   endif()
@@ -103,43 +108,45 @@ if(NOT ( DEFINED "USE_SYSTEM_${extProjName}" AND "${USE_SYSTEM_${extProjName}}" 
 
   find_package(ZLIB REQUIRED)
 
+  set(${proj}_INSTALL_PATH "${CMAKE_CURRENT_BINARY_DIR}/${proj}-install")
+
   set(${proj}_CMAKE_OPTIONS
       -DBUILD_TESTING:BOOL=OFF
       -DBUILD_EXAMPLES:BOOL=OFF
-      -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_CURRENT_BINARY_DIR}/${proj}-install
+      -DCMAKE_INSTALL_PREFIX:PATH=${${proj}_INSTALL_PATH}
       -DITK_LEGACY_REMOVE:BOOL=OFF
       -DITK_FUTURE_LEGACY_REMOVE:=BOOL=ON
       -DITKV3_COMPATIBILITY:BOOL=ON
-      -DITK_BUILD_ALL_MODULES:BOOL=ON
+      -DITK_BUILD_DEFAULT_MODULES:BOOL=ON
       -DITK_USE_REVIEW:BOOL=ON
       -DModule_ITKReview:BOOL=ON
       #-DITK_INSTALL_NO_DEVELOPMENT:BOOL=ON
-      -DITK_BUILD_ALL_MODULES:BOOL=ON
       -DKWSYS_USE_MD5:BOOL=ON # Required by SlicerExecutionModel
       -DITK_WRAPPING:BOOL=OFF #${BUILD_SHARED_LIBS} ## HACK:  QUICK CHANGE
       -DITK_USE_SYSTEM_DCMTK:BOOL=${${PROJECT_NAME}_BUILD_DICOM_SUPPORT}
-
-      -DFetch_MGHIO:BOOL=ON  # Allow building of the MGHIO classes
-
+      -DUSE_SYSTEM_OpenJPEG:BOOL=ON
+      -DOpenJPEG_DIR:PATH=${OpenJPEG_DIR}
+      -DModule_MGHIO:BOOL=ON  # Allow building of the MGHIO classes
       -DITK_USE_SYSTEM_TIFF:BOOL=ON
       -DTIFF_LIBRARY:FILEPATH=${TIFF_LIBRARY}
       -DTIFF_INCLUDE_DIR:PATH=${TIFF_INCLUDE_DIR}
 
       -DITK_USE_SYSTEM_JPEG:BOOL=ON
-      -DJPEG_LIBRARY:FILEPATH=${JPEG_LIBRARY}
-      -DJPEG_INCLUDE_DIR:PATH=${JPEG_INCLUDE_DIR}
+      -DJPEG_DIR:FILEPATH=${JPEG_DIR}
 
       -DITK_USE_SYSTEM_ZLIB:BOOL=ON
       -DZLIB_INCLUDE_DIRS:STRING=${ZLIB_INCLUDE_DIRS}
       -DZLIB_LIBRARIES:STRING=${ZLIB_LIBRARIES}
+      -DModule_ITKIOPhilipsREC:BOOL=ON
       ${${proj}_DCMTK_ARGS}
       ${${proj}_WRAP_ARGS}
-      ${${proj}_FFTWF_ARGS}
-      ${${proj}_FFTWD_ARGS}
+      ${${proj}_FFTW_ARGS}
     )
+
   ### --- End Project specific additions
-  set(${proj}_REPOSITORY ${git_protocol}://itk.org/ITK.git)
-  set(${proj}_GIT_TAG c3624fafeb15f042839a8e6c463970e75ad40777)
+  #set(${proj}_REPOSITORY ${git_protocol}://itk.org/ITK.git)
+  set(${proj}_REPOSITORY ${git_protocol}://github.com/BRAINSia/ITK.git)
+  set(${proj}_GIT_TAG cc7c87fe7d56f981932de64fc77fc64b90488679)
   set(ITK_VERSION_ID ITK-4.5)
 
   ExternalProject_Add(${proj}
@@ -157,11 +164,21 @@ if(NOT ( DEFINED "USE_SYSTEM_${extProjName}" AND "${USE_SYSTEM_${extProjName}}" 
       ${CMAKE_OSX_EXTERNAL_PROJECT_ARGS}
       ${COMMON_EXTERNAL_PROJECT_ARGS}
       ${${proj}_CMAKE_OPTIONS}
-## We really do want to install in order to limit # of include paths INSTALL_COMMAND ""
+## We really do want to install in order to limit # of include paths
+    INSTALL_COMMAND ""
     DEPENDS
       ${${proj}_DEPENDENCIES}
   )
-  set(${extProjName}_DIR ${CMAKE_BINARY_DIR}/${proj}-install/lib/cmake/${ITK_VERSION_ID})
+  set(${extProjName}_DIR ${CMAKE_BINARY_DIR}/${proj}-build)
+  #set(${extProjName}_DIR ${CMAKE_BINARY_DIR}/${proj}-install/lib/cmake/${ITK_VERSION_ID})
+  if(${PROJECT_NAME}_BUILD_FFTWF_SPPORT)
+    set(FFTWF_LIB ${CMAKE_CURRENT_BINARY_DIR}/${proj}-install/lib/${ITK_VERSION}/libfftw3f.a)
+    set(FFTW_INCLUDE_DIR ${CMAKE_CURRENT_BINARY_DIR}/${proj}-install/include/${ITK_VERSION}/Algorithms)
+  endif()
+  if(${PROJECT_NAME}_BUILD_FFTWD_SPPORT)
+    set(FFTWD_LIB ${CMAKE_CURRENT_BINARY_DIR}/${proj}-install/lib/${ITK_VERSION}/libfftw3.a)
+    set(FFTW_INCLUDE_DIR ${CMAKE_CURRENT_BINARY_DIR}/${proj}-install/include/${ITK_VERSION}/Algorithms)
+  endif()
 else()
   if(${USE_SYSTEM_${extProjName}})
     find_package(${extProjName} ${ITK_VERSION_MAJOR} REQUIRED)

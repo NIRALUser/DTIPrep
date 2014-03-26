@@ -31,7 +31,7 @@ if(DEFINED ${extProjName}_DIR AND NOT EXISTS ${${extProjName}_DIR})
 endif()
 
 # Set dependency list
-set(${extProjName}_DEPENDENCIES ITKv4 SlicerExecutionModel ANTs VTK DCMTK JPEG TIFF Boost teem ReferenceAtlas OpenCV)
+set(${extProjName}_DEPENDENCIES ITKv4 SlicerExecutionModel ANTs)
 #if(${PROJECT_NAME}_BUILD_DICOM_SUPPORT)
 #  list(APPEND ${proj}_DEPENDENCIES DCMTK)
 #endif()
@@ -118,6 +118,7 @@ ANTs_LIBRARY_DIR=${ANTs_LIBRARY_DIR}")
       -DUSE_BRAINSDemonWarp:BOOL=OFF
       -DUSE_BRAINSFit:BOOL=ON
       -DUSE_BRAINSFitEZ:BOOL=OFF
+      -DUSE_BRAINSTalairach:BOOL=OFF
       -DUSE_BRAINSImageConvert:BOOL=OFF
       -DUSE_BRAINSInitializedControlPoints:BOOL=OFF
       -DUSE_BRAINSLandmarkInitializer:BOOL=OFF
@@ -142,7 +143,7 @@ ANTs_LIBRARY_DIR=${ANTs_LIBRARY_DIR}")
 
   ### --- End Project specific additions
   set(${proj}_REPOSITORY "${git_protocol}://github.com/BRAINSia/BRAINSTools.git")
-  set(${proj}_GIT_TAG "7d560df8126b2e3d5bb0ab96912894f72fb37eaa")
+  set(${proj}_GIT_TAG "599287634ca0e116542daadcd1e285386315a492")
   ExternalProject_Add(${proj}
     GIT_REPOSITORY ${${proj}_REPOSITORY}
     GIT_TAG ${${proj}_GIT_TAG}

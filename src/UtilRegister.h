@@ -1,6 +1,8 @@
 #ifndef __UTILREGISTER_H__
 #define __UTILREGISTER_H__
-#include "itkCompositeTransform.h"
+
+#include "BRAINSFitHelper.h"
+
 namespace itk
 {
 class struRigidRegResult
@@ -28,21 +30,7 @@ public:
 
   }
 
-  void Print() const
-  {
-    // Print out results
-    std::cout << "Result = " << std::endl;
-    std::cout << " AngleX (radians) = " << this->GetFinalAngleInRadiansX() << " (degrees) = "
-              << this->GetFinalAngleInDegreesX() << std::endl;
-    std::cout << " AngleY (radians) = " << this->GetFinalAngleInRadiansY() << " (degrees) = "
-              << this->GetFinalAngleInDegreesY()  << std::endl;
-    std::cout << " AngleZ (radians) = " << this->GetFinalAngleInRadiansZ() << " (degrees) = "
-              << this->GetFinalAngleInDegreesZ()  << std::endl;
-    std::cout << " Translation X = " << this->GetTranslationX() << std::endl;
-    std::cout << " Translation Y = " << this->GetTranslationY() << std::endl;
-    std::cout << " Translation Z = " << this->GetTranslationZ() << std::endl;
-    std::cout << " Metric value  = " << this->GetMutualInformation() << std::endl;
-  }
+  void Print(void) const;
 
   double GetFinalAngleInRadiansX() const
   {
@@ -116,14 +104,12 @@ private:
 
 } // end namespace itk
 
-#include "BRAINSFitHelper.h"
 namespace itk
 {
 /**
  *
  */
 template <class TFixedImageType, class TMovingImageType, class TOutputImageType>
-
 struRigidRegResult rigidRegistration(
   typename TFixedImageType::Pointer fixedImage,
   typename TMovingImageType::Pointer movingImage,
@@ -174,31 +160,31 @@ struRigidRegResult rigidRegistration(
     transformType[0] = "Rigid";
     intraSubjectRegistrationHelper->SetTransformType(transformType);
     }
-#if 1
-    {
-    // apparently some API drift -- SetCurrentGenericTransform now
-    // wants a composite transform...
-    typedef itk::CompositeTransform<double,3> CompositeType;
-    CompositeType::Pointer composite = CompositeType::New();
-    composite->AddTransform(regResult.GetTransform().GetPointer());
-    intraSubjectRegistrationHelper->SetCurrentGenericTransform(composite.GetPointer());
-    }
-#else
-    {
-    const std::string initializeTransformMode("MomentsOn");
-    intraSubjectRegistrationHelper->SetInitializeTransformMode(initializeTransformMode);
-    }
-#endif
-  //  intraSubjectRegistrationHelper->SetUseWindowedSinc(useWindowedSinc);
+  //Need to convert Versor3D to composite tranform
+  CompositeTransformType::Pointer inputComposite = CompositeTransformType::New();
+  inputComposite->AddTransform(regResult.GetTransform().GetPointer());
 
+  intraSubjectRegistrationHelper->SetCurrentGenericTransform( inputComposite );
   // if( this->m_DebugLevel > 7 )
   //  {
   // intraSubjectRegistrationHelper->PrintCommandLine(true);
   //  }
   intraSubjectRegistrationHelper->Update();
-  typename itk::VersorRigid3DTransform<double>::Pointer tempInitializerITKTransform
-    = dynamic_cast<itk::VersorRigid3DTransform<double> *>(
-        intraSubjectRegistrationHelper->GetCurrentGenericTransform().GetPointer() );
+
+  CompositeTransformType::Pointer outputComposite = dynamic_cast<CompositeTransformType *>(
+    intraSubjectRegistrationHelper->GetCurrentGenericTransform().GetPointer() );
+  if( outputComposite.IsNull() )
+    {
+    itkGenericExceptionMacro(<<"ERROR: Output transform is null.");
+    }
+
+  typename itk::VersorRigid3DTransform<double>::ConstPointer tempConstInitializerITKTransform
+    = dynamic_cast<itk::VersorRigid3DTransform<double> const *>( outputComposite->GetFrontTransform()  );
+
+  typename itk::VersorRigid3DTransform<double>::Pointer tempInitializerITKTransform =
+    itk::VersorRigid3DTransform<double>::New();
+  tempInitializerITKTransform->SetFixedParameters( tempConstInitializerITKTransform->GetFixedParameters() );
+  tempInitializerITKTransform->SetParameters( tempConstInitializerITKTransform->GetParameters() );
 
   struRigidRegResult outputTransformResult;
   outputTransformResult.SetTransform(tempInitializerITKTransform);

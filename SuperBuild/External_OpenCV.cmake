@@ -87,6 +87,11 @@ if(NOT ( DEFINED "USE_SYSTEM_${extProjName}" AND "${USE_SYSTEM_${extProjName}}" 
       -DBUILD_opencv_video:BOOL=OFF
       -DBUILD_opencv_videostab:BOOL=OFF
       -DBUILD_opencv_world:BOOL=OFF
+## Turn off GPU supports
+      -DWITH_CUDA:BOOL=OFF
+      -DWITH_CUFFT:BOOL=OFF
+      -DWITH_OPENCL:BOOL=OFF
+      -DWITH_OPENCLAMDFFT:BOOL=OFF
 
       -DBUILD_SHARED_LIBS:BOOL=OFF
       -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_BINARY_DIR}/${proj}-install
@@ -94,7 +99,7 @@ if(NOT ( DEFINED "USE_SYSTEM_${extProjName}" AND "${USE_SYSTEM_${extProjName}}" 
 
   ### --- End Project specific additions
   set(${proj}_REPOSITORY "${git_protocol}://github.com/BRAINSia/opencv.git") # USE THIS FOR UPDATED VERSION
-  set(${proj}_GIT_TAG "20130601_Upstream") # USE THIS FOR UPDATED VERSION
+  set(${proj}_GIT_TAG "20131101_Upstream") # USE THIS FOR UPDATED VERSION
   ExternalProject_Add(${proj}
     GIT_REPOSITORY ${${proj}_REPOSITORY}
     GIT_TAG ${${proj}_GIT_TAG}

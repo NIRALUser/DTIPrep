@@ -53,11 +53,17 @@ if(NOT ( DEFINED "USE_SYSTEM_${extProjName}" AND "${USE_SYSTEM_${extProjName}}" 
       -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_CURRENT_BINARY_DIR}/${proj}-install
       -DBUILD_EXAMPLES:BOOL=OFF
       -DBUILD_TESTING:BOOL=OFF
+      -DTIFF_DIR:STRING=
+      -DZLIB_INCLUDE_DIR:STRING=
+      -DZLIB_LIBRARY:STRING=
+      -DPNG_PNG_INCLUDE_DIR:STRING=
+      -DPNG_LIBRARY_DEBUG:STRING=
+      -DPNG_LIBRARY_RELEASE:STRING=
     )
 
   ### --- End Project specific additions
   set(${proj}_REPOSITORY "http://openjpeg.googlecode.com/svn/trunk")
-  set(${proj}_SVN_REVISION 2292) #2013-01-30 New Repository.
+  set(${proj}_SVN_REVISION r2740) #2014-02-01 New Repository.
   ExternalProject_Add(${proj}
     SVN_REPOSITORY ${${proj}_REPOSITORY}
     SVN_REVISION -r ${${proj}_SVN_REVISION}

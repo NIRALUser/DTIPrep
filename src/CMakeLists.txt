@@ -48,6 +48,8 @@ set( DTIPrep_SRCS
  DominantDirectional/Triangle.cxx
  DominantDirectional/Vector.cxx
  DominantDirectional/Geometry_Common.cxx
+ #
+ UtilRegister.cxx
 )
 
 file(READ DTIPrep.xml var)
@@ -112,6 +114,7 @@ set( DTIPrep_Libs
   ${QT_LIBRARIES}
   ${QT_QTDBUS_LIBRARY}
   ${ITK_LIBRARIES}
+  QVTK
   ${VTK_LIBRARIES}
   BRAINSCommonLib
   ${ANTs_LIBS}

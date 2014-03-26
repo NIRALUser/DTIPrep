@@ -32,7 +32,7 @@ if(DEFINED ${extProjName}_DIR AND NOT EXISTS ${${extProjName}_DIR})
 endif()
 
 # Set dependency list
-set(${proj}_DEPENDENCIES JPEG)
+set(${proj}_DEPENDENCIES OpenJPEG)
 
 # Include dependent projects if any
 SlicerMacroCheckExternalProjectDependency(${proj})
@@ -56,12 +56,12 @@ if(NOT ( DEFINED "USE_SYSTEM_${extProjName}" AND "${USE_SYSTEM_${extProjName}}" 
   AutoConf_FLAGS(${proj}_CXXFLAGS CXX "${APPLE_CFLAGS}")
 
   ### --- End Project specific additions
-  set(${proj}_URL "http://download.osgeo.org/libtiff/tiff-4.0.3.tar.gz")
-  set(${proj}_MD5 "051c1068e6a0627f461948c365290410")
+  set(${proj}_REPOSITORY ${git_protocol}://github.com/BRAINSia/libtiff.git)
+  set(${proj}_GIT_TAG f696451cb05a8f33ec477eadcadd10fae9f58c39)
+
   ExternalProject_Add(${proj}
-    URL ${${proj}_URL}
-    ${URL_HASH_CLAUSE}
-    URL_MD5 ${${proj}_MD5}
+    GIT_REPOSITORY ${${proj}_REPOSITORY}
+    GIT_TAG ${${proj}_GIT_TAG}
     SOURCE_DIR ${CMAKE_CURRENT_LIST_DIR}/ExternalSources/${proj}
     BINARY_DIR ${proj}-build
     INSTALL_DIR ${proj}-install
@@ -84,12 +84,9 @@ if(NOT ( DEFINED "USE_SYSTEM_${extProjName}" AND "${USE_SYSTEM_${extProjName}}" 
     DEPENDS
       ${${proj}_DEPENDENCIES}
   )
-
   set(${extProjName}_DIR ${CMAKE_BINARY_DIR}/${proj}-install)
-  set(${extProjName}_INCLUDE_DIR
-    ${CMAKE_BINARY_DIR}/${proj}-install/include)
-  set(${extProjName}_LIBRARY
-    ${CMAKE_BINARY_DIR}/${proj}-install/lib/libtiff.a)
+  set(${extProjName}_INCLUDE_DIR ${CMAKE_BINARY_DIR}/${proj}-install/include)
+  set(${extProjName}_LIBRARY ${CMAKE_BINARY_DIR}/${proj}-install/lib/${CMAKE_STATIC_LIBRARY_PREFIX}tiff${CMAKE_STATIC_LIBRARY_SUFFIX})
 else()
   if(${USE_SYSTEM_${extProjName}})
     find_package(${extProjName} REQUIRED)

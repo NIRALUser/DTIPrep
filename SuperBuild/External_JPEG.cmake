@@ -86,9 +86,9 @@ if(NOT ( DEFINED "USE_SYSTEM_${extProjName}" AND "${USE_SYSTEM_${extProjName}}" 
       ${${proj}_DEPENDENCIES}
   )
   set(${extProjName}_DIR ${CMAKE_BINARY_DIR}/${proj}-install)
-  set(${extProjName}_INCLUDE_DIR ${CMAKE_BINARY_DIR}/${proj}-install/include)
-  set(${extProjName}_LIB_DIR ${CMAKE_BINARY_DIR}/${proj}-install/lib)
-  set(${extProjName}_LIBRARY ${${extProjName}_LIB_DIR}/libjpeg.a)
+  #set(${extProjName}_INCLUDE_DIR ${CMAKE_BINARY_DIR}/${proj}-install/include)
+  #set(${extProjName}_LIB_DIR ${CMAKE_BINARY_DIR}/${proj}-install/lib)
+  #set(${extProjName}_LIBRARY ${${extProjName}_LIB_DIR}/libjpeg.a)
 
 else()
   if(${USE_SYSTEM_${extProjName}})
