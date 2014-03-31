@@ -114,7 +114,6 @@ set( DTIPrep_Libs
   ${QT_LIBRARIES}
   ${QT_QTDBUS_LIBRARY}
   ${ITK_LIBRARIES}
-  QVTK
   ${VTK_LIBRARIES}
   BRAINSCommonLib
   ${ANTs_LIBS}

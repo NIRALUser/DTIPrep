@@ -11,6 +11,7 @@
 #include <vector>
 #include <math.h>
 #include <sstream>
+#include <vtkVersionMacros.h>
 #include <vtkPolyData.h>
 #include <vtkPolyDataWriter.h>
 #include <vtkSmartPointer.h>

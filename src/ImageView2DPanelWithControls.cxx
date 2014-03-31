@@ -1,5 +1,6 @@
 #include "ImageView2DPanelWithControls.h"
 
+#include <vtkVersionMacros.h>
 #include <vtkActor.h>
 #include <vtkRenderer.h>
 #include <vtkRenderWindow.h>

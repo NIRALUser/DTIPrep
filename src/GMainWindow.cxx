@@ -2,6 +2,7 @@
 
 #include "GMainWindow.h"
 
+#include <vtkVersionMacros.h>
 #include <vtkActor.h>
 #include <vtkRenderer.h>
 #include <vtkRenderWindow.h>
