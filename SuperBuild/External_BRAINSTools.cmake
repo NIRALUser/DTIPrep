@@ -31,7 +31,7 @@ if(DEFINED ${extProjName}_DIR AND NOT EXISTS ${${extProjName}_DIR})
 endif()
 
 # Set dependency list
-set(${extProjName}_DEPENDENCIES ITKv4 SlicerExecutionModel ANTs)
+set(${extProjName}_DEPENDENCIES ITKv4 SlicerExecutionModel ANTs VTK )
 #if(${PROJECT_NAME}_BUILD_DICOM_SUPPORT)
 #  list(APPEND ${proj}_DEPENDENCIES DCMTK)
 #endif()
