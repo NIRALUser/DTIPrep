@@ -143,7 +143,7 @@ ANTs_LIBRARY_DIR=${ANTs_LIBRARY_DIR}")
 
   ### --- End Project specific additions
   set(${proj}_REPOSITORY "${git_protocol}://github.com/BRAINSia/BRAINSTools.git")
-  set(${proj}_GIT_TAG "599287634ca0e116542daadcd1e285386315a492")
+  set(${proj}_GIT_TAG "33b739e7e6a414be41d44aca028b1304a2c0a440")
   ExternalProject_Add(${proj}
     GIT_REPOSITORY ${${proj}_REPOSITORY}
     GIT_TAG ${${proj}_GIT_TAG}

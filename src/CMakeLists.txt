@@ -117,7 +117,14 @@ set( DTIPrep_Libs
   ${VTK_LIBRARIES}
   BRAINSCommonLib
   ${ANTs_LIBS}
+  ITKOptimizersv4
 )
+
+if( VTK_MAJOR_VERSION VERSION_LESS 6 )
+  list(APPEND DTIPrep_Libs
+       QVTK
+      )
+endif()
 
 #message(STATUS "XXXXXXX ${DTIPrep_Libs}")
 

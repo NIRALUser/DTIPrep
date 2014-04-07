@@ -22,7 +22,7 @@ set(proj        VTK) #This local name
 option(USE_VTK_6 "Build using VTK version 6" OFF)
 
 if(USE_VTK_6)
-  set(${extProjName}_REQUIRED_VERSION "6.10")  #If a required version is necessary, then set this, else leave blank
+  set(${extProjName}_REQUIRED_VERSION "6.1")  #If a required version is necessary, then set this, else leave blank
 else()
   set(${extProjName}_REQUIRED_VERSION "5.10")  #If a required version is necessary, then set this, else leave blank
 endif()
@@ -173,11 +173,11 @@ if(NOT ( DEFINED "USE_SYSTEM_${extProjName}" AND "${USE_SYSTEM_${extProjName}}" 
       ${VTK_MAC_ARGS}
     )
   ### --- End Project specific additions
-  set(${proj}_REPOSITORY ${git_protocol}://vtk.org/VTK.git)
-  set(${proj}_REPOSITORY ${git_protocol}://github.com/BRAINSia/VTK.git)
 if(USE_VTK_6)
   set(${proj}_GIT_TAG "v6.1.0")
+  set(${proj}_REPOSITORY ${git_protocol}://vtk.org/VTK.git)
 else()
+  set(${proj}_REPOSITORY ${git_protocol}://github.com/BRAINSia/VTK.git)
   set(${proj}_GIT_TAG "FixClangFailure_VTK5.10_release")
 endif()
   ExternalProject_Add(${proj}
