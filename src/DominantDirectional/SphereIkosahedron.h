@@ -11,11 +11,7 @@
 #include <vector>
 #include <math.h>
 #include <sstream>
-#if (VTK_MAJOR_VERSION < 6)
-  #include <vtkVersion.h>
-#else
-  #include <vtkVersionMacros.h>
-#endif
+#include <vtkVersion.h>
 #include <vtkPolyData.h>
 #include <vtkPolyDataWriter.h>
 #include <vtkSmartPointer.h>

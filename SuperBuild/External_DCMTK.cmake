@@ -32,12 +32,12 @@ if(DEFINED ${extProjName}_DIR AND NOT EXISTS ${${extProjName}_DIR})
 endif()
 
 # Set dependency list
-set(${proj}_DEPENDENCIES "")
+set(${proj}_DEPENDENCIES TIFF)
 
 # Include dependent projects if any
 SlicerMacroCheckExternalProjectDependency(${proj})
 
-if(NOT ( DEFINED "${extProjName}_DIR" OR ( DEFINED "${USE_SYSTEM_${extProjName}}" AND NOT "${USE_SYSTEM_${extProjName}}" ) ) )
+if(NOT ( DEFINED "USE_SYSTEM_${extProjName}" AND "${USE_SYSTEM_${extProjName}}" ) )
   #message(STATUS "${__indent}Adding project ${proj}")
 
   # Set CMake OSX variable to pass down the external project
@@ -57,25 +57,31 @@ if(NOT ( DEFINED "${extProjName}_DIR" OR ( DEFINED "${USE_SYSTEM_${extProjName}}
 
   ### --- Project specific additions here
   set(${proj}_CMAKE_OPTIONS
+      -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_CURRENT_BINARY_DIR}/${proj}-install
+      #-DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
+      ${CMAKE_PROJECT_INCLUDE_EXTERNAL_PROJECT_ARG}
+      -DBUILD_EXAMPLES:BOOL=OFF
+      -DBUILD_TESTING:BOOL=OFF
       -DDCMTK_WITH_DOXYGEN:BOOL=OFF
-      -DDCMTK_WITH_ZLIB:BOOL=OFF # see CTK github issue #25
+      -DDCMTK_WITH_ZLIB:BOOL=ON # see CTK github issue #25
       -DDCMTK_WITH_OPENSSL:BOOL=OFF # see CTK github issue #25
       -DDCMTK_WITH_PNG:BOOL=OFF # see CTK github issue #25
-      -DDCMTK_WITH_TIFF:BOOL=OFF  # see CTK github issue #25
+      -DDCMTK_WITH_TIFF:BOOL=ON  # see CTK github issue #25
       -DDCMTK_WITH_XML:BOOL=OFF  # see CTK github issue #25
       -DDCMTK_WITH_ICONV:BOOL=OFF  # see CTK github issue #178
       -DDCMTK_FORCE_FPIC_ON_UNIX:BOOL=ON
       -DDCMTK_OVERWRITE_WIN32_COMPILER_FLAGS:BOOL=OFF
       -DDCMTK_WITH_WRAP:BOOL=OFF   # CTK does not build on Mac with this option turned ON due to library dependencies missing
+      -DTIFF_DIR:PATH=${TIFF_DIR}
+      -DJPEG_DIR:FILEPATH=${JPEG_DIR}
   )
   ### --- End Project specific additions
   set(${proj}_REPOSITORY ${git_protocol}://github.com/commontk/DCMTK.git)
   set(${proj}_GIT_TAG "f461865d1759854db56e4c840991c81c77e45bb9")
-
   ExternalProject_Add(${proj}
     GIT_REPOSITORY ${${proj}_REPOSITORY}
     GIT_TAG ${${proj}_GIT_TAG}
-    SOURCE_DIR ${proj}
+    SOURCE_DIR ${CMAKE_CURRENT_LIST_DIR}/ExternalSources/${proj}
     BINARY_DIR ${proj}-build
     INSTALL_DIR ${proj}-install
     LOG_CONFIGURE 0  # Wrap configure in script to ignore log output from dashboards
@@ -85,15 +91,8 @@ if(NOT ( DEFINED "${extProjName}_DIR" OR ( DEFINED "${USE_SYSTEM_${extProjName}}
     ${cmakeversion_external_update} "${cmakeversion_external_update_value}"
     CMAKE_GENERATOR ${gen}
     CMAKE_ARGS
-      -Wno-dev
-      --no-warn-unused-cli
-      ${COMMON_EXTERNAL_PROJECT_ARGS}
-      -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_CURRENT_BINARY_DIR}/${proj}-install
-      #-DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
       ${CMAKE_OSX_EXTERNAL_PROJECT_ARGS}
-      ${CMAKE_PROJECT_INCLUDE_EXTERNAL_PROJECT_ARG}
-      -DBUILD_EXAMPLES:BOOL=OFF
-      -DBUILD_TESTING:BOOL=OFF
+      ${COMMON_EXTERNAL_PROJECT_ARGS}
       ${${proj}_CMAKE_OPTIONS}
 ## We really do want to install in order to limit # of include paths INSTALL_COMMAND ""
     DEPENDS
@@ -102,11 +101,7 @@ if(NOT ( DEFINED "${extProjName}_DIR" OR ( DEFINED "${USE_SYSTEM_${extProjName}}
   set(${extProjName}_DIR ${CMAKE_BINARY_DIR}/${proj}-install/lib/cmake/dcmtk)
 else()
   if(${USE_SYSTEM_${extProjName}})
-    find_package(${extProjName} NO_MODULE)
-    if(NOT ${extProjName}_DIR)
-      find_package(${extProjName})
-      message(FATAL_ERROR "To use the system ${extProjName}, set ${extProjName}_DIR")
-    endif()
+    find_package(${extProjName} REQUIRED NO_MODULE)
     message("USING the system ${extProjName}, set ${extProjName}_DIR=${${extProjName}_DIR}")
   endif()
   # The project is provided using ${extProjName}_DIR, nevertheless since other

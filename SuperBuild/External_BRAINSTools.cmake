@@ -35,6 +35,11 @@ set(${extProjName}_DEPENDENCIES ITKv4 SlicerExecutionModel ANTs VTK )
 #if(${PROJECT_NAME}_BUILD_DICOM_SUPPORT)
 #  list(APPEND ${proj}_DEPENDENCIES DCMTK)
 #endif()
+>>>>>>> .r289
+
+if(USE_ANTs)
+  list(APPEND ${extProjName}_DEPENDENCIES ANTs)
+endif()
 
 # Include dependent projects if any
 SlicerMacroCheckExternalProjectDependency(${proj})
@@ -51,8 +56,23 @@ if(NOT ( DEFINED "${extProjName}_SOURCE_DIR" OR ( DEFINED "USE_SYSTEM_${extProjN
       -DCMAKE_OSX_DEPLOYMENT_TARGET=${CMAKE_OSX_DEPLOYMENT_TARGET})
   endif()
 
-  message("ANTs_SOURCE_DIR=${ANTs_SOURCE_DIR}
-ANTs_LIBRARY_DIR=${ANTs_LIBRARY_DIR}")
+  set(BRAINS_ANTS_PARAMS
+    -DUSE_ANTS:BOOL=${USE_ANTs}
+    -DUSE_ANTs:BOOL=${USE_ANTs}
+    )
+  if(USE_ANTs)
+    list(APPEND BRAINS_ANTS_PARAMS
+      -DUSE_SYSTEM_ANTS:BOOL=ON
+      -DANTs_SOURCE_DIR:PATH=${ANTs_SOURCE_DIR}
+      -DANTs_LIBRARY_DIR:PATH=${ANTs_LIBRARY_DIR}
+      -DUSE_SYSTEM_Boost:BOOL=ON
+      -DBoost_NO_BOOST_CMAKE:BOOL=ON #Set Boost_NO_BOOST_CMAKE to ON to disable the search for boost-cmake
+      -DBoost_DIR:PATH=${BOOST_ROOT}
+      -DBOOST_DIR:PATH=${BOOST_ROOT}
+      -DBOOST_ROOT:PATH=${BOOST_ROOT}
+      -DBOOST_INCLUDE_DIR:PATH=${BOOST_INCLUDE_DIR}
+      )
+  endif()
   ### --- Project specific additions here
   # message("VTK_DIR: ${VTK_DIR}")
   # message("ITK_DIR: ${ITK_DIR}")
@@ -72,33 +92,13 @@ ANTs_LIBRARY_DIR=${ANTs_LIBRARY_DIR}")
       -DOpenCV_DIR:PATH=${OpenCV_DIR}
       -DUSE_SYSTEM_ReferenceAtlas:BOOL=ON
       -DReferenceAtlas_DIR:STRING=${ReferenceAtlas_DIR}
-      -DPYTHON_EXECUTABLE:FILEPATH=${PYTHON_EXECUTABLE}
       -DPYTHON_LIBRARY:FILEPATH=${PYTHON_LIBRARY}
       -DPYTHON_INCLUDE_DIR:PATH=${PYTHON_INCLUDE_DIR}
-      -DUSE_SYSTEM_ANTs:BOOL=ON
-      -DUSE_ANTs:BOOL=ON
-      -DUSE_ANTS:BOOL=ON
-      -DANTs_SOURCE_DIR:PATH=${ANTs_SOURCE_DIR}
-      -DANTs_LIBRARY_DIR:PATH=${ANTs_LIBRARY_DIR}
       -DUSE_SYSTEM_SlicerExecutionModel:BOOL=ON
-      -DUSE_SYSTEM_Boost:BOOL=ON
-      -DBoost_NO_BOOST_CMAKE:BOOL=ON #Set Boost_NO_BOOST_CMAKE to ON to disable the search for boost-cmake
-      -DBoost_DIR:PATH=${BOOST_ROOT}
-      -DBOOST_DIR:PATH=${BOOST_ROOT}
-      -DBOOST_ROOT:PATH=${BOOST_ROOT}
-      -DBOOST_INCLUDE_DIR:PATH=${BOOST_INCLUDE_DIR}
       -DDCMTK_DIR:PATH=${DCMTK_DIR}
       -DDCMTK_config_INCLUDE_DIR:PATH=${DCMTK_DIR}/include
       -DJPEG_DIR:PATH=${JPEG_DIR}
-      -DJPEG_INCLUDE_DIR:PATH=${JPEG_INCLUDE_DIR}
-      -DJPEG_LIB_DIR:PATH=${JPEG_LIB_DIR}
-      -DJPEG_LIBRARY:PATH=${JPEG_LIBRARY}
-      -DJPEG_DIR:PATH=${JPEG_DIR}
-      -DJPEG_INCLUDE_DIR:PATH=${JPEG_INCLUDE_DIR}
-      -DJPEG_LIBRARY:PATH=${JPEG_LIBRARY}
       -DTIFF_DIR:PATH=${TIFF_DIR}
-      -DTIFF_LIBRARY:FILEPATH=${TIFF_LIBRARY}
-      -DTIFF_INCLUDE_DIR:PATH=${TIFF_INCLUDE_DIR}
       -DSlicerExecutionModel_DIR:PATH=${SlicerExecutionModel_DIR}
       -DSuperBuild_BRAINSTools_USE_GIT_PROTOCOL=${${CMAKE_PROJECT_NAME}_USE_GIT_PROTOCOL}
       -DBRAINSTools_SUPERBUILD:BOOL=OFF
@@ -111,12 +111,19 @@ ANTs_LIBRARY_DIR=${ANTs_LIBRARY_DIR}")
       -DZLIB_ROOT:PATH=${zlib_DIR}
       -DZLIB_INCLUDE_DIR:PATH=${zlib}_DIR}/include
       -DZLIB_LIBRARY:FILEPATH=${ZLIB_LIBRARY}
-      -DUSE_BRAINSABC:BOOL=OFF
-      -DUSE_BRAINSConstellationDetector:BOOL=OFF
-      -DUSE_BRAINSContinuousClass:BOOL=OFF
-      -DUSE_BRAINSCut:BOOL=OFF
-      -DUSE_BRAINSDemonWarp:BOOL=OFF
+      -DUSE_BRAINSABC:BOOL=ON
+      -DUSE_BRAINSConstellationDetector:BOOL=ON
+      -DUSE_BRAINSContinuousClass:BOOL=ON
+      -DUSE_BRAINSCut:BOOL=ON
+      -DUSE_BRAINSDemonWarp:BOOL=ON
       -DUSE_BRAINSFit:BOOL=ON
+<<<<<<< .mine
+      -DUSE_BRAINSImageConvert:BOOL=ON
+      -DUSE_BRAINSInitializedControlPoints:BOOL=ON
+      -DUSE_BRAINSLandmarkInitializer:BOOL=ON
+      -DUSE_BRAINSMultiModeSegment:BOOL=ON
+      -DUSE_BRAINSMush:BOOL=ON
+=======
       -DUSE_BRAINSFitEZ:BOOL=OFF
       -DUSE_BRAINSTalairach:BOOL=OFF
       -DUSE_BRAINSImageConvert:BOOL=OFF
@@ -129,21 +136,27 @@ ANTs_LIBRARY_DIR=${ANTs_LIBRARY_DIR}")
       -DUSE_BRAINSLandmarkInitializer:BOOL=OFF
       -DUSE_BRAINSMultiModeSegment:BOOL=OFF
       -DUSE_BRAINSMush:BOOL=OFF
+>>>>>>> .r289
       -DUSE_BRAINSROIAuto:BOOL=ON
       -DUSE_BRAINSResample:BOOL=ON
-      -DUSE_BRAINSSnapShotWriter:BOOL=OFF
-      -DUSE_BRAINSSurfaceTools:BOOL=OFF
-      -DUSE_BRAINSTransformConvert:BOOL=OFF
+      -DUSE_BRAINSSnapShotWriter:BOOL=ON
+      -DUSE_BRAINSSurfaceTools:BOOL=ON
+      -DUSE_BRAINSTransformConvert:BOOL=ON
+      -DUSE_BRAINSPosteriorToContinuousClass:BOOL=ON
+      -DUSE_BRAINSCreateLabelMapFromProbabilityMaps:BOOL=ON
       -DUSE_DebugImageViewer:BOOL=OFF
       -DUSE_GTRACT:BOOL=ON
       -DUSE_ICCDEF:BOOL=OFF
+      -DUSE_ConvertBetweenFileFormats:BOOL=ON
       -DUSE_ImageCalculator:BOOL=ON
       -DUSE_AutoWorkup:BOOL=OFF
+      ${BRAINS_ANTS_PARAMS}
     )
 
   ### --- End Project specific additions
   set(${proj}_REPOSITORY "${git_protocol}://github.com/BRAINSia/BRAINSTools.git")
   set(${proj}_GIT_TAG "33b739e7e6a414be41d44aca028b1304a2c0a440")
+>>>>>>> .r289
   ExternalProject_Add(${proj}
     GIT_REPOSITORY ${${proj}_REPOSITORY}
     GIT_TAG ${${proj}_GIT_TAG}
@@ -167,7 +180,7 @@ ANTs_LIBRARY_DIR=${ANTs_LIBRARY_DIR}")
     )
   set(${extProjName}_DIR ${CMAKE_BINARY_DIR}/${proj}-build)
   set(${extProjName}_SOURCE_DIR ${CMAKE_BINARY_DIR}/${proj})
-  set(BRAINSCommonLib_DIR    ${${extProjName}_DIR}/BRAINSCommonLib)
+  set(BRAINSCommonLib_DIR    ${CMAKE_BINARY_DIR}/${proj}-build/BRAINSCommonLib)
 else()
   if(${USE_SYSTEM_${extProjName}})
     find_package(${extProjName} ${${extProjName}_REQUIRED_VERSION} REQUIRED)

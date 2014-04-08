@@ -1,11 +1,7 @@
 #include <QtGui>
 
 #include "GMainWindow.h"
-#if (VTK_MAJOR_VERSION < 6)
-  #include <vtkVersion.h>
-#else
-  #include <vtkVersionMacros.h>
-#endif
+#include <vtkVersion.h>
 #include <vtkActor.h>
 #include <vtkRenderer.h>
 #include <vtkRenderWindow.h>
