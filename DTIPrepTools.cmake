@@ -14,6 +14,12 @@ macro(INSTALL_EXECUTABLE)
 endmacro()
 
 
+#-----------------------------------------------------------------------------
+find_package(SlicerExecutionModel NO_MODULE REQUIRED GenerateCLP)
+include(${GenerateCLP_USE_FILE})
+include(${SlicerExecutionModel_USE_FILE})
+include(${SlicerExecutionModel_CMAKE_DIR}/SEMMacroBuildCLI.cmake)
+
 include(${CMAKE_CURRENT_LIST_DIR}/Common.cmake)
 
 set(MODULE_NAME ${EXTENSION_NAME}) # Do not use 'project()'
@@ -88,12 +94,6 @@ include(${ITK_USE_FILE})
 #-----------------------------------------------------------------------------
 find_package(VTK NO_MODULE REQUIRED)
 include(${VTK_USE_FILE})
-
-#-----------------------------------------------------------------------------
-find_package(SlicerExecutionModel NO_MODULE REQUIRED GenerateCLP)
-include(${GenerateCLP_USE_FILE})
-include(${SlicerExecutionModel_USE_FILE})
-include(${SlicerExecutionModel_CMAKE_DIR}/SEMMacroBuildCLI.cmake)
 
 #-----------------------------------------------------------------------
 # Setup locations to find externally maintained test data.
