@@ -1,3 +1,7 @@
+if( NOT EXTERNAL_SOURCE_DIRECTORY )
+  set( EXTERNAL_SOURCE_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/ExternalSources )
+endif()
+
 # Make sure this file is included only once by creating globally unique varibles
 # based on the name of this included file.
 get_filename_component(CMAKE_CURRENT_LIST_FILENAME ${CMAKE_CURRENT_LIST_FILE} NAME_WE)
@@ -67,7 +71,7 @@ if(NOT ( DEFINED "USE_SYSTEM_${extProjName}" AND "${USE_SYSTEM_${extProjName}}" 
   ExternalProject_Add(${proj}
     URL ${${proj}_URL}
     URL_MD5 ${${proj}_MD5}
-    SOURCE_DIR ${CMAKE_CURRENT_BINARY_DIR}/${proj}
+    SOURCE_DIR ${EXTERNAL_SOURCE_DIRECTORY}/${proj}
     ${cmakeversion_external_update} "${cmakeversion_external_update_value}"
     CONFIGURE_COMMAND ${CMAKE_COMMAND}
     ${CLANG_ARG}

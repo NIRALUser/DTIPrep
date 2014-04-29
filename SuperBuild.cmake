@@ -17,23 +17,23 @@ include(${CMAKE_CURRENT_SOURCE_DIR}/Common.cmake)
 #If it is build as an extension
 #-----------------------------------------------------------------------------
 if( DTIPrep_BUILD_SLICER_EXTENSION )
+  set( EXTERNAL_SOURCE_IN_BINARY_DIR ON)
   set( USE_SYSTEM_VTK ON CACHE BOOL "Use system VTK" FORCE )
   set( USE_SYSTEM_DCMTK ON CACHE BOOL "Use system DCMTK" FORCE )
   set( USE_SYSTEM_Teem ON CACHE BOOL "Use system Teem" FORCE )
   set( BUILD_SHARED_LIBS OFF CACHE BOOL "Use shared libraries" FORCE)
-  set( EXTENSION_SUPERBUILD_BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR} )
   unsetForSlicer(NAMES CMAKE_MODULE_PATH CMAKE_C_COMPILER CMAKE_CXX_COMPILER DCMTK_DIR ITK_DIR SlicerExecutionModel_DIR VTK_DIR QT_QMAKE_EXECUTABLE ITK_VERSION_MAJOR CMAKE_CXX_FLAGS CMAKE_C_FLAGS Teem_DIR)
   find_package(Slicer REQUIRED)
   set( ITKvar ITK_DIR SlicerExecutionModel_DIR  ITK_VERSION_MAJOR )
-  #if( ${ITK_VERSION_MAJOR} GREATER 3 AND ${ITK_VERSION_MINOR} GREATER 4 )
+  #if( ${ITK_VERSION_MAJOR} GREATER 3 AND ${ITK_VERSION_MINOR} GREATER 5 )#ITK_VERSION_MAJOR>3 because we need at least 4.x
   #  set( KeepSlicerITK ${ITKvar} )
   #  set( USE_SYSTEM_ITK ON CACHE BOOL "Use system ITK" FORCE )
   #  set( USE_SYSTEM_SlicerExecutionModel ON CACHE BOOL "Use system SlicerExecutionModel" FORCE )
   #  message(STATUS "ITK version used by Slicer is at least 4.5. No need to recompile ITK. Using ITK from Slicer")
   #else()
-    #ITK and SlicerExecutionModel have to be rebuilt because ANTS needs ITK 4.5
+    #ITK and SlicerExecutionModel have to be rebuilt because ANTS needs ITK 4.6
     set( RemoveSlicerITK ${ITKvar} )
-    message(STATUS "ITK version used by Slicer is less than 4.5. Recompiling ITK")
+    message(STATUS "ITK version used by Slicer is less than 4.6. Recompiling ITK")
   #endif()
   unsetAllForSlicerBut( NAMES VTK_DIR QT_QMAKE_EXECUTABLE DCMTK_DIR Teem_DIR ${KeepSlicerITK} )
   resetForSlicer(NAMES CMAKE_MODULE_PATH CMAKE_C_COMPILER CMAKE_CXX_COMPILER CMAKE_CXX_FLAGS CMAKE_C_FLAGS ${RemoveSlicerITK} )
@@ -47,6 +47,11 @@ else()
   set( USE_NIRALUtilities ON CACHE BOOL "Build NIRALUtilities" )
   set( USE_DTIProcess ON CACHE BOOL "Build DTIProcess" )
 endif()
+
+if( EXTERNAL_SOURCE_IN_BINARY_DIR )
+  set( EXTERNAL_SOURCE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} )
+endif()
+
 #-----------------------------------------------------------------------------
 # Git protocole option
 #-----------------------------------------------------------------------------
@@ -134,13 +139,23 @@ option(USE_SYSTEM_VTK "Build using an externally defined version of VTK" OFF)
 option(USE_SYSTEM_DCMTK "Build using an externally defined version of DCMTK" OFF)
 option(USE_SYSTEM_Teem "Build using external Teem" OFF)
 option(USE_SYSTEM_zlib "Build using external zlib" OFF)
-option(${PROJECT_NAME}_BUILD_DICOM_SUPPORT "Build Dicom Support" ON)
+option(USE_ANTs "Build BRAINSTools with ANTs" OFF)
+option(${PROJECT_NAME}_BUILD_FFTW_SUPPORT "Build external FFTW" OFF)
+#option(${PROJECT_NAME}_BUILD_DICOM_SUPPORT "Build Dicom Support" ON)
 
 #------------------------------------------------------------------------------
 # ${LOCAL_PROJECT_NAME} dependency list
 #------------------------------------------------------------------------------
-
-set(${LOCAL_PROJECT_NAME}_DEPENDENCIES DCMTK ITKv4 SlicerExecutionModel VTK BRAINSTools )
+set( ${LOCAL_PROJECT_NAME}_DEPENDENCIES DCMTK ITKv4 SlicerExecutionModel VTK BRAINSTools )
+set( ${PROJECT_NAME}_BUILD_DICOM_SUPPORT ON )
+set( ${PROJECT_NAME}_BUILD_ZLIB_SUPPORT ON )
+if( UNIX )
+  set( ${PROJECT_NAME}_BUILD_TIFF_SUPPORT ON )
+  set( ${PROJECT_NAME}_BUILD_JPEG_SUPPORT ON )
+  if( NOT APPLE )
+    set( USE_ITK_Module_MGHIO ON )
+  endif()
+endif()
 
 if(BUILD_STYLE_UTILS)
   list(APPEND ${LOCAL_PROJECT_NAME}_DEPENDENCIES Cppcheck KWStyle Uncrustify)
@@ -186,6 +201,7 @@ list(APPEND ${CMAKE_PROJECT_NAME}_SUPERBUILD_EP_VARS
   MAKECOMMAND:STRING
   CMAKE_SKIP_RPATH:BOOL
   CMAKE_BUILD_TYPE:STRING
+  CMAKE_MODULE_PATH:PATH
   BUILD_SHARED_LIBS:BOOL
   CMAKE_CXX_COMPILER:PATH
   CMAKE_CXX_FLAGS_RELEASE:STRING
@@ -253,7 +269,6 @@ set(${LOCAL_PROJECT_NAME}_CLI_ARCHIVE_DESTINATION  lib)
 #-----------------------------------------------------------------------------
 list(APPEND ${CMAKE_PROJECT_NAME}_SUPERBUILD_EP_VARS
   BUILD_EXAMPLES:BOOL
-  BUILD_TESTING:BOOL
   ITK_VERSION_MAJOR:STRING
   ITK_DIR:PATH
 
@@ -266,35 +281,20 @@ list(APPEND ${CMAKE_PROJECT_NAME}_SUPERBUILD_EP_VARS
   SlicerExecutionModel_DIR:PATH
   BRAINSCommonLib_DIR:PATH
   Teem_DIR:PATH
-  USE_GTRACT:BOOL
-  USE_BRAINSFit:BOOL
-  USE_BRAINSABC:BOOL
-  USE_BRAINSCut:BOOL
-  USE_BRAINSLandmarkInitializer:BOOL
-  USE_BRAINSMush:BOOL
-  USE_BRAINSROIAuto:BOOL
-  USE_BRAINSResample:BOOL
-  USE_BRAINSConstellationDetector:BOOL
-  USE_BRAINSDemonWarp:BOOL
-  USE_BRAINSMultiModeSegment:BOOL
-  USE_BRAINSInitializedControlPoints:BOOL
-  USE_BRAINSTransformConvert:BOOL
-  USE_ImageCalculator:BOOL
-  USE_BRAINSSnapShotWriter:BOOL
-  USE_DebugImageViewer:BOOL
-  BRAINS_DEBUG_IMAGE_WRITE:BOOL
   INSTALL_RUNTIME_DESTINATION:STRING
   INSTALL_LIBRARY_DESTINATION:STRING
   INSTALL_ARCHIVE_DESTINATION:STRING
+  SUPERBUILD_BINARY_DIR:PATH
   )
 
+set( SUPERBUILD_BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR} )
 if( DTIPrep_BUILD_SLICER_EXTENSION )
   list(APPEND ${CMAKE_PROJECT_NAME}_SUPERBUILD_EP_VARS
     MIDAS_PACKAGE_API_KEY:STRING
     MIDAS_PACKAGE_EMAIL:STRING
     MIDAS_PACKAGE_URL:STRING
     Slicer_DIR:PATH
-    EXTENSION_SUPERBUILD_BINARY_DIR:PATH
+    DTIPrep_BUILD_SLICER_EXTENSION:BOOL
     )
 else()
   list(APPEND ${CMAKE_PROJECT_NAME}_SUPERBUILD_EP_VARS
@@ -321,6 +321,17 @@ if(verbose)
 endif()
 
 
+option(USE_DTIProcess "Build DTIProcess" OFF)
+if(USE_DTIProcess)
+  include(${CMAKE_CURRENT_LIST_DIR}/SuperBuild/External_DTIProcess.cmake)
+  list( APPEND ${LOCAL_PROJECT_NAME}_DEPENDENCIES DTIProcess )
+endif()
+
+option(USE_NIRALUtilities "Build NIRALUtilities" OFF)
+if(USE_NIRALUtilities)
+  include(${CMAKE_CURRENT_LIST_DIR}/SuperBuild/External_niral_utilities.cmake)
+  list( APPEND ${LOCAL_PROJECT_NAME}_DEPENDENCIES niral_utilities )
+endif()
 
 #------------------------------------------------------------------------------
 # Configure and build
@@ -337,6 +348,7 @@ ExternalProject_Add(${proj}
     ${CMAKE_OSX_EXTERNAL_PROJECT_ARGS}
     ${COMMON_EXTERNAL_PROJECT_ARGS}
     -D${LOCAL_PROJECT_NAME}_SUPERBUILD:BOOL=OFF
+    -DBUILD_TESTING:BOOL=${BUILD_TESTING}
     -DUSE_NIRALUtilities:BOOL=${USE_NIRALUtilities}
     -DUSE_DTIProcess:BOOL=${USE_DTIProcess}
   INSTALL_COMMAND ""
@@ -372,12 +384,3 @@ if(USE_FVLight)
   include(${CMAKE_CURRENT_LIST_DIR}/SuperBuild/External_FVLight.cmake)
 endif()
 
-option(USE_DTIProcess "Build DTIProcess" OFF)
-if(USE_DTIProcess)
-  include(${CMAKE_CURRENT_LIST_DIR}/SuperBuild/External_DTIProcess.cmake)
-endif()
-
-option(USE_NIRALUtilities "Build NIRALUtilities" OFF)
-if(USE_NIRALUtilities)
-  include(${CMAKE_CURRENT_LIST_DIR}/SuperBuild/External_niral_utilities.cmake)
-endif()

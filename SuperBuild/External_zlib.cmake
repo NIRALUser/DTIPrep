@@ -1,3 +1,7 @@
+if( NOT EXTERNAL_SOURCE_DIRECTORY )
+  set( EXTERNAL_SOURCE_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/ExternalSources )
+endif()
+
 # Make sure this file is included only once by creating globally unique varibles
 # based on the name of this included file.
 get_filename_component(CMAKE_CURRENT_LIST_FILENAME ${CMAKE_CURRENT_LIST_FILE} NAME_WE)
@@ -69,16 +73,20 @@ if(NOT ( DEFINED "USE_SYSTEM_${extProjName}" AND "${USE_SYSTEM_${extProjName}}" 
       -DCMAKE_CXX_COMPILER:FILEPATH=${CMAKE_CXX_COMPILER}
       -DCMAKE_C_COMPILER:FILEPATH=${CMAKE_C_COMPILER}
       -DCMAKE_C_FLAGS:STRING=${ep_common_c_flags}
-      -DZLIB_MANGLE_PREFIX:STRING=slicer_zlib_
       -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
     )
+  if( ZLIB_MANGLE )
+    list( APPEND ${proj}_CMAKE_OPTIONS
+           -DZLIB_MANGLE_PREFIX:STRING=slicer_zlib_
+        )
+  endif()
   ### --- End Project specific additions
   set(${proj}_REPOSITORY "${git_protocol}://github.com/commontk/zlib.git")
   set(${proj}_GIT_TAG "66a753054b356da85e1838a081aa94287226823e")
   ExternalProject_Add(${proj}
     GIT_REPOSITORY ${${proj}_REPOSITORY}
     GIT_TAG ${${proj}_GIT_TAG}
-    SOURCE_DIR ${CMAKE_CURRENT_LIST_DIR}/ExternalSources/${proj}
+    SOURCE_DIR ${EXTERNAL_SOURCE_DIRECTORY}/${proj}
     BINARY_DIR ${proj}-build
     INSTALL_DIR ${proj}-install
     LOG_CONFIGURE 0  # Wrap configure in script to ignore log output from dashboards
@@ -107,7 +115,7 @@ if(NOT ( DEFINED "USE_SYSTEM_${extProjName}" AND "${USE_SYSTEM_${extProjName}}" 
   set(ZLIB_LIBRARY "${SLICER_ZLIB_LIBRARY}")
 else()
   if(${USE_SYSTEM_${extProjName}})
-    find_package(${extProjName} ${${extProjName}_REQUIRED_VERSION} REQUIRED)
+    find_package(ZLIB ${${extProjName}_REQUIRED_VERSION} REQUIRED)
     message("USING the system ${extProjName}, set ${extProjName}_DIR=${${extProjName}_DIR}")
   endif()
   # The project is provided using ${extProjName}_DIR, nevertheless since other

@@ -1,7 +1,7 @@
 macro(INSTALL_EXECUTABLE)
   set(options )
   set( oneValueArgs OUTPUT_DIR )
-  set(multiValueArgs LIST_EXEC )
+  set(multiValueArgs LIST_EXEC PATHS)
   CMAKE_PARSE_ARGUMENTS(LOCAL
     "${options}"
     "${oneValueArgs}"
@@ -9,7 +9,9 @@ macro(INSTALL_EXECUTABLE)
     ${ARGN}
     )
   foreach( tool ${LOCAL_LIST_EXEC})
-    install(PROGRAMS ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${tool} DESTINATION ${LOCAL_OUTPUT_DIR} )
+     find_program( programPATH NAMES ${tool} PATHS ${LOCAL_PATHS} NO_DEFAULT_PATH NO_CMAKE_ENVIRONMENT_PATH NO_SYSTEM_ENVIRONMENT_PATH NO_CMAKE_PATH NO_CMAKE_SYSTEM_PATH )
+     install(PROGRAMS ${programPATH} DESTINATION ${LOCAL_OUTPUT_DIR} )
+     unset( programPATH CACHE )
   endforeach()
 endmacro()
 
@@ -137,17 +139,17 @@ if(USE_ANTS)
 endif()
 
 
-#-----------------------------------------------------------------------------
-# Add module sub-directory if USE_<MODULENAME> is both defined and true
-#-----------------------------------------------------------------------------
-add_subdirectory(src)
-
-if( EXTENSION_SUPERBUILD_BINARY_DIR )
+if( DTIPrep_BUILD_SLICER_EXTENSION )
   unsetForSlicer( NAMES SlicerExecutionModel_DIR ITK_DIR VTK_DIR CMAKE_C_COMPILER CMAKE_CXX_COMPILER CMAKE_CXX_FLAGS CMAKE_C_FLAGS ITK_LIBRARIES )
   find_package(Slicer REQUIRED)
   include(${Slicer_USE_FILE})
   resetForSlicer( NAMES ITK_DIR SlicerExecutionModel_DIR CMAKE_C_COMPILER CMAKE_CXX_COMPILER CMAKE_CXX_FLAGS CMAKE_C_FLAGS ITK_LIBRARIES )
 endif()
+
+#-----------------------------------------------------------------------------
+# Add module sub-directory if USE_<MODULENAME> is both defined and true
+#-----------------------------------------------------------------------------
+add_subdirectory(src)
 
 IF(BUILD_TESTING)
   include(CTest)
@@ -159,30 +161,26 @@ if(USE_DTIProcess)
     dtiestim
     dtiprocess
   )
+  list( APPEND ToolsPaths ${SUPERBUILD_BINARY_DIR}/DTIProcess-install/bin/ )
 endif()
 if(USE_NIRALUtilities)
   list(APPEND NotCLIToolsList
     ImageMath
     convertITKformats
   )
+  list( APPEND ToolsPaths ${SUPERBUILD_BINARY_DIR}/niral_utilities-install/bin/ )
 endif()
 
-if( EXTENSION_SUPERBUILD_BINARY_DIR )
-  set(HIDDEN_CLI_INSTALL_DIR ${Slicer_INSTALL_CLIMODULES_BIN_DIR}/../hidden-cli-modules )
+if( DTIPrep_BUILD_SLICER_EXTENSION )
   set(NOCLI_INSTALL_DIR ${Slicer_INSTALL_CLIMODULES_BIN_DIR}/../ExternalBin)
-  set( CLIToolsList
-    DTIPrepLauncher
-     )
-  INSTALL_EXECUTABLE( OUTPUT_DIR ${Slicer_INSTALL_CLIMODULES_BIN_DIR} LIST_EXEC ${CLIToolsList} )
-  set( hiddenCLIToolsList
-    DTIPrep
-     )
-  INSTALL_EXECUTABLE( OUTPUT_DIR ${HIDDEN_CLI_INSTALL_DIR} LIST_EXEC ${hiddenCLIToolsList} )
-  INSTALL_EXECUTABLE( OUTPUT_DIR ${NOCLI_INSTALL_DIR} LIST_EXEC ${NotCLIToolsList} )
+  INSTALL_EXECUTABLE( OUTPUT_DIR ${NOCLI_INSTALL_DIR} LIST_EXEC ${NotCLIToolsList} PATHS ${ToolsPaths} )
   set(CPACK_INSTALL_CMAKE_PROJECTS "${CPACK_INSTALL_CMAKE_PROJECTS};${CMAKE_BINARY_DIR};${EXTENSION_NAME};ALL;/")
   include(${Slicer_EXTENSION_CPACK})
 endif()
 if( SUPERBUILD_NOT_EXTENSION )
-  INSTALL_EXECUTABLE( OUTPUT_DIR . LIST_EXEC DTIPrep )
-  INSTALL_EXECUTABLE( OUTPUT_DIR . LIST_EXEC ${NotCLIToolsList} )
+  if( NOT APPLE )
+    INSTALL_EXECUTABLE( OUTPUT_DIR bin LIST_EXEC ${NotCLIToolsList} PATHS ${ToolsPaths} )
+  else()
+    INSTALL_EXECUTABLE( OUTPUT_DIR ${CMAKE_INSTALL_PREFIX}/bin/DTIPrep.app/Contents/ExternalBin LIST_EXEC ${NotCLIToolsList} PATHS ${ToolsPaths} )
+  endif()
 endif()

@@ -1,3 +1,7 @@
+if( NOT EXTERNAL_SOURCE_DIRECTORY )
+  set( EXTERNAL_SOURCE_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/ExternalSources )
+endif()
+
 # Make sure this file is included only once by creating globally unique varibles
 # based on the name of this included file.
 get_filename_component(CMAKE_CURRENT_LIST_FILENAME ${CMAKE_CURRENT_LIST_FILE} NAME_WE)
@@ -31,21 +35,28 @@ if(DEFINED ${extProjName}_DIR AND NOT EXISTS ${${extProjName}_DIR})
 endif()
 
 # Set dependency list
-set(${extProjName}_DEPENDENCIES ITKv4 SlicerExecutionModel ANTs VTK )
+set(${extProjName}_DEPENDENCIES ITKv4 SlicerExecutionModel VTK DCMTK teem OpenCV zlib )
 #if(${PROJECT_NAME}_BUILD_DICOM_SUPPORT)
 #  list(APPEND ${proj}_DEPENDENCIES DCMTK)
 #endif()
->>>>>>> .r289
-
-if(USE_ANTs)
-  list(APPEND ${extProjName}_DEPENDENCIES ANTs)
-endif()
 
 # Include dependent projects if any
 SlicerMacroCheckExternalProjectDependency(${proj})
 
 if(NOT ( DEFINED "${extProjName}_SOURCE_DIR" OR ( DEFINED "USE_SYSTEM_${extProjName}" AND "${USE_SYSTEM_${extProjName}}" ) ) )
   #message(STATUS "${__indent}Adding project ${proj}")
+  if(USE_ANTs)
+    list(APPEND ${extProjName}_DEPENDENCIES ANTs Boost)
+  endif()
+
+  if( ${PROJECT_NAME}_BUILD_TIFF_SUPPORT )
+    list(APPEND ${proj}_DEPENDENCIES TIFF)
+  endif()
+  if( ${PROJECT_NAME}_BUILD_JPEG_SUPPORT )
+    list(APPEND ${proj}_DEPENDENCIES JPEG)
+  endif()
+  # Include dependent projects if any
+  SlicerMacroCheckExternalProjectDependency(${proj})
 
   # Set CMake OSX variable to pass down the external project
   set(CMAKE_OSX_EXTERNAL_PROJECT_ARGS)
@@ -58,7 +69,6 @@ if(NOT ( DEFINED "${extProjName}_SOURCE_DIR" OR ( DEFINED "USE_SYSTEM_${extProjN
 
   set(BRAINS_ANTS_PARAMS
     -DUSE_ANTS:BOOL=${USE_ANTs}
-    -DUSE_ANTs:BOOL=${USE_ANTs}
     )
   if(USE_ANTs)
     list(APPEND BRAINS_ANTS_PARAMS
@@ -78,6 +88,20 @@ if(NOT ( DEFINED "${extProjName}_SOURCE_DIR" OR ( DEFINED "USE_SYSTEM_${extProjN
   # message("ITK_DIR: ${ITK_DIR}")
   # message("SlicerExecutionModel_DIR: ${SlicerExecutionModel_DIR}")
   # message("BOOST_INCLUDE_DIR:PATH=${BOOST_INCLUDE_DIR}")
+
+  if( ${PROJECT_NAME}_BUILD_TIFF_SUPPORT )
+    set(${proj}_TIFF_ARGS
+      -DUSE_SYSTEM_TIFF:BOOL=ON
+      -DTIFF_DIR:PATH=${TIFF_DIR}
+       )
+  endif()
+  if( ${PROJECT_NAME}_BUILD_JPEG_SUPPORT )
+    set(${proj}_JPEG_ARGS
+      -DUSE_SYSTEM_JPEG:BOOL=ON
+      -DJPEG_DIR:PATH=${JPEG_DIR}
+      )
+  endif()
+
   set(${proj}_CMAKE_OPTIONS
       -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_CURRENT_BINARY_DIR}/${proj}-install
       -DBUILD_EXAMPLES:BOOL=OFF
@@ -86,8 +110,6 @@ if(NOT ( DEFINED "${extProjName}_SOURCE_DIR" OR ( DEFINED "USE_SYSTEM_${extProjN
       -DUSE_SYSTEM_VTK:BOOL=ON
       -DUSE_SYSTEM_DCMTK:BOOL=ON
       -DUSE_SYSTEM_Teem:BOOL=ON
-      -DUSE_SYSTEM_TIFF:BOOL=ON
-      -DUSE_SYSTEM_JPEG:BOOL=ON
       -DUSE_SYSTEM_OpenCV:BOOL=ON
       -DOpenCV_DIR:PATH=${OpenCV_DIR}
       -DUSE_SYSTEM_ReferenceAtlas:BOOL=ON
@@ -97,8 +119,6 @@ if(NOT ( DEFINED "${extProjName}_SOURCE_DIR" OR ( DEFINED "USE_SYSTEM_${extProjN
       -DUSE_SYSTEM_SlicerExecutionModel:BOOL=ON
       -DDCMTK_DIR:PATH=${DCMTK_DIR}
       -DDCMTK_config_INCLUDE_DIR:PATH=${DCMTK_DIR}/include
-      -DJPEG_DIR:PATH=${JPEG_DIR}
-      -DTIFF_DIR:PATH=${TIFF_DIR}
       -DSlicerExecutionModel_DIR:PATH=${SlicerExecutionModel_DIR}
       -DSuperBuild_BRAINSTools_USE_GIT_PROTOCOL=${${CMAKE_PROJECT_NAME}_USE_GIT_PROTOCOL}
       -DBRAINSTools_SUPERBUILD:BOOL=OFF
@@ -111,19 +131,12 @@ if(NOT ( DEFINED "${extProjName}_SOURCE_DIR" OR ( DEFINED "USE_SYSTEM_${extProjN
       -DZLIB_ROOT:PATH=${zlib_DIR}
       -DZLIB_INCLUDE_DIR:PATH=${zlib}_DIR}/include
       -DZLIB_LIBRARY:FILEPATH=${ZLIB_LIBRARY}
-      -DUSE_BRAINSABC:BOOL=ON
-      -DUSE_BRAINSConstellationDetector:BOOL=ON
-      -DUSE_BRAINSContinuousClass:BOOL=ON
-      -DUSE_BRAINSCut:BOOL=ON
-      -DUSE_BRAINSDemonWarp:BOOL=ON
-      -DUSE_BRAINSFit:BOOL=ON
-<<<<<<< .mine
-      -DUSE_BRAINSImageConvert:BOOL=ON
-      -DUSE_BRAINSInitializedControlPoints:BOOL=ON
-      -DUSE_BRAINSLandmarkInitializer:BOOL=ON
-      -DUSE_BRAINSMultiModeSegment:BOOL=ON
-      -DUSE_BRAINSMush:BOOL=ON
-=======
+      -DUSE_BRAINSABC:BOOL=OFF
+      -DUSE_BRAINSConstellationDetector:BOOL=OFF
+      -DUSE_BRAINSContinuousClass:BOOL=OFF
+      -DUSE_BRAINSCut:BOOL=OFF
+      -DUSE_BRAINSDemonWarp:BOOL=OFF
+      -DUSE_BRAINSFit:BOOL=OFF
       -DUSE_BRAINSFitEZ:BOOL=OFF
       -DUSE_BRAINSTalairach:BOOL=OFF
       -DUSE_BRAINSImageConvert:BOOL=OFF
@@ -136,19 +149,18 @@ if(NOT ( DEFINED "${extProjName}_SOURCE_DIR" OR ( DEFINED "USE_SYSTEM_${extProjN
       -DUSE_BRAINSLandmarkInitializer:BOOL=OFF
       -DUSE_BRAINSMultiModeSegment:BOOL=OFF
       -DUSE_BRAINSMush:BOOL=OFF
->>>>>>> .r289
-      -DUSE_BRAINSROIAuto:BOOL=ON
-      -DUSE_BRAINSResample:BOOL=ON
-      -DUSE_BRAINSSnapShotWriter:BOOL=ON
-      -DUSE_BRAINSSurfaceTools:BOOL=ON
-      -DUSE_BRAINSTransformConvert:BOOL=ON
-      -DUSE_BRAINSPosteriorToContinuousClass:BOOL=ON
-      -DUSE_BRAINSCreateLabelMapFromProbabilityMaps:BOOL=ON
+      -DUSE_BRAINSROIAuto:BOOL=OFF
+      -DUSE_BRAINSResample:BOOL=OFF
+      -DUSE_BRAINSSnapShotWriter:BOOL=OFF
+      -DUSE_BRAINSSurfaceTools:BOOL=OFF
+      -DUSE_BRAINSTransformConvert:BOOL=OFF
+      -DUSE_BRAINSPosteriorToContinuousClass:BOOL=OFF
+      -DUSE_BRAINSCreateLabelMapFromProbabilityMaps:BOOL=OFF
       -DUSE_DebugImageViewer:BOOL=OFF
-      -DUSE_GTRACT:BOOL=ON
+      -DUSE_GTRACT:BOOL=OFF
       -DUSE_ICCDEF:BOOL=OFF
-      -DUSE_ConvertBetweenFileFormats:BOOL=ON
-      -DUSE_ImageCalculator:BOOL=ON
+      -DUSE_ConvertBetweenFileFormats:BOOL=OFF
+      -DUSE_ImageCalculator:BOOL=OFF
       -DUSE_AutoWorkup:BOOL=OFF
       ${BRAINS_ANTS_PARAMS}
     )
@@ -156,11 +168,10 @@ if(NOT ( DEFINED "${extProjName}_SOURCE_DIR" OR ( DEFINED "USE_SYSTEM_${extProjN
   ### --- End Project specific additions
   set(${proj}_REPOSITORY "${git_protocol}://github.com/BRAINSia/BRAINSTools.git")
   set(${proj}_GIT_TAG "33b739e7e6a414be41d44aca028b1304a2c0a440")
->>>>>>> .r289
   ExternalProject_Add(${proj}
     GIT_REPOSITORY ${${proj}_REPOSITORY}
     GIT_TAG ${${proj}_GIT_TAG}
-    SOURCE_DIR ${CMAKE_CURRENT_LIST_DIR}/ExternalSources/${proj}
+    SOURCE_DIR ${EXTERNAL_SOURCE_DIRECTORY}/${proj}
     BINARY_DIR ${proj}-build
     LOG_CONFIGURE 0  # Wrap configure in script to ignore log output from dashboards
     LOG_BUILD     0  # Wrap build in script to to ignore log output from dashboards

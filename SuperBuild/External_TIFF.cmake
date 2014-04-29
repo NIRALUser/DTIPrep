@@ -1,3 +1,10 @@
+if( NOT EXTERNAL_SOURCE_DIRECTORY )
+  set( EXTERNAL_SOURCE_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/ExternalSources )
+endif()
+if( NOT EXTERNAL_BINARY_DIRECTORY )
+  set( EXTERNAL_BINARY_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} )
+endif()
+
 # Make sure this file is included only once by creating globally unique varibles
 # based on the name of this included file.
 get_filename_component(CMAKE_CURRENT_LIST_FILENAME ${CMAKE_CURRENT_LIST_FILE} NAME_WE)
@@ -32,14 +39,34 @@ if(DEFINED ${extProjName}_DIR AND NOT EXISTS ${${extProjName}_DIR})
 endif()
 
 # Set dependency list
-set(${proj}_DEPENDENCIES OpenJPEG)
+set(${proj}_DEPENDENCIES "")
 
 # Include dependent projects if any
 SlicerMacroCheckExternalProjectDependency(${proj})
 
 if(NOT ( DEFINED "USE_SYSTEM_${extProjName}" AND "${USE_SYSTEM_${extProjName}}" ) )
   #message(STATUS "${__indent}Adding project ${proj}")
+  if( ${PROJECT_NAME}_BUILD_ZLIB_SUPPORT )
+    list(APPEND ${proj}_DEPENDENCIES zlib)
+  endif()
+  if( ${PROJECT_NAME}_BUILD_JPEG_SUPPORT )
+    list(APPEND ${proj}_DEPENDENCIES JPEG)
+  endif()
+  # Include dependent projects if any
+  SlicerMacroCheckExternalProjectDependency(${proj})
 
+  if( ${PROJECT_NAME}_BUILD_ZLIB_SUPPORT )
+    set(${proj}_ZLIB_ARGS 
+        --with-zlib-include-dir=${ZLIB_INCLUDE_DIR}
+        --with-zlib-lib-dir=${zlib_DIR}/lib
+      )
+  endif()
+  if( ${PROJECT_NAME}_BUILD_JPEG_SUPPORT )
+    set(${proj}_JPEG_ARGS
+        --with-jpeg-lib-dir=${JPEG_LIB_DIR}
+        --with-jpeg-include-dir=${JPEG_INCLUDE_DIR}
+      )
+  endif()
   # Set CMake OSX variable to pass down the external project
   set(CMAKE_OSX_EXTERNAL_PROJECT_ARGS)
   if(APPLE)
@@ -56,15 +83,15 @@ if(NOT ( DEFINED "USE_SYSTEM_${extProjName}" AND "${USE_SYSTEM_${extProjName}}" 
   AutoConf_FLAGS(${proj}_CXXFLAGS CXX "${APPLE_CFLAGS}")
 
   ### --- End Project specific additions
-  set(${proj}_REPOSITORY ${git_protocol}://github.com/BRAINSia/libtiff.git)
-  set(${proj}_GIT_TAG f696451cb05a8f33ec477eadcadd10fae9f58c39)
-
+  set(${proj}_URL "http://download.osgeo.org/libtiff/tiff-4.0.3.tar.gz")
+  set(${proj}_MD5 "051c1068e6a0627f461948c365290410")
   ExternalProject_Add(${proj}
-    GIT_REPOSITORY ${${proj}_REPOSITORY}
-    GIT_TAG ${${proj}_GIT_TAG}
-    SOURCE_DIR ${CMAKE_CURRENT_LIST_DIR}/ExternalSources/${proj}
-    BINARY_DIR ${proj}-build
-    INSTALL_DIR ${proj}-install
+    URL ${${proj}_URL}
+    ${URL_HASH_CLAUSE}
+    URL_MD5 ${${proj}_MD5}
+    SOURCE_DIR ${EXTERNAL_SOURCE_DIRECTORY}/${proj}
+    BINARY_DIR ${EXTERNAL_BINARY_DIRECTORY}/${proj}-build
+    INSTALL_DIR ${EXTERNAL_BINARY_DIRECTORY}/${proj}-install
     LOG_CONFIGURE 0  # Wrap configure in script to ignore log output from dashboards
     LOG_BUILD     0  # Wrap build in script to to ignore log output from dashboards
     LOG_TEST      0  # Wrap test in script to to ignore log output from dashboards
@@ -75,8 +102,8 @@ if(NOT ( DEFINED "USE_SYSTEM_${extProjName}" AND "${USE_SYSTEM_${extProjName}}" 
     --enable-shared=No
     --enable-static=Yes
     --disable-lzma
-    --with-jpeg-lib-dir=${JPEG_LIB_DIR}
-    --with-jpeg-include-dir=${JPEG_INCLUDE_DIR}
+    ${${proj}_ZLIB_ARGS}
+    ${${proj}_JPEG_ARGS}
     CC=${CMAKE_C_COMPILER}
     CXX=${CMAKE_CXX_COMPILER}
     "CFLAGS=${${proj}_CFLAGS}"
@@ -84,9 +111,11 @@ if(NOT ( DEFINED "USE_SYSTEM_${extProjName}" AND "${USE_SYSTEM_${extProjName}}" 
     DEPENDS
       ${${proj}_DEPENDENCIES}
   )
-  set(${extProjName}_DIR ${CMAKE_BINARY_DIR}/${proj}-install)
-  set(${extProjName}_INCLUDE_DIR ${CMAKE_BINARY_DIR}/${proj}-install/include)
-  set(${extProjName}_LIBRARY ${CMAKE_BINARY_DIR}/${proj}-install/lib/${CMAKE_STATIC_LIBRARY_PREFIX}tiff${CMAKE_STATIC_LIBRARY_SUFFIX})
+  set(${extProjName}_DIR ${EXTERNAL_BINARY_DIRECTORY}/${proj}-install)
+  set(${extProjName}_INCLUDE_DIR
+    ${EXTERNAL_BINARY_DIRECTORY}/${proj}-install/include)
+  set(${extProjName}_LIBRARY
+    ${EXTERNAL_BINARY_DIRECTORY}/${proj}-install/lib/libtiff.a)
 else()
   if(${USE_SYSTEM_${extProjName}})
     find_package(${extProjName} REQUIRED)

@@ -128,7 +128,7 @@ endif()
 
 #message(STATUS "XXXXXXX ${DTIPrep_Libs}")
 
-if(EXTENSION_SUPERBUILD_BINARY_DIR OR SUPERBUILD_NOT_EXTENSION )
+if( DTIPrep_BUILD_SLICER_EXTENSION )
   add_executable( DTIPrep
     ${DTIPrep_SRCS}
     ${UISrcs}
@@ -137,7 +137,14 @@ if(EXTENSION_SUPERBUILD_BINARY_DIR OR SUPERBUILD_NOT_EXTENSION )
   )
   target_link_libraries( DTIPrep ${DTIPrep_Libs} )
   add_executable( DTIPrepLauncher Launcher.cxx ${DTIPrep_SRCS_CLP} )
+  
+  set(HIDDEN_CLI_INSTALL_DIR ${Slicer_INSTALL_CLIMODULES_BIN_DIR}/../hidden-cli-modules )
+  install(TARGETS DTIPrep DESTINATION ${HIDDEN_CLI_INSTALL_DIR} )
+  install(TARGETS DTIPrepLauncher DESTINATION ${Slicer_INSTALL_CLIMODULES_BIN_DIR} )
 else()
+  if( UNIX AND NOT APPLE )
+    SET( CMAKE_INSTALL_RPATH "\$ORIGIN" )
+  endif()
   add_executable( DTIPrep
     MACOSX_BUNDLE
     ${DTIPrep_SRCS}
@@ -176,10 +183,10 @@ else()
   # install a qt.conf file
   # this inserts some cmake code into the install script to write the file
   install(CODE "
-    file(WRITE \"\${CMAKE_INSTALL_PREFIX}/${qtconf_dest_dir}/qt.conf\" \"\")
+    file(WRITE \"\${CMAKE_INSTALL_PREFIX}/bin/${qtconf_dest_dir}/qt.conf\" \"\")
     " COMPONENT Runtime)
   install(CODE "
-    execute_process(COMMAND cp -r \"${QT_LIBRARY_DIR}/QtGui.framework/Resources/qt_menu.nib\" \".\" WORKING_DIRECTORY ${CMAKE_INSTALL_PREFIX}/${qtconf_dest_dir})")
+    execute_process(COMMAND cp -r \"${QT_LIBRARY_DIR}/QtGui.framework/Resources/qt_menu.nib\" \".\" WORKING_DIRECTORY ${CMAKE_INSTALL_PREFIX}/bin/${qtconf_dest_dir})")
   endif()
   #--------------------------------------------------------------------------------
   # Use BundleUtilities to get all other dependencies for the application to work.

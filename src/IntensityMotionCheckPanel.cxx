@@ -6336,10 +6336,10 @@ void IntensityMotionCheckPanel::FindProgram( std::string name , QLineEdit *lineE
 {
     std::string program ;
     std::vector< std::string > defaultPaths ;
-    defaultPaths.push_back( "../ExternalBin" );
-
+    defaultPaths.push_back( QCoreApplication::applicationDirPath().toStdString() + "/../ExternalBin" ) ;
+    defaultPaths.push_back( QCoreApplication::applicationDirPath().toStdString() ) ;
     // Find Tool on system
-    program = itksys::SystemTools::FindProgram( name.c_str() ,defaultPaths , true ) ;
+    program = itksys::SystemTools::FindProgram( name.c_str() , defaultPaths , true ) ;
     if( program.empty() )
     {
       program = itksys::SystemTools::FindProgram( name.c_str() ) ;

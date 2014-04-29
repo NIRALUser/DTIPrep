@@ -1,3 +1,7 @@
+if( NOT EXTERNAL_SOURCE_DIRECTORY )
+  set( EXTERNAL_SOURCE_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/ExternalSources )
+endif()
+
 # Make sure this file is included only once by creating globally unique varibles
 # based on the name of this included file.
 get_filename_component(CMAKE_CURRENT_LIST_FILENAME ${CMAKE_CURRENT_LIST_FILE} NAME_WE)
@@ -35,7 +39,7 @@ if(DEFINED ${extProjName}_LIBRARY_DIR AND NOT EXISTS ${${extProjName}_LIBRARY_DI
 endif()
 
 # Set dependency list
-set(${proj}_DEPENDENCIES ITKv4 SlicerExecutionModel )
+set(${proj}_DEPENDENCIES ITKv4 SlicerExecutionModel Boost)
 if(${PROJECT_NAME}_BUILD_DICOM_SUPPORT)
   list(APPEND ${proj}_DEPENDENCIES DCMTK)
 endif()
@@ -65,6 +69,13 @@ if(NOT ( DEFINED "USE_SYSTEM_${extProjName}" AND "${USE_SYSTEM_${extProjName}}" 
       -DBUILD_EXAMPLES:BOOL=OFF
       -DBUILD_TESTING:BOOL=OFF
       -DANTS_SUPERBUILD:BOOL=OFF
+      -DUSE_SYSTEM_Boost:BOOL=ON
+      -DUSE_SYSTEM_BOOST:BOOL=ON
+      -DBoost_NO_BOOST_CMAKE:BOOL=ON #Set Boost_NO_BOOST_CMAKE to ON to disable the search for boost-cmake
+      -DBoost_DIR:PATH=${BOOST_ROOT}
+      -DBOOST_DIR:PATH=${BOOST_ROOT}
+      -DBOOST_ROOT:PATH=${BOOST_ROOT}
+      -DBOOST_INCLUDE_DIR:PATH=${BOOST_INCLUDE_DIR}
    )
  if(${PRIMARY_PROJECT_NAME}_USE_QT)
    list(APPEND ${proj}_CMAKE_OPTIONS -DANTS_USE_QT:BOOL=ON)
@@ -75,7 +86,7 @@ if(NOT ( DEFINED "USE_SYSTEM_${extProjName}" AND "${USE_SYSTEM_${extProjName}}" 
   ExternalProject_Add(${proj}
     GIT_REPOSITORY ${${proj}_REPOSITORY}
     GIT_TAG ${${proj}_GIT_TAG}
-    SOURCE_DIR ${CMAKE_CURRENT_LIST_DIR}/ExternalSources/${proj}
+    SOURCE_DIR ${EXTERNAL_SOURCE_DIRECTORY}/${proj}
     BINARY_DIR ${proj}-build
     LOG_CONFIGURE 0  # Wrap configure in script to ignore log output from dashboards
     LOG_BUILD     0  # Wrap build in script to to ignore log output from dashboards

@@ -1,3 +1,9 @@
+if( NOT EXTERNAL_SOURCE_DIRECTORY )
+  set( EXTERNAL_SOURCE_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/ExternalSources )
+endif()
+if( NOT EXTERNAL_BINARY_DIRECTORY )
+  set( EXTERNAL_BINARY_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} )
+endif()
 
 # Make sure this file is included only once by creating globally unique varibles
 # based on the name of this included file.
@@ -32,13 +38,46 @@ if(DEFINED ${extProjName}_DIR AND NOT EXISTS ${${extProjName}_DIR})
 endif()
 
 # Set dependency list
-set(${proj}_DEPENDENCIES TIFF)
-
+set(${proj}_DEPENDENCIES "" )
 # Include dependent projects if any
 SlicerMacroCheckExternalProjectDependency(${proj})
 
 if(NOT ( DEFINED "USE_SYSTEM_${extProjName}" AND "${USE_SYSTEM_${extProjName}}" ) )
   #message(STATUS "${__indent}Adding project ${proj}")
+  if( ${PROJECT_NAME}_BUILD_TIFF_SUPPORT )
+    list(APPEND ${proj}_DEPENDENCIES TIFF)
+  endif()
+  if( ${PROJECT_NAME}_BUILD_JPEG_SUPPORT )
+    list(APPEND ${proj}_DEPENDENCIES JPEG)
+  endif()
+  if( ${PROJECT_NAME}_BUILD_ZLIB_SUPPORT )
+    list(APPEND ${proj}_DEPENDENCIES zlib)
+  endif()
+  SlicerMacroCheckExternalProjectDependency(${proj})
+
+  if( ${PROJECT_NAME}_BUILD_TIFF_SUPPORT )
+    set(${proj}_TIFF_ARGS
+      -DDCMTK_WITH_TIFF:BOOL=ON  # see CTK github issue #25
+      -DTIFF_DIR:PATH=${TIFF_DIR}
+       )
+  else()
+    set(${proj}_TIFF_ARGS
+      -DDCMTK_WITH_TIFF:BOOL=OFF
+       )
+  endif()
+  if( ${PROJECT_NAME}_BUILD_JPEG_SUPPORT )
+    set(${proj}_JPEG_ARGS
+      -DDCMTK_WITH_JPEG:BOOL=ON  # see CTK github issue #25
+      -DJPEG_DIR:FILEPATH=${JPEG_DIR}
+      )
+  endif()
+  if( ${PROJECT_NAME}_BUILD_ZLIB_SUPPORT )
+    set(${proj}_ZLIB_ARGS
+      -DDCMTK_WITH_ZLIB:BOOL=ON
+      -DZLIB_DIR:FILEPATH=${ZLIB_DIR}
+      )
+  endif()
+
 
   # Set CMake OSX variable to pass down the external project
   set(CMAKE_OSX_EXTERNAL_PROJECT_ARGS)
@@ -57,23 +96,22 @@ if(NOT ( DEFINED "USE_SYSTEM_${extProjName}" AND "${USE_SYSTEM_${extProjName}}" 
 
   ### --- Project specific additions here
   set(${proj}_CMAKE_OPTIONS
-      -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_CURRENT_BINARY_DIR}/${proj}-install
+      -DCMAKE_INSTALL_PREFIX:PATH=${EXTERNAL_BINARY_DIRECTORY}/${proj}-install
       #-DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>
       ${CMAKE_PROJECT_INCLUDE_EXTERNAL_PROJECT_ARG}
       -DBUILD_EXAMPLES:BOOL=OFF
       -DBUILD_TESTING:BOOL=OFF
       -DDCMTK_WITH_DOXYGEN:BOOL=OFF
-      -DDCMTK_WITH_ZLIB:BOOL=ON # see CTK github issue #25
       -DDCMTK_WITH_OPENSSL:BOOL=OFF # see CTK github issue #25
       -DDCMTK_WITH_PNG:BOOL=OFF # see CTK github issue #25
-      -DDCMTK_WITH_TIFF:BOOL=ON  # see CTK github issue #25
       -DDCMTK_WITH_XML:BOOL=OFF  # see CTK github issue #25
       -DDCMTK_WITH_ICONV:BOOL=OFF  # see CTK github issue #178
       -DDCMTK_FORCE_FPIC_ON_UNIX:BOOL=ON
       -DDCMTK_OVERWRITE_WIN32_COMPILER_FLAGS:BOOL=OFF
       -DDCMTK_WITH_WRAP:BOOL=OFF   # CTK does not build on Mac with this option turned ON due to library dependencies missing
-      -DTIFF_DIR:PATH=${TIFF_DIR}
-      -DJPEG_DIR:FILEPATH=${JPEG_DIR}
+      ${${proj}_TIFF_ARGS}
+      ${${proj}_JPEG_ARGS}
+      ${${proj}_ZLIB_ARGS}
   )
   ### --- End Project specific additions
   set(${proj}_REPOSITORY ${git_protocol}://github.com/commontk/DCMTK.git)
@@ -81,9 +119,9 @@ if(NOT ( DEFINED "USE_SYSTEM_${extProjName}" AND "${USE_SYSTEM_${extProjName}}" 
   ExternalProject_Add(${proj}
     GIT_REPOSITORY ${${proj}_REPOSITORY}
     GIT_TAG ${${proj}_GIT_TAG}
-    SOURCE_DIR ${CMAKE_CURRENT_LIST_DIR}/ExternalSources/${proj}
-    BINARY_DIR ${proj}-build
-    INSTALL_DIR ${proj}-install
+    SOURCE_DIR ${EXTERNAL_SOURCE_DIRECTORY}/${proj}
+    BINARY_DIR ${EXTERNAL_BINARY_DIRECTORY}/${proj}-build
+    INSTALL_DIR ${EXTERNAL_BINARY_DIRECTORY}/${proj}-install
     LOG_CONFIGURE 0  # Wrap configure in script to ignore log output from dashboards
     LOG_BUILD     0  # Wrap build in script to to ignore log output from dashboards
     LOG_TEST      0  # Wrap test in script to to ignore log output from dashboards
@@ -98,7 +136,7 @@ if(NOT ( DEFINED "USE_SYSTEM_${extProjName}" AND "${USE_SYSTEM_${extProjName}}" 
     DEPENDS
       ${${proj}_DEPENDENCIES}
   )
-  set(${extProjName}_DIR ${CMAKE_BINARY_DIR}/${proj}-install/lib/cmake/dcmtk)
+  set(${extProjName}_DIR ${EXTERNAL_BINARY_DIRECTORY}/${proj}-install/lib/cmake/dcmtk)
 else()
   if(${USE_SYSTEM_${extProjName}})
     find_package(${extProjName} REQUIRED NO_MODULE)
@@ -108,8 +146,11 @@ else()
   # project may depend on ${extProjName}, let's add an 'empty' one
   SlicerMacroEmptyExternalProject(${proj} "${${proj}_DEPENDENCIES}")
 endif()
-
+set( ${PRIMARY_PROJECT_NAME}_BUILD_DICOM_SUPPORT ON )
 list(APPEND ${CMAKE_PROJECT_NAME}_SUPERBUILD_EP_VARS ${extProjName}_DIR:PATH)
+list(APPEND ${CMAKE_PROJECT_NAME}_SUPERBUILD_EP_VARS ${PRIMARY_PROJECT_NAME}_BUILD_DICOM_SUPPORT:BOOL)
+_expand_external_project_vars()
+set(COMMON_EXTERNAL_PROJECT_ARGS ${${CMAKE_PROJECT_NAME}_SUPERBUILD_EP_ARGS})
 
 ProjectDependancyPop(CACHED_extProjName extProjName)
 ProjectDependancyPop(CACHED_proj proj)

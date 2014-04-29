@@ -1,3 +1,10 @@
+if( NOT EXTERNAL_SOURCE_DIRECTORY )
+  set( EXTERNAL_SOURCE_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/ExternalSources )
+endif()
+if( NOT EXTERNAL_BINARY_DIRECTORY )
+  set( EXTERNAL_BINARY_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} )
+endif()
+
 # Make sure this file is included only once by creating globally unique varibles
 # based on the name of this included file.
 get_filename_component(CMAKE_CURRENT_LIST_FILENAME ${CMAKE_CURRENT_LIST_FILE} NAME_WE)
@@ -31,6 +38,7 @@ if(DEFINED ${extProjName}_DIR AND NOT EXISTS ${${extProjName}_DIR})
 endif()
 
 # Set dependency list
+set( ${PRIMARY_PROJECT_NAME}_USE_QT TRUE )
 set(${proj}_DEPENDENCIES QWT ITKv4 VTK SlicerExecutionModel)
 #if(${PROJECT_NAME}_BUILD_DICOM_SUPPORT)
 #  list(APPEND ${proj}_DEPENDENCIES DCMTK)
@@ -59,18 +67,21 @@ if(NOT ( DEFINED "USE_SYSTEM_${extProjName}" AND "${USE_SYSTEM_${extProjName}}" 
     -DSlicerExecutionModel_DIR:PATH=${SlicerExecutionModel_DIR}
     -DITK_DIR:PATH=${ITK_DIR}
     -DVTK_DIR:PATH=${VTK_DIR}
+    -DDTIAtlasFiberAnalyzer_SuperBuild:BOOL=OFF
+    -DEXECUTABLES_ONLY:BOOL=ON
+    -DCOMPILE_EXTERNAL_DTIPROCESS:BOOL=OFF
+    -DCOMPILE_FIBERCOMPARE:BOOL=ON
     )
 
   ### --- End Project specific additions
   set(${proj}_REPOSITORY "https://www.nitrc.org/svn/dti_tract_stat/trunk")
   ExternalProject_Add(${proj}
     SVN_REPOSITORY ${${proj}_REPOSITORY}
-    SVN_REVISION -r "137"
+    SVN_REVISION -r "136"
     SVN_USERNAME slicerbot
     SVN_PASSWORD slicer
-    SOURCE_DIR ${CMAKE_CURRENT_LIST_DIR}/ExternalSources/${proj}
-    BINARY_DIR ${proj}-build
-    INSTALL_COMMAND ""
+    SOURCE_DIR ${EXTERNAL_SOURCE_DIRECTORY}/${proj}
+    BINARY_DIR ${EXTERNAL_BINARY_DIRECTORY}/${proj}-build
     LOG_CONFIGURE 0  # Wrap configure in script to ignore log output from dashboards
     LOG_BUILD     0  # Wrap build in script to to ignore log output from dashboards
     LOG_TEST      0  # Wrap test in script to to ignore log output from dashboards
@@ -81,11 +92,14 @@ if(NOT ( DEFINED "USE_SYSTEM_${extProjName}" AND "${USE_SYSTEM_${extProjName}}" 
       ${CMAKE_OSX_EXTERNAL_PROJECT_ARGS}
       ${COMMON_EXTERNAL_PROJECT_ARGS}
       ${${proj}_CMAKE_OPTIONS}
-## We really do want to install in order to limit # of include paths INSTALL_COMMAND ""
+      ## We really do want to install to remove uncertainty about where the tools are
+      ## (on Windows, tools might be in subfolders, like "Release", "Debug",...)
+      -DCMAKE_INSTALL_PREFIX:PATH=${EXTERNAL_BINARY_DIRECTORY}/${proj}-install
     DEPENDS
       ${${proj}_DEPENDENCIES}
+    INSTALL_COMMAND ""
   )
-  set(${extProjName}_DIR ${CMAKE_BINARY_DIR}/${proj}-build)
+  set(${extProjName}_DIR ${EXTERNAL_BINARY_DIRECTORY}/${proj}-build)
 else()
   if(${USE_SYSTEM_${extProjName}})
     find_package(${extProjName} ${${extProjName}_REQUIRED_VERSION} REQUIRED)

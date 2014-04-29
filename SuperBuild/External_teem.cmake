@@ -1,3 +1,7 @@
+if( NOT EXTERNAL_SOURCE_DIRECTORY )
+  set( EXTERNAL_SOURCE_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/ExternalSources )
+endif()
+
 # Make sure this file is included only once by creating globally unique varibles
 # based on the name of this included file.
 get_filename_component(CMAKE_CURRENT_LIST_FILENAME ${CMAKE_CURRENT_LIST_FILE} NAME_WE)
@@ -72,11 +76,11 @@ if(NOT ( DEFINED "USE_SYSTEM_${extProjName}" AND "${USE_SYSTEM_${extProjName}}" 
 
   ### --- End Project specific additions
   set(${proj}_REPOSITORY "${git_protocol}://github.com/BRAINSia/teem.git")
-  set(${proj}_TAG "9db65f15e554119989bb49d12b404e7e44f150e4")
+  set(${proj}_TAG "bcf5abb8edf862566aabd6b0fb8f8f78155c8d8f")
   ExternalProject_Add(${proj}
     GIT_REPOSITORY ${${proj}_REPOSITORY}
     GIT_TAG ${${proj}_GIT_TAG}
-    SOURCE_DIR ${CMAKE_CURRENT_LIST_DIR}/ExternalSources/${proj}
+    SOURCE_DIR ${EXTERNAL_SOURCE_DIRECTORY}/${proj}
     BINARY_DIR ${proj}-build
     LOG_CONFIGURE 0  # Wrap configure in script to ignore log output from dashboards
     LOG_BUILD     0  # Wrap build in script to to ignore log output from dashboards
@@ -92,15 +96,6 @@ if(NOT ( DEFINED "USE_SYSTEM_${extProjName}" AND "${USE_SYSTEM_${extProjName}}" 
     DEPENDS
       ${${proj}_DEPENDENCIES}
   )
-  ExternalProject_Add_Step(${proj} fix_AIR_EXISTS
-    COMMAND ${CMAKE_COMMAND} -DAIR_FILE=${CMAKE_CURRENT_LIST_DIR}/ExternalSources/teem/src/air/air.h
-    -P ${CMAKE_CURRENT_LIST_DIR}/TeemPatch.cmake
-    COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_CURRENT_LIST_DIR}/ExternalSources/teem/include/teem
-    COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_LIST_DIR}/ExternalSources/teem/src/bane/bane.h
-    ${CMAKE_CURRENT_LIST_DIR}/ExternalSources/teem/include/teem/bane.h
-    DEPENDEES download
-    DEPENDERS configure
-    )
   set(${extProjName}_DIR ${CMAKE_BINARY_DIR}/${proj}-install/lib/Teem-1.11.1)
 else()
   if(${USE_SYSTEM_${extProjName}})
