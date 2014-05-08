@@ -73,7 +73,7 @@
        <name>numberOfThreads</name>
        <label>Number Of Threads</label>
        <longflag>numberOfThreads</longflag>
-       <description>Sets the number of threads used by multithreaded ITK filters</description>
+       <description>Sets the number of threads used by multithreaded ITK filters (set to 0 to use maximum number of cores)</description>
        <default>3</default>
     </integer>
   </parameters>
