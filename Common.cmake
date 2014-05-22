@@ -11,7 +11,7 @@ set(EXTENSION_DESCRIPTION "This extension provides the tool DTIPrep integrated i
 set(EXTENSION_ICONURL "http://www.nitrc.org/project/screenshot.php?group_id=283&screenshot_id=608")
 set(EXTENSION_SCREENSHOTURLS "http://www.nitrc.org/project/screenshot.php?group_id=283&screenshot_id=609 http://www.nitrc.org/project/screenshot.php?group_id=283&screenshot_id=610")
 set(EXTENSION_STATUS "Beta")
-set(EXTENSION_DEPENDS "" ) # Specified as a space separated list or 'NA' if any
+set(EXTENSION_DEPENDS "DTIProcess" ) # Specified as a space separated list or 'NA' if any
 set(EXTENSION_BUILD_SUBDIRECTORY DTIPrepTools-build )
 
 
