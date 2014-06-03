@@ -22,8 +22,6 @@
 namespace itk
 {
 
-const double FRPR_TINY = 1e-20;
-
 GradientDescentLineSearchOptimizer
 ::GradientDescentLineSearchOptimizer()
 {

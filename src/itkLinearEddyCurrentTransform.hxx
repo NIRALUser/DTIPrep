@@ -370,35 +370,26 @@ LinearEddyCurrentTransform<TScalarType, NInputDimensions, NOutputDimensions>
 }
 
 // Compute the Jacobian in one position
-template <class TScalarType, unsigned int NInputDimensions,
-          unsigned int NOutputDimensions>
-const typename LinearEddyCurrentTransform<TScalarType, NInputDimensions, NOutputDimensions>::JacobianType
-& LinearEddyCurrentTransform<TScalarType, NInputDimensions, NOutputDimensions>
-::GetJacobian( const InputPointType &p ) const
-  {
+
+template <class TScalarType, unsigned int NInputDimensions, unsigned int NOutputDimensions>
+void
+LinearEddyCurrentTransform<TScalarType, NInputDimensions, NOutputDimensions>
+::ComputeJacobianWithRespectToParameters(const InputPointType  & p, JacobianType & jacobian ) const
+{
   // The Jacobian of the affine transform is composed of
   // subblocks of diagonal matrices, each one of them having
   // a constant value in the diagonal.
 
-#if (ITK_VERSION_MAJOR > 3)
-#define m_Jacobian m_SharedLocalJacobian
-#endif
-  this->m_Jacobian.Fill( 0.0 );
+  jacobian.Fill( 0.0 );
 
   const InputVectorType v = p - this->GetCenter();
 
   // Linear correction
-  this->m_Jacobian( 1, 0 ) = v[0];
-  this->m_Jacobian( 1, 1 ) = v[1];
-  this->m_Jacobian( 1, 2 ) = v[2];
-  this->m_Jacobian( 1, 3 ) = 1.0;
-  return this->m_Jacobian;
-
-#if (ITK_VERSION_MAJOR > 3)
-#undef  m_Jacobian
-#endif
-
-  }
+  jacobian( 1, 0 ) = v[0];
+  jacobian( 1, 1 ) = v[1];
+  jacobian( 1, 2 ) = v[2];
+  jacobian( 1, 3 ) = 1.0;
+}
 
 // Computes offset based on center, matrix, and translation variables
 template <class TScalarType, unsigned int NInputDimensions,

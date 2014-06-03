@@ -698,8 +698,8 @@ void UnivariateEntropyMultiImageMetric<TFixedImage>::UpdateSingleImageParameters
 
   if( this->m_UserBsplineDefined == false )
     {
-    const JacobianType & jacobian =
-      this->m_TransformArray[imageNumber]->GetJacobian( sample.FixedImagePoint);
+    JacobianType jacobian;
+    this->m_TransformArray[imageNumber]->ComputeJacobianWithRespectToParameters( sample.FixedImagePoint, jacobian);
 
     double currentValue;
     for( unsigned int k = 0; k < this->m_NumberOfParameters; k++ )
@@ -719,11 +719,9 @@ void UnivariateEntropyMultiImageMetric<TFixedImage>::UpdateSingleImageParameters
     // Get nonzero indexes
     typedef itk::Array<RealType> WeigtsType;
     WeigtsType bsplineWeights(numberOfWeights);
-    this->m_BSplineTransformArray[imageNumber]->GetJacobian(
-#if (ITK_VERSION_MAJOR < 3)
-      sample.FixedImagePoint, bsplineWeights, bsplineIndexes );
-#else
-      sample.FixedImagePoint);
+#if 0 // Note jacobian not used!
+    JacobianType jacobian;
+    this->m_BSplineTransformArray[imageNumber]->ComputeJacobianWithRespectToParameters( sample.FixedImagePoint, jacobian);
 #endif
     for( int k = 0; k < numberOfWeights; k++ )
       {

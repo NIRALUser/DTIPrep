@@ -209,21 +209,14 @@ LinearHeadEddy3DCorrection<TScalarType, NInputDimensions, NOutputDimensions>
 }
 
 // Compute the Jacobian in one position
-template <class TScalarType, unsigned int NInputDimensions,
-          unsigned int NOutputDimensions>
-const typename LinearHeadEddy3DCorrection<TScalarType, NInputDimensions, NOutputDimensions>::JacobianType
-& LinearHeadEddy3DCorrection<TScalarType, NInputDimensions, NOutputDimensions>
-::GetJacobian( const InputPointType &p ) const
-  {
-#if (ITK_VERSION_MAJOR > 3)
-#define m_Jacobian m_SharedLocalJacobian
-#endif
-  this->m_Jacobian.Fill( 0.0 );
-
+template <class TScalarType, unsigned int NInputDimensions, unsigned int NOutputDimensions>
+void
+LinearHeadEddy3DCorrection<TScalarType, NInputDimensions, NOutputDimensions>
+::ComputeJacobianWithRespectToParameters(const InputPointType  & p, JacobianType & jacobian ) const
+{
+  jacobian.Fill( 0.0 );
   const InputVectorType v0 = p - this->GetCenter(); // v0 is for head motion transformation Jacobian
-
   const InputPointType v1 = m_head_motion_transform->TransformPoint(p); // v1 is after head motion transformation
-
   const InputVectorType v2 = v1 - this->GetCenter(); // v2 is for eddy current transformation Jacobian
 
   EddyCurrentTransformTypeParametersType eddy_current_parameter = m_eddy_current_transform->GetParameters();
@@ -281,33 +274,28 @@ const typename LinearHeadEddy3DCorrection<TScalarType, NInputDimensions, NOutput
     / vw;
 
   // Fill the Jacobian Matrix
-  this->m_Jacobian[0][0] = J11;  // x /Rx
-  this->m_Jacobian[0][1] = J12;  // x /Ry
-  this->m_Jacobian[0][2] = J13;  // x /Rz
-  this->m_Jacobian[0][3] = 1.0;  // x /Tx
+  jacobian[0][0] = J11;  // x /Rx
+  jacobian[0][1] = J12;  // x /Ry
+  jacobian[0][2] = J13;  // x /Rz
+  jacobian[0][3] = 1.0;  // x /Tx
 
-  this->m_Jacobian[1][0] = c1 * J11 + c2 * J21 + c3 * J31; // y /Rx
-  this->m_Jacobian[1][1] = c1 * J12 + c2 * J22 + c3 * J32; // y /Ry
-  this->m_Jacobian[1][2] = c1 * J13 + c2 * J23 + c3 * J33; // y /Rz
-  this->m_Jacobian[1][3] = c1;                             // y /Tx
-  this->m_Jacobian[1][4] = c2;                             // y /Ty
-  this->m_Jacobian[1][5] = c3;                             // y /Tz
-  this->m_Jacobian[1][6] = v2[0];                          // y /c1
-  this->m_Jacobian[1][7] = v2[1];                          // y /c2
-  this->m_Jacobian[1][8] = v2[2];                          // y /c3
-  this->m_Jacobian[1][9] = 1.0;                            // y /c0
+  jacobian[1][0] = c1 * J11 + c2 * J21 + c3 * J31; // y /Rx
+  jacobian[1][1] = c1 * J12 + c2 * J22 + c3 * J32; // y /Ry
+  jacobian[1][2] = c1 * J13 + c2 * J23 + c3 * J33; // y /Rz
+  jacobian[1][3] = c1;                             // y /Tx
+  jacobian[1][4] = c2;                             // y /Ty
+  jacobian[1][5] = c3;                             // y /Tz
+  jacobian[1][6] = v2[0];                          // y /c1
+  jacobian[1][7] = v2[1];                          // y /c2
+  jacobian[1][8] = v2[2];                          // y /c3
+  jacobian[1][9] = 1.0;                            // y /c0
 
-  this->m_Jacobian[2][0] = J31; // z /Rx
-  this->m_Jacobian[2][1] = J32; // z /Ry
-  this->m_Jacobian[2][2] = J33; // z /Rz
-  this->m_Jacobian[2][5] = 1.0; // z /Tz
+  jacobian[2][0] = J31; // z /Rx
+  jacobian[2][1] = J32; // z /Ry
+  jacobian[2][2] = J33; // z /Rz
+  jacobian[2][5] = 1.0; // z /Tz
 
-  return this->m_Jacobian;
-
-#if (ITK_VERSION_MAJOR > 3)
-#undef  m_Jacobian
-#endif
-  }
+}
 
 } // namespace
 

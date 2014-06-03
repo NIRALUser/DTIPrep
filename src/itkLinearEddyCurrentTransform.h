@@ -270,7 +270,7 @@ public:
    * given point or vector, returning the transformed point or
    * vector. The rank of the Jacobian will also indicate if the transform
    * is invertible at this point. */
-  const JacobianType & GetJacobian(const InputPointType & point ) const;
+  virtual void ComputeJacobianWithRespectToParameters(const InputPointType  & itkNotUsed(p), JacobianType & itkNotUsed(jacobian) ) const;
 
   /** Create inverse of an affine transformation
     *

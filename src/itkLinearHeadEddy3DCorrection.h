@@ -159,7 +159,7 @@ public:
    * vector. The rank of the Jacobian will also indicate if the transform
    * is invertible at this point.
    */
-  const JacobianType & GetJacobian(const InputPointType & point ) const;
+  virtual void ComputeJacobianWithRespectToParameters(const InputPointType  & p, JacobianType & jacobian ) const;
 
   typedef HeadMotionTransformType::MatrixType RotationMatrixType;
   const RotationMatrixType & GetHeadMotionRotationMatrix(void) const;
