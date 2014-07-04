@@ -1,3 +1,6 @@
+set(MODULE_NAME ${EXTENSION_NAME}) # Do not use 'project()'
+set(MODULE_TITLE ${MODULE_NAME})
+
 macro(INSTALL_EXECUTABLE)
   set(options )
   set( oneValueArgs OUTPUT_DIR )
@@ -15,6 +18,33 @@ macro(INSTALL_EXECUTABLE)
   endforeach()
 endmacro()
 
+#-----------------------------------------------------------------------------
+# Update CMake module path
+#------------------------------------------------------------------------------
+set(CMAKE_MODULE_PATH
+  ${${PROJECT_NAME}_SOURCE_DIR}/CMake
+  ${${PROJECT_NAME}_BINARY_DIR}/CMake
+  ${CMAKE_MODULE_PATH}
+  )
+
+#-----------------------------------------------------------------------------
+set(expected_ITK_VERSION_MAJOR ${ITK_VERSION_MAJOR})
+find_package(ITK NO_MODULE REQUIRED)
+if(${ITK_VERSION_MAJOR} VERSION_LESS ${expected_ITK_VERSION_MAJOR})
+  # Note: Since ITKv3 doesn't include a ITKConfigVersion.cmake file, let's check the version
+  #       explicitly instead of passing the version as an argument to find_package() command.
+  message(FATAL_ERROR "Could not find a configuration file for package \"ITK\" that is compatible "
+                      "with requested version \"${expected_ITK_VERSION_MAJOR}\".\n"
+                      "The following configuration files were considered but not accepted:\n"
+                      "  ${ITK_CONFIG}, version: ${ITK_VERSION_MAJOR}.${ITK_VERSION_MINOR}.${ITK_VERSION_PATCH}\n")
+endif()
+
+include(${ITK_USE_FILE})
+
+#-----------------------------------------------------------------------------
+find_package(VTK NO_MODULE REQUIRED)
+include(${VTK_USE_FILE})
+
 
 #-----------------------------------------------------------------------------
 find_package(SlicerExecutionModel NO_MODULE REQUIRED GenerateCLP)
@@ -23,9 +53,6 @@ include(${SlicerExecutionModel_USE_FILE})
 include(${SlicerExecutionModel_CMAKE_DIR}/SEMMacroBuildCLI.cmake)
 
 include(${CMAKE_CURRENT_LIST_DIR}/Common.cmake)
-
-set(MODULE_NAME ${EXTENSION_NAME}) # Do not use 'project()'
-set(MODULE_TITLE ${MODULE_NAME})
 
 if(USE_ANTS)
   # find ANTS includes
@@ -70,33 +97,6 @@ link_directories(${BRAINSCommonLib_LIBRARY_DIRS})
 #include_directories(${CMAKE_INSTALL_PREFIX}/MultiImageRegistration/Source)
 #include_directories(${CMAKE_INSTALL_PREFIX}/MultiImageRegistration/Source/Common)
 
-#-----------------------------------------------------------------------------
-# Update CMake module path
-#------------------------------------------------------------------------------
-set(CMAKE_MODULE_PATH
-  ${${PROJECT_NAME}_SOURCE_DIR}/CMake
-  ${${PROJECT_NAME}_BINARY_DIR}/CMake
-  ${CMAKE_MODULE_PATH}
-  )
-
-#-----------------------------------------------------------------------------
-set(expected_ITK_VERSION_MAJOR ${ITK_VERSION_MAJOR})
-find_package(ITK NO_MODULE REQUIRED)
-if(${ITK_VERSION_MAJOR} VERSION_LESS ${expected_ITK_VERSION_MAJOR})
-  # Note: Since ITKv3 doesn't include a ITKConfigVersion.cmake file, let's check the version
-  #       explicitly instead of passing the version as an argument to find_package() command.
-  message(FATAL_ERROR "Could not find a configuration file for package \"ITK\" that is compatible "
-                      "with requested version \"${expected_ITK_VERSION_MAJOR}\".\n"
-                      "The following configuration files were considered but not accepted:\n"
-                      "  ${ITK_CONFIG}, version: ${ITK_VERSION_MAJOR}.${ITK_VERSION_MINOR}.${ITK_VERSION_PATCH}\n")
-endif()
-
-include(${ITK_USE_FILE})
-
-#-----------------------------------------------------------------------------
-find_package(VTK NO_MODULE REQUIRED)
-include(${VTK_USE_FILE})
-
 #-----------------------------------------------------------------------
 # Setup locations to find externally maintained test data.
 #-----------------------------------------------------------------------
@@ -120,24 +120,6 @@ list(APPEND ExternalData_URL_TEMPLATES
 #include(ExternalData)
 
 set(TestData_DIR ${CMAKE_CURRENT_SOURCE_DIR}/TestData)
-
-if(USE_ANTS)
-  # find ANTS includes
-  # HACK:
-  #set( BOOST_INCLUDE_DIR  /Shared/sinapse/sharedopt/20130601/RHEL6/DTIPrep/BRAINSTools-build/Boost)
-  #set( ANTS_SOURCE_DIR    /Shared/sinapse/sharedopt/20130601/RHEL6/DTIPrep/BRAINSTools-build/ANTS )
-  #message( STATUS "XXXXXXXXXXXXX ${BOOST_INCLUDE_DIR} XXXXXXX")
-  include_directories(${BOOST_INCLUDE_DIR})
-  include_directories(${ANTs_SOURCE_DIR}/Temporary)
-  include_directories(${ANTs_SOURCE_DIR}/Tensor)
-  include_directories(${ANTs_SOURCE_DIR}/Utilities)
-  include_directories(${ANTs_SOURCE_DIR}/Examples)
-  include_directories(${ANTs_SOURCE_DIR}/ImageRegistration)
-#  link_directories(${BRAINSTools_LIBRARY_PATH} ${BRAINSTools_CLI_ARCHIVE_OUTPUT_DIRECTORY})
-  link_directories(${ANTs_LIBRARY_DIR} ${BRAINSTools_LIBRARY_PATH})
-  set(ANTs_LIBS antsUtilities)
-endif()
-
 
 if( DTIPrep_BUILD_SLICER_EXTENSION )
   unsetForSlicer( NAMES SlicerExecutionModel_DIR ITK_DIR VTK_DIR CMAKE_C_COMPILER CMAKE_CXX_COMPILER CMAKE_CXX_FLAGS CMAKE_C_FLAGS ITK_LIBRARIES )
