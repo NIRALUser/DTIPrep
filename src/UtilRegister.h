@@ -126,7 +126,27 @@ struRigidRegResult rigidRegistration(
   typedef itk::BRAINSFitHelper HelperType;
   HelperType::Pointer intraSubjectRegistrationHelper = HelperType::New();
   intraSubjectRegistrationHelper->SetObserveIterations(false);
-  intraSubjectRegistrationHelper->SetNumberOfSamples(500000);
+  {
+  // intraSubjectRegistrationHelper->SetNumberOfSamples(500000);
+  // This used to set the number of samples to an absolute 500000.
+  // The ITKv4 registration framework doesn't support this; instead
+  // it wants a percentage of the total pixels in a volume.
+  // well, a number greater than zero and less than or equal to one.
+  // this code preserves the old behavior in a compatible way; ideally
+  // some reasonable defaut needs to be chosen for the Sampling
+  // Percentage; the magic number 500000 is arbitrary.
+  const unsigned long numberOfAllSamples =
+    fixedImage->GetLargestPossibleRegion().GetNumberOfPixels();
+  if(numberOfAllSamples < 500000)
+    {
+    intraSubjectRegistrationHelper->SetSamplingPercentage(1.0);
+    }
+  else
+    {
+    const double percent = 500000.0/static_cast<double>(numberOfAllSamples);
+    intraSubjectRegistrationHelper->SetSamplingPercentage(percent);
+    }
+  }
   intraSubjectRegistrationHelper->SetNumberOfHistogramBins(50);
     {
     std::vector<int> numberOfIterations(1);
