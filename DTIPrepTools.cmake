@@ -33,8 +33,22 @@ find_package(ITK 4 NO_MODULE REQUIRED)
 include(${ITK_USE_FILE})
 
 #-----------------------------------------------------------------------------
-find_package(VTK NO_MODULE REQUIRED)
-include(${VTK_USE_FILE})
+set(VTK_FOUND OFF)
+find_package(VTK COMPONENTS
+      vtkCommonSystem
+      vtkCommonCore
+      vtkCommonSystem
+      vtkCommonMath
+      vtkCommonMisc
+      vtkCommonTransforms
+      vtkIOLegacy
+      vtkIOXML
+      vtkGUISupportQt
+      vtkInteractionImage
+      REQUIRED)
+if(VTK_USE_FILE)
+  include(${VTK_USE_FILE})
+endif()
 
 
 #-----------------------------------------------------------------------------

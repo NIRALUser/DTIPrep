@@ -181,6 +181,7 @@ struRigidRegResult rigidRegistration(
     intraSubjectRegistrationHelper->SetTransformType(transformType);
     }
   //Need to convert Versor3D to composite tranform
+  typedef itk::CompositeTransform<double, 3> CompositeTransformType;
   CompositeTransformType::Pointer inputComposite = CompositeTransformType::New();
   inputComposite->AddTransform(regResult.GetTransform().GetPointer());
 
