@@ -1,11 +1,6 @@
 #add_subdirectory(src)
 #add_subdirectory(gui)
 
-find_package(GenerateCLP REQUIRED)
-if(GenerateCLP_FOUND)
-  include(${GenerateCLP_USE_FILE})
-endif()
-
 include_directories(${CMAKE_BINARY_DIR}/src)
 link_directories(${CMAKE_LIBRARY_OUTPUT_DIRECTORY})
 

@@ -27,8 +27,62 @@ set(CMAKE_MODULE_PATH
   ${CMAKE_MODULE_PATH}
   )
 
+find_package(SlicerExecutionModel REQUIRED)
+
+find_package(GenerateCLP REQUIRED)
+if(GenerateCLP_FOUND)
+  include(${GenerateCLP_USE_FILE})
+endif()
+
 #-----------------------------------------------------------------------------
-find_package(ITK 4 NO_MODULE REQUIRED)
+find_package(ITK COMPONENTS
+  ITKDiffusionTensorImage
+  ITKRegistrationCommon
+  ITKOptimizersv4
+  ITKConnectedComponents
+  ITKV3Compatibility
+  ITKMathematicalMorphology
+  ITKBinaryMathematicalMorphology
+  ITKRegionGrowing
+  ITKMetricsv4
+  ITKRegistrationMethodsv4
+  ITKDistanceMap
+  ITKVTK
+  ITKTransform
+  ITKIOImageBase
+  ITKIONRRD
+  ITKImageCompare
+  ITKIOBMP
+  ITKIOBioRad
+  ITKIOCSV
+  ITKIODCMTK
+  ITKIOGDCM
+  ITKIOGE
+  ITKIOGIPL
+  ITKIOHDF5
+  ITKIOIPL
+  ITKIOImageBase
+  ITKIOJPEG
+  ITKIOLSM
+  MGHIO
+  ITKIOMRC
+  ITKIOMesh
+  ITKIOMeta
+  ITKIONIFTI
+  ITKIONRRD
+  ITKIOPNG
+  ITKIORAW
+  ITKIOSiemens
+  ITKIOSpatialObjects
+  ITKIOStimulate
+  ITKIOTIFF
+  ITKIOTransformBase
+  ITKIOTransformHDF5
+  ITKIOTransformInsightLegacy
+  ITKIOTransformMatlab
+  ITKIOVTK
+  ITKIOXML
+  REQUIRED)
 
 include(${ITK_USE_FILE})
 
