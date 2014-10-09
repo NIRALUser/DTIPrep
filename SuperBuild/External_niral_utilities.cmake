@@ -1,6 +1,9 @@
 if( NOT EXTERNAL_SOURCE_DIRECTORY )
   set( EXTERNAL_SOURCE_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/ExternalSources )
 endif()
+if( NOT EXTERNAL_BINARY_DIRECTORY )
+  set( EXTERNAL_BINARY_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} )
+endif()
 
 # Make sure this file is included only once by creating globally unique varibles
 # based on the name of this included file.
@@ -23,7 +26,6 @@ ProjectDependancyPush(CACHED_proj ${proj})
 # SlicerMacroCheckExternalProjectDependency
 set(extProjName niral_utilities) #The find_package known name
 set(proj        ${extProjName}) #This local name
-set(${extProjName}_REQUIRED_VERSION ITKv4 VTK SlicerExecutionModel)
 
 #if(${USE_SYSTEM_${extProjName}})
 #  unset(${extProjName}_DIR CACHE)
@@ -34,16 +36,12 @@ if(DEFINED ${extProjName}_DIR AND NOT EXISTS ${${extProjName}_DIR})
   message(FATAL_ERROR "${extProjName}_DIR variable is defined but corresponds to non-existing directory (${${extProjName}_DIR})")
 endif()
 
-# Set dependency list
-set(${proj}_DEPENDENCIES ITKv4)
-#if(${PROJECT_NAME}_BUILD_DICOM_SUPPORT)
-#  list(APPEND ${proj}_DEPENDENCIES DCMTK)
-#endif()
-
-# Include dependent projects if any
-SlicerMacroCheckExternalProjectDependency(${proj})
-
 if(NOT ( DEFINED "USE_SYSTEM_${extProjName}" AND "${USE_SYSTEM_${extProjName}}" ) )
+  # Set dependency list
+  set(${proj}_DEPENDENCIES ITKv4 VTK SlicerExecutionModel)
+
+  # Include dependent projects if any
+  SlicerMacroCheckExternalProjectDependency(${proj})
   #message(STATUS "${__indent}Adding project ${proj}")
 
   # Set CMake OSX variable to pass down the external project
@@ -57,36 +55,34 @@ if(NOT ( DEFINED "USE_SYSTEM_${extProjName}" AND "${USE_SYSTEM_${extProjName}}" 
 
   ### --- Project specific additions here
   set(${proj}_CMAKE_OPTIONS
-    -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_CURRENT_BINARY_DIR}/${proj}-install
     -DCOMPILE_CONVERTITKFORMATS:BOOL=ON
-    -DCOMPILE_CROPTOOLS:BOOL=OFF
+    -DCOMPILE_CORREVAL:BOOL=OFF
+    -DCOMPILE_CROPTOOLS:BOOL=ON
     -DCOMPILE_CURVECOMPARE:BOOL=OFF
+    -DCOMPILE_DMDBIOMARKERTOOL:BOOL=OFF
     -DCOMPILE_DTIAtlasBuilder:BOOL=OFF
     -DCOMPILE_DWI_NIFTINRRDCONVERSION:BOOL=OFF
     -DCOMPILE_IMAGEMATH:BOOL=ON
-    -DCOMPILE_IMAGESTAT:BOOL=OFF
-    -DCOMPILE_POLYDATAMERGE:BOOL=OFF
-    -DCOMPILE_POLYDATATRANSFORM:BOOL=OFF
+    -DCOMPILE_IMAGESTAT:BOOL=ON
+    -DCOMPILE_MULTIATLASSEG:BOOL=OFF
+    -DCOMPILE_POLYDATAMERGE:BOOL=ON
+    -DCOMPILE_POLYDATATRANSFORM:BOOL=ON
     -DCOMPILE_TRANSFORMDEFORMATIONFIELD:BOOL=OFF
+    -DCOMPILE_TEXTUREBIOMARKERTOOL:BOOL=OFF
     -DUSE_SYSTEM_SlicerExecutionModel:BOOL=ON
     -DUSE_SYSTEM_ITK:BOOL=ON
     -DUSE_SYSTEM_VTK:BOOL=ON
     -DITK_VERSION_MAJOR:STRING=${ITK_VERSION_MAJOR}
-    -DITK_DIR:PATH=${ITK_DIR}
-    -DGenerateCLP_DIR:PATH=${GenerateCLP_DIR}
-    -DVTK_DIR:PATH=${VTK_DIR}
     )
 
   ### --- End Project specific additions
-  set(${proj}_REPOSITORY "https://www.nitrc.org/svn/niral_utilities/trunk")
-  set(${proj}_SVN_REVISION -r "68")
+  set( ${proj}_REPOSITORY ${git_protocol}://github.com/NIRALUser/niral_utilities.git )
+  set( ${proj}_GIT_TAG dea3323b99be580b6fd2a7214ce60ddb9d7baec2 )
   ExternalProject_Add(${proj}
-    SVN_REPOSITORY ${${proj}_REPOSITORY}
-    SVN_REVISION ${${proj}_SVN_REVISION}
-    SVN_USERNAME slicerbot
-    SVN_PASSWORD slicer
+    GIT_REPOSITORY ${${proj}_REPOSITORY}
+    GIT_TAG ${${proj}_GIT_TAG}
     SOURCE_DIR ${EXTERNAL_SOURCE_DIRECTORY}/${proj}
-    BINARY_DIR ${proj}-build
+    BINARY_DIR ${EXTERNAL_BINARY_DIRECTORY}/${proj}-build
     LOG_CONFIGURE 0  # Wrap configure in script to ignore log output from dashboards
     LOG_BUILD     0  # Wrap build in script to to ignore log output from dashboards
     LOG_TEST      0  # Wrap test in script to to ignore log output from dashboards
@@ -97,14 +93,15 @@ if(NOT ( DEFINED "USE_SYSTEM_${extProjName}" AND "${USE_SYSTEM_${extProjName}}" 
       ${CMAKE_OSX_EXTERNAL_PROJECT_ARGS}
       ${COMMON_EXTERNAL_PROJECT_ARGS}
       ${${proj}_CMAKE_OPTIONS}
+      -DCMAKE_INSTALL_PREFIX:PATH=${EXTERNAL_BINARY_DIRECTORY}/${proj}-install
 ## We really do want to install in order to limit # of include paths INSTALL_COMMAND ""
     DEPENDS
       ${${proj}_DEPENDENCIES}
   )
-  set(${extProjName}_DIR ${CMAKE_BINARY_DIR}/${proj}-build)
+  set(${extProjName}_DIR ${EXTERNAL_BINARY_DIRECTORY}/${proj}-build)
 else()
   if(${USE_SYSTEM_${extProjName}})
-    find_package(${extProjName} ${${extProjName}_REQUIRED_VERSION} REQUIRED)
+    find_package(${extProjName} REQUIRED)
     message("USING the system ${extProjName}, set ${extProjName}_DIR=${${extProjName}_DIR}")
   endif()
   # The project is provided using ${extProjName}_DIR, nevertheless since other

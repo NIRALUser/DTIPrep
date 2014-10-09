@@ -37,17 +37,13 @@ if(DEFINED ${extProjName}_DIR AND NOT EXISTS ${${extProjName}_DIR})
   message(FATAL_ERROR "${extProjName}_DIR variable is defined but corresponds to non-existing directory (${${extProjName}_DIR})")
 endif()
 
-# Set dependency list
-set( ${PRIMARY_PROJECT_NAME}_USE_QT TRUE )
-set(${proj}_DEPENDENCIES QWT ITKv4 VTK SlicerExecutionModel)
-#if(${PROJECT_NAME}_BUILD_DICOM_SUPPORT)
-#  list(APPEND ${proj}_DEPENDENCIES DCMTK)
-#endif()
-
-# Include dependent projects if any
-SlicerMacroCheckExternalProjectDependency(${proj})
-
 if(NOT ( DEFINED "USE_SYSTEM_${extProjName}" AND "${USE_SYSTEM_${extProjName}}" ) )
+  # Set dependency list
+  set( ${PRIMARY_PROJECT_NAME}_USE_QT TRUE )
+  set(${proj}_DEPENDENCIES QWT ITKv4 VTK SlicerExecutionModel Qt4)
+
+  # Include dependent projects if any
+  SlicerMacroCheckExternalProjectDependency(${proj})
   #message(STATUS "${__indent}Adding project ${proj}")
 
   # Set CMake OSX variable to pass down the external project
@@ -62,11 +58,6 @@ if(NOT ( DEFINED "USE_SYSTEM_${extProjName}" AND "${USE_SYSTEM_${extProjName}}" 
   ### --- Project specific additions here
   set(${proj}_CMAKE_OPTIONS
     --no-warn-unused-cli # HACK Only expected variables should be passed down.
-    -DQWT_INCLUDE_DIR:PATH=${QWT_INCLUDE_DIR}
-    -DQWT_LIBRARY:PATH=${QWT_LIBRARY}
-    -DSlicerExecutionModel_DIR:PATH=${SlicerExecutionModel_DIR}
-    -DITK_DIR:PATH=${ITK_DIR}
-    -DVTK_DIR:PATH=${VTK_DIR}
     -DDTIAtlasFiberAnalyzer_SuperBuild:BOOL=OFF
     -DEXECUTABLES_ONLY:BOOL=ON
     -DCOMPILE_EXTERNAL_DTIPROCESS:BOOL=OFF
@@ -74,12 +65,11 @@ if(NOT ( DEFINED "USE_SYSTEM_${extProjName}" AND "${USE_SYSTEM_${extProjName}}" 
     )
 
   ### --- End Project specific additions
-  set(${proj}_REPOSITORY "https://www.nitrc.org/svn/dti_tract_stat/trunk")
+  set( ${proj}_REPOSITORY ${git_protocol}://github.com/NIRALUser/DTIFiberTractStatistics.git)
+  set( ${proj}_GIT_TAG 853c7b603c164b1efd31328cf0ceb28f351e4193 )
   ExternalProject_Add(${proj}
-    SVN_REPOSITORY ${${proj}_REPOSITORY}
-    SVN_REVISION -r "136"
-    SVN_USERNAME slicerbot
-    SVN_PASSWORD slicer
+    GIT_REPOSITORY ${${proj}_REPOSITORY}
+    GIT_TAG ${${proj}_GIT_TAG}
     SOURCE_DIR ${EXTERNAL_SOURCE_DIRECTORY}/${proj}
     BINARY_DIR ${EXTERNAL_BINARY_DIRECTORY}/${proj}-build
     LOG_CONFIGURE 0  # Wrap configure in script to ignore log output from dashboards

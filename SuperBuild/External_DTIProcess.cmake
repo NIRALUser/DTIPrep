@@ -37,21 +37,16 @@ if(DEFINED ${extProjName}_DIR AND NOT EXISTS ${${extProjName}_DIR})
   message(FATAL_ERROR "${extProjName}_DIR variable is defined but corresponds to non-existing directory (${${extProjName}_DIR})")
 endif()
 
-# Set dependency list
-set(${proj}_DEPENDENCIES ITKv4 VTK SlicerExecutionModel )
-if( BUILD_DWIAtlas )
-  list( APPEND ${proj}_DEPENDENCIES Boost )
-endif()
-#if(${PROJECT_NAME}_BUILD_DICOM_SUPPORT)
-#  list(APPEND ${proj}_DEPENDENCIES DCMTK)
-#endif()
-
-# Include dependent projects if any
-SlicerMacroCheckExternalProjectDependency(${proj})
-
 if(NOT ( DEFINED "USE_SYSTEM_${extProjName}" AND "${USE_SYSTEM_${extProjName}}" ) )
   #message(STATUS "${__indent}Adding project ${proj}")
+  # Set dependency list
+  set(${proj}_DEPENDENCIES ITKv4 VTK SlicerExecutionModel )
+  if( BUILD_DWIAtlas )
+    list( APPEND ${proj}_DEPENDENCIES Boost )
+  endif()
 
+  # Include dependent projects if any
+  SlicerMacroCheckExternalProjectDependency(${proj})
   # Set CMake OSX variable to pass down the external project
   set(CMAKE_OSX_EXTERNAL_PROJECT_ARGS)
   if(APPLE)
@@ -75,22 +70,16 @@ if(NOT ( DEFINED "USE_SYSTEM_${extProjName}" AND "${USE_SYSTEM_${extProjName}}" 
     -DUSE_SYSTEM_ITK:BOOL=ON
     -DUSE_SYSTEM_VTK:BOOL=ON
     -DUSE_SYSTEM_SlicerExecutionModel:BOOL=ON
-    -DITK_DIR:PATH=${ITK_DIR}
-    -DDCMTK_DIR:PATH=${DCMTK_DIR}
-    -DVTK_DIR:PATH=${VTK_DIR}
-    -DSlicerExecutionModel_DIR:PATH=${SlicerExecutionModel_DIR}
     -DDTIProcess_SUPERBUILD:BOOL=OFF
     -DEXECUTABLES_ONLY:BOOL=ON
     )
 
   ### --- End Project specific additions
-  set(${proj}_REPOSITORY "https://www.nitrc.org/svn/dtiprocess/trunk")
-  set(${proj}_SVN_REVISION -r "218")
+  set( ${proj}_REPOSITORY ${git_protocol}://github.com/NIRALUser/DTIProcessToolkit.git)
+  set( ${proj}_GIT_TAG a7c39e485e492bc6b72f72348939d47835cd56cc )
   ExternalProject_Add(${proj}
-    SVN_REPOSITORY ${${proj}_REPOSITORY}
-    SVN_REVISION ${${proj}_GIT_TAG}
-    SVN_USERNAME slicerbot
-    SVN_PASSWORD slicer
+    GIT_REPOSITORY ${${proj}_REPOSITORY}
+    GIT_TAG ${${proj}_GIT_TAG}
     SOURCE_DIR ${EXTERNAL_SOURCE_DIRECTORY}/${proj}
     BINARY_DIR ${EXTERNAL_BINARY_DIRECTORY}/${proj}-build
     LOG_CONFIGURE 0  # Wrap configure in script to ignore log output from dashboards
@@ -108,6 +97,7 @@ if(NOT ( DEFINED "USE_SYSTEM_${extProjName}" AND "${USE_SYSTEM_${extProjName}}" 
       -DCMAKE_INSTALL_PREFIX:PATH=${EXTERNAL_BINARY_DIRECTORY}/${proj}-install
     DEPENDS
       ${${proj}_DEPENDENCIES}
+    INSTALL_COMMAND ""
   )
   set(${extProjName}_DIR ${EXTERNAL_BINARY_DIRECTORY}/${proj}-build)
 else()
