@@ -349,24 +349,4 @@ ExternalProject_Add_Step(${proj} forcebuild
     ALWAYS 1
   )
 
-option(USE_DTIReg "Build DTIReg" OFF)
-if(USE_DTIReg)
-  include(${CMAKE_CURRENT_LIST_DIR}/SuperBuild/External_BatchMake.cmake)
-  include(${CMAKE_CURRENT_LIST_DIR}/SuperBuild/External_DTIReg.cmake)
-endif()
-
-
-option(USE_DTI_Tract_Stat "Build DTI_Tract_Stat" OFF)
-option(USE_FVLight "Build FVLight" OFF)
-if(USE_DTI_Tract_Stat OR USE_FVLight )
-  include(${CMAKE_CURRENT_LIST_DIR}/SuperBuild/External_QWT.cmake)
-endif()
-
-if(USE_DTI_Tract_Stat)
-  include(${CMAKE_CURRENT_LIST_DIR}/SuperBuild/External_DTI_Tract_Stat.cmake)
-endif()
-
-if(USE_FVLight)
-  include(${CMAKE_CURRENT_LIST_DIR}/SuperBuild/External_FVLight.cmake)
-endif()
 
