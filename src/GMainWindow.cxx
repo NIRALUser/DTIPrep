@@ -2220,14 +2220,14 @@ void GMainWindow::GradientChanged(int WinID, int index)
         if( bQCResultLoad == true )
           {
 
-          if( DTIPrepPanel->GetQCResult().GetIntensityMotionCheckResult()[index].VisualChecking == 0 ||
+          if( DTIPrepPanel->GetQCResult().GetIntensityMotionCheckResult()[index].VisualChecking == QCResult::GRADIENT_INCLUDE ||
               ( DTIPrepPanel->GetQCResult().GetIntensityMotionCheckResult()[index].VisualChecking == -1 &&
                 DTIPrepPanel->GetQCResult().GetIntensityMotionCheckResult()[index].processing <= 2) )
             {
             imageView2DPanelWithControls1->GetLineEdit_Gradient()->setStyleSheet( "background-color: Green" );
             }
 
-          else if( DTIPrepPanel->GetQCResult().GetIntensityMotionCheckResult()[index].VisualChecking == 6 ||
+          else if( DTIPrepPanel->GetQCResult().GetIntensityMotionCheckResult()[index].VisualChecking == QCResult::GRADIENT_EXCLUDE_MANUALLY ||
                    ( DTIPrepPanel->GetQCResult().GetIntensityMotionCheckResult()[index].VisualChecking == -1 &&
                      DTIPrepPanel->GetQCResult().GetIntensityMotionCheckResult()[index].processing > 2) )
             {
@@ -2249,14 +2249,14 @@ void GMainWindow::GradientChanged(int WinID, int index)
         imageView2DPanelWithControls2->GetHorizontalSlider_Gradient()->setSliderPosition(index);
         if( bQCResultLoad == true )
           {
-          if( DTIPrepPanel->GetQCResult().GetIntensityMotionCheckResult()[index].VisualChecking == 0 ||
+          if( DTIPrepPanel->GetQCResult().GetIntensityMotionCheckResult()[index].VisualChecking == QCResult::GRADIENT_INCLUDE ||
               ( DTIPrepPanel->GetQCResult().GetIntensityMotionCheckResult()[index].VisualChecking == -1 &&
                 DTIPrepPanel->GetQCResult().GetIntensityMotionCheckResult()[index].processing <= 2) )
             {
             imageView2DPanelWithControls2->GetLineEdit_Gradient()->setStyleSheet( "background-color: Green" );
             }
 
-          else if( DTIPrepPanel->GetQCResult().GetIntensityMotionCheckResult()[index].VisualChecking == 6 ||
+          else if( DTIPrepPanel->GetQCResult().GetIntensityMotionCheckResult()[index].VisualChecking == QCResult::GRADIENT_EXCLUDE_MANUALLY ||
                    ( DTIPrepPanel->GetQCResult().GetIntensityMotionCheckResult()[index].VisualChecking == -1 &&
                      DTIPrepPanel->GetQCResult().GetIntensityMotionCheckResult()[index].processing > 2) )
             {
@@ -2277,14 +2277,14 @@ void GMainWindow::GradientChanged(int WinID, int index)
         imageView2DPanelWithControls3->GetHorizontalSlider_Gradient()->setSliderPosition(index);
         if( bQCResultLoad == true )
           {
-          if( DTIPrepPanel->GetQCResult().GetIntensityMotionCheckResult()[index].VisualChecking == 0 ||
+          if( DTIPrepPanel->GetQCResult().GetIntensityMotionCheckResult()[index].VisualChecking == QCResult::GRADIENT_INCLUDE ||
               ( DTIPrepPanel->GetQCResult().GetIntensityMotionCheckResult()[index].VisualChecking == -1 &&
                 DTIPrepPanel->GetQCResult().GetIntensityMotionCheckResult()[index].processing <= 2) )
             {
             imageView2DPanelWithControls3->GetLineEdit_Gradient()->setStyleSheet( "background-color: Green" );
             }
 
-          else if( DTIPrepPanel->GetQCResult().GetIntensityMotionCheckResult()[index].VisualChecking == 6 ||
+          else if( DTIPrepPanel->GetQCResult().GetIntensityMotionCheckResult()[index].VisualChecking == QCResult::GRADIENT_EXCLUDE_MANUALLY ||
                    ( DTIPrepPanel->GetQCResult().GetIntensityMotionCheckResult()[index].VisualChecking == -1 &&
                      DTIPrepPanel->GetQCResult().GetIntensityMotionCheckResult()[index].processing > 2) )
             {

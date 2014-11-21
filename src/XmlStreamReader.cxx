@@ -1186,7 +1186,7 @@ void XmlStreamReader::LoadQCResultFromDWICheckGradientParsing(int Grd_num)
     }
   if( parametersQCResult_Gradient[parametersQCResult_Gradient.size() - 1].value == "Exclude" )
     {
-    GrdIntMotionChk.VisualChecking = 6;
+    GrdIntMotionChk.VisualChecking = QCResult::GRADIENT_EXCLUDE_MANUALLY;
     // std::cout << "Test VisualChecking xml" << GrdIntMotionChk.VisualChecking << std::endl;
     }
   if( parametersQCResult_Gradient[parametersQCResult_Gradient.size() - 1].value == "NoChange" )
