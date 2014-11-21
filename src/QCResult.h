@@ -37,7 +37,7 @@ struct GradientIntensityMotionCheckResult
   double CorrectedDir[3];
   TransformStruct EddyCurrentCorrectionTransform ;
   int VisualChecking;
-  int QCIndex;    // mapped to the index of QCed gradeint
+  int QCIndex;    // mapped to the index of QCed gradient
   };
 
 struct  InterlaceWiseCheckResult
