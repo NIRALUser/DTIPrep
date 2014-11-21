@@ -645,14 +645,14 @@ void IntensityMotionCheckPanel::SetVisualCheckingStatus( int index, int local_st
     this->GetQTreeWidgetResult()->topLevelItem(0)->child( index )->setText( 1, tr("INCLUDE_MANUALLY") );
     this->GetQTreeWidgetResult()->topLevelItem(0)->child( index )->child( 1 )->child( 0 )->setText( 1, tr("Include") );
     this->GetQCResult().GetIntensityMotionCheckResult()[t_Original_ForcedConformance_Mapping[index].index_original[0]].
-    VisualChecking = 0;
+    VisualChecking = QCResult::GRADIENT_INCLUDE;
     }
   if( local_status == 6 )
     {
     this->GetQTreeWidgetResult()->topLevelItem(0)->child( index )->setText(1, tr("EXCLUDE_MANUALLY") );
     this->GetQTreeWidgetResult()->topLevelItem(0)->child( index )->child( 1 )->child( 0 )->setText( 1, tr("Exclude") );
     this->GetQCResult().GetIntensityMotionCheckResult()[t_Original_ForcedConformance_Mapping[index].index_original[0]].
-    VisualChecking = 6;
+    VisualChecking = QCResult::GRADIENT_EXCLUDE_MANUALLY;
     }
   if( local_status == -1 )
     {
@@ -3682,7 +3682,7 @@ void IntensityMotionCheckPanel::QCedResultUpdate()
           itemVisualCheck_Satus->setText( 1, tr("Include" ) );
           }
         if( qcResult.GetIntensityMotionCheckResult()[(t_Original_ForcedConformance_Mapping[i].index_original)[k]].
-            VisualChecking == 6 )
+            VisualChecking == QCResult::GRADIENT_EXCLUDE_MANUALLY )
           {
           itemVisualCheck_Satus->setText( 1, tr("Exclude" ) );
           }
@@ -3705,7 +3705,7 @@ void IntensityMotionCheckPanel::QCedResultUpdate()
         itemVisualCheck_Satus->setText( 1, tr("Include" ) );
         }
       if( qcResult.GetIntensityMotionCheckResult()[(t_Original_ForcedConformance_Mapping[i].index_original)[0]].
-          VisualChecking == 6 )
+          VisualChecking == QCResult::GRADIENT_EXCLUDE_MANUALLY )
         {
         itemVisualCheck_Satus->setText( 1, tr("Exclude" ) );
         }
@@ -4298,7 +4298,7 @@ void IntensityMotionCheckPanel::ResultUpdate()
         {
         itemVisualCheck_Satus->setText( 1, tr("Include" ) );
         }
-      if( qcResult.GetIntensityMotionCheckResult()[i].VisualChecking == 6 )
+      if( qcResult.GetIntensityMotionCheckResult()[i].VisualChecking == QCResult::GRADIENT_EXCLUDE_MANUALLY )
         {
         itemVisualCheck_Satus->setText( 1, tr("Exclude" ) );
         }
