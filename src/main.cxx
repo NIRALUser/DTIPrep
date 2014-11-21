@@ -69,6 +69,8 @@ int main( int argc, char * *argv )
   if( !bcheckByProtocol )
     {
     QApplication app(argc, argv);
+    QLocale::setDefault(QLocale::C);
+    setlocale(LC_ALL, "C");
     GMainWindow *MainWindow = new GMainWindow;
     MainWindow->show();
     MainWindow->raise();
