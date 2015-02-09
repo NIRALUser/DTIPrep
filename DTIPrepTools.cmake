@@ -35,7 +35,7 @@ if(GenerateCLP_FOUND)
 endif()
 
 #-----------------------------------------------------------------------------
-find_package(ITK COMPONENTS
+set( ITKModules
   ITKDiffusionTensorImage
   ITKRegistrationCommon
   ITKOptimizersv4
@@ -64,7 +64,6 @@ find_package(ITK COMPONENTS
   ITKIOImageBase
   ITKIOJPEG
   ITKIOLSM
-  MGHIO
   ITKIOMRC
   ITKIOMesh
   ITKIOMeta
@@ -82,6 +81,13 @@ find_package(ITK COMPONENTS
   ITKIOTransformMatlab
   ITKIOVTK
   ITKIOXML
+)
+if( NOT DTIPrep_BUILD_SLICER_EXTENSION )
+  list( APPEND ITKModules MGHIO )
+endif()
+
+find_package(ITK COMPONENTS
+  ${ITKModules}
   REQUIRED)
 
 include(${ITK_USE_FILE})
