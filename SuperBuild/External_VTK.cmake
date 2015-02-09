@@ -241,9 +241,11 @@ else()
     find_package(${extProjName} ${${extProjName}_REQUIRED_VERSION} REQUIRED)
     message("USING the system ${extProjName}, set ${extProjName}_DIR=${${extProjName}_DIR}")
   endif()
-  # The project is provided using ${extProjName}_DIR, nevertheless since other
-  # project may depend on ${extProjName}, let's add an 'empty' one
-  SlicerMacroEmptyExternalProject(${proj} "${${proj}_DEPENDENCIES}")
+  if( NOT TARGET ${proj} )
+    # The project is provided using ${extProjName}_DIR, nevertheless since other
+    # project may depend on ${extProjName}, let's add an 'empty' one
+    SlicerMacroEmptyExternalProject(${proj} "${${proj}_DEPENDENCIES}")
+  endif()
 endif()
 
 list(APPEND ${CMAKE_PROJECT_NAME}_SUPERBUILD_EP_VARS ${extProjName}_DIR:PATH)
