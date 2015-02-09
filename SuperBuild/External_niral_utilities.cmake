@@ -77,7 +77,7 @@ if(NOT ( DEFINED "USE_SYSTEM_${extProjName}" AND "${USE_SYSTEM_${extProjName}}" 
 
   ### --- End Project specific additions
   set( ${proj}_REPOSITORY ${git_protocol}://github.com/NIRALUser/niral_utilities.git )
-  set( ${proj}_GIT_TAG dea3323b99be580b6fd2a7214ce60ddb9d7baec2 )
+  set( ${proj}_GIT_TAG 8034509e6598e06842a668e051b8ca84842fcd0c)
   ExternalProject_Add(${proj}
     GIT_REPOSITORY ${${proj}_REPOSITORY}
     GIT_TAG ${${proj}_GIT_TAG}
@@ -104,9 +104,11 @@ else()
     find_package(${extProjName} REQUIRED)
     message("USING the system ${extProjName}, set ${extProjName}_DIR=${${extProjName}_DIR}")
   endif()
-  # The project is provided using ${extProjName}_DIR, nevertheless since other
-  # project may depend on ${extProjName}, let's add an 'empty' one
-  SlicerMacroEmptyExternalProject(${proj} "${${proj}_DEPENDENCIES}")
+  if( NOT TARGET ${proj} )
+    # The project is provided using ${extProjName}_DIR, nevertheless since other
+    # project may depend on ${extProjName}, let's add an 'empty' one
+    SlicerMacroEmptyExternalProject(${proj} "${${proj}_DEPENDENCIES}")
+  endif()
 endif()
 
 list(APPEND ${CMAKE_PROJECT_NAME}_SUPERBUILD_EP_VARS ${extProjName}_DIR:PATH)
