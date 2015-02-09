@@ -167,7 +167,7 @@ if(NOT ( DEFINED "${extProjName}_SOURCE_DIR" OR ( DEFINED "USE_SYSTEM_${extProjN
 
   ### --- End Project specific additions
   set(${proj}_REPOSITORY "${git_protocol}://github.com/BRAINSia/BRAINSTools.git")
-  set(${proj}_GIT_TAG "33b739e7e6a414be41d44aca028b1304a2c0a440")
+  set(${proj}_GIT_TAG 33b739e7e6a414be41d44aca028b1304a2c0a440 )
   ExternalProject_Add(${proj}
     GIT_REPOSITORY ${${proj}_REPOSITORY}
     GIT_TAG ${${proj}_GIT_TAG}
@@ -197,9 +197,11 @@ else()
     find_package(${extProjName} ${${extProjName}_REQUIRED_VERSION} REQUIRED)
     message("USING the system ${extProjName}, set ${extProjName}_DIR=${${extProjName}_DIR}")
   endif()
-  # The project is provided using ${extProjName}_DIR, nevertheless since other
-  # project may depend on ${extProjName}, let's add an 'empty' one
-  SlicerMacroEmptyExternalProject(${proj} "${${proj}_DEPENDENCIES}")
+  if( NOT TARGET ${proj} )
+    # The project is provided using ${extProjName}_DIR, nevertheless since other
+    # project may depend on ${extProjName}, let's add an 'empty' one
+    SlicerMacroEmptyExternalProject(${proj} "${${proj}_DEPENDENCIES}")
+  endif()
 endif()
 
 list(APPEND ${CMAKE_PROJECT_NAME}_SUPERBUILD_EP_VARS ${extProjName}_DIR:PATH)
