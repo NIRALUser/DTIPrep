@@ -3,7 +3,7 @@
 
 #include <QtGui/QDockWidget>
 #include <QtGui/QMainWindow>
-
+#include <QGridLayout>
 #include "ui_IntensityMotionCheckPanel.h"
 
 #include "itkImage.h"
@@ -293,7 +293,7 @@ private:
   void SetBaselineAverageMethod() ;
   void SetInterpolationMethod(int &interpolation, int parentID, int childID, QString str_interpolation) ;
   void SetBrainMaskFileName() ;
-
+  void CreateWarningReprocessingWindow() ;
   bool     bProtocol;
   Protocol protocol;
   QCResult qcResult;
@@ -334,7 +334,8 @@ private:
   std::vector<int> index_listVCIncluded;      // contains the VC-included gradients id
 
   DwiReaderType::Pointer QCedDwiReader;
-
+  //Reprocessing warning window
+  QWidget *m_ReprocessingWarningWindow;
 };
 
 #endif // INTENSITYMOTIONCHECKPANEL_H

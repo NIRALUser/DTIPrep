@@ -162,6 +162,15 @@ IntensityMotionCheckPanel::IntensityMotionCheckPanel(QMainWindow *parentNew) :
            SIGNAL( SignalRecomputationDone() ),
            this,
            SLOT( MaskAndDTIScalarMeasurementsRecomputed() ) );
+  CreateWarningReprocessingWindow() ;
+}
+
+void IntensityMotionCheckPanel::CreateWarningReprocessingWindow()
+{
+    m_ReprocessingWarningWindow = new QWidget(this,Qt::Dialog | Qt::WindowTitleHint | Qt::CustomizeWindowHint);
+    QGridLayout *reprocessingWarningWindowLayout = new QGridLayout(m_ReprocessingWarningWindow);
+    QLabel *warning = new QLabel("Generating visually checked outputs. Do not close DTIPrep",m_ReprocessingWarningWindow);
+    reprocessingWarningWindowLayout->addWidget(warning);
 }
 
 IntensityMotionCheckPanel::~IntensityMotionCheckPanel()
@@ -172,6 +181,7 @@ IntensityMotionCheckPanel::~IntensityMotionCheckPanel()
 void IntensityMotionCheckPanel::MaskAndDTIScalarMeasurementsRecomputed()
 {
   myIntensityThread.SetRecompute( false ) ;
+  m_ReprocessingWarningWindow->hide();
 }
 
 void IntensityMotionCheckPanel::protocolLoaded_SetPath()
@@ -5372,6 +5382,7 @@ void IntensityMotionCheckPanel::SaveVisualCheckingResult()
 
   if( DWIFile.length() > 0 )
     {
+    m_ReprocessingWarningWindow->show();
     std::cout << "Save Visual Checking DWI into file: " << DWIFile.toStdString() << std::endl;
     GenerateOutput_VisualCheckingResult2( DWIFile.toStdString() );
     //Recomputing the brain mask from the VCed DWI
