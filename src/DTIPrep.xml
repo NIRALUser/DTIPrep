@@ -63,7 +63,7 @@
         <flag>c</flag>
         <label>Check by Protocol</label>
         <longflag>check</longflag>
-        <description>check by protocol xml file. Default operation</description>
+        <description>check by protocol xml file. This flag should be used when one does not want to use the Graphical User Interface of DTIPrep.</description>
         <default></default>
       </boolean>
   </parameters>
