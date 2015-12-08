@@ -61,15 +61,16 @@ DWIQCSliceChecker<TImageType>
   m_MaxKernelWidth = 6.0;
 
   b0 = -1.0;
-  m_QuadFit = false;
+  m_QuadFit = false;  //MPH: This default overwritten in IntensityMotionCheck.cxx by SetQuadFit line
   m_SubRegionalCheck = false;
   m_SubregionalCheckRelaxationFactor = 1.1;
+
+  //MPH: Note that all the SubRegionalCheck code is oblivious to the QuadFit feature.
+  // i.e., If SubRegionalCheck is used, it is based on the original correlations
 
   m_ReportFileName = "";
   m_ReportFileMode = DWIQCSliceChecker::REPORT_FILE_NEW;
   m_ReportType = DWIQCSliceChecker::REPORT_TYPE_VERBOSE;
-
-  m_QuadFit = false;
 
   bValues.clear();
 
@@ -86,6 +87,8 @@ DWIQCSliceChecker<TImageType>
   // "bad slice"
   ResultsContainer4.clear();    // starts from #1 slice, "correlation<=0" means a
   // "bad slice"
+
+  zScoreContainer.clear();
 
   CheckDoneOff();
 }
@@ -296,6 +299,7 @@ DWIQCSliceChecker<TImageType>
                                   SliceImageType> ExtractFilterType;
   typename ExtractFilterType::Pointer filter1 = ExtractFilterType::New();
   typename ExtractFilterType::Pointer filter2 = ExtractFilterType::New();
+  int nonPosCorrCount = 0;
   for( unsigned int j = 0; j < inputPtr->GetVectorLength(); j++ )
     {
     componentExtractor->SetIndex( j );
@@ -417,12 +421,21 @@ DWIQCSliceChecker<TImageType>
         {
         correlation = sAB / sqrt(sA2 * sB2);
         }
+
+      if (correlation <= 0.0)
+	nonPosCorrCount++;
+
       Results.push_back(correlation);
       }
     this->ResultsContainer.push_back(Results);
+    //    this->zScoreContainer.push_back(Results);  // MPH: HACK: Initialize zScoreContainer with "Results" as well
+    //    Replaced with initialization to -99 immediately below
     std::cout << ".";
     }
+  zScoreContainer = std::vector<std::vector<double> >(ResultsContainer.size(),std::vector<double>(ResultsContainer[0].size(),-99.0));
   std::cout << " DONE" << std::endl;
+  if (nonPosCorrCount > 0)
+    std::cout << "WARNING: Non-positive correlations (n=" << nonPosCorrCount << ")" << std::endl;
   return;
 }
 
@@ -1896,50 +1909,53 @@ DWIQCSliceChecker<TImageType>
   this->gradientMeans.clear();
   this->gradientDeviations.clear();
 
-  this->quardraticFittedMeans.clear();
-  this->quardraticFittedDeviations.clear();
+  this->quadraticFittedMeans.clear();
+  this->quadraticFittedDeviations.clear();
 
   //     std::vector< std::vector<double> > normalizedMetric; //moved into .h
   normalizedMetric.clear();
-  for( unsigned int i = 0; i < ResultsContainer.size(); i++ )
-    {
-    std::vector<double> temp;
-    for( unsigned int j = 0; j < ResultsContainer[0].size(); j++ )
-      {
-      temp.push_back(-1.0);
-      }
-    normalizedMetric.push_back(temp);
-    }
+  // for( unsigned int i = 0; i < ResultsContainer.size(); i++ )
+  //   {
+  //   std::vector<double> temp;
+  //   for( unsigned int j = 0; j < ResultsContainer[0].size(); j++ )
+  //     {
+  //     temp.push_back(-1.0);
+  //     }
+  //   normalizedMetric.push_back(temp);
+  //   }
+
+  // MPH: Replaced the initialization of normalizedMetric (above) with the single line below.
+  // Also, changed the initialization value to -99.0, to make the initial value more obvious 
+  // (since normalizedMetric is now included as an output in some report types).
+  // Note that normalizedMetric gets reset each iteration (unlike zScoreContainer), so gradients
+  // that get excluded will end up with a value of -99.0
+  normalizedMetric = std::vector<std::vector<double> >(ResultsContainer.size(),std::vector<double>(ResultsContainer[0].size(),-99.0));
 
   // std::cout<<"normalizedMetric.size(): "<<normalizedMetric.size()<<
   // std::endl;
 
   if( ( getBValueLeftNumber() >= 3
         || ( getBValueLeftNumber() == 2
-             && getBaselineLeftNumber() > 0 ) ) && m_QuadFit )                                            //
+             && getBaselineLeftNumber() > 0 ) ) && m_QuadFit )
   //
   // ensure
   //
   // a
   //
-  // quardratic
+  // quadratic
   //
   // fit
   // multiple b valued DWI, do a quadratic-curve fitting between b-value and
   // image correlation at each slice position
     {
-    for( unsigned int j = 0; j < ResultsContainer[0].size(); j++ )    // for each
-    // slice
+    for( unsigned int j = 0; j < ResultsContainer[0].size(); j++ )    // for each slice
       {
       vnl_matrix<double> bMatrix(
         getBaselineLeftNumber() + getGradientLeftNumber(), 3);
       vnl_matrix<double> correlationVector(
         getBaselineLeftNumber() + getGradientLeftNumber(), 1);
       int matrixLineNumber = 0;
-      for( unsigned int i = 0; i < this->ResultsContainer.size(); i++ )    // for
-      // each
-      //
-      // gradient
+      for( unsigned int i = 0; i < this->ResultsContainer.size(); i++ )    // for each gradient
         {
         if( this->qcResults[i] )
           {
@@ -1953,13 +1969,23 @@ DWIQCSliceChecker<TImageType>
           }
         }
 
+      // MPH: Fixed a rather insidious bug here.  The 3x1 'coefficients' vector was being used to
+      // temporarily store the output of the XtXinv operation.  But XtXinv is a 3x3 matrix, and since
+      // 'coefficients' isn't the proper type for a XtXinv operation, a number of its values were bogus.  
+      // The end result was that the values for 'coefficients' (i.e., "beta") and ultimately 
+      // normalizedMetric were bogus.
+      // (Note that the quadratic fit that occurs in itkDWIQCInterlaceChecker.hxx for multi b-valued
+      // data already uses an approach similar to the fix below -- i.e,. sets the output of the
+      // XtXinv operation as its own variable).
       vnl_matrix_fixed<double, 3, 1> coefficients;
-      coefficients = vnl_matrix_inverse<double>(bMatrix.transpose() * bMatrix);
-      coefficients = coefficients * bMatrix.transpose() * correlationVector;
-      for( unsigned int i = 0; i < this->ResultsContainer.size(); i++ )    // for
-      // each
-      //
-      // gradient
+      // coefficients = vnl_matrix_inverse<double>(bMatrix.transpose() * bMatrix); // OLD LINE -- BUG!
+      // coefficients = coefficients * bMatrix.transpose() * correlationVector; // OLD LINE -- BUG!
+      vnl_matrix_fixed<double, 3, 3> XtXinv; 
+      XtXinv = vnl_matrix_inverse<double>(bMatrix.transpose() * bMatrix);
+      coefficients = XtXinv * bMatrix.transpose() * correlationVector;
+
+      // Compute the residuals (aka 'normalizedMetric') from the quadratic fit
+      for( unsigned int i = 0; i < this->ResultsContainer.size(); i++ )    // for each gradient
         {
         if( this->qcResults[i] )
           {
@@ -1972,7 +1998,8 @@ DWIQCSliceChecker<TImageType>
           }
         }
       }
-    // to calculate the mean and stdev of the quardratic fitted correlations
+
+    // to calculate the mean and stdev of the quadratic fitted correlations
     for( unsigned int j = 0; j < ResultsContainer[0].size(); j++ )
       {
       double mean = 0.0, deviation = 0.0;
@@ -2006,8 +2033,8 @@ DWIQCSliceChecker<TImageType>
           }
         }
 
-      this->quardraticFittedMeans.push_back(mean);
-      this->quardraticFittedDeviations.push_back( sqrt(deviation) );
+      this->quadraticFittedMeans.push_back(mean);
+      this->quadraticFittedDeviations.push_back( sqrt(deviation) );
 
       //         std::cout<<"slice #: "<<j<<std::endl;
       //         std::cout<<" mean: "<<mean<<std::endl;
@@ -2016,8 +2043,9 @@ DWIQCSliceChecker<TImageType>
       // "<<DWICount+BaselineCount<<std::endl;
       }
     }
+
   else
-  // single b value( baseline + bvalue or 2 different b values, [2 different b
+  // single b value (baseline + bvalue or 2 different b values, [2 different b
   // values not yet implemented])
     {
     //       std::cout<<" single b value( baseline + bvalue or 2 different b
@@ -2099,19 +2127,20 @@ DWIQCSliceChecker<TImageType>
   // checking begins here
   if( ( getBValueLeftNumber() >= 3
         || ( getBValueLeftNumber() == 2
-             && getBaselineLeftNumber() > 0 ) ) && m_QuadFit )                                            //
+             && getBaselineLeftNumber() > 0 ) ) && m_QuadFit )
   //
   // ensure
   //
   // a
   //
-  // quardratic
+  // quadratic
   //
   // fit
   // multiple b valued DWI, do a quadratic-curve fitting between b-value and
   // image correlation at each slice position
     {
     //       std::cout<<" performing multiple b value checking"<<std::endl;
+    std::cout<<" multiple b valued DWI, using residuals from a quadratic-curve fit between b-value and original correlations "<<std::endl;
     for( unsigned int i = 0; i < ResultsContainer.size(); i++ )
       {
       baselineBadcount = 0;
@@ -2136,19 +2165,19 @@ DWIQCSliceChecker<TImageType>
                  + 3 : inputPtr->GetLargestPossibleRegion().GetSize()[2] );
                k++ )
             {
-            MeanStdev += this->quardraticFittedDeviations[k];
+            MeanStdev += this->quadraticFittedDeviations[k];
             effectiveSliceNumber++;
             }
           MeanStdev = MeanStdev / (double)effectiveSliceNumber;
 
           double stddev = 0.0;
-          if( this->quardraticFittedDeviations[j] < MeanStdev )
+          if( this->quadraticFittedDeviations[j] < MeanStdev )
             {
             stddev = MeanStdev;
             }
           else
             {
-            stddev = this->quardraticFittedDeviations[j];
+            stddev = this->quadraticFittedDeviations[j];
             }
           // /////////////////////////////////////////
           //             if(i==25)
@@ -2156,37 +2185,36 @@ DWIQCSliceChecker<TImageType>
           //               std::cout<<"slice: "<<j <<std::endl;
           //               std::cout<<"normalizedMetric[i][j]:
           // "<<normalizedMetric[i][j] <<std::endl;
-          //               std::cout<<"quardraticFittedMeans[j] :
-          // "<<quardraticFittedMeans[j]  <<std::endl;
+          //               std::cout<<"quadraticFittedMeans[j] :
+          // "<<quadraticFittedMeans[j]  <<std::endl;
           //               std::cout<<"stddev: "<<stddev <<std::endl;
-          //               std::cout<<"this->quardraticFittedMeans[j] - stddev *
-          // this->m_GradientStdevTimes: "<<this->quardraticFittedMeans[j] -
+          //               std::cout<<"this->quadraticFittedMeans[j] - stddev *
+          // this->m_GradientStdevTimes: "<<this->quadraticFittedMeans[j] -
           // stddev * this->m_GradientStdevTimes <<std::endl;
-          //               std::cout<<"this->quardraticFittedMeans[j] -
-          // this->quardraticFittedDeviations[j] * this->m_GradientStdevTimes:
-          // "<<this->quardraticFittedMeans[j] -
-          // this->quardraticFittedDeviations[j] *
+          //               std::cout<<"this->quadraticFittedMeans[j] -
+          // this->quadraticFittedDeviations[j] * this->m_GradientStdevTimes:
+          // "<<this->quadraticFittedMeans[j] -
+          // this->quadraticFittedDeviations[j] *
           // this->m_GradientStdevTimes<<std::endl;
           //             }
-          //            if( normalizedMetric[i][j] <
-          // this->quardraticFittedMeans[j] -
-          // this->quardraticFittedDeviations[j] * this->m_GradientStdevTimes)
-          if( normalizedMetric[i][j] < this->quardraticFittedMeans[j]
-              - stddev * this->m_GradientStdevTimes )
+          
+	  // MPH: Replace values in zScoreContainer with z-score computed from normalizedMetric.
+	  // On the first pass through DoCheck, qcResults[i] will equal 1 for all frames, so all 
+	  // values in zScoreContainer get replaced from their initialized value.
+	  // On subsequent passes, previously identified bad frames are skipped, and the z-scores
+	  // for the slices in those frames are not further modified.
+	  // i.e., the final contents of zScoreContainer do NOT reflect the z-score that would be
+	  // obtained for the bad frames if the mean/stddev were computed using only the "good" frames,
+	  // but rather the z-score that existed at the point in time at which the frame was
+	  // marked as bad.
+	  this->zScoreContainer[i][j] = ( normalizedMetric[i][j] - this->quadraticFittedMeans[j] ) / stddev;
+	  if( this->zScoreContainer[i][j] < -this->m_GradientStdevTimes )
             {
-            this->ResultsContainer[i][j] = -this->ResultsContainer[i][j];     //
-            //
-            // to
-            //
-            // indicate
-            // a
-            //
-            // bad
-            //
-            // slice
+            this->ResultsContainer[i][j] = -this->ResultsContainer[i][j];
+            // to indicate a bad slice
             badcount++;
             }
-          }
+	  }
         if( badcount > 0 )
           {
           this->qcResults[i] = 0;
@@ -2194,8 +2222,10 @@ DWIQCSliceChecker<TImageType>
         }
       }
     }
-  else     // single b value( baseline + bvalue or 2 different b values, [2
-  // different b values not yet implemented])
+
+  else
+  // single b value (baseline + bvalue or 2 different b values, [2 different b
+  // values not yet implemented])
     {
     //        std::cout<<" performing single b value checking"<<std::endl;
     for( unsigned int i = 0; i < ResultsContainer.size(); i++ )
@@ -2243,25 +2273,15 @@ DWIQCSliceChecker<TImageType>
               stddev = baselineDeviations[j];
               }
             // /////////////////////////////////////////
-            //               if( this->ResultsContainer[i][j] < baselineMeans[j]
-            // - baselineDeviations[j] * m_BaselineStdevTimes)
-            if( this->ResultsContainer[i][j] < baselineMeans[j] - stddev
-                * m_BaselineStdevTimes )
-              {
-              this->ResultsContainer[i][j] = -this->ResultsContainer[i][j];     //
-              //
-              // to
-              //
-              // indicate
-              //
-              // a
-              //
-              // bad
-              //
-              // slice
-              baselineBadcount++;
-              }
-            }
+	    // MPH: Compute/store zScore here as well 
+	    this->zScoreContainer[i][j] = ( this->ResultsContainer[i][j] - baselineMeans[j] ) / stddev;
+	    if( this->zScoreContainer[i][j] < -this->m_BaselineStdevTimes )
+	      {
+		this->ResultsContainer[i][j] = -this->ResultsContainer[i][j];
+		// to indicate a bad slice
+		baselineBadcount++;
+	      }
+	    }
           if( baselineBadcount > 0 )
             {
             this->qcResults[i] = 0;
@@ -2292,7 +2312,7 @@ DWIQCSliceChecker<TImageType>
               effectiveSliceNumber++;
               }
             MeanStdev = MeanStdev / (double)effectiveSliceNumber;
-
+	    
             double stddev = 0.0;
             if( this->gradientDeviations[j] < MeanStdev )
               {
@@ -2303,25 +2323,13 @@ DWIQCSliceChecker<TImageType>
               stddev = this->gradientDeviations[j];
               }
             // /////////////////////////////////////////
-            //               if( ResultsContainer[i][j] < this->gradientMeans[j]
-            // - this->gradientDeviations[j] * this->m_GradientStdevTimes) // ok
-            if( ResultsContainer[i][j] < this->gradientMeans[j] - stddev
-                * this->m_GradientStdevTimes )                                                          //
-            //
-            // ok
+	    // MPH: Compute/store zScore here as well 
+	    this->zScoreContainer[i][j] = ( this->ResultsContainer[i][j] - gradientMeans[j] ) / stddev;
+	    if( this->zScoreContainer[i][j] < -this->m_GradientStdevTimes )
               {
-              this->ResultsContainer[i][j] = -this->ResultsContainer[i][j];     //
-              //
-              // to
-              //
-              // indicate
-              //
-              // a
-              //
-              // bad
-              //
-              // slice
-              badcount++;
+		this->ResultsContainer[i][j] = -this->ResultsContainer[i][j];
+		// to indicate a bad slice
+		badcount++;
               }
             }
           if( badcount > 0 )
@@ -2431,6 +2439,7 @@ DWIQCSliceChecker<TImageType>
       outfile << "  TailSkipRatio: "    << m_TailSkipRatio    << std::endl;
       outfile << "  BaselineStdevTimes: "  << m_BaselineStdevTimes << std::endl;
       outfile << "  GradientStdevTimes: "  << m_GradientStdevTimes << std::endl;
+      outfile << "  QuadFit: "  << m_QuadFit << std::endl;
 
       outfile << std::endl << "======" << std::endl;
       outfile << "Slice-wise Check Artifacts:" << std::endl;
@@ -2571,6 +2580,7 @@ DWIQCSliceChecker<TImageType>
       outfile << "  GradientStdevTimes: "  << m_GradientStdevTimes << std::endl;
       outfile << "  SubRegionalCheck: "  << m_SubRegionalCheck << std::endl;
       outfile << "  SubregionalCheckRelaxationFactor: "  << m_SubregionalCheckRelaxationFactor << std::endl;
+      outfile << "  QuadFit: "  << m_QuadFit << std::endl;
 
       outfile << std::endl << "======" << std::endl;
       outfile << "Slice-wise correlations: " << std::endl << std::endl;
@@ -2596,26 +2606,46 @@ DWIQCSliceChecker<TImageType>
         outfile << std::endl;
         }
 
-      if( m_QuadFit )
-        {
-        outfile << std::endl << "======" << std::endl;
-        outfile << "Slice-wise Quadratic correlations: " << std::endl << std::endl;
-        for( unsigned int i = 0; i < this->normalizedMetric.size(); i++ )
-          {
+      // // MPH: Code to output normalizedMetric
+      // if( m_QuadFit )
+      //   {
+      //   outfile << std::endl << "======" << std::endl;
+      //   outfile << "Slice-wise QuadFit Normalized Metric: " << std::endl << std::endl;
+      //   for( unsigned int i = 0; i < this->normalizedMetric.size(); i++ )
+      //     {
+      //     outfile << "\t" << "Gradient" << i;
+      //     }
+      //   outfile << std::endl;
+      //   for( unsigned int j = 0; j < this->normalizedMetric[0].size(); j++ )
+      //     {
+      //     for( unsigned int i = 0; i < normalizedMetric.size(); i++ )
+      //       {
+      //       outfile << "\t" << std::setw(9) << std::setiosflags(std::ios::fixed)
+      //               << std::setprecision(6) << std::setiosflags(std::ios::right)
+      //               << normalizedMetric[i][j];
+      //       }
+      //     outfile << std::endl;
+      //     }
+      // 	}
+	
+      // MPH: Output zScores (which are what actually determine whether data is excluded by SliceCheck)
+      outfile << std::endl << "======" << std::endl;
+      outfile << "Slice-wise zScore: " << std::endl << std::endl;
+      for( unsigned int i = 0; i < this->zScoreContainer.size(); i++ )
+	{
           outfile << "\t" << "Gradient" << i;
-          }
-        outfile << std::endl;
-        for( unsigned int j = 0; j < this->normalizedMetric[0].size(); j++ )
-          {
-          for( unsigned int i = 0; i < normalizedMetric.size(); i++ )
+	}
+      outfile << std::endl;
+      for( unsigned int j = 0; j < this->zScoreContainer[0].size(); j++ )
+	{
+          for( unsigned int i = 0; i < zScoreContainer.size(); i++ )
             {
-            outfile << "\t" << std::setw(9) << std::setiosflags(std::ios::fixed)
-                    << std::setprecision(6) << std::setiosflags(std::ios::right)
-                    << normalizedMetric[i][j];
+	      outfile << "\t" << std::setw(9) << std::setiosflags(std::ios::fixed)
+		      << std::setprecision(6) << std::setiosflags(std::ios::right)
+		      << zScoreContainer[i][j];
             }
           outfile << std::endl;
-          }
-        }
+	}
 
       if( m_SubRegionalCheck )
         {
@@ -2732,7 +2762,7 @@ DWIQCSliceChecker<TImageType>
       outfile << "Slice-wise Check Artifacts:" << std::endl;
       outfile << "Region\t" << std::setw(10) << "Gradient#" << "\t"
               << std::setw(10) << "Slice#" << "\t" << std::setw(10)
-              << "Correlation"
+              << "Correlation\t" << std::setw(10) << "zScore"
               << std::endl;
       for( unsigned int i = 0; i < this->ResultsContainer.size(); i++ )
         {
@@ -2748,7 +2778,12 @@ DWIQCSliceChecker<TImageType>
                     << "\t" << std::setw(9)
                     << std::setiosflags(std::ios::fixed) << std::setprecision(6)
                     << std::setiosflags(std::ios::right)
-                    << -ResultsContainer[i][j] << std::endl;
+                    << -ResultsContainer[i][j] 
+                    << "\t" << std::setw(9)
+                    << std::setiosflags(std::ios::fixed) << std::setprecision(6)
+                    << std::setiosflags(std::ios::right)
+		    << zScoreContainer[i][j]
+		    << std::endl;
             }
           }
         }
@@ -2903,6 +2938,7 @@ DWIQCSliceChecker<TImageType>
       outfile << "Slicewise_checking_SubRegionalCheck "  << m_SubRegionalCheck << std::endl;
       outfile << "Slicewise_checking_SubregionalCheckRelaxationFactor "
               << m_SubregionalCheckRelaxationFactor << std::endl;
+      outfile << "Slicewise_checking_QuadFit "  << m_QuadFit << std::endl;
 
       outfile << std::endl;
       outfile << "Slicewise_checking_gradient_numbers";
@@ -2930,30 +2966,34 @@ DWIQCSliceChecker<TImageType>
         outfile << std::endl;
         }
 
-      // QuadFit
-      /*
-      if ( m_QuadFit )
-      {
-      outfile << std::endl << "======" << std::endl;
-      outfile << "Slice-wise Quadratic correlations: " << std::endl << std::endl;
-      for ( unsigned int i = 0; i < this->normalizedMetric.size(); i++ )
-      {
-      outfile << "\t" << "Gradient" << i;
-      }
-      outfile << std::endl;
+      // // MPH: Code to output normalizedMetric
+      // if( m_QuadFit )
+      // 	{
+      // 	for( unsigned int j = 0; j < this->ResultsContainer.size(); j++ )
+      // 	  {
+      // 	    outfile << "Slicewise_gradient_whole_NormMetric_QuadFit_" << std::setw(2) << std::setfill('0') << j;
+      // 	    for( unsigned int i = 0; i < ResultsContainer[0].size(); i++ )
+      // 	      {
+      // 		outfile << "\t" << std::setw(9) << std::setiosflags(std::ios::fixed)
+      // 			<< std::setprecision(6) << std::setiosflags(std::ios::right)
+      // 			<< std::setfill(' ') << normalizedMetric[j][i];
+      // 	      }
+      // 	    outfile << std::endl;
+      // 	  }
+      // 	}
 
-      for ( unsigned int j = 0; j < this->normalizedMetric[0].size(); j++ )
-      {
-      for ( unsigned int i = 0; i < normalizedMetric.size(); i++ )
-      {
-      outfile << "\t" << std::setw(9) << std::setiosflags(std::ios::fixed)
-      << std::setprecision(6) << std::setiosflags(std::ios::right)
-      << normalizedMetric[i][j];
-      }
-      outfile << std::endl;
-      }
-      }
-      */
+      // MPH: Output zScores (which are what actually determine whether data is excluded by SliceCheck)
+      for( unsigned int j = 0; j < this->ResultsContainer.size(); j++ )
+	{
+	  outfile << "Slicewise_gradient_whole_zScore_" << std::setw(2) << std::setfill('0') << j;
+	  for( unsigned int i = 0; i < ResultsContainer[0].size(); i++ )
+	    {
+	      outfile << "\t" << std::setw(9) << std::setiosflags(std::ios::fixed)
+		      << std::setprecision(6) << std::setiosflags(std::ios::right)
+		      << std::setfill(' ') << zScoreContainer[j][i];
+	    }
+	  outfile << std::endl;
+	}
 
       // subregional check
       if( m_SubRegionalCheck )
@@ -3036,7 +3076,10 @@ DWIQCSliceChecker<TImageType>
               << "\tRegion"
               << "\tGradientNum"
               << "\tSlice"
-              << "\tCorrelation" << std::endl;
+              << "\tCorrelation"
+	      << "\tzScore";
+
+      outfile << std::endl;
       for( unsigned int i = 0; i < this->ResultsContainer.size(); i++ )
         {
         for( unsigned int j = 0; j < ResultsContainer[0].size(); j++ )
@@ -3053,7 +3096,12 @@ DWIQCSliceChecker<TImageType>
                     << "\t" << std::setw(9)
                     << std::setiosflags(std::ios::fixed) << std::setprecision(6)
                     << std::setiosflags(std::ios::right)
-                    << -ResultsContainer[i][j] << std::endl;
+                    << -ResultsContainer[i][j]
+		    << "\t" << std::setw(9)
+                    << std::setiosflags(std::ios::fixed) << std::setprecision(6)
+                    << std::setiosflags(std::ios::right)
+		    << zScoreContainer[i][j] ;
+	    outfile << std::endl;
             }
           }
         }
@@ -3654,12 +3702,11 @@ DWIQCSliceChecker<TImageType>
                                             ElementAt(i)[2] ) * b0 + 0.5 ) );
     }
 
-  //     std::cout << "b values:" << std::endl;
-  //     for(unsigned int i=0;i< this->m_GradientDirectionContainer ->
-  // Size();i++ )
-  //     {
-  //       std::cout << bValues[i] << std::endl;
-  //     }
+  // std::cout << "b values:" << std::endl;
+  // for( unsigned int i = 0; i < this->m_GradientDirectionContainer->Size(); i++ )
+  //   {
+  //   std::cout << bValues[i] << std::endl;
+  //   }
 
   if( m_GradientDirectionContainer->size() <= 6 )
     {
