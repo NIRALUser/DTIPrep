@@ -268,10 +268,9 @@ private:
   std::vector<double> baselineMeans;
   std::vector<double> baselineDeviations;
 
-  /** for all multi-bValued gradient slice wise correlation(after quardatic
-  fitting) */
-  std::vector<double> quardraticFittedMeans;
-  std::vector<double> quardraticFittedDeviations;
+  /** for all multi-bValued gradient slice wise correlation (after quadratic fitting) */
+  std::vector<double> quadraticFittedMeans;
+  std::vector<double> quadraticFittedDeviations;
 
   /** initialize qcResullts */
   std::vector<std::vector<double> > ResultsContainer;      // starts from #1
@@ -325,6 +324,9 @@ private:
 
   std::vector<bool>                 qcResults;
   std::vector<std::vector<double> > normalizedMetric;
+  
+  // MPH: Add capability to report the z-scored correlations (only operative for quadFit feature)
+  std::vector<std::vector<double> > zScoreContainer;
 
   void parseGradientDirections();
 
