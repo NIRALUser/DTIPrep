@@ -79,6 +79,7 @@ public:
     double TranslationZ;
     double Metric;                  // MutualInformation;
     double Correlation;             // graylevel correlation
+    double zScore;        // MPH: Added to store zScore
     } struInterlaceResults,  *pstruInterlaceResults;
 
   /** Standard class typedefs. */
@@ -127,9 +128,9 @@ public:
   itkGetConstMacro( RotationThreshold, float );
   itkSetMacro( RotationThreshold, float );
 
-  /** Get & Set the CorrelationStedvTimesBaseline */
-  itkGetConstMacro( CorrelationStedvTimesBaseline, float );
-  itkSetMacro( CorrelationStedvTimesBaseline, float );
+  /** Get & Set the CorrelationStdevTimesBaseline */
+  itkGetConstMacro( CorrelationStdevTimesBaseline, float );
+  itkSetMacro( CorrelationStdevTimesBaseline, float );
 
   /** Get & Set the CorrelationStdevTimesGradient */
   itkGetConstMacro( CorrelationStdevTimesGradient, float );
@@ -180,14 +181,14 @@ private:
   double interlaceGradientMeans;
   double interlaceGradientDeviations;
 
-  // for all multi-bValued gradient-wise correlation(after quardatic fitting)
-  double quardraticFittedMeans;
-  double quardraticFittedDeviations;
+  // for all multi-bValued gradient-wise correlation (after quadratic fitting)
+  double quadraticFittedMeans;
+  double quadraticFittedDeviations;
 
   /** check parameters */
   float m_CorrelationThresholdBaseline;
   float m_CorrelationThresholdGradient;
-  float m_CorrelationStedvTimesBaseline;
+  float m_CorrelationStdevTimesBaseline;
   float m_CorrelationStdevTimesGradient;
   float m_TranslationThreshold;
   float m_RotationThreshold;
