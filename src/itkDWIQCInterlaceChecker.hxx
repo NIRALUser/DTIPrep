@@ -57,7 +57,7 @@ DWIQCInterlaceChecker<TImageType>
   m_TranslationThreshold      = 2.00;
   m_RotationThreshold        = 0.50;
 
-  m_CorrelationStedvTimesBaseline = 3.0;
+  m_CorrelationStdevTimesBaseline = 3.0;
   m_CorrelationStdevTimesGradient = 3.5;
 
   b0 = -1.0;
@@ -532,6 +532,7 @@ DWIQCInterlaceChecker<TImageType>
     struInterlaceResults result;
     rigidRegistration(InterlaceOdd, InterlaceEven, 25, 0.1, 1, result );
     result.Correlation = computeCorrelation(InterlaceOdd, InterlaceEven);
+    result.zScore = -99.0;  // MPH: HACK: Initialize zScore here as well
 
     std::cout << "Interlace correlation for gradient " << j << ": " << result.Correlation << std::endl;
 
@@ -571,13 +572,12 @@ DWIQCInterlaceChecker<TImageType>
   BaselineCount  = getBaselineNumber();
   DWICount    = getGradientNumber();
 
-  //      std::cout<<"BaselineCount: "<<BaselineCount<<std::endl;
-  //      std::cout<<"DWICount: "<<DWICount<<std::endl;
-  //     std::cout<<"getBValueNumber(): "<<getBValueNumber()<<std::endl;
-  //     std::cout<<"getBaselineNumber(): "<<getBaselineNumber()<<std::endl;
-  //     std::cout<<"getBValueLeftNumber(): "<<getBValueLeftNumber()<<std::endl;
-  //     std::cout<<"getBaselineLeftNumber():
-  // "<<getBaselineLeftNumber()<<std::endl;
+  // std::cout<<"BaselineCount: "<<BaselineCount<<std::endl;
+  // std::cout<<"DWICount: "<<DWICount<<std::endl;
+  // std::cout<<"getBValueNumber(): "<<getBValueNumber()<<std::endl;
+  // std::cout<<"getBaselineNumber(): "<<getBaselineNumber()<<std::endl;
+  // std::cout<<"getBValueLeftNumber(): "<<getBValueLeftNumber()<<std::endl;
+  // std::cout<<"getBaselineLeftNumber():"<<getBaselineLeftNumber()<<std::endl;
 
   this->interlaceBaselineMeans = 0.0;
   this->interlaceBaselineDeviations = 0.0;
@@ -588,14 +588,17 @@ DWIQCInterlaceChecker<TImageType>
   this->interlaceGradientMeans = 0.0;
   this->interlaceGradientDeviations = 0.0;
 
-  this->quardraticFittedMeans = 0.0;
-  this->quardraticFittedDeviations = 0.0;
+  this->quadraticFittedMeans = 0.0;
+  this->quadraticFittedDeviations = 0.0;
 
   if( getBValueNumber() >= 3 || ( getBValueNumber() == 2 && getBaselineNumber() > 0 ) )
-  // ensure a quardratic fit
+  // ensure a quadratic fit
+  // MPH: Note: Unlike itkDWIQCSliceChecker.hxx, the 'if' condition above is 
+  // entirely *independent* of the value of the m_QuadFit boolean.  IS THIS INTENTIONAL?
+  // Also, the computation of normalizedMetric and zScore here is not iterative.
+  // i.e., those variables are not recomputed if gradients are designated for exclusion.
     {
-    // std::cout<<" multiple b valued DWI, do a quadratic-curve fitting between b-value and image correlation for each
-    // gradient "<<std::endl;
+    std::cout<<" multiple b valued DWI, do a quadratic-curve fitting between b-value and image correlation for each gradient "<<std::endl;
     vnl_matrix<double> bMatrix( getBaselineNumber() + getGradientNumber(), 3);
     vnl_matrix<double> correlationVector(getBaselineNumber() + getGradientNumber(), 1);
     // unsigned int matrixLineNumber = 0;
@@ -611,19 +614,17 @@ DWIQCInterlaceChecker<TImageType>
       correlationVector[i][0] = this->ResultsContainer[i].Correlation;
       }
 
-    //
     vnl_matrix_fixed<double, 3, 1> coefficients;
-    vnl_matrix_fixed<double, 3, 3> coefficientsTemp;
-    // coefficients =
-    // vnl_matrix_inverse<double>(bMatrix.transpose()*bMatrix)*bMatrix.transpose()*correlationVector;
-    //      std::cout<<"coefficients1: \n"<<coefficients<<std::endl;
+    vnl_matrix_fixed<double, 3, 3> XtXinv;
+    //    coefficients = vnl_matrix_inverse<double>(bMatrix.transpose()*bMatrix)*bMatrix.transpose()*correlationVector;
+    //    std::cout<<"coefficients1: \n"<<coefficients<<std::endl;
 
-    coefficientsTemp = vnl_matrix_inverse<double>(bMatrix.transpose() * bMatrix);
-    coefficients = coefficientsTemp * bMatrix.transpose() * correlationVector;
-    //       std::cout<<"coefficients2: \n"<<coefficients<<std::endl;
+    XtXinv = vnl_matrix_inverse<double>(bMatrix.transpose() * bMatrix);
+    coefficients = XtXinv * bMatrix.transpose() * correlationVector;
+    //    std::cout<<"coefficients2: \n"<<coefficients<<std::endl;
 
     std::vector<double> normalizedMetric(this->ResultsContainer.size(), -1.0);
-    for( unsigned int i = 0; i < this->ResultsContainer.size(); i++ )  // for
+    for( unsigned int i = 0; i < this->ResultsContainer.size(); i++ )
     // each
     //
     // gradient
@@ -641,37 +642,42 @@ DWIQCInterlaceChecker<TImageType>
       //    << normalizedMetric[i]
       //     <<std::endl;
       }
-    // to compute the mean and stdev after quardratic fitting
+    // to compute the mean and stdev after quadratic fitting
     for( unsigned int i = 0; i < this->ResultsContainer.size(); i++ )
       {
-      this->quardraticFittedMeans += normalizedMetric[i]
+      this->quadraticFittedMeans += normalizedMetric[i]
         / static_cast<double>( DWICount
                                + BaselineCount );
       }
     for( unsigned int i = 0; i < this->ResultsContainer.size(); i++ )
       {
-      if( DWICount > 1 )
+      // if( DWICount > 1 )  
+	// MPH: Seems like this conditional should include BaselineCount as part of the calc 
+	// (e.g., see analog in SliceChecker.hxx)
+      if( DWICount + BaselineCount > 1 )
         {
-        this->quardraticFittedDeviations
+        this->quadraticFittedDeviations
           += ( normalizedMetric[i]
-               - quardraticFittedMeans )
+               - quadraticFittedMeans )
             * ( normalizedMetric[i]
-                - quardraticFittedMeans )
+                - quadraticFittedMeans )
             / (double)(DWICount + BaselineCount - 1);
         }
 
       else
         {
-        this->quardraticFittedDeviations = 0.0;
+        this->quadraticFittedDeviations = 0.0;
         }
       }
-    quardraticFittedDeviations = sqrt(quardraticFittedDeviations);
-    // std::cout<<"quardraticFittedMeans: "<< quardraticFittedMeans
-    // <<std::endl;
-    //       std::cout<<"quardraticFittedDeviations: "<<
-    // quardraticFittedDeviations <<std::endl;
+    quadraticFittedDeviations = sqrt(quadraticFittedDeviations);
+
+    std::cout<<"DWICount: "<< DWICount <<"; BaselineCount: "<< BaselineCount <<std::endl;
+    std::cout<<"quadraticFittedMeans: "<< quadraticFittedMeans <<std::endl;
+    std::cout<<"quadraticFittedDeviations: "<< quadraticFittedDeviations <<std::endl;
+
     for( unsigned int i = 0; i < this->ResultsContainer.size(); i++ )
       {
+      ResultsContainer[i].zScore = ( normalizedMetric[i] - quadraticFittedMeans ) / quadraticFittedDeviations ;
       if( this->m_GradientDirectionContainer->at(i)[0] == 0.0
           && this->m_GradientDirectionContainer->at(i)[1] == 0.0
           && this->m_GradientDirectionContainer->at(i)[2] == 0.0    )
@@ -684,8 +690,10 @@ DWIQCInterlaceChecker<TImageType>
             || fabs(this->ResultsContainer[i].TranslationZ) > m_TranslationThreshold
             + (0.5 * this->GetInput()->GetSpacing()[2])
             || this->ResultsContainer[i].Correlation < m_CorrelationThresholdGradient
-            || normalizedMetric[i] < quardraticFittedMeans - quardraticFittedDeviations
-            * m_CorrelationStedvTimesBaseline )
+	    // MPH: Replaced the following test with the equivalent using the new zScore variable
+	    //            || normalizedMetric[i] < quadraticFittedMeans - quadraticFittedDeviations
+	    //            * m_CorrelationStdevTimesBaseline )
+	    || this->ResultsContainer[i].zScore < -m_CorrelationStdevTimesBaseline )
           {
           this->qcResults[i] = 0;
           }
@@ -700,8 +708,10 @@ DWIQCInterlaceChecker<TImageType>
             || fabs(this->ResultsContainer[i].TranslationZ) > m_TranslationThreshold
             + (0.5 * this->GetInput()->GetSpacing()[2])
             || this->ResultsContainer[i].Correlation < m_CorrelationThresholdGradient
-            || normalizedMetric[i] < quardraticFittedMeans - quardraticFittedDeviations
-            * m_CorrelationStdevTimesGradient )
+	    // MPH: Replaced the following test with the equivalent using the new zScore variable
+	    //            || normalizedMetric[i] < quadraticFittedMeans - quadraticFittedDeviations
+	    //            * m_CorrelationStdevTimesGradient )
+	    || this->ResultsContainer[i].zScore < -m_CorrelationStdevTimesGradient )
           {
           this->qcResults[i] = 0;
           }
@@ -710,23 +720,18 @@ DWIQCInterlaceChecker<TImageType>
 
     //           std::cout<<"normalizedMetric[i]:
     // "<<normalizedMetric[i]<<std::endl;
-    //           std::cout<<"quardraticFittedMeans:
-    // "<<quardraticFittedMeans<<std::endl;
-    //           std::cout<<"quardraticFittedDeviations:
-    // "<<quardraticFittedDeviations<<std::endl;
+    //           std::cout<<"quadraticFittedMeans:
+    // "<<quadraticFittedMeans<<std::endl;
+    //           std::cout<<"quadraticFittedDeviations:
+    // "<<quadraticFittedDeviations<<std::endl;
     //           std::cout<<"m_CorrelationStdevTimesGradient:
     // "<<m_CorrelationStdevTimesGradient<<std::endl;
     }
   else   // single b value( baseline + bvalue or 2 different b values, [2
   // different b values not yet implemented])
     {
-    vnl_matrix<double> bMatrix( getBaselineNumber() + getGradientNumber(), 1);
     for( unsigned int i = 0; i < this->ResultsContainer.size(); i++ )
       {
-
-      // DEBUG: delete later
-      bMatrix[i][0] = this->bValues[i];
-
       if( this->m_GradientDirectionContainer->at(i)[0] == 0.0
           && this->m_GradientDirectionContainer->at(i)[1] == 0.0
           && this->m_GradientDirectionContainer->at(i)[2] == 0.0    )
@@ -783,7 +788,7 @@ DWIQCInterlaceChecker<TImageType>
     //     std::cout<<"m_RotationThreshold: "<<m_RotationThreshold<<std::endl;
     //     std::cout<<"m_TranslationThreshold: "<<m_TranslationThreshold<<std::endl;
     //     std::cout<<"m_CorrelationThresholdBaseline: "<<m_CorrelationThresholdBaseline<<std::endl;
-    //     std::cout<<"m_CorrelationStedvTimesBaseline: "<<m_CorrelationStedvTimesBaseline<<std::endl;
+    //     std::cout<<"m_CorrelationStdevTimesBaseline: "<<m_CorrelationStdevTimesBaseline<<std::endl;
     //     std::cout<<"m_CorrelationThresholdGradient: "<<m_CorrelationThresholdGradient<<std::endl;
     //     std::cout<<"m_CorrelationStdevTimesGradient: "<<m_CorrelationStdevTimesGradient<<std::endl;
     //     std::cout<<"0.5*this->GetInput()->GetSpacing()[2]: "
@@ -794,6 +799,7 @@ DWIQCInterlaceChecker<TImageType>
           && this->m_GradientDirectionContainer->at(i)[1] == 0.0
           && this->m_GradientDirectionContainer->at(i)[2] == 0.0    )
         {  // baseline
+	ResultsContainer[i].zScore = ( ResultsContainer[i].Correlation - interlaceBaselineMeans ) / interlaceBaselineDeviations ;
         if( fabs(this->ResultsContainer[i].AngleX) > m_RotationThreshold
             || fabs(this->ResultsContainer[i].AngleY) > m_RotationThreshold
             || fabs(this->ResultsContainer[i].AngleZ) > m_RotationThreshold
@@ -802,14 +808,17 @@ DWIQCInterlaceChecker<TImageType>
             || fabs(this->ResultsContainer[i].TranslationZ) > m_TranslationThreshold
             + (0.5 * this->GetInput()->GetSpacing()[2])
             || this->ResultsContainer[i].Correlation < m_CorrelationThresholdBaseline
-            || this->ResultsContainer[i].Correlation < interlaceBaselineMeans - interlaceBaselineDeviations
-            * m_CorrelationStedvTimesBaseline )
+	    // MPH: Replaced the following test with the equivalent using the new zScore variable
+	    //            || this->ResultsContainer[i].Correlation < interlaceBaselineMeans - interlaceBaselineDeviations
+	    //            * m_CorrelationStdevTimesBaseline )
+	    || this->ResultsContainer[i].zScore < -m_CorrelationStdevTimesBaseline )
           {
           this->qcResults[i] = 0;
           }
         }
       else   // gradients
         {
+	ResultsContainer[i].zScore = ( ResultsContainer[i].Correlation - interlaceGradientMeans ) / interlaceGradientDeviations ;
         if( fabs(this->ResultsContainer[i].AngleX) > m_RotationThreshold
             || fabs(this->ResultsContainer[i].AngleY) > m_RotationThreshold
             || fabs(this->ResultsContainer[i].AngleZ) > m_RotationThreshold
@@ -818,8 +827,10 @@ DWIQCInterlaceChecker<TImageType>
             || fabs(this->ResultsContainer[i].TranslationZ) > m_TranslationThreshold
             + (0.5 * this->GetInput()->GetSpacing()[2])
             || this->ResultsContainer[i].Correlation < m_CorrelationThresholdGradient
-            || this->ResultsContainer[i].Correlation < interlaceGradientMeans - interlaceGradientDeviations
-            * m_CorrelationStdevTimesGradient )
+	    // MPH: Replaced the following test with the equivalent using the new zScore variable
+	    //            || this->ResultsContainer[i].Correlation < interlaceGradientMeans - interlaceGradientDeviations
+	    //            * m_CorrelationStdevTimesGradient )
+	    || this->ResultsContainer[i].zScore < -m_CorrelationStdevTimesGradient )
           {
           this->qcResults[i] = 0;
           }
@@ -867,8 +878,8 @@ DWIQCInterlaceChecker<TImageType>
               << m_CorrelationThresholdBaseline  << std::endl;
       outfile << "  CorrelationThresholdGradient: "
               << m_CorrelationThresholdGradient  << std::endl;
-      outfile << "  CorrelationStedvTimesBaseline: "
-              << m_CorrelationStedvTimesBaseline  << std::endl;
+      outfile << "  CorrelationStdevTimesBaseline: "
+              << m_CorrelationStdevTimesBaseline  << std::endl;
       outfile << "  CorrelationStdevTimesGradient: "
               << m_CorrelationStdevTimesGradient  << std::endl;
       outfile << "  TranslationThreshold: "
@@ -935,8 +946,8 @@ DWIQCInterlaceChecker<TImageType>
               << m_CorrelationThresholdBaseline  << std::endl;
       outfile << "  CorrelationThresholdGradient: "
               << m_CorrelationThresholdGradient  << std::endl;
-      outfile << "  CorrelationStedvTimesBaseline: "
-              << m_CorrelationStedvTimesBaseline  << std::endl;
+      outfile << "  CorrelationStdevTimesBaseline: "
+              << m_CorrelationStdevTimesBaseline  << std::endl;
       outfile << "  CorrelationStdevTimesGradient: "
               << m_CorrelationStdevTimesGradient  << std::endl;
       outfile << "  TranslationThreshold: "
@@ -953,7 +964,9 @@ DWIQCInterlaceChecker<TImageType>
               << std::setw(10) << "AngleZ\t" << std::setw(10)
               << "TranslationX\t" << std::setw(10) << "TranslationY\t"
               << std::setw(10) << "TranslationZ\t" << std::setw(10)
-              << "Metric(MI)\t" << std::setw(10) << "Correlation" << std::endl;
+              << "Metric(MI)\t" << std::setw(10) << "Correlation\t" 
+	      << std::setw(10) << "zScore"
+	      << std::endl;
 
       collectLeftDiffusionStatistics();     // update
       BaselineCount  = getBaselineNumber();
@@ -987,7 +1000,10 @@ DWIQCInterlaceChecker<TImageType>
         outfile << "\t" << std::setw(9) << std::setiosflags(std::ios::fixed)
                 << std::setprecision(6) << std::setiosflags(std::ios::right);
         outfile << this->ResultsContainer[i].Correlation;
-        outfile << std::endl;
+	outfile << "\t" << std::setw(9) << std::setiosflags(std::ios::fixed)
+                << std::setprecision(6) << std::setiosflags(std::ios::right);
+        outfile << this->ResultsContainer[i].zScore;
+	outfile << std::endl;
         outfile.precision();
         outfile.setf(std::ios_base::unitbuf);
         }
@@ -999,7 +1015,10 @@ DWIQCInterlaceChecker<TImageType>
               << std::setw(10) << "AngleZ\t" << std::setw(10)
               << "TranslationX\t" << std::setw(10) << "TranslationY\t"
               << std::setw(10) << "TranslationZ\t" << std::setw(10)
-              << "Metric(MI)\t" << std::setw(10) << "Correlation" << std::endl;
+              << "Metric(MI)\t" << std::setw(10) << "Correlation\t" 
+	      << std::setw(10) << "zScore" 
+	      << std::endl;
+
       for( unsigned int i = 0; i < this->qcResults.size(); i++ )
         {
         if( !this->qcResults[i] )
@@ -1031,7 +1050,10 @@ DWIQCInterlaceChecker<TImageType>
           outfile << "\t" << std::setw(9) << std::setiosflags(std::ios::fixed)
                   << std::setprecision(6) << std::setiosflags(std::ios::right);
           outfile << this->ResultsContainer[i].Correlation;
-          outfile << std::endl;
+	  outfile << "\t" << std::setw(9) << std::setiosflags(std::ios::fixed)
+                  << std::setprecision(6) << std::setiosflags(std::ios::right);
+          outfile << this->ResultsContainer[i].zScore;
+	  outfile << std::endl;
           outfile.precision();
           outfile.setf(std::ios_base::unitbuf);
           }
@@ -1089,8 +1111,8 @@ DWIQCInterlaceChecker<TImageType>
               << m_CorrelationThresholdBaseline << std::endl;
       outfile << "Interlacewise_checking  CorrelationThresholdGradient "
               << m_CorrelationThresholdGradient << std::endl;
-      outfile << "Interlacewise_checking  CorrelationStedvTimesBaseline "
-              << m_CorrelationStedvTimesBaseline << std::endl;
+      outfile << "Interlacewise_checking  CorrelationStdevTimesBaseline "
+              << m_CorrelationStdevTimesBaseline << std::endl;
       outfile << "Interlacewise_checking  CorrelationStdevTimesGradient "
               << m_CorrelationStdevTimesGradient << std::endl;
       outfile << "Interlacewise_checking  TranslationThreshold "
@@ -1106,7 +1128,9 @@ DWIQCInterlaceChecker<TImageType>
               << std::setw(10) << "AngleZ\t" << std::setw(10)
               << "TranslationX\t" << std::setw(10) << "TranslationY\t"
               << std::setw(10) << "TranslationZ\t" << std::setw(10)
-              << "Metric(MI)\t" << std::setw(10) << "Correlation" << std::endl;
+              << "Metric(MI)\t" << std::setw(10) << "Correlation\t"
+	      << std::setw(10) << "zScore"
+	      << std::endl;
 
       collectLeftDiffusionStatistics();     // update
       BaselineCount  = getBaselineNumber();
@@ -1140,6 +1164,9 @@ DWIQCInterlaceChecker<TImageType>
         outfile << "\t" << std::setw(9) << std::setiosflags(std::ios::fixed)
                 << std::setprecision(6) << std::setiosflags(std::ios::right);
         outfile << this->ResultsContainer[i].Correlation;
+        outfile << "\t" << std::setw(9) << std::setiosflags(std::ios::fixed)
+                << std::setprecision(6) << std::setiosflags(std::ios::right);
+        outfile << this->ResultsContainer[i].zScore;
         outfile << std::endl;
         outfile.precision();
         outfile.setf(std::ios_base::unitbuf);
@@ -1151,7 +1178,10 @@ DWIQCInterlaceChecker<TImageType>
               << std::setw(10) << "AngleZ\t" << std::setw(10)
               << "TranslationX\t" << std::setw(10) << "TranslationY\t"
               << std::setw(10) << "TranslationZ\t" << std::setw(10)
-              << "Metric(MI)\t" << std::setw(10) << "Correlation" << std::endl;
+              << "Metric(MI)\t" << std::setw(10) << "Correlation\t" 
+	      << std::setw(10) << "zScore"
+	      << std::endl;
+
       for( unsigned int i = 0; i < this->qcResults.size(); i++ )
         {
         if( !this->qcResults[i] )
@@ -1183,6 +1213,9 @@ DWIQCInterlaceChecker<TImageType>
           outfile << "\t" << std::setw(9) << std::setiosflags(std::ios::fixed)
                   << std::setprecision(6) << std::setiosflags(std::ios::right);
           outfile << this->ResultsContainer[i].Correlation;
+          outfile << "\t" << std::setw(9) << std::setiosflags(std::ios::fixed)
+                  << std::setprecision(6) << std::setiosflags(std::ios::right);
+	  outfile << this->ResultsContainer[i].zScore;
           outfile << std::endl;
           outfile.precision();
           outfile.setf(std::ios_base::unitbuf);
