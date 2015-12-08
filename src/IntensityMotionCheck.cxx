@@ -1240,7 +1240,8 @@ bool CIntensityMotionCheck::SliceWiseCheck( DwiImageType::Pointer dwi )
       protocol->GetSliceCheckProtocol().reportFileMode );
     SliceChecker->SetReportType(protocol->GetReportType() );
 
-    SliceChecker->SetQuadFit(0);
+    //  SliceChecker->SetQuadFit(0); 
+    SliceChecker->SetQuadFit(1); //MPH: Changed to turn on quadratic fitting feature (with multiple b-valued data)
     SliceChecker->SetSubRegionalCheck( protocol->GetSliceCheckProtocol().bSubregionalCheck );
     SliceChecker->SetSubregionalCheckRelaxationFactor(
       protocol->GetSliceCheckProtocol().subregionalCheckRelaxationFactor );
@@ -1600,7 +1601,7 @@ bool CIntensityMotionCheck::InterlaceWiseCheck( DwiImageType::Pointer dwi )
       protocol->GetInterlaceCheckProtocol().correlationThresholdBaseline );
     InterlaceChecker->SetCorrelationThresholdGradient(
       protocol->GetInterlaceCheckProtocol().correlationThresholdGradient );
-    InterlaceChecker->SetCorrelationStedvTimesBaseline(
+    InterlaceChecker->SetCorrelationStdevTimesBaseline(
       protocol->GetInterlaceCheckProtocol().correlationDeviationBaseline );
     InterlaceChecker->SetCorrelationStdevTimesGradient(
       protocol->GetInterlaceCheckProtocol().correlationDeviationGradient );
