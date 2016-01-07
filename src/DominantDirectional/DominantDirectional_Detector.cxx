@@ -1,15 +1,7 @@
 /*=========================================================================
 
-Program:   NeuroLib
 Language:  C++
 Author:    Mahshid Farzinfar farzinfa@email.unc.edu
-
-Copyright (c) NIRAL, UNC. All rights reserved.
-See http://www.niral.unc.edu for details.
-
-This software is distributed WITHOUT ANY WARRANTY; without even
-the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
-PURPOSE.  See the above copyright notices for more information.
 
 =========================================================================*/
 
