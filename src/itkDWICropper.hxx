@@ -1,18 +1,10 @@
 /*=========================================================================
 
-Program:   NeuroLib
 Module:    $file: itkDWICropper.cpp $
 Language:  C++
 Date:      $Date: 2009-11-26 21:52:35 $
 Version:   $Revision: 1.8 $
 Author:    Zhexing Liu (liuzhexing@gmail.com)
-
-Copyright (c) NIRAL, UNC. All rights reserved.
-See http://www.niral.unc.edu for details.
-
-This software is distributed WITHOUT ANY WARRANTY; without even
-the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
-PURPOSE.  See the above copyright notices for more information.
 
 =========================================================================*/
 #ifndef _itkDWICropper_cpp
