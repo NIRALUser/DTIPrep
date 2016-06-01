@@ -129,7 +129,7 @@ if(NOT ( DEFINED "${extProjName}_SOURCE_DIR" OR ( DEFINED "USE_SYSTEM_${extProjN
       -DUSE_SYSTEM_ZLIB:BOOL=ON
       -Dzlib_DIR:PATH=${zlib_DIR}
       -DZLIB_ROOT:PATH=${zlib_DIR}
-      -DZLIB_INCLUDE_DIR:PATH=${zlib}_DIR}/include
+      -DZLIB_INCLUDE_DIR:PATH=${zlib_DIR}/include
       -DZLIB_LIBRARY:FILEPATH=${ZLIB_LIBRARY}
       -DUSE_BRAINSABC:BOOL=OFF
       -DUSE_BRAINSConstellationDetector:BOOL=OFF
@@ -167,7 +167,7 @@ if(NOT ( DEFINED "${extProjName}_SOURCE_DIR" OR ( DEFINED "USE_SYSTEM_${extProjN
 
   ### --- End Project specific additions
   set(${proj}_REPOSITORY "${git_protocol}://github.com/BRAINSia/BRAINSTools.git")
-  set(${proj}_GIT_TAG 33b739e7e6a414be41d44aca028b1304a2c0a440 )
+  set(${proj}_GIT_TAG b5e27412868ec9834814318fac3b04e3de95b451 )
   ExternalProject_Add(${proj}
     GIT_REPOSITORY ${${proj}_REPOSITORY}
     GIT_TAG ${${proj}_GIT_TAG}

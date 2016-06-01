@@ -33,7 +33,7 @@ set(${extProjName}_REQUIRED_VERSION ${${extProjName}_VERSION_MAJOR})  #If a requ
 #if(DEFINED ${extProjName}_DIR AND NOT EXISTS ${${extProjName}_DIR})
 #  message(FATAL_ERROR "${extProjName}_DIR variable is defined but corresponds to non-existing directory (${${extProjName}_DIR})")
 #endif()
-set(${proj}_DEPENDENCIES "")
+set(${proj}_DEPENDENCIES "VTK")
 
 if(NOT ( DEFINED "USE_SYSTEM_${extProjName}" AND "${USE_SYSTEM_${extProjName}}" ) )
   #message(STATUS "${__indent}Adding project ${proj}")
@@ -159,6 +159,8 @@ if(NOT ( DEFINED "USE_SYSTEM_${extProjName}" AND "${USE_SYSTEM_${extProjName}}" 
       -DITK_WRAPPING:BOOL=OFF #${BUILD_SHARED_LIBS} ## HACK:  QUICK CHANGE
       -DITK_USE_SYSTEM_DCMTK:BOOL=${${PROJECT_NAME}_BUILD_DICOM_SUPPORT}
       -DModule_ITKIOPhilipsREC:BOOL=ON
+      -DModule_ITKVtkGlue:BOOL=ON
+      -DVTK_DIR:PATH=${VTK_DIR}
       ${${proj}_TIFF_ARGS}
       ${${proj}_JPEG_ARGS}
       ${${proj}_ZLIB_ARGS}
@@ -170,8 +172,8 @@ if(NOT ( DEFINED "USE_SYSTEM_${extProjName}" AND "${USE_SYSTEM_${extProjName}}" 
     )
   ### --- End Project specific additions
   set(${proj}_REPOSITORY ${git_protocol}://itk.org/ITK.git)
-  set(${proj}_GIT_TAG 9dc4f194046cedb4b392e181caec73b629ae7564)
-  set(ITK_VERSION_ID ITK-4.6)
+  set(${proj}_GIT_TAG 74155d0b7059fde841832c92a9aec78c79bc68c0)
+  set(ITK_VERSION_ID ITK-4.8)
 
   ExternalProject_Add(${proj}
     GIT_REPOSITORY ${${proj}_REPOSITORY}

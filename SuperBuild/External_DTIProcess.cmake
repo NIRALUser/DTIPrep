@@ -72,11 +72,13 @@ if(NOT ( DEFINED "USE_SYSTEM_${extProjName}" AND "${USE_SYSTEM_${extProjName}}" 
     -DUSE_SYSTEM_SlicerExecutionModel:BOOL=ON
     -DDTIProcess_SUPERBUILD:BOOL=OFF
     -DEXECUTABLES_ONLY:BOOL=ON
+    -DSubversion_SVN_EXECUTABLE:PATH=${SVNCOMMAND}
+    -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_CURRENT_BINARY_DIR}/${proj}-install
     )
 
   ### --- End Project specific additions
   set( ${proj}_REPOSITORY ${git_protocol}://github.com/NIRALUser/DTIProcessToolkit.git)
-  set( ${proj}_GIT_TAG a7c39e485e492bc6b72f72348939d47835cd56cc )
+  set( ${proj}_GIT_TAG  da1615225b72eb99d9b3d3cebe075112d0c4008c )
   ExternalProject_Add(${proj}
     GIT_REPOSITORY ${${proj}_REPOSITORY}
     GIT_TAG ${${proj}_GIT_TAG}
@@ -91,14 +93,10 @@ if(NOT ( DEFINED "USE_SYSTEM_${extProjName}" AND "${USE_SYSTEM_${extProjName}}" 
     CMAKE_ARGS
       ${CMAKE_OSX_EXTERNAL_PROJECT_ARGS}
       ${COMMON_EXTERNAL_PROJECT_ARGS}
-      ${${proj}_CMAKE_OPTIONS}
-      ## We really do want to install to remove uncertainty about where the tools are
-      ## (on Windows, tools might be in subfolders, like "Release", "Debug",...)
-      -DCMAKE_INSTALL_PREFIX:PATH=${EXTERNAL_BINARY_DIRECTORY}/${proj}-install
+      ${${proj}_CMAKE_OPTIONS}      
     DEPENDS
-      ${${proj}_DEPENDENCIES}
-    INSTALL_COMMAND ""
-  )
+      ${${proj}_DEPENDENCIES}    
+  )  
   set(${extProjName}_DIR ${EXTERNAL_BINARY_DIRECTORY}/${proj}-build)
 else()
   if(${USE_SYSTEM_${extProjName}})
