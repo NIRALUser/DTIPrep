@@ -137,19 +137,31 @@ if( DTIPrep_BUILD_SLICER_EXTENSION )
   install(TARGETS DTIPrep DESTINATION ${HIDDEN_CLI_INSTALL_DIR} )
   install(TARGETS DTIPrepLauncher DESTINATION ${Slicer_INSTALL_CLIMODULES_BIN_DIR} )
 else()
+
+  set(bundle_name DTIPrep${version_number})
+  
+  set(MACOSX_BUNDLE_BUNDLE_NAME "${bundle_name}")
+  set(MACOSX_BUNDLE_INFO_STRING "DTIPrep: DWI/DTI Quality Control Tool")
+  set(MACOSX_BUNDLE_ICON_FILE "")
+  set(MACOSX_BUNDLE_GUI_IDENTIFIER "niral.unc.edu.${bundle_name}")
+  set(MACOSX_BUNDLE_LONG_VERSION_STRING "DTIPrep version - ${version_number}")
+  set(MACOSX_BUNDLE_SHORT_VERSION_STRING "${version_number}")
+  set(MACOSX_BUNDLE_BUNDLE_VERSION "${version_number}")
+  set(MACOSX_BUNDLE_COPYRIGHT "Copyright 2016 University of North Carolina , Chapel Hill.")
+
   if( UNIX AND NOT APPLE )
     SET( CMAKE_INSTALL_RPATH "\$ORIGIN" )
   endif()
-  add_executable( DTIPrep
+  add_executable( ${bundle_name}
     MACOSX_BUNDLE
     ${DTIPrep_SRCS}
     ${UISrcs}
     ${MOCSrcs}
     ${RCC_SRCS}
   )
-  target_link_libraries( DTIPrep ${DTIPrep_Libs} )
+  target_link_libraries( ${bundle_name} ${DTIPrep_Libs} )
   install(TARGETS
-          DTIPrep
+          ${bundle_name}
                  BUNDLE DESTINATION  bin
                  RUNTIME DESTINATION bin
                  LIBRARY DESTINATION lib
@@ -158,14 +170,14 @@ else()
 
   set(plugin_dest_dir bin)
   set(qtconf_dest_dir bin)
-  set(APPS "\${CMAKE_INSTALL_PREFIX}/bin/DTIPrep")
+  set(APPS "\${CMAKE_INSTALL_PREFIX}/bin/${bundle_name}")
   if(APPLE)
-    set(plugin_dest_dir DTIPrep.app/Contents/MacOS)
-    set(qtconf_dest_dir DTIPrep.app/Contents/Resources)
-    set(APPS "\${CMAKE_INSTALL_PREFIX}/bin/DTIPrep.app")
+    set(plugin_dest_dir ${bundle_name}.app/Contents/MacOS)
+    set(qtconf_dest_dir ${bundle_name}.app/Contents/Resources)
+    set(APPS "\${CMAKE_INSTALL_PREFIX}/bin/${bundle_name}.app")
   endif()
   if(WIN32)
-    set(APPS "\${CMAKE_INSTALL_PREFIX}/bin/DTIPrep.exe")
+    set(APPS "\${CMAKE_INSTALL_PREFIX}/bin/${bundle_name}.exe")
   endif()
 
   #--------------------------------------------------------------------------------
