@@ -138,7 +138,7 @@ if( DTIPrep_BUILD_SLICER_EXTENSION )
   install(TARGETS DTIPrepLauncher DESTINATION ${Slicer_INSTALL_CLIMODULES_BIN_DIR} )
 else()
 
-  set(bundle_name DTIPrep${version_number})
+  set(bundle_name DTIPrep)
   
   set(MACOSX_BUNDLE_BUNDLE_NAME "${bundle_name}")
   set(MACOSX_BUNDLE_INFO_STRING "DTIPrep: DWI/DTI Quality Control Tool")
