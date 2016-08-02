@@ -109,11 +109,11 @@ if(NOT ( DEFINED "USE_SYSTEM_${extProjName}" AND "${USE_SYSTEM_${extProjName}}" 
       -DZLIB_LIBRARY:STRING=${ZLIB_LIBRARY}
       )
   endif()
-  if( USE_ITK_Module_MGHIO )
-    set( ${proj}_CMAKE_ADDITIONAL_OPTIONS
-      -DModule_MGHIO:BOOL=ON  # Allow building of the MGHIO classes
-      )
-  endif()
+  
+  set( ${proj}_CMAKE_ADDITIONAL_OPTIONS
+    -DModule_MGHIO:BOOL=ON  # Allow building of the MGHIO classes
+    )
+  
   set(${proj}_WRAP_ARGS)
   #if(foo)
     #set(${proj}_WRAP_ARGS
