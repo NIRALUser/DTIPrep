@@ -24,7 +24,7 @@ ProjectDependancyPush(CACHED_proj ${proj})
 set(extProjName VTK) #The find_package known name
 set(proj        VTK) #This local name
 
-set(${extProjName}_REQUIRED_VERSION "6.1")  #If a required version is necessary, then set this, else leave blank
+set(${extProjName}_REQUIRED_VERSION "7.0")  #If a required version is necessary, then set this, else leave blank
 
 # Set dependency list
 set(${proj}_DEPENDENCIES "")
@@ -161,7 +161,7 @@ if(NOT ( DEFINED "USE_SYSTEM_${extProjName}" AND "${USE_SYSTEM_${extProjName}}" 
     )
   ### --- End Project specific additions
 
-  set(${proj}_GIT_TAG "v6.1.0")
+  set(${proj}_GIT_TAG "v7.0.0")
   set(${proj}_REPOSITORY ${git_protocol}://vtk.org/VTK.git)
 
   ExternalProject_Add(${proj}
@@ -197,7 +197,7 @@ if(NOT ( DEFINED "USE_SYSTEM_${extProjName}" AND "${USE_SYSTEM_${extProjName}}" 
     -P ${VTKPatchScript}
     )
 
-set(${extProjName}_DIR ${CMAKE_BINARY_DIR}/${proj}-install/lib/cmake/vtk-6.1)
+set(${extProjName}_DIR ${CMAKE_BINARY_DIR}/${proj}-install/lib/cmake/vtk-7.0)
 
 else()
   if(${USE_SYSTEM_${extProjName}})
