@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 2.8.9)
 cmake_policy(VERSION 2.8.9)
 
 set(LOCAL_PROJECT_NAME DTIPrepTools)
+project(${LOCAL_PROJECT_NAME})
 
 ## NOTE THERE SHOULD BE NO PROJECT STATEMENT HERE!
 ## This file acts as a simple switch to initiate
@@ -26,11 +27,9 @@ mark_as_advanced(${LOCAL_PROJECT_NAME}_SUPERBUILD)
 # Superbuild script
 #-----------------------------------------------------------------------------
 if(${LOCAL_PROJECT_NAME}_SUPERBUILD)
-  project(SuperBuild_${LOCAL_PROJECT_NAME})
   include("${CMAKE_CURRENT_SOURCE_DIR}/SuperBuild.cmake")
   return()
 else()
-  project(${LOCAL_PROJECT_NAME})
   include("${CMAKE_CURRENT_SOURCE_DIR}/${LOCAL_PROJECT_NAME}.cmake")
   return()
 endif()
