@@ -196,7 +196,7 @@ if( DTIPrep_BUILD_SLICER_EXTENSION )
   set(EXTENSION_DESCRIPTION "DTIPrep performs a "Study-specific Protocol" based automatic pipeline for DWI/DTI quality control and preparation")
   set(EXTENSION_ICONURL "https://www.nitrc.org/project/list_screenshots.php?group_id=283&screenshot_id=216")
   set(EXTENSION_DEPENDS "NA") # Specified as a space separated list or 'NA' if any
-  set(EXTENSION_BUILD_SUBDIRECTORY DTIPrep-build/DTIPrepTools-build)
+  set(EXTENSION_BUILD_SUBDIRECTORY ".")
 
   unsetForSlicer( NAMES SlicerExecutionModel_DIR ITK_DIR VTK_DIR CMAKE_C_COMPILER CMAKE_CXX_COMPILER CMAKE_CXX_FLAGS CMAKE_C_FLAGS ITK_LIBRARIES )
   find_package(Slicer REQUIRED)
