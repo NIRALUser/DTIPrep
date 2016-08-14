@@ -1,3 +1,5 @@
+include(${CMAKE_CURRENT_LIST_DIR}/Common.cmake)
+
 set(MODULE_NAME ${EXTENSION_NAME}) # Do not use 'project()'
 set(MODULE_TITLE ${MODULE_NAME})
 
@@ -117,8 +119,6 @@ include(${GenerateCLP_USE_FILE})
 include(${SlicerExecutionModel_USE_FILE})
 include(${SlicerExecutionModel_CMAKE_DIR}/SEMMacroBuildCLI.cmake)
 
-include(${CMAKE_CURRENT_LIST_DIR}/Common.cmake)
-
 if(USE_ANTS)
   # find ANTS includes
   message("ANTs_SOURCE_DIR=${ANTs_SOURCE_DIR}")
@@ -194,9 +194,10 @@ if( DTIPrep_BUILD_SLICER_EXTENSION )
   set(EXTENSION_CATEGORY "DWI/DTI Quality Control")
   set(EXTENSION_CONTRIBUTORS "Joy Matsui, Zhexing Liu, Clement Vachet, David Welch, Guido Gerig, kent williams, Mahshid Farzinfar, Sylvain Gouttard, Vincent Magnotta, Hans Johnson, Martin Styner, Francois Budin, Juan Prieto")
   set(EXTENSION_DESCRIPTION "DTIPrep performs a "Study-specific Protocol" based automatic pipeline for DWI/DTI quality control and preparation")
-  set(EXTENSION_ICONURL "https://www.nitrc.org/project/list_screenshots.php?group_id=283&screenshot_id=216")
+  set(EXTENSION_ICONURL "http://www.nitrc.org/project/screenshot.php?group_id=283&screenshot_id=608")
+  set(EXTENSION_SCREENSHOTURLS "http://www.nitrc.org/project/screenshot.php?group_id=283&screenshot_id=609 http://www.nitrc.org/project/screenshot.php?group_id=283&screenshot_id=610")
   set(EXTENSION_DEPENDS "NA") # Specified as a space separated list or 'NA' if any
-  set(EXTENSION_BUILD_SUBDIRECTORY ".")
+  set(EXTENSION_BUILD_SUBDIRECTORY ".")  
 
   unsetForSlicer( NAMES SlicerExecutionModel_DIR ITK_DIR VTK_DIR CMAKE_C_COMPILER CMAKE_CXX_COMPILER CMAKE_CXX_FLAGS CMAKE_C_FLAGS ITK_LIBRARIES )
   find_package(Slicer REQUIRED)

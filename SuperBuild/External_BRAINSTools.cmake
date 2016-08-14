@@ -61,6 +61,77 @@ if(NOT ( DEFINED "${extProjName}_SOURCE_DIR" OR ( DEFINED "USE_SYSTEM_${extProjN
   # Set CMake OSX variable to pass down the external project
   set(CMAKE_OSX_EXTERNAL_PROJECT_ARGS)
   if(APPLE)
+                      #This code was taken from BRAINSTools, for some reason is not working when doing the superbuild but if done here it works
+                      # Waiting universal binaries are supported and tested, complain if
+                      # multiple architectures are specified.
+                      if(NOT "${CMAKE_OSX_ARCHITECTURES}" STREQUAL "")
+                        list(LENGTH CMAKE_OSX_ARCHITECTURES arch_count)
+                        if(arch_count GREATER 1)
+                          message(FATAL_ERROR "error: Only one value (i386 or x86_64) should be associated with CMAKE_OSX_ARCHITECTURES.")
+                        endif()
+                      endif()
+
+                      # See CMake/Modules/Platform/Darwin.cmake)
+                      #   8.x == Mac OSX 10.4 (Tiger)
+                      #   9.x == Mac OSX 10.5 (Leopard)
+                      #  10.x == Mac OSX 10.6 (Snow Leopard)
+                      #  11.x == Mac OSX 10.7 (Lion)
+                      #  12.x == Mac OSX 10.8 (Mountain Lion)
+                      #  13.x == Mac OSX 10.9 (Mavericks)
+                      #  14.x == Mac OSX 10.10 (Yosemite)
+                      set(OSX_SDK_104_NAME "Tiger")
+                      set(OSX_SDK_105_NAME "Leopard")
+                      set(OSX_SDK_106_NAME "Snow Leopard")
+                      set(OSX_SDK_107_NAME "Lion")
+                      set(OSX_SDK_108_NAME "Mountain Lion")
+                      set(OSX_SDK_109_NAME "Mavericks")
+                      set(OSX_SDK_1010_NAME "Yosemite")
+                      set(OSX_SDK_1011_NAME "El Capitan")
+
+                      set(OSX_SDK_ROOTS
+                        /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs
+                        /Developer/SDKs
+                        )
+
+                      # Explicitly set the OSX_SYSROOT to the latest one, as its required
+                      #       when the SX_DEPLOYMENT_TARGET is explicitly set
+                      foreach(SDK_ROOT ${OSX_SDK_ROOTS})
+                        if( "x${CMAKE_OSX_SYSROOT}x" STREQUAL "xx")
+                          file(GLOB SDK_SYSROOTS "${SDK_ROOT}/MacOSX*.sdk")
+
+                          if(NOT "x${SDK_SYSROOTS}x" STREQUAL "xx")
+                            set(SDK_SYSROOT_NEWEST "")
+                            set(CMAKE_OSX_DEPLOYMENT_TARGET "0")
+                            # find the latest SDK
+                            foreach(SDK_ROOT_I ${SDK_SYSROOTS})
+                              # extract version from SDK
+                              string(REGEX MATCH "MacOSX([0-9]+\\.[0-9]+)\\.sdk" _match "${SDK_ROOT_I}")
+                              if("${CMAKE_MATCH_1}" VERSION_GREATER "${CMAKE_OSX_DEPLOYMENT_TARGET}")
+                                set(SDK_SYSROOT_NEWEST "${SDK_ROOT_I}")
+                                set(CMAKE_OSX_DEPLOYMENT_TARGET "${CMAKE_MATCH_1}")
+                              endif()
+                            endforeach()
+
+                            if(NOT "x${SDK_SYSROOT_NEWEST}x" STREQUAL "xx")
+                              string(REPLACE "." "" sdk_version_no_dot ${CMAKE_OSX_DEPLOYMENT_TARGET})
+                              set(OSX_NAME ${OSX_SDK_${sdk_version_no_dot}_NAME})
+                              set(CMAKE_OSX_ARCHITECTURES "x86_64" CACHE STRING "Force build for 64-bit ${OSX_NAME}." FORCE)
+                              set(CMAKE_OSX_SYSROOT "${SDK_SYSROOT_NEWEST}" CACHE PATH "Force build for 64-bit ${OSX_NAME}." FORCE)
+                              set(CMAKE_OSX_DEPLOYMENT_TARGET "${CMAKE_OSX_DEPLOYMENT_TARGET}" CACHE PATH "Force Deployment Target ${OSX_NAME}." FORCE)
+                              message(STATUS "Setting OSX_ARCHITECTURES to '${CMAKE_OSX_ARCHITECTURES}' as none was specified.")
+                              message(STATUS "Setting OSX_SYSROOT to latest '${CMAKE_OSX_SYSROOT}' as none was specified.")
+                              message(STATUS "Setting OSX_DEPLOYMENT_TARGET to latest '${CMAKE_OSX_DEPLOYMENT_TARGET}' as none was specified.")
+                            endif()
+                          endif()
+                        endif()
+                      endforeach()
+
+                      if(NOT "${CMAKE_OSX_SYSROOT}" STREQUAL "")
+                        if(NOT EXISTS "${CMAKE_OSX_SYSROOT}")
+                          message(FATAL_ERROR "error: CMAKE_OSX_SYSROOT='${CMAKE_OSX_SYSROOT}' does not exist")
+                        endif()
+                      endif()
+
     list(APPEND CMAKE_OSX_EXTERNAL_PROJECT_ARGS
       -DCMAKE_OSX_ARCHITECTURES=${CMAKE_OSX_ARCHITECTURES}
       -DCMAKE_OSX_SYSROOT=${CMAKE_OSX_SYSROOT}
@@ -167,7 +238,7 @@ if(NOT ( DEFINED "${extProjName}_SOURCE_DIR" OR ( DEFINED "USE_SYSTEM_${extProjN
 
   ### --- End Project specific additions
   set(${proj}_REPOSITORY "${git_protocol}://github.com/BRAINSia/BRAINSTools.git")
-  set(${proj}_GIT_TAG 98fe1ad2b9297e444d662d09dc83a9409fcf520a )
+  set(${proj}_GIT_TAG b0b4a0950b9cfa3abb7c6dd7f8314d15f2aa2a21 )
   ExternalProject_Add(${proj}
     GIT_REPOSITORY ${${proj}_REPOSITORY}
     GIT_TAG ${${proj}_GIT_TAG}

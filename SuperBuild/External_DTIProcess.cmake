@@ -70,6 +70,9 @@ if(NOT ( DEFINED "USE_SYSTEM_${extProjName}" AND "${USE_SYSTEM_${extProjName}}" 
     -DUSE_SYSTEM_ITK:BOOL=ON
     -DUSE_SYSTEM_VTK:BOOL=ON
     -DUSE_SYSTEM_SlicerExecutionModel:BOOL=ON
+    -DITK_DIR=${ITK_DIR}
+    -DVTK_DIR=${VTK_DIR}
+    -DSlicerExecutionModel_DIR=${SlicerExecutionModel_DIR}
     -DDTIProcess_SUPERBUILD:BOOL=OFF
     -DEXECUTABLES_ONLY:BOOL=ON
     -DSubversion_SVN_EXECUTABLE:PATH=${SVNCOMMAND}
