@@ -12,33 +12,12 @@ enable_testing()
 include(CTest)
 
 #-----------------------------------------------------------------------------
-include(${CMAKE_CURRENT_SOURCE_DIR}/Common.cmake)
+
 #-----------------------------------------------------------------------------
 #If it is build as an extension
 #-----------------------------------------------------------------------------
-if( DTIPrep_BUILD_SLICER_EXTENSION )
-  set( EXTERNAL_SOURCE_IN_BINARY_DIR ON)
-  set( USE_SYSTEM_VTK ON CACHE BOOL "Use system VTK" FORCE )
-  #VTK_VERSION_MAJOR is define but not a CACHE variable
-  set( VTK_VERSION_MAJOR ${VTK_VERSION_MAJOR} CACHE STRING "Choose the expected VTK major version to build Slicer (5 or 6).")
-  set( USE_SYSTEM_DCMTK ON CACHE BOOL "Use system DCMTK" FORCE )
-  set( USE_SYSTEM_Teem ON CACHE BOOL "Use system Teem" FORCE )
-  set( BUILD_SHARED_LIBS OFF CACHE BOOL "Use shared libraries" FORCE)
-  unsetForSlicer(NAMES CMAKE_MODULE_PATH CMAKE_C_COMPILER CMAKE_CXX_COMPILER DCMTK_DIR ITK_DIR SlicerExecutionModel_DIR VTK_DIR QT_QMAKE_EXECUTABLE ITK_VERSION_MAJOR CMAKE_CXX_FLAGS CMAKE_C_FLAGS Teem_DIR)
-  find_package(Slicer REQUIRED)
-  unsetAllForSlicerBut( NAMES VTK_DIR QT_QMAKE_EXECUTABLE DCMTK_DIR Teem_DIR )
-  resetForSlicer(NAMES CMAKE_MODULE_PATH CMAKE_C_COMPILER CMAKE_CXX_COMPILER CMAKE_CXX_FLAGS CMAKE_C_FLAGS ITK_DIR SlicerExecutionModel_DIR  ITK_VERSION_MAJOR )
-  if( APPLE )
-    set( CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,-rpath,@loader_path/../../../../../")
-  endif()
-  find_package(Subversion REQUIRED )
-else()
-  set( USE_ITK_Module_MGHIO ON )
-  set( SUPERBUILD_NOT_EXTENSION TRUE )
-  option(USE_DTIProcess "Build DTIProcess" ON)
-endif()
-option(USE_NIRALUtilities "Build NIRALUtilities" ON)
 
+include(${CMAKE_CURRENT_LIST_DIR}/Common.cmake)
 
 if( EXTERNAL_SOURCE_IN_BINARY_DIR )
   set( EXTERNAL_SOURCE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} )
@@ -133,12 +112,14 @@ option(USE_SYSTEM_Teem "Build using external Teem" OFF)
 option(USE_SYSTEM_zlib "Build using external zlib" OFF)
 option(USE_ANTs "Build BRAINSTools with ANTs" OFF)
 option(${PROJECT_NAME}_BUILD_FFTW_SUPPORT "Build external FFTW" OFF)
+option(USE_SYSTEM_DTIProcess "Build using external DTIProcess" OFF)
+option(USE_SYSTEM_niral_utilities "Build using external niral_utilities" OFF)
 #option(${PROJECT_NAME}_BUILD_DICOM_SUPPORT "Build Dicom Support" ON)
 
 #------------------------------------------------------------------------------
 # ${LOCAL_PROJECT_NAME} dependency list
 #------------------------------------------------------------------------------
-set( ${LOCAL_PROJECT_NAME}_DEPENDENCIES DCMTK ITKv4 SlicerExecutionModel VTK BRAINSTools )
+set( ${LOCAL_PROJECT_NAME}_DEPENDENCIES DCMTK ITKv4 SlicerExecutionModel VTK DTIProcess niral_utilities BRAINSTools)
 set( ${PROJECT_NAME}_BUILD_DICOM_SUPPORT ON )
 set( ${PROJECT_NAME}_BUILD_ZLIB_SUPPORT ON )
 if( UNIX )
@@ -311,17 +292,6 @@ if(verbose)
   endforeach()
 endif()
 
-
-if(USE_DTIProcess)
-  include(${CMAKE_CURRENT_LIST_DIR}/SuperBuild/External_DTIProcess.cmake)
-  list( APPEND ${LOCAL_PROJECT_NAME}_DEPENDENCIES DTIProcess )
-endif()
-
-if(USE_NIRALUtilities)
-  include(${CMAKE_CURRENT_LIST_DIR}/SuperBuild/External_niral_utilities.cmake)
-  list( APPEND ${LOCAL_PROJECT_NAME}_DEPENDENCIES niral_utilities )
-endif()
-
 #------------------------------------------------------------------------------
 # Configure and build
 #------------------------------------------------------------------------------
@@ -338,8 +308,6 @@ ExternalProject_Add(${proj}
     ${COMMON_EXTERNAL_PROJECT_ARGS}
     -D${LOCAL_PROJECT_NAME}_SUPERBUILD:BOOL=OFF
     -DBUILD_TESTING:BOOL=${BUILD_TESTING}
-    -DUSE_NIRALUtilities:BOOL=${USE_NIRALUtilities}
-    -DUSE_DTIProcess:BOOL=${USE_DTIProcess}
   INSTALL_COMMAND ""
   )
 

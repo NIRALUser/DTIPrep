@@ -22,7 +22,6 @@ project(${LOCAL_PROJECT_NAME})
 #-----------------------------------------------------------------------------
 option(${LOCAL_PROJECT_NAME}_SUPERBUILD "Build ${LOCAL_PROJECT_NAME} and the projects it depends on via SuperBuild.cmake." ON)
 mark_as_advanced(${LOCAL_PROJECT_NAME}_SUPERBUILD)
-
 #-----------------------------------------------------------------------------
 # Superbuild script
 #-----------------------------------------------------------------------------
