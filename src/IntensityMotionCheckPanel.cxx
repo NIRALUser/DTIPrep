@@ -3732,6 +3732,10 @@ void IntensityMotionCheckPanel::QCedResultUpdate()
 
     }
 
+    //When the QC is loaded then we set the variable has computed to indicate that a processing has been done before. 
+    std::cout<<std::endl<<"QC LOADED!"<<std::endl;
+    myIntensityThread.SetHasComputed(true);
+
   // outfile.close();
 }
 

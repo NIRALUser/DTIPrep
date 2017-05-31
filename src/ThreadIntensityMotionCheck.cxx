@@ -225,5 +225,5 @@ void CThreadIntensityMotionCheck::run()
   emit LoadQCedDWI( QString::fromStdString( m_IntensityMotionCheck->GetOutputDWIFileName() ) );
   emit QCedResultUpdate();
   emit Set_VCStatus();  // initialize the VC_Status in DTIPanel
-  m_hasComputedOnce = true ;
+  this->SetHasComputed(true);
 }
