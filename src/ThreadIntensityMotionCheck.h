@@ -39,6 +39,9 @@ public:
   }
 
   bool HasComputed() ;
+  void SetHasComputed(bool computed){
+    m_hasComputedOnce = computed;
+  }
   void SetRecompute( bool val ) ;
   void SetRecomputeOutputFileName( std::string filename ) ;
 

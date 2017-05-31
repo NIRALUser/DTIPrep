@@ -83,8 +83,8 @@ if(NOT ( DEFINED "USE_SYSTEM_${extProjName}" AND "${USE_SYSTEM_${extProjName}}" 
   AutoConf_FLAGS(${proj}_CXXFLAGS CXX "${APPLE_CFLAGS}")
 
   ### --- End Project specific additions
-  set(${proj}_URL "http://download.osgeo.org/libtiff/tiff-4.0.3.tar.gz")
-  set(${proj}_MD5 "051c1068e6a0627f461948c365290410")
+  set(${proj}_URL "http://download.osgeo.org/libtiff/tiff-4.0.4.tar.gz")
+  set(${proj}_MD5 "9aee7107408a128c0c7b24286c0db900")
   ExternalProject_Add(${proj}
     URL ${${proj}_URL}
     ${URL_HASH_CLAUSE}
