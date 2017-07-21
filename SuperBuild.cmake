@@ -322,7 +322,7 @@ ExternalProject_Add(${proj}
   DEPENDS ${${LOCAL_PROJECT_NAME}_DEPENDENCIES}
   DOWNLOAD_COMMAND ""
   SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}
-  BINARY_DIR ${LOCAL_PROJECT_NAME}-build
+  BINARY_DIR ${LOCAL_PROJECT_NAME}-build  
   CMAKE_GENERATOR ${gen}
   CMAKE_ARGS
     --no-warn-unused-cli # HACK Only expected variables should be passed down.
@@ -330,7 +330,10 @@ ExternalProject_Add(${proj}
     ${COMMON_EXTERNAL_PROJECT_ARGS}
     -D${LOCAL_PROJECT_NAME}_SUPERBUILD:BOOL=OFF
     -DBUILD_TESTING:BOOL=${BUILD_TESTING}
-  INSTALL_COMMAND ""
+    -DCMAKE_INSTALL_PREFIX=${CMAKE_CURRENT_BINARY_DIR}/${LOCAL_PROJECT_NAME}-install
+    -DUSE_NIRALUtilities=${USE_NIRALUtilities}
+    -DUSE_DTIProcess=${USE_DTIProcess}
+  #INSTALL_COMMAND ""
   )
 
 ## Force rebuilding of the main subproject every time building from super structure

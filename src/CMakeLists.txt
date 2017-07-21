@@ -221,6 +221,8 @@ else()
   # To Create a package, one can run "cpack -G DragNDrop CPackConfig.cmake" on Mac OS X
   # where CPackConfig.cmake is created by including CPack
   # And then there's ways to customize this as well
-  set(CPACK_BINARY_DRAGNDROP ON)
+  if(APPLE)
+    set(CPACK_BINARY_DRAGNDROP ON)
+  endif()
   include(CPack)
 endif()
