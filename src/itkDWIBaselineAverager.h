@@ -17,6 +17,7 @@ Author:    Zhexing Liu (liuzhexing@gmail.com)
 #include "vnl/vnl_matrix_fixed.h"
 #include "itkVectorContainer.h"
 #include "itkVersorRigid3DTransform.h"
+#include "itkNumberToString.h"
 
 #if (ITK_VERSION_MAJOR < 4)
 typedef int ThreadIdType;
@@ -254,6 +255,8 @@ private:
 
   /** container to hold gradient to base wise registration */
   // std::vector<std::vector<struRigidRegResult> > GradientToBaselineReg;
+
+  NumberToString<float> float_converter;
 
   void parseGradientDirections();
 
