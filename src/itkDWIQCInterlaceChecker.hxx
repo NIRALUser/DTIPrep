@@ -260,15 +260,6 @@ DWIQCInterlaceChecker<TImageType>
   typedef itk::ImageRegistrationMethod<GradientImageType,
                                        GradientImageType> RegistrationType;
 
-  typedef GradientImageType::SpacingType
-  SpacingType;
-  typedef GradientImageType::PointType
-  OriginType;
-  typedef GradientImageType::RegionType
-  RegionType;
-  typedef GradientImageType::SizeType
-  SizeType;
-
   MetricType::Pointer       metric      = MetricType::New();
   OptimizerType::Pointer    optimizer    = OptimizerType::New();
   InterpolatorType::Pointer interpolator  = InterpolatorType::New();

@@ -522,7 +522,6 @@ DWICropper<TImageType>
   InputImageConstPointer inputPtr = this->GetInput();
   OutputImagePointer     outputPtr = this->GetOutput();
 
-  typedef ImageRegionConstIterator<TImageType> constDWIIterator;
   typedef ImageRegionIterator<TImageType>      DWIIterator;
 
   DWIIterator iOutput( outputPtr, outputRegionForThread);
