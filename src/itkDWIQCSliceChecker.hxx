@@ -1490,12 +1490,12 @@ DWIQCSliceChecker<TImageType>
 
   // to check
   int                    badcount = 0;
-  int                    baselineBadcount = 0;
+  // int                    baselineBadcount = 0;
   InputImageConstPointer inputPtr = this->GetInput();
   // check region0
   for( unsigned int i = 0; i < ResultsContainer0.size(); i++ )
     {
-    baselineBadcount = 0;
+    // baselineBadcount = 0;
     badcount = 0;
     if( this->qcResults[i] )    // only check the left gradients
       {
@@ -1574,7 +1574,7 @@ DWIQCSliceChecker<TImageType>
   // check region1
   for( unsigned int i = 0; i < ResultsContainer1.size(); i++ )
     {
-    baselineBadcount = 0;
+    // baselineBadcount = 0;
     badcount = 0;
     if( this->qcResults[i] )    // only check the left gradients
       {
@@ -1653,7 +1653,7 @@ DWIQCSliceChecker<TImageType>
   // check region2
   for( unsigned int i = 0; i < ResultsContainer2.size(); i++ )
     {
-    baselineBadcount = 0;
+    // baselineBadcount = 0;
     badcount = 0;
     if( this->qcResults[i] )    // only check the left gradients
       {
@@ -1732,7 +1732,7 @@ DWIQCSliceChecker<TImageType>
   // check region3
   for( unsigned int i = 0; i < ResultsContainer3.size(); i++ )
     {
-    baselineBadcount = 0;
+    // baselineBadcount = 0;
     badcount = 0;
     if( this->qcResults[i] )    // only check the left gradients
       {
@@ -1806,7 +1806,7 @@ DWIQCSliceChecker<TImageType>
   // check region4
   for( unsigned int i = 0; i < ResultsContainer4.size(); i++ )
     {
-    baselineBadcount = 0;
+    // baselineBadcount = 0;
     badcount = 0;
     if( this->qcResults[i] )    // only check the left gradients
       {
@@ -2411,7 +2411,7 @@ DWIQCSliceChecker<TImageType>
     outfile.open( GetReportFileName().c_str() );
     }
 
-  int DWICount, BaselineCount;
+  // int DWICount, BaselineCount;
 
   SliceWiseCheckResult m_SliceWiseCheckResult;
 
@@ -2583,8 +2583,8 @@ DWIQCSliceChecker<TImageType>
       outfile << std::endl;
 
       collectLeftDiffusionStatistics();    // update
-      BaselineCount  = getBaselineNumber();
-      DWICount    = getGradientNumber();
+      // BaselineCount  = getBaselineNumber();
+      // DWICount    = getGradientNumber();
       for( unsigned int j = 0; j < this->ResultsContainer[0].size(); j++ )
         {
         // double baselinemean=0.0, DWImean=0.0, baselinedeviation=0.0,
@@ -2942,8 +2942,8 @@ DWIQCSliceChecker<TImageType>
       outfile << std::endl;
 
       collectLeftDiffusionStatistics();    // update
-      BaselineCount  = getBaselineNumber();
-      DWICount    = getGradientNumber();
+      // BaselineCount  = getBaselineNumber();
+      // DWICount    = getGradientNumber();
       for( unsigned int j = 0; j < this->ResultsContainer.size(); j++ )
         {
         // double baselinemean=0.0, DWImean=0.0, baselinedeviation=0.0,

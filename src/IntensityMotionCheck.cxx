@@ -484,8 +484,7 @@ void CIntensityMotionCheck::GetImagesInformation()
   GradientContainer->clear();
 
   DwiImageType::DirectionType direction = m_DwiOriginalImage->GetDirection();
-
-  int space;
+  // int space;
   for( ; itKey != imgMetaKeys.end(); itKey++ )
     {
     // double x,y,z;
@@ -502,21 +501,21 @@ void CIntensityMotionCheck::GetImagesInformation()
       m_readb0 = true;
       m_b0 = atof( metaString.c_str() );
       }
-    else if( itKey->find("space") != std::string::npos )
-      {
-      if( metaString.compare("right-anterior-superior") )
-        {
-        space = Protocol::SPACE_RAS;
-        }
-      else if( metaString.compare("left-posterior-inferior") )
-        {
-        space = Protocol::SPACE_LPI;
-        }
-      else
-        {
-        space = Protocol::SPACE_UNKNOWN;
-        }
-      }
+    // else if( itKey->find("space") != std::string::npos )
+    //   {
+    //   if( metaString.compare("right-anterior-superior") )
+    //     {
+    //     space = Protocol::SPACE_RAS;
+    //     }
+    //   else if( metaString.compare("left-posterior-inferior") )
+    //     {
+    //     space = Protocol::SPACE_LPI;
+    //     }
+    //   else
+    //     {
+    //     space = Protocol::SPACE_UNKNOWN;
+    //     }
+    //   }
     else if( itKey->find("modality") != std::string::npos )
       {
       if( metaString != "DWMRI" )
@@ -5837,8 +5836,8 @@ bool CIntensityMotionCheck::DiffusionCheck( DwiImageType::Pointer dwi)
         bool bColinear = false;
         // double gradientMinAngle = 90.0;
         double gradientMinAngle = 0.0;
-        double gradMagnitude = 0.0;
-        double gradProtocolMagnitude = 0.0;
+        // double gradMagnitude = 0.0;
+        // double gradProtocolMagnitude = 0.0;
         // if ( vcl_abs(protocol->GetDiffusionProtocol().gradients[i][0]
         //  - GradContainer->ElementAt(i)[0]) < 0.00001
         //  && vcl_abs(protocol->GetDiffusionProtocol().gradients[i][1]
@@ -5905,8 +5904,8 @@ bool CIntensityMotionCheck::DiffusionCheck( DwiImageType::Pointer dwi)
               = vcl_min( gradientAngle, vcl_abs(180.0 - gradientAngle) );
 
             // Now see if the gradients are colinear in opposite directions;
-            gradMagnitude = gradientFromImage.magnitude();
-            gradProtocolMagnitude = gradientFromProtocol.magnitude();
+            // gradMagnitude = gradientFromImage.magnitude();
+            // gradProtocolMagnitude = gradientFromProtocol.magnitude();
             // std::cout << "gradProtocolMagnitude: "
             // << gradProtocolMagnitude << std::endl;
             if( gradientMinAngle < gradientToleranceForSameness )
