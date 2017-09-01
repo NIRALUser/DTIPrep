@@ -76,7 +76,7 @@ throw ( ExceptionObject )
     typename GaussianKernelFunctionType::Pointer gaussianKF =
       GaussianKernelFunctionType::New();
     m_KernelFunction[i] =
-      dynamic_cast<KernelFunction *>(gaussianKF.GetPointer() );
+      dynamic_cast<KernelFunctionBase<double> *>(gaussianKF.GetPointer() );
     }
   // check whether there is a mask
   for( unsigned int j = 0; j < this->m_NumberOfImages; j++ )
