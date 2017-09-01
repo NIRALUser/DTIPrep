@@ -27,7 +27,7 @@
 #include "itkImageMaskSpatialObject.h"
 
 // Project specific headers
-#include "itkBSplineTransform.h"
+#include "itkBSplineDeformableTransform.h"
 #include "UserMacro.h"
 
 #include <vector>
@@ -150,8 +150,8 @@ public:
   /** Get the region over which the metric will be computed */
   itkGetConstReferenceMacro( FixedImageRegion, ImageRegionType );
 
-  typedef itk::BSplineTransform<double,
-                                itkGetStaticConstMacro(ImageDimension), 3> BSplineTransformType;
+  typedef itk::BSplineDeformableTransform<double,
+                                          itkGetStaticConstMacro(ImageDimension), 3> BSplineTransformType;
   typedef typename BSplineTransformType::Pointer BSplineTransformTypePointer;
 
   /** Set/Get the i'th Bspline Transform */

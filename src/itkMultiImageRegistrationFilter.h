@@ -7,8 +7,8 @@
 #include "UnivariateEntropyMultiImageMetric.h"
 
 #include "itkAffineTransform.h"
-#include "itkBSplineTransform.h"
-#include "itkBSplineTransformInitializer.h"
+#include "itkBSplineDeformableTransform.h"
+#include "itkBSplineDeformableTransformInitializer.h"
 
 #include "itkGradientDescentOptimizer.h"
 #include "GradientDescentLineSearchOptimizer.h"
@@ -113,7 +113,7 @@ public:
     // Output message about registration
     std::cout << "message: metric type: " << metric->GetNameOfClass() << std::endl;
     std::cout << "message: Transform Type: " << registration->GetTransformArray(0)->GetNameOfClass();
-    if( !strcmp(registration->GetTransformArray(0)->GetNameOfClass(), "BSplineTransform") )
+    if( !strcmp(registration->GetTransformArray(0)->GetNameOfClass(), "BSplineDeformableTransform") )
       {
       std::cout << " (" << bsplineGridSize << "x" << bsplineGridSize << "x" << bsplineGridSize << ")";
       }
@@ -237,9 +237,9 @@ public:
   typedef CenterPointType::ValueType               CoordRepType;
   typedef ContinuousIndex<CoordRepType, Dimension> ContinuousIndexType;
   typedef ContinuousIndexType::ValueType           ContinuousIndexValueType;
-
-  typedef BSplineTransform<ScalarType, Dimension, SplineOrder>         BSplineTransformType;
-  typedef BSplineTransformInitializer<BSplineTransformType, ImageType> BSplineInitializerType;
+  typedef BSplineDeformableTransform<ScalarType, Dimension, SplineOrder>
+  BSplineTransformType;
+  typedef BSplineDeformableTransformInitializer<BSplineTransformType, ImageType> BSplineInitializerType;
 
   typedef RegistrationType::ParametersType                     ParametersType;
   typedef ResampleImageFilter<ImageType, ImageType>            ResampleFilterType;

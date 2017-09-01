@@ -237,13 +237,8 @@ MultiImageRegistrationFilter
     m_BsplineInitializerArray[i]->SetTransform(m_BsplineTransformArray[i]);
     m_BsplineInitializerArray[i]->SetImage(m_ImagePyramidArray[i]->GetOutput(m_ImagePyramidArray[i]->GetNumberOfLevels()
                                                                              - 1) );
+    m_BsplineInitializerArray[i]->SetNumberOfGridNodesInsideTheImage(m_BsplineInitialGridSize);
     m_BsplineInitializerArray[i]->InitializeTransform();
-
-    // Set the mesh size
-    BSplineTransformType::MeshSizeType meshSize;
-    meshSize.Fill( m_BsplineInitialGridSize );
-    m_BsplineTransformArray[i]->SetTransformDomainMeshSize( meshSize );
-
     unsigned int numberOfParameters =
       m_BsplineTransformArray[i]->GetNumberOfParameters();
 
