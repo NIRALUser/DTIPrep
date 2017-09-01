@@ -492,7 +492,6 @@ DWIQCInterlaceChecker<TImageType>
     componentExtractor->SetIndex( j );
     componentExtractor->Update();
 
-    typedef itk::ImageRegionIteratorWithIndex<GradientImageType> IteratorType;
     IteratorType iterateGradient(
       componentExtractor->GetOutput(),
       componentExtractor->GetOutput()->GetLargestPossibleRegion() );

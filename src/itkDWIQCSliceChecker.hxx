@@ -344,9 +344,9 @@ DWIQCSliceChecker<TImageType>
                            2>                   ShortSliceImageType;
 
         typedef itk::DiscreteGaussianImageFilter<SliceImageType,
-                                                 ShortSliceImageType> FilterType;
-        typename FilterType::Pointer smoother1 = FilterType::New();
-        typename FilterType::Pointer smoother2 = FilterType::New();
+                                                 ShortSliceImageType> SmootherFilterType;
+        typename SmootherFilterType::Pointer smoother1 = SmootherFilterType::New();
+        typename SmootherFilterType::Pointer smoother2 = SmootherFilterType::New();
 
         smoother1->SetInput( filter1->GetOutput() );
         smoother1->SetVariance( m_GaussianVariance );
@@ -4031,9 +4031,9 @@ DWIQCSliceChecker<TImageType>
                            2>                   ShortSliceImageType;
 
         typedef itk::DiscreteGaussianImageFilter<SliceImageType,
-                                                 ShortSliceImageType> FilterType;
-        typename FilterType::Pointer smoother1 = FilterType::New();
-        typename FilterType::Pointer smoother2 = FilterType::New();
+                                                 ShortSliceImageType> SmootherFilterType;
+        typename SmootherFilterType::Pointer smoother1 = SmootherFilterType::New();
+        typename SmootherFilterType::Pointer smoother2 = SmootherFilterType::New();
 
         smoother1->SetInput( filter1->GetOutput() );
         smoother1->SetVariance( GaussianVariance );
