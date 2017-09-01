@@ -42,7 +42,6 @@ set( ITKModules
   ITKRegistrationCommon
   ITKOptimizersv4
   ITKConnectedComponents
-  ITKV3Compatibility
   ITKMathematicalMorphology
   ITKBinaryMathematicalMorphology
   ITKRegionGrowing

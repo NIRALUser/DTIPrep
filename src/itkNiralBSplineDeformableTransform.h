@@ -15,13 +15,15 @@
  *  limitations under the License.
  *
  *=========================================================================*/
-#ifndef itkBSplineDeformableTransform_h
-#define itkBSplineDeformableTransform_h
+#ifndef itkNiralBSplineDeformableTransform_h
+#define itkNiralBSplineDeformableTransform_h
 
 #include "itkConfigure.h" // Needed to determine value of ITKV3_COMPATIBILITY
 #include "itkBSplineBaseTransform.h"
 
 namespace itk
+{
+namespace niral
 {
 /** \class BSplineDeformableTransform
  *
@@ -367,10 +369,11 @@ private:
   void UpdateValidGridRegion();
 
 }; // class BSplineDeformableTransform
+}  // namespace niral
 }  // namespace itk
 
 #ifndef ITK_MANUAL_INSTANTIATION
-#include "itkBSplineDeformableTransform.hxx"
+#include "itkNiralBSplineDeformableTransform.hxx"
 #endif
 
-#endif /* itkBSplineDeformableTransform_h */
+#endif /* itkNiralBSplineDeformableTransform_h */

@@ -15,16 +15,18 @@
  *  limitations under the License.
  *
  *=========================================================================*/
-#ifndef itkBSplineDeformableTransform_hxx
-#define itkBSplineDeformableTransform_hxx
+#ifndef itkNiralBSplineDeformableTransform_hxx
+#define itkNiralBSplineDeformableTransform_hxx
 
-#include "itkBSplineDeformableTransform.h"
+#include "itkNiralBSplineDeformableTransform.h"
 #include "itkContinuousIndex.h"
 #include "itkImageScanlineConstIterator.h"
 #include "itkImageRegionConstIteratorWithIndex.h"
 #include "itkIdentityTransform.h"
 
 namespace itk
+{
+namespace niral
 {
 
 // Constructor with default arguments
@@ -648,6 +650,7 @@ BSplineDeformableTransform<TParametersValueType, NDimensions, VSplineOrder>
     }
 }
 
-} // namespace
+} // namespace niral
+} // namespace itk
 
 #endif

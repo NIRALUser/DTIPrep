@@ -15,12 +15,14 @@
  *  limitations under the License.
  *
  *=========================================================================*/
-#ifndef itkBSplineDeformableTransformInitializer_hxx
-#define itkBSplineDeformableTransformInitializer_hxx
+#ifndef itkNiralBSplineDeformableTransformInitializer_hxx
+#define itkNiralBSplineDeformableTransformInitializer_hxx
 
-#include "itkBSplineDeformableTransformInitializer.h"
+#include "itkNiralBSplineDeformableTransformInitializer.h"
 
 namespace itk
+{
+namespace niral
 {
 template< typename TTransform, typename TImage >
 BSplineDeformableTransformInitializer< TTransform, TImage >
@@ -143,6 +145,7 @@ BSplineDeformableTransformInitializer< TTransform, TImage >
   os << "Grid size inside the image " << this->m_GridSizeInsideTheImage << std::endl;
   os << "Number of grid nodes inside the image " << this->m_NumberOfGridNodesInsideTheImage << std::endl;
 }
+}  // namespace niral
 }  // namespace itk
 
 #endif

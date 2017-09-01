@@ -15,11 +15,11 @@
  *  limitations under the License.
  *
  *=========================================================================*/
-#ifndef itkBSplineDeformableTransformInitializer_h
-#define itkBSplineDeformableTransformInitializer_h
+#ifndef itkNiralBSplineDeformableTransformInitializer_h
+#define itkNiralBSplineDeformableTransformInitializer_h
 
-#include "itkConfigure.h" //Needed to determine value of ITKV3_COMPATIBILITY
-#ifdef ITKV3_COMPATIBILITY
+//#include "itkConfigure.h" //Needed to determine value of ITKV3_COMPATIBILITY
+//#ifdef ITKV3_COMPATIBILITY
 
 #include "itkObject.h"
 #include "itkObjectFactory.h"
@@ -27,6 +27,8 @@
 #include <iostream>
 
 namespace itk
+{
+namespace niral
 {
 /** \class BSplineDeformableTransformInitializer
  * \brief BSplineDeformableTransformInitializer is a helper class intended to
@@ -122,14 +124,15 @@ private:
 
   unsigned int m_NumberOfGridNodesInsideTheImage;
 }; //class BSplineDeformableTransformInitializer
+}  // namespace niral
 }  // namespace itk
 
 #ifndef ITK_MANUAL_INSTANTIATION
-#include "itkBSplineDeformableTransformInitializer.hxx"
+#include "itkNiralBSplineDeformableTransformInitializer.hxx"
 #endif
 
-#else  // def ITKV3_COMPATIBILITY
-#error "itkBSplineDeformableTransformInitializer.h should only be included for ITKv3 compatibility. Build with ITKV3_COMPATIBILITY=ON to use this"
-#endif // def ITKV3_COMPATIBILITY
+//#else  // def ITKV3_COMPATIBILITY
+//#error "itkBSplineDeformableTransformInitializer.h should only be included for ITKv3 compatibility. Build with ITKV3_COMPATIBILITY=ON to use this"
+//#endif // def ITKV3_COMPATIBILITY
 
-#endif /* itkBSplineDeformableTransformInitializer_h */
+#endif /* itkNiralBSplineDeformableTransformInitializer_h */

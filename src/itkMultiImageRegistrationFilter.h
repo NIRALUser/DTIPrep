@@ -7,8 +7,8 @@
 #include "UnivariateEntropyMultiImageMetric.h"
 
 #include "itkAffineTransform.h"
-#include "itkBSplineDeformableTransform.h"
-#include "itkBSplineDeformableTransformInitializer.h"
+#include "itkNiralBSplineDeformableTransform.h"
+#include "itkNiralBSplineDeformableTransformInitializer.h"
 
 #include "itkGradientDescentOptimizer.h"
 #include "GradientDescentLineSearchOptimizer.h"
@@ -237,9 +237,9 @@ public:
   typedef CenterPointType::ValueType               CoordRepType;
   typedef ContinuousIndex<CoordRepType, Dimension> ContinuousIndexType;
   typedef ContinuousIndexType::ValueType           ContinuousIndexValueType;
-  typedef BSplineDeformableTransform<ScalarType, Dimension, SplineOrder>
+  typedef niral::BSplineDeformableTransform<ScalarType, Dimension, SplineOrder>
   BSplineTransformType;
-  typedef BSplineDeformableTransformInitializer<BSplineTransformType, ImageType> BSplineInitializerType;
+  typedef niral::BSplineDeformableTransformInitializer<BSplineTransformType, ImageType> BSplineInitializerType;
 
   typedef RegistrationType::ParametersType                     ParametersType;
   typedef ResampleImageFilter<ImageType, ImageType>            ResampleFilterType;
