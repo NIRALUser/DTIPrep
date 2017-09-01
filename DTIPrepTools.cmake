@@ -193,7 +193,7 @@ if( DTIPrep_BUILD_SLICER_EXTENSION )
   set(EXTENSION_HOMEPAGE "https://www.nitrc.org/projects/dtiprep/")
   set(EXTENSION_CATEGORY "DWI/DTI Quality Control")
   set(EXTENSION_CONTRIBUTORS "Joy Matsui, Zhexing Liu, Clement Vachet, David Welch, Guido Gerig, kent williams, Mahshid Farzinfar, Sylvain Gouttard, Vincent Magnotta, Hans Johnson, Martin Styner, Francois Budin, Juan Prieto")
-  set(EXTENSION_DESCRIPTION "DTIPrep performs a "Study-specific Protocol" based automatic pipeline for DWI/DTI quality control and preparation")
+  set(EXTENSION_DESCRIPTION "DTIPrep performs a 'Study-specific Protocol' based automatic pipeline for DWI/DTI quality control and preparation")
   set(EXTENSION_ICONURL "http://www.nitrc.org/project/screenshot.php?group_id=283&screenshot_id=608")
   set(EXTENSION_SCREENSHOTURLS "http://www.nitrc.org/project/screenshot.php?group_id=283&screenshot_id=609 http://www.nitrc.org/project/screenshot.php?group_id=283&screenshot_id=610")
   set(EXTENSION_DEPENDS "NA") # Specified as a space separated list or 'NA' if any
