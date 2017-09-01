@@ -548,7 +548,7 @@ void UnivariateEntropyMultiImageMetric<TFixedImage>
     typedef typename BSplineTransformType::ImageType ParametersImageType;
 
     typename ParametersImageType::Pointer parametersImage = ParametersImageType::New();
-    parametersImage->SetRegions( this->m_BSplineTransformArray[0]->GetGridRegion() );
+    parametersImage->SetRegions( this->m_BSplineTransformArray[0]->GetTransformDomainMeshSize() );
     parametersImage->CopyInformation( this->m_BSplineTransformArray[0]->GetCoefficientImages()[0] );
     parametersImage->Allocate();
 

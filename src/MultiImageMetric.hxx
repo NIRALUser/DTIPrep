@@ -133,7 +133,7 @@ throw ( ExceptionObject )
     }
 
   // Use optimized Bspline derivatives
-  if( !strcmp(this->m_TransformArray[0]->GetNameOfClass(), "BSplineDeformableTransform") )
+  if( !strcmp(this->m_TransformArray[0]->GetNameOfClass(), "BSplineTransform") )
     {
     this->m_UserBsplineDefined = true;
     }
