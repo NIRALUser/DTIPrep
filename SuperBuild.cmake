@@ -237,6 +237,12 @@ if(${LOCAL_PROJECT_NAME}_USE_QT)
     )
 endif()
 
+# Disable the "You are in 'detached HEAD' state." warning.
+set(git_config_arg)
+if(CMAKE_VERSION VERSION_GREATER "3.7.2")
+  set(git_config_arg GIT_CONFIG "advice.detachedHead=false")
+endif()
+
 _expand_external_project_vars()
 set(COMMON_EXTERNAL_PROJECT_ARGS ${${CMAKE_PROJECT_NAME}_SUPERBUILD_EP_ARGS})
 set(extProjName ${LOCAL_PROJECT_NAME})
