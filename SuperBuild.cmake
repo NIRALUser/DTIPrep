@@ -22,12 +22,16 @@ include(${CMAKE_CURRENT_LIST_DIR}/Common.cmake)
 if( DTIPrep_BUILD_SLICER_EXTENSION )
   set( EXTERNAL_SOURCE_IN_BINARY_DIR ON)
   set( USE_SYSTEM_VTK ON CACHE BOOL "Use system VTK" FORCE )
+  set( USE_SYSTEM_ITK ON CACHE BOOL "Use system ITK" FORCE )
+  set( USE_SYSTEM_SlicerExecutionModel ON CACHE BOOL "Use system SlicerExecutionModel" FORCE )
   #VTK_VERSION_MAJOR is define but not a CACHE variable
   set( VTK_VERSION_MAJOR ${VTK_VERSION_MAJOR} CACHE STRING "Choose the expected VTK major version to build Slicer (5, 6, 7).")
   set( USE_SYSTEM_DCMTK ON CACHE BOOL "Use system DCMTK" FORCE )
   set( USE_SYSTEM_Teem ON CACHE BOOL "Use system Teem" FORCE )
+  set( USE_SYSTEM_DTIProcess ON CACHE BOOL "Use system DTIProcess" FORCE )
   set( BUILD_SHARED_LIBS OFF CACHE BOOL "Use shared libraries" FORCE)
   unsetForSlicer(NAMES
+    BRAINSCommonLib_DIR
     CMAKE_MODULE_PATH
     CMAKE_C_COMPILER
     CMAKE_CXX_COMPILER
@@ -43,6 +47,9 @@ if( DTIPrep_BUILD_SLICER_EXTENSION )
     )
   find_package(Slicer REQUIRED)
   unsetAllForSlicerBut( NAMES
+    BRAINSCommonLib_DIR
+    SlicerExecutionModel_DIR
+    ITK_DIR
     VTK_DIR
     QT_QMAKE_EXECUTABLE
     DCMTK_DIR
@@ -54,9 +61,6 @@ if( DTIPrep_BUILD_SLICER_EXTENSION )
     CMAKE_CXX_COMPILER
     CMAKE_CXX_FLAGS
     CMAKE_C_FLAGS
-    ITK_DIR
-    SlicerExecutionModel_DIR
-    ITK_VERSION_MAJOR
     )
   if( APPLE )
     set( CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,-rpath,@loader_path/../../../../../")
@@ -167,7 +171,12 @@ option(USE_SYSTEM_niral_utilities "Build using external niral_utilities" OFF)
 #------------------------------------------------------------------------------
 # ${LOCAL_PROJECT_NAME} dependency list
 #------------------------------------------------------------------------------
-set( ${LOCAL_PROJECT_NAME}_DEPENDENCIES DCMTK ITKv4 SlicerExecutionModel VTK DTIProcess niral_utilities BRAINSTools)
+set( ${LOCAL_PROJECT_NAME}_DEPENDENCIES VTK DCMTK ITKv4 SlicerExecutionModel DTIProcess niral_utilities)
+if( NOT DTIPrep_BUILD_SLICER_EXTENSION )
+  list(APPEND ${LOCAL_PROJECT_NAME}_DEPENDENCIES
+    BRAINSTools
+    )
+endif()
 set( ${PROJECT_NAME}_BUILD_DICOM_SUPPORT ON )
 set( ${PROJECT_NAME}_BUILD_ZLIB_SUPPORT ON )
 if( UNIX )
