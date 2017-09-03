@@ -55,6 +55,7 @@ if(NOT ( DEFINED "USE_SYSTEM_${extProjName}" AND "${USE_SYSTEM_${extProjName}}" 
 
   ### --- Project specific additions here
   set(${proj}_CMAKE_OPTIONS
+    -DBUILD_TESTING:BOOL=OFF
     -DCOMPILE_CONVERTITKFORMATS:BOOL=ON
     -DCOMPILE_CORREVAL:BOOL=OFF
     -DCOMPILE_CROPTOOLS:BOOL=OFF
@@ -78,8 +79,8 @@ if(NOT ( DEFINED "USE_SYSTEM_${extProjName}" AND "${USE_SYSTEM_${extProjName}}" 
     )
 
   ### --- End Project specific additions
-  set( ${proj}_REPOSITORY ${git_protocol}://github.com/NIRALUser/niral_utilities.git )
-  set( ${proj}_GIT_TAG 6924bab40c14705e67da0b0fe6292a0253b241c5)
+  set( ${proj}_REPOSITORY ${git_protocol}://github.com/jcfr/niral_utilities.git )
+  set( ${proj}_GIT_TAG a8635a0a37d29536d3281180a9b39936307419f7)
   ExternalProject_Add(${proj}
     GIT_REPOSITORY ${${proj}_REPOSITORY}
     GIT_TAG ${${proj}_GIT_TAG}
