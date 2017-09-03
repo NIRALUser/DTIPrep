@@ -221,7 +221,8 @@ if(USE_DTIProcess)
   )
   list( APPEND ToolsPaths ${SUPERBUILD_BINARY_DIR}/DTIProcess-install/bin/ )
 endif()
-if(USE_NIRALUtilities)
+
+if(USE_niral_utilities)
   list(APPEND NotCLIToolsList
     ImageMath
     convertITKformats

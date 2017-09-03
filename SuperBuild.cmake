@@ -19,6 +19,8 @@ include(CTest)
 
 include(${CMAKE_CURRENT_LIST_DIR}/Common.cmake)
 
+option(USE_niral_utilities "Build niral_utilities" ON)
+
 if( DTIPrep_BUILD_SLICER_EXTENSION )
   set( EXTERNAL_SOURCE_IN_BINARY_DIR ON)
   set( USE_SYSTEM_VTK ON CACHE BOOL "Use system VTK" FORCE )
@@ -368,7 +370,7 @@ ExternalProject_Add(${proj}
     -D${LOCAL_PROJECT_NAME}_SUPERBUILD:BOOL=OFF
     -DBUILD_TESTING:BOOL=${BUILD_TESTING}
     -DCMAKE_INSTALL_PREFIX=${CMAKE_CURRENT_BINARY_DIR}/${LOCAL_PROJECT_NAME}-install
-    -DUSE_NIRALUtilities=${USE_NIRALUtilities}
+    -DUSE_niral_utilities=${USE_niral_utilities}
     -DUSE_DTIProcess=${USE_DTIProcess}
   #INSTALL_COMMAND ""
   )
