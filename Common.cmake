@@ -126,4 +126,6 @@ else() # Release, or anything else
 endif()
 
 set(CMAKE_POSITION_INDEPENDENT_CODE 1)
+set(CMAKE_CXX_VISIBILITY_PRESET hidden)
+set(CMAKE_VISIBILITY_INLINES_HIDDEN 1)
 
