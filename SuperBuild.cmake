@@ -64,7 +64,6 @@ if( DTIPrep_BUILD_SLICER_EXTENSION )
   find_package(Subversion REQUIRED )
 else()
   set( USE_ITK_Module_MGHIO ON )
-  set( SUPERBUILD_NOT_EXTENSION TRUE )
   option(USE_DTIProcess "Build DTIProcess" ON)
 endif()
 
@@ -322,10 +321,6 @@ if( DTIPrep_BUILD_SLICER_EXTENSION )
     MIDAS_PACKAGE_URL:STRING
     Slicer_DIR:PATH
     DTIPrep_BUILD_SLICER_EXTENSION:BOOL
-    )
-else()
-  list(APPEND ${CMAKE_PROJECT_NAME}_SUPERBUILD_EP_VARS
-    SUPERBUILD_NOT_EXTENSION:BOOL
     )
 endif()
 _expand_external_project_vars()
