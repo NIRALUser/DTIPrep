@@ -29,9 +29,6 @@ if(${ITK_VERSION_MAJOR} STREQUAL "3")
   set(USE_ITKv4 OFF)
 endif()
 
-#CMAKE_DEPENDENT_OPTION(
-#  USE_DTIPrep                         "Build DTIPrep"                                ON "${LOCAL_PROJECT_NAME}_USE_QT" ON)
-
 set(${LOCAL_PROJECT_NAME}_USE_QT ON)
 if(${LOCAL_PROJECT_NAME}_USE_QT AND NOT DTIPrep_BUILD_SLICER_EXTENSION )
   if(NOT QT4_FOUND)
@@ -121,22 +118,14 @@ SETIFEMPTY(DTIPrepTools_CLI_INSTALL_RUNTIME_DESTINATION ${CMAKE_INSTALL_RUNTIME_
 #-------------------------------------------------------------------------
 include(ITKSetStandardCompilerFlags)
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${C_DEBUG_DESIRED_FLAGS}" )
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CXX_DEBUG_DESIRED_FLAGS}" )
+  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS_INIT} ${ITK_C_WARNING_FLAGS} ${C_DEBUG_DESIRED_FLAGS}" )
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS_INIT} ${ITK_CXX_WARNING_FLAGS} ${CXX_DEBUG_DESIRED_FLAGS}" )
 else() # Release, or anything else
-  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${C_RELEASE_DESIRED_FLAGS}" )
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CXX_RELEASE_DESIRED_FLAGS}" )
+  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS_INIT} ${ITK_C_WARNING_FLAGS} ${C_RELEASE_DESIRED_FLAGS}" )
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS_INIT} ${ITK_CXX_WARNING_FLAGS} ${CXX_RELEASE_DESIRED_FLAGS}" )
 endif()
 
-#-----------------------------------------------------------------------------
-# Add needed flag for gnu on linux like enviroments to build static common libs
-# suitable for linking with shared object libs.
-if(CMAKE_SYSTEM_PROCESSOR STREQUAL "x86_64")
-  if(NOT "${CMAKE_CXX_FLAGS}" MATCHES "-fPIC")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
-  endif()
-  if(NOT "${CMAKE_C_FLAGS}" MATCHES "-fPIC")
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fPIC")
-  endif()
-endif()
+set(CMAKE_POSITION_INDEPENDENT_CODE 1)
+set(CMAKE_CXX_VISIBILITY_PRESET hidden)
+set(CMAKE_VISIBILITY_INLINES_HIDDEN 1)
 

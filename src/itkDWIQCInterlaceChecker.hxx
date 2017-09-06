@@ -260,15 +260,6 @@ DWIQCInterlaceChecker<TImageType>
   typedef itk::ImageRegistrationMethod<GradientImageType,
                                        GradientImageType> RegistrationType;
 
-  typedef GradientImageType::SpacingType
-  SpacingType;
-  typedef GradientImageType::PointType
-  OriginType;
-  typedef GradientImageType::RegionType
-  RegionType;
-  typedef GradientImageType::SizeType
-  SizeType;
-
   MetricType::Pointer       metric      = MetricType::New();
   OptimizerType::Pointer    optimizer    = OptimizerType::New();
   InterpolatorType::Pointer interpolator  = InterpolatorType::New();
@@ -492,7 +483,6 @@ DWIQCInterlaceChecker<TImageType>
     componentExtractor->SetIndex( j );
     componentExtractor->Update();
 
-    typedef itk::ImageRegionIteratorWithIndex<GradientImageType> IteratorType;
     IteratorType iterateGradient(
       componentExtractor->GetOutput(),
       componentExtractor->GetOutput()->GetLargestPossibleRegion() );
@@ -855,7 +845,7 @@ DWIQCInterlaceChecker<TImageType>
     outfile.open( GetReportFileName().c_str() );
     }
 
-  int DWICount, BaselineCount;
+  // int DWICount, BaselineCount;
 
   switch( m_ReportType )
     {
@@ -961,8 +951,8 @@ DWIQCInterlaceChecker<TImageType>
 	      << std::endl;
 
       collectLeftDiffusionStatistics();     // update
-      BaselineCount  = getBaselineNumber();
-      DWICount    = getGradientNumber();
+      // BaselineCount  = getBaselineNumber();
+      // DWICount    = getGradientNumber();
       for( unsigned int i = 0; i < this->ResultsContainer.size(); i++ )
         {
         outfile.precision(6);
@@ -1125,8 +1115,8 @@ DWIQCInterlaceChecker<TImageType>
 	      << std::endl;
 
       collectLeftDiffusionStatistics();     // update
-      BaselineCount  = getBaselineNumber();
-      DWICount    = getGradientNumber();
+      // BaselineCount  = getBaselineNumber();
+      // DWICount    = getGradientNumber();
       for( unsigned int i = 0; i < this->ResultsContainer.size(); i++ )
         {
         outfile.precision(6);

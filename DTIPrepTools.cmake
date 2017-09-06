@@ -42,7 +42,6 @@ set( ITKModules
   ITKRegistrationCommon
   ITKOptimizersv4
   ITKConnectedComponents
-  ITKV3Compatibility
   ITKMathematicalMorphology
   ITKBinaryMathematicalMorphology
   ITKRegionGrowing
@@ -193,7 +192,7 @@ if( DTIPrep_BUILD_SLICER_EXTENSION )
   set(EXTENSION_HOMEPAGE "https://www.nitrc.org/projects/dtiprep/")
   set(EXTENSION_CATEGORY "DWI/DTI Quality Control")
   set(EXTENSION_CONTRIBUTORS "Joy Matsui, Zhexing Liu, Clement Vachet, David Welch, Guido Gerig, kent williams, Mahshid Farzinfar, Sylvain Gouttard, Vincent Magnotta, Hans Johnson, Martin Styner, Francois Budin, Juan Prieto")
-  set(EXTENSION_DESCRIPTION "DTIPrep performs a "Study-specific Protocol" based automatic pipeline for DWI/DTI quality control and preparation")
+  set(EXTENSION_DESCRIPTION "DTIPrep performs a 'Study-specific Protocol' based automatic pipeline for DWI/DTI quality control and preparation")
   set(EXTENSION_ICONURL "http://www.nitrc.org/project/screenshot.php?group_id=283&screenshot_id=608")
   set(EXTENSION_SCREENSHOTURLS "http://www.nitrc.org/project/screenshot.php?group_id=283&screenshot_id=609 http://www.nitrc.org/project/screenshot.php?group_id=283&screenshot_id=610")
   set(EXTENSION_DEPENDS "NA") # Specified as a space separated list or 'NA' if any
@@ -222,7 +221,8 @@ if(USE_DTIProcess)
   )
   list( APPEND ToolsPaths ${SUPERBUILD_BINARY_DIR}/DTIProcess-install/bin/ )
 endif()
-if(USE_NIRALUtilities)
+
+if(USE_niral_utilities)
   list(APPEND NotCLIToolsList
     ImageMath
     convertITKformats
@@ -235,8 +235,7 @@ if( DTIPrep_BUILD_SLICER_EXTENSION )
   INSTALL_EXECUTABLE( OUTPUT_DIR ${NOCLI_INSTALL_DIR} LIST_EXEC ${NotCLIToolsList} PATHS ${ToolsPaths} )
   set(CPACK_INSTALL_CMAKE_PROJECTS "${CPACK_INSTALL_CMAKE_PROJECTS};${CMAKE_BINARY_DIR};${EXTENSION_NAME};ALL;/")
   include(${Slicer_EXTENSION_CPACK})
-endif()
-if( SUPERBUILD_NOT_EXTENSION )
+else()
   if( NOT APPLE )
     INSTALL_EXECUTABLE( OUTPUT_DIR bin LIST_EXEC ${NotCLIToolsList} PATHS ${ToolsPaths} )
   else()

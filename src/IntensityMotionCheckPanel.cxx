@@ -1995,7 +1995,6 @@ bool IntensityMotionCheckPanel::GetInterlaceProtocolParameters(
     componentExtractor->SetIndex( j );
     componentExtractor->Update();
 
-    typedef itk::ImageRegionIteratorWithIndex<GradientImageType> IteratorType;
     IteratorType iterateGradient(
       componentExtractor->GetOutput(),
       componentExtractor->GetOutput()->GetLargestPossibleRegion() );
@@ -3976,10 +3975,14 @@ void IntensityMotionCheckPanel::ResultUpdate()
     overallInterlaceWiseCheck->setText( 1, tr("Not Set") );
     }
 
-  if( ( ( (!qcResult.Get_result()  & InterlaceWiseCheckBit) == InterlaceWiseCheckBit ) ||
-        (!(this->GetProtocol().GetSliceCheckProtocol().bQuitOnCheckFailure ||
-           this->GetProtocol().GetInterlaceCheckProtocol().bQuitOnCheckFailure) ) ) &&
-      this->GetProtocol().GetGradientCheckProtocol().bCheck )
+  bool doInterlaceWiseCheck = (qcResult.Get_result()  & InterlaceWiseCheckBit) == InterlaceWiseCheckBit;
+  bool doQuitOnCheckFailure =
+    this->GetProtocol().GetSliceCheckProtocol().bQuitOnCheckFailure ||
+    this->GetProtocol().GetInterlaceCheckProtocol().bQuitOnCheckFailure;
+  if(
+     ( !doInterlaceWiseCheck || !doQuitOnCheckFailure )
+     && this->GetProtocol().GetGradientCheckProtocol().bCheck
+  )
     {
     if( (qcResult.Get_result() & GradientWiseCheckBit) == 0 )
       {
