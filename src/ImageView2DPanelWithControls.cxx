@@ -703,14 +703,16 @@ void ImageView2DPanelWithControls::SliceIndexChanged(vtkObject *obj,
 {
   vtkImagePlaneWidget *planeWidget
     = reinterpret_cast<vtkImagePlaneWidget *>( obj );
-  int *whichwindow;
-
-  whichwindow = (int *)client_data;
 
   short index = planeWidget->GetSliceIndex();
+
+  // int *whichwindow;
+  // whichwindow = (int *)client_data;
   // std::cout<<"orient"<<*whichwindow<<"  "<<*whichwindow<<"
   //  "<<*whichwindow<<std::endl;
   // std::cout<<"SliceIndex"<<index<<std::endl;
+  Q_UNUSED(client_data);
+
   QString str;
   this->lineEdit_SliceIndex->setText( str.sprintf("%d", index) );
   this->horizontalSlider_SliceIndex->setValue(index);
@@ -728,9 +730,6 @@ void ImageView2DPanelWithControls::WindowLevelChanged(vtkObject *obj,
 {
   vtkImagePlaneWidget *planeWidget
     = reinterpret_cast<vtkImagePlaneWidget *>( obj );
-  int *whichwindow;
-
-  whichwindow = (int *)client_data;
 
   double wl[2];
   planeWidget->GetWindowLevel(wl);
@@ -738,9 +737,12 @@ void ImageView2DPanelWithControls::WindowLevelChanged(vtkObject *obj,
   int windowLocal = (int)wl[0];
   int level = (int)wl[1];
 
+  // int *whichwindow;
+  // whichwindow = (int *)client_data;
   // std::cout<<"orient"<<*whichwindow<<"  "<<*whichwindow<<"
   //  "<<*whichwindow<<std::endl;
   // std::cout<<"windowLocal"<<windowLocal<<"Level: "<<level<<std::endl;
+  Q_UNUSED(client_data);
 
   this->ImageViewer2->SetColorWindow(windowLocal);
   this->ImageViewer2->SetColorLevel(level);

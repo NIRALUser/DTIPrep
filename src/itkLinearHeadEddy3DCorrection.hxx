@@ -54,7 +54,7 @@ LinearHeadEddy3DCorrection<TScalarType, NInputDimensions, NOutputDimensions>
   unsigned int i, j;
 
   os << indent << "Versor Matrix: " << std::endl;
-  MatrixType rigid_Matrix = m_head_motion_transform->GetRotationMatrix();
+  MatrixType rigid_Matrix = m_head_motion_transform->GetMatrix();
   for( i = 0; i < NInputDimensions; i++ )
     {
     os << indent.GetNextIndent();
@@ -171,7 +171,7 @@ const typename LinearHeadEddy3DCorrection<TScalarType,
 & LinearHeadEddy3DCorrection<TScalarType, NInputDimensions, NOutputDimensions>
 ::GetHeadMotionRotationMatrix(void) const
   {
-  return m_head_motion_transform->GetRotationMatrix();
+  return m_head_motion_transform->GetMatrix();
   }
 /**/
 

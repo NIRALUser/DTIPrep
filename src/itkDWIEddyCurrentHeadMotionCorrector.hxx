@@ -237,11 +237,11 @@ DWIEddyCurrentHeadMotionCorrector<TImageType>
 {
   collectLeftDiffusionStatistics();
 
-  int DWICount, BaselineCount;
-  BaselineCount  = getBaselineLeftNumber();
-  DWICount    = getGradientLeftNumber();
-  //  std::cout <<"BaselineCount: "<<BaselineCount<<std::endl;
-  //   std::cout <<"DWICount: "<<DWICount<<std::endl;
+  // int DWICount, BaselineCount;
+  // BaselineCount  = getBaselineLeftNumber();
+  // DWICount    = getGradientLeftNumber();
+  // std::cout <<"BaselineCount: "<<BaselineCount<<std::endl;
+  // std::cout <<"DWICount: "<<DWICount<<std::endl;
 
   // //////////////////////////////////////////////////////////////////////
   //   parse diffusion vectors
@@ -456,9 +456,11 @@ DWIEddyCurrentHeadMotionCorrector<TImageType>
           << std::endl;
 
   collectLeftDiffusionStatistics();      // update
-  int DWICount, BaselineCount;
-  BaselineCount  = getBaselineNumber();
-  DWICount    = getGradientNumber();
+  // int DWICount, BaselineCount;
+  // BaselineCount  = getBaselineLeftNumber();
+  // DWICount    = getGradientLeftNumber();
+  // std::cout <<"BaselineCount: "<<BaselineCount<<std::endl;
+  // std::cout <<"DWICount: "<<DWICount<<std::endl;
 
   outfile << std::endl << "======" << std::endl;
   outfile << " Input Diffusion Gradient information:" << std::endl;

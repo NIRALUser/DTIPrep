@@ -132,6 +132,17 @@ if( DTIPrep_BUILD_SLICER_EXTENSION )
   )
   target_link_libraries( DTIPrep ${DTIPrep_Libs} )
   add_executable( DTIPrepLauncher Launcher.cxx ${DTIPrep_SRCS_CLP} )
+
+  set(launcher_libraries )
+  if(DEFINED SlicerExecutionModel_EXTRA_EXECUTABLE_TARGET_LIBRARIES)
+    list(APPEND launcher_libraries ${SlicerExecutionModel_EXTRA_EXECUTABLE_TARGET_LIBRARIES})
+  endif()
+  if(NOT "${DEFAULT_SEM_TARGET_LIBRARIES}" STREQUAL "")
+    list(APPEND launcher_libraries ${DEFAULT_SEM_TARGET_LIBRARIES})
+  endif()
+  if(launcher_libraries)
+    target_link_libraries(DTIPrepLauncher ${launcher_libraries})
+  endif()
   
   set(HIDDEN_CLI_INSTALL_DIR ${Slicer_INSTALL_CLIMODULES_BIN_DIR}/../hidden-cli-modules )
   install(TARGETS DTIPrep DESTINATION ${HIDDEN_CLI_INSTALL_DIR} )
@@ -221,6 +232,8 @@ else()
   # To Create a package, one can run "cpack -G DragNDrop CPackConfig.cmake" on Mac OS X
   # where CPackConfig.cmake is created by including CPack
   # And then there's ways to customize this as well
-  set(CPACK_BINARY_DRAGNDROP ON)
+  if(APPLE)
+    set(CPACK_BINARY_DRAGNDROP ON)
+  endif()
   include(CPack)
 endif()

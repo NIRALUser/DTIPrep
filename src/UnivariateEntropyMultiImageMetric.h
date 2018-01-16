@@ -21,7 +21,7 @@
 #include "itkPoint.h"
 
 #include "itkIndex.h"
-#include "itkKernelFunction.h"
+#include "itkKernelFunctionBase.h"
 #include "itkCentralDifferenceImageFunction.h"
 
 #include "itkGradientImageFilter.h"
@@ -221,8 +221,8 @@ protected:
   mutable std::vector<typename DerivativeFunctionType::Pointer> m_DerivativeCalculator;
   mutable std::vector<std::vector<DerivativeType> >             m_DerivativesArray;
 
-  double                                        m_ImageStandardDeviation;
-  std::vector<typename KernelFunction::Pointer> m_KernelFunction;
+  double                                                    m_ImageStandardDeviation;
+  std::vector<typename KernelFunctionBase<double>::Pointer> m_KernelFunction;
 
   bool                    m_ReseedIterator;
   int                     m_RandomSeed;

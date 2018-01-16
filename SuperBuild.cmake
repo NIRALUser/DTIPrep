@@ -19,25 +19,57 @@ include(CTest)
 
 include(${CMAKE_CURRENT_LIST_DIR}/Common.cmake)
 
+option(USE_niral_utilities "Build niral_utilities" ON)
+
 if( DTIPrep_BUILD_SLICER_EXTENSION )
   set( EXTERNAL_SOURCE_IN_BINARY_DIR ON)
   set( USE_SYSTEM_VTK ON CACHE BOOL "Use system VTK" FORCE )
+  set( USE_SYSTEM_ITK ON CACHE BOOL "Use system ITK" FORCE )
+  set( USE_SYSTEM_SlicerExecutionModel ON CACHE BOOL "Use system SlicerExecutionModel" FORCE )
   #VTK_VERSION_MAJOR is define but not a CACHE variable
   set( VTK_VERSION_MAJOR ${VTK_VERSION_MAJOR} CACHE STRING "Choose the expected VTK major version to build Slicer (5, 6, 7).")
   set( USE_SYSTEM_DCMTK ON CACHE BOOL "Use system DCMTK" FORCE )
   set( USE_SYSTEM_Teem ON CACHE BOOL "Use system Teem" FORCE )
+  set( USE_SYSTEM_DTIProcess ON CACHE BOOL "Use system DTIProcess" FORCE )
   set( BUILD_SHARED_LIBS OFF CACHE BOOL "Use shared libraries" FORCE)
-  unsetForSlicer(NAMES CMAKE_MODULE_PATH CMAKE_C_COMPILER CMAKE_CXX_COMPILER DCMTK_DIR ITK_DIR SlicerExecutionModel_DIR VTK_DIR QT_QMAKE_EXECUTABLE ITK_VERSION_MAJOR CMAKE_CXX_FLAGS CMAKE_C_FLAGS Teem_DIR)
+  unsetForSlicer(NAMES
+    BRAINSCommonLib_DIR
+    CMAKE_MODULE_PATH
+    CMAKE_C_COMPILER
+    CMAKE_CXX_COMPILER
+    DCMTK_DIR
+    ITK_DIR
+    SlicerExecutionModel_DIR
+    VTK_DIR
+    QT_QMAKE_EXECUTABLE
+    ITK_VERSION_MAJOR
+    CMAKE_CXX_FLAGS
+    CMAKE_C_FLAGS
+    Teem_DIR
+    )
   find_package(Slicer REQUIRED)
-  unsetAllForSlicerBut( NAMES VTK_DIR QT_QMAKE_EXECUTABLE DCMTK_DIR Teem_DIR )
-  resetForSlicer(NAMES CMAKE_MODULE_PATH CMAKE_C_COMPILER CMAKE_CXX_COMPILER CMAKE_CXX_FLAGS CMAKE_C_FLAGS ITK_DIR SlicerExecutionModel_DIR  ITK_VERSION_MAJOR )
+  unsetAllForSlicerBut( NAMES
+    BRAINSCommonLib_DIR
+    SlicerExecutionModel_DIR
+    ITK_DIR
+    VTK_DIR
+    QT_QMAKE_EXECUTABLE
+    DCMTK_DIR
+    Teem_DIR
+    )
+  resetForSlicer(NAMES
+    CMAKE_MODULE_PATH
+    CMAKE_C_COMPILER
+    CMAKE_CXX_COMPILER
+    CMAKE_CXX_FLAGS
+    CMAKE_C_FLAGS
+    )
   if( APPLE )
     set( CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,-rpath,@loader_path/../../../../../")
   endif()
   find_package(Subversion REQUIRED )
 else()
   set( USE_ITK_Module_MGHIO ON )
-  set( SUPERBUILD_NOT_EXTENSION TRUE )
   option(USE_DTIProcess "Build DTIProcess" ON)
 endif()
 
@@ -141,7 +173,12 @@ option(USE_SYSTEM_niral_utilities "Build using external niral_utilities" OFF)
 #------------------------------------------------------------------------------
 # ${LOCAL_PROJECT_NAME} dependency list
 #------------------------------------------------------------------------------
-set( ${LOCAL_PROJECT_NAME}_DEPENDENCIES DCMTK ITKv4 SlicerExecutionModel VTK DTIProcess niral_utilities BRAINSTools)
+set( ${LOCAL_PROJECT_NAME}_DEPENDENCIES VTK DCMTK ITKv4 SlicerExecutionModel DTIProcess niral_utilities)
+if( NOT DTIPrep_BUILD_SLICER_EXTENSION )
+  list(APPEND ${LOCAL_PROJECT_NAME}_DEPENDENCIES
+    BRAINSTools
+    )
+endif()
 set( ${PROJECT_NAME}_BUILD_DICOM_SUPPORT ON )
 set( ${PROJECT_NAME}_BUILD_ZLIB_SUPPORT ON )
 if( UNIX )
@@ -237,6 +274,12 @@ if(${LOCAL_PROJECT_NAME}_USE_QT)
     )
 endif()
 
+# Disable the "You are in 'detached HEAD' state." warning.
+set(git_config_arg)
+if(CMAKE_VERSION VERSION_GREATER "3.7.2")
+  set(git_config_arg GIT_CONFIG "advice.detachedHead=false")
+endif()
+
 _expand_external_project_vars()
 set(COMMON_EXTERNAL_PROJECT_ARGS ${${CMAKE_PROJECT_NAME}_SUPERBUILD_EP_ARGS})
 set(extProjName ${LOCAL_PROJECT_NAME})
@@ -290,10 +333,6 @@ if( DTIPrep_BUILD_SLICER_EXTENSION )
     Slicer_DIR:PATH
     DTIPrep_BUILD_SLICER_EXTENSION:BOOL
     )
-else()
-  list(APPEND ${CMAKE_PROJECT_NAME}_SUPERBUILD_EP_VARS
-    SUPERBUILD_NOT_EXTENSION:BOOL
-    )
 endif()
 _expand_external_project_vars()
 set(COMMON_EXTERNAL_PROJECT_ARGS ${${CMAKE_PROJECT_NAME}_SUPERBUILD_EP_ARGS})
@@ -322,7 +361,7 @@ ExternalProject_Add(${proj}
   DEPENDS ${${LOCAL_PROJECT_NAME}_DEPENDENCIES}
   DOWNLOAD_COMMAND ""
   SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}
-  BINARY_DIR ${LOCAL_PROJECT_NAME}-build
+  BINARY_DIR ${LOCAL_PROJECT_NAME}-build  
   CMAKE_GENERATOR ${gen}
   CMAKE_ARGS
     --no-warn-unused-cli # HACK Only expected variables should be passed down.
@@ -330,7 +369,10 @@ ExternalProject_Add(${proj}
     ${COMMON_EXTERNAL_PROJECT_ARGS}
     -D${LOCAL_PROJECT_NAME}_SUPERBUILD:BOOL=OFF
     -DBUILD_TESTING:BOOL=${BUILD_TESTING}
-  INSTALL_COMMAND ""
+    -DCMAKE_INSTALL_PREFIX=${CMAKE_CURRENT_BINARY_DIR}/${LOCAL_PROJECT_NAME}-install
+    -DUSE_niral_utilities=${USE_niral_utilities}
+    -DUSE_DTIProcess=${USE_DTIProcess}
+  #INSTALL_COMMAND ""
   )
 
 ## Force rebuilding of the main subproject every time building from super structure

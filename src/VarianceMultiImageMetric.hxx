@@ -286,7 +286,7 @@ void VarianceMultiImageMetric<TImage>
 
     typename ParametersImageType::Pointer parametersImage = ParametersImageType::New();
     parametersImage->SetRegions( this->m_BSplineTransformArray[0]->GetGridRegion() );
-    parametersImage->CopyInformation( this->m_BSplineTransformArray[0]->GetCoefficientImage()[0] );
+    parametersImage->CopyInformation( this->m_BSplineTransformArray[0]->GetCoefficientImages()[0] );
     parametersImage->Allocate();
 
     // gaussian filter

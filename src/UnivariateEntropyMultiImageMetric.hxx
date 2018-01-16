@@ -76,7 +76,7 @@ throw ( ExceptionObject )
     typename GaussianKernelFunctionType::Pointer gaussianKF =
       GaussianKernelFunctionType::New();
     m_KernelFunction[i] =
-      dynamic_cast<KernelFunction *>(gaussianKF.GetPointer() );
+      dynamic_cast<KernelFunctionBase<double> *>(gaussianKF.GetPointer() );
     }
   // check whether there is a mask
   for( unsigned int j = 0; j < this->m_NumberOfImages; j++ )
@@ -549,7 +549,7 @@ void UnivariateEntropyMultiImageMetric<TFixedImage>
 
     typename ParametersImageType::Pointer parametersImage = ParametersImageType::New();
     parametersImage->SetRegions( this->m_BSplineTransformArray[0]->GetGridRegion() );
-    parametersImage->CopyInformation( this->m_BSplineTransformArray[0]->GetCoefficientImage()[0] );
+    parametersImage->CopyInformation( this->m_BSplineTransformArray[0]->GetCoefficientImages()[0] );
     parametersImage->Allocate();
 
     // gaussian filter
