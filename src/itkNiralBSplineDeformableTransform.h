@@ -115,7 +115,7 @@ namespace niral
 template<typename TParametersValueType=double,
           unsigned int NDimensions = 3,
           unsigned int VSplineOrder = 3>
-class ITK_TEMPLATE_EXPORT BSplineDeformableTransform :
+class BSplineDeformableTransform :
   public BSplineBaseTransform<TParametersValueType,NDimensions,VSplineOrder>
 {
 public:

@@ -50,7 +50,7 @@ namespace niral
  * \ingroup ITKTransform
  */
 template< typename TTransform, typename TImage >
-class ITK_TEMPLATE_EXPORT BSplineDeformableTransformInitializer:public Object
+class BSplineDeformableTransformInitializer:public Object
 {
 public:
   /** Standard class typedefs. */
