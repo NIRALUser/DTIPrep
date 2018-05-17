@@ -1927,7 +1927,7 @@ bool CIntensityMotionCheck::BaselineAverage( DwiImageType::Pointer dwi )
 {
 
   std::string m_ReportFileName;
-  m_ReportFileName = MergeOutputDirectoryAndFileName( protocol->GetEddyMotionCorrectionProtocol().reportFileNameSuffix ) ;
+  m_ReportFileName = MergeOutputDirectoryAndFileName( protocol->GetBaselineAverageProtocol().reportFileNameSuffix ) ;
   std::ofstream outfile;
   outfile.open(m_ReportFileName.c_str(), std::ios::app);
 
@@ -2023,7 +2023,7 @@ bool CIntensityMotionCheck::BaselineAverage( DwiImageType::Pointer dwi )
             > 0 )
     {
         std::string outputDWIFileName;
-        outputDWIFileName = MergeOutputDirectoryAndFileName( protocol->GetEddyMotionCorrectionProtocol().outputDWIFileNameSuffix ) ;
+        outputDWIFileName = MergeOutputDirectoryAndFileName( protocol->GetBaselineAverageProtocol().outputDWIFileNameSuffix ) ;
         try
         {
             std::cout << "Saving output of baseline average: "
