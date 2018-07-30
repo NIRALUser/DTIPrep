@@ -33,7 +33,7 @@ set(${extProjName}_REQUIRED_VERSION "")  #If a required version is necessary, th
 #endif()
 
 # Sanity checks
-if(DEFINED ${extProjName}_DIR AND NOT EXISTS ${${extProjName}_DIR})
+if(DEFINED ${extProjName}_DIR AND NOT EXISTS ${${extProjName}_DIR} AND NOT EXISTS ${${extProjName}_BINARY_DIR})
   message(FATAL_ERROR "${extProjName}_DIR variable is defined but corresponds to non-existing directory (${${extProjName}_DIR})")
 endif()
 
@@ -104,7 +104,8 @@ if(NOT ( DEFINED "USE_SYSTEM_${extProjName}" AND "${USE_SYSTEM_${extProjName}}" 
   set(${extProjName}_DIR ${EXTERNAL_BINARY_DIRECTORY}/${proj}-build)
 else()
   if(${USE_SYSTEM_${extProjName}})
-    find_package(${extProjName} ${${extProjName}_REQUIRED_VERSION} REQUIRED)
+    find_package(${extProjName} ${${extProjName}_REQUIRED_VERSION} REQUIRED
+      HINTS ${DTIProcess_BINARY_DIR}/DTIProcess-install/lib/CMake/DTIProcess)
     message("USING the system ${extProjName}, set ${extProjName}_DIR=${${extProjName}_DIR}")
   endif()
   if( NOT TARGET ${proj} )

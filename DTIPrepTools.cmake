@@ -131,14 +131,6 @@ if(USE_ANTS)
   set(ANTS_LIBS antsUtilities)
 endif()
 
-message("BRAINSCommonLib_DIR=${BRAINSCommonLib_DIR}")
-
-find_package(BRAINSCommonLib NO_MODULE REQUIRED)
-include(${BRAINSCommonLib_USE_FILE})
-include_directories(${BRAINSCommonLib_INCLUDE_DIRS})
-link_directories(${BRAINSCommonLib_LIBRARY_DIRS})
-
-
 #find_package(MultiImageRegistration NO_MODULE REQUIRED)
 #include(${MultiImageRegistration_USE_FILE})
 
@@ -201,6 +193,16 @@ if( DTIPrep_BUILD_SLICER_EXTENSION )
   include(${Slicer_USE_FILE})
   resetForSlicer( NAMES ITK_DIR SlicerExecutionModel_DIR CMAKE_C_COMPILER CMAKE_CXX_COMPILER CMAKE_CXX_FLAGS CMAKE_C_FLAGS ITK_LIBRARIES )
 endif()
+
+message("BRAINSCommonLib_DIR=${BRAINSCommonLib_DIR}")
+message("BRAINSCommonLib_HINTS_DIR=${BRAINSCommonLib_HINTS_DIR}")
+find_package(BRAINSCommonLib NO_MODULE REQUIRED
+  HINTS 
+  ${BRAINSCommonLib_HINTS_DIR}
+  ${BRAINSCommonLib_DIR})
+include(${BRAINSCommonLib_USE_FILE})
+include_directories(${BRAINSCommonLib_INCLUDE_DIRS})
+link_directories(${BRAINSCommonLib_LIBRARY_DIRS})
 
 #-----------------------------------------------------------------------------
 # Add module sub-directory if USE_<MODULENAME> is both defined and true
