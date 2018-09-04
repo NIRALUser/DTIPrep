@@ -58,7 +58,7 @@ if(NOT ( DEFINED "USE_SYSTEM_${extProjName}" AND "${USE_SYSTEM_${extProjName}}" 
   if( ${PROJECT_NAME}_BUILD_ZLIB_SUPPORT )
     set(${proj}_ZLIB_ARGS 
         --with-zlib-include-dir=${ZLIB_INCLUDE_DIR}
-        --with-zlib-lib-dir=${zlib_DIR}/lib
+        --with-zlib-lib=${ZLIB_LIBRARY}
       )
   endif()
   if( ${PROJECT_NAME}_BUILD_JPEG_SUPPORT )
@@ -83,8 +83,9 @@ if(NOT ( DEFINED "USE_SYSTEM_${extProjName}" AND "${USE_SYSTEM_${extProjName}}" 
   AutoConf_FLAGS(${proj}_CXXFLAGS CXX "${APPLE_CFLAGS}")
 
   ### --- End Project specific additions
-  set(${proj}_URL "http://download.osgeo.org/libtiff/tiff-4.0.4.tar.gz")
-  set(${proj}_MD5 "9aee7107408a128c0c7b24286c0db900")
+  set(${proj}_URL "http://download.osgeo.org/libtiff/tiff-4.0.9.tar.gz")
+  set(${proj}_MD5 "54bad211279cc93eb4fca31ba9bfdc79")
+
   ExternalProject_Add(${proj}
     URL ${${proj}_URL}
     ${URL_HASH_CLAUSE}
