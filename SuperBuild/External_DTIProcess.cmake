@@ -36,7 +36,7 @@ set(${extProjName}_REQUIRED_VERSION "")  #If a required version is necessary, th
 if(NOT ( DEFINED "USE_SYSTEM_${extProjName}" AND "${USE_SYSTEM_${extProjName}}" ) )
   #message(STATUS "${__indent}Adding project ${proj}")
   # Set dependency list
-  set(${proj}_DEPENDENCIES ITKv4 VTK SlicerExecutionModel )
+  set(${proj}_DEPENDENCIES ITKv4 VTK SlicerExecutionModel niral_utilities)
   if( BUILD_DWIAtlas )
     list( APPEND ${proj}_DEPENDENCIES Boost )
   endif()
@@ -61,14 +61,14 @@ if(NOT ( DEFINED "USE_SYSTEM_${extProjName}" AND "${USE_SYSTEM_${extProjName}}" 
   ### --- Project specific additions here
   set(${proj}_CMAKE_OPTIONS
     ${DWIAtlasVars}
-    -DBOOST_ROOT:PATH=${BOOST_ROOT}
-    -DBOOST_INCLUDE_DIR:PATH=${BOOST_INCLUDE_DIR}
     -DUSE_SYSTEM_ITK:BOOL=ON
     -DUSE_SYSTEM_VTK:BOOL=ON
     -DUSE_SYSTEM_SlicerExecutionModel:BOOL=ON
+    -DUSE_SYSTEM_niral_utilities:BOOL=ON
     -DITK_DIR=${ITK_DIR}
     -DVTK_DIR=${VTK_DIR}
     -DSlicerExecutionModel_DIR=${SlicerExecutionModel_DIR}
+    -Dniral_utilities_DIR=${niral_utilities_DIR}
     -DDTIProcess_SUPERBUILD:BOOL=OFF
     -DEXECUTABLES_ONLY:BOOL=ON
     -DSubversion_SVN_EXECUTABLE:PATH=${SVNCOMMAND}
