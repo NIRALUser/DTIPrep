@@ -230,7 +230,7 @@ MultiImageRegistrationFilter
                                                                   * m_NumberOfImages ) );
 
   // Set the initial Bspline parameters to zero
-  typedef BSplineTransformType::ParametersType BSplineParametersType;
+  typedef BSplineTransformType::FixedParametersType BSplineParametersType;
   BSplineParametersType bsplineParameters;
   for( unsigned int i = 0; i < m_NumberOfImages; i++ )
     {
