@@ -8,89 +8,74 @@ enable_language(C)
 enable_language(CXX)
 
 #-----------------------------------------------------------------------------
-enable_testing()
-include(CTest)
+if(WIN32)
+  set(fileextension .exe)
+endif()
 
-#-----------------------------------------------------------------------------
-
-#-----------------------------------------------------------------------------
-#If it is build as an extension
-#-----------------------------------------------------------------------------
-
-include(${CMAKE_CURRENT_LIST_DIR}/Common.cmake)
-
-option(USE_niral_utilities "Build niral_utilities" ON)
-
-if( DTIPrep_BUILD_SLICER_EXTENSION )
-  set( EXTERNAL_SOURCE_IN_BINARY_DIR ON)
-  set( USE_SYSTEM_VTK ON CACHE BOOL "Use system VTK" FORCE )
-  set( USE_SYSTEM_ITK ON CACHE BOOL "Use system ITK" FORCE )
-  set( USE_SYSTEM_SlicerExecutionModel ON CACHE BOOL "Use system SlicerExecutionModel" FORCE )
-  #VTK_VERSION_MAJOR is define but not a CACHE variable
-  set( VTK_VERSION_MAJOR ${VTK_VERSION_MAJOR} CACHE STRING "Choose the expected VTK major version to build Slicer (5, 6, 7).")
-  set( USE_SYSTEM_DCMTK ON CACHE BOOL "Use system DCMTK" FORCE )
-  set( USE_SYSTEM_Teem ON CACHE BOOL "Use system Teem" FORCE )
-  set( USE_SYSTEM_DTIProcess ON CACHE BOOL "Use system DTIProcess" FORCE )
-  set( BUILD_SHARED_LIBS OFF CACHE BOOL "Use shared libraries" FORCE)
-  unsetForSlicer(NAMES
-    BRAINSCommonLib_DIR
-    CMAKE_MODULE_PATH
-    CMAKE_C_COMPILER
-    CMAKE_CXX_COMPILER
-    DCMTK_DIR
-    ITK_DIR
-    SlicerExecutionModel_DIR
-    VTK_DIR
-    QT_QMAKE_EXECUTABLE
-    ITK_VERSION_MAJOR
-    CMAKE_CXX_FLAGS
-    CMAKE_C_FLAGS
-    Teem_DIR
-    )
+set( COMPILE_EXTERNAL_ITKTransformTools ON CACHE BOOL "Compile External ITKTransformTools" FORCE )
+if( ${LOCAL_PROJECT_NAME}_BUILD_SLICER_EXTENSION )
+  # Slicer
   find_package(Slicer REQUIRED)
-  unsetAllForSlicerBut( NAMES
-    BRAINSCommonLib_DIR
-    SlicerExecutionModel_DIR
-    ITK_DIR
-    VTK_DIR
-    QT_QMAKE_EXECUTABLE
-    DCMTK_DIR
-    Teem_DIR
+  # Therefore we recompile all the libraries even though Slicer has already built the libraries we need.
+  set( COMPILE_EXTERNAL_DTIProcess OFF CACHE BOOL "Compile External DTIProcess" FORCE )
+  set( COMPILE_EXTERNAL_BRAINSTools OFF CACHE BOOL "Compile External BRAINSTools" FORCE )
+  set( COMPILE_EXTERNAL_ResampleDTIlogEuclidean OFF CACHE BOOL "Compile External ResampleDTIlogEuclidean" FORCE )
+  set( COMPILE_EXTERNAL_ANTs ON CACHE BOOL "Compile External ANTs" FORCE )
+  set( EXTENSION_NO_CLI ITKTransformTools ANTS )
+  set( CONFIGURE_TOOLS_PATHS OFF CACHE BOOL "Use CMake to find where the tools are and hard-code their path in the executable" FORCE )  
+
+  set( USE_SYSTEM_ITK ON CACHE BOOL "Build using an externally defined version of ITK" FORCE )
+  set( USE_SYSTEM_VTK ON CACHE BOOL "Build using an externally defined version of VTK" FORCE )
+
+endif()
+
+
+macro(COMPILE_EXTERNAL_TOOLS)
+  set(options "")
+  set(oneValueArgs
+    TOOL_PROJECT_NAME
     )
-  resetForSlicer(NAMES
-    CMAKE_MODULE_PATH
-    CMAKE_C_COMPILER
-    CMAKE_CXX_COMPILER
-    CMAKE_CXX_FLAGS
-    CMAKE_C_FLAGS
+  set(multiValueArgs
+    TOOL_NAMES
     )
-  set(BRAINSCommonLib_HINTS_DIR ${Slicer_DIR}/E/BRAINSTools/BRAINSCommonLib)
-  if( APPLE )
-    set( CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,-rpath,@loader_path/../../../../../")
+  CMAKE_PARSE_ARGUMENTS(LOCAL
+    "${options}"
+    "${oneValueArgs}"
+    "${multiValueArgs}"
+    ${ARGN}
+    )
+  option(COMPILE_EXTERNAL_${LOCAL_TOOL_PROJECT_NAME} "Compile External ${LOCAL_TOOL_PROJECT_NAME}" OFF )
+  if( COMPILE_EXTERNAL_${LOCAL_TOOL_PROJECT_NAME} )
+    list( APPEND ${LOCAL_PROJECT_NAME}_DEPENDENCIES ${LOCAL_TOOL_PROJECT_NAME} )
+    list( APPEND LIST_TOOLS ${LOCAL_TOOL_NAMES} )
+    foreach( var ${LOCAL_TOOL_NAMES} )
+      set( ${var}_INSTALL_DIRECTORY ${EXTERNAL_BINARY_DIRECTORY}/${LOCAL_TOOL_PROJECT_NAME}-install )
+      set( ${var}TOOL ${${var}_INSTALL_DIRECTORY}/${INSTALL_RUNTIME_DESTINATION}/${var}${fileextension} CACHE PATH "Path to a program." FORCE )
+    endforeach()
+  else()
+    list( FIND LIST_TOOLS ${LOCAL_TOOL_PROJECT_NAME} pos )
+    if( "${pos}" GREATER "-1" )
+      list( REMOVE_ITEM ${LOCAL_PROJECT_NAME}_DEPENDENCIES ${LOCAL_TOOL_PROJECT_NAME} )
+    endif()
+    foreach( var ${LOCAL_TOOL_NAMES} )
+      list( FIND LIST_TOOLS ${var} pos )
+      if( "${pos}" GREATER "-1" )
+        list( REMOVE_ITEM LIST_TOOLS ${var} )
+      endif()
+      unset( ${var}TOOL CACHE )
+    endforeach()
   endif()
-  find_package(Subversion REQUIRED )
-else()
-  set( USE_ITK_Module_MGHIO ON )
-  option(USE_DTIProcess "Build DTIProcess" ON)
-endif()
-
-if( EXTERNAL_SOURCE_IN_BINARY_DIR )
-  set( EXTERNAL_SOURCE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} )
-endif()
-
+endmacro()
 #-----------------------------------------------------------------------------
 # Git protocole option
 #-----------------------------------------------------------------------------
-option(${CMAKE_PROJECT_NAME}_USE_GIT_PROTOCOL "If behind a firewall turn this off to use http instead." ON)
+option(USE_GIT_PROTOCOL_${CMAKE_PROJECT_NAME} "If behind a firewall turn this off to use http instead." ON)
 set(git_protocol "git")
-if(NOT ${CMAKE_PROJECT_NAME}_USE_GIT_PROTOCOL)
+if(NOT USE_GIT_PROTOCOL_${CMAKE_PROJECT_NAME})
   set(git_protocol "http")
 endif()
 
 find_package(Git REQUIRED)
-
-# I don't know who removed the Find_Package for QT, but it needs to be here
-# in order to build VTK if ${LOCAL_PROJECT_NAME}_USE_QT is set.
 if(${LOCAL_PROJECT_NAME}_USE_QT AND NOT DTIPrep_BUILD_SLICER_EXTENSION)
     find_package(Qt4 REQUIRED)
 endif()
@@ -144,35 +129,66 @@ endif()
 # Superbuild option(s)
 #-----------------------------------------------------------------------------
 
-set(EXTERNAL_PROJECT_BUILD_TYPE "Release" CACHE STRING "Default build type for support libraries")
+
+
+SETIFEMPTY( EXTERNAL_SOURCE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} )
+SETIFEMPTY( EXTERNAL_BINARY_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} )
+SETIFEMPTY( INSTALL_RUNTIME_DESTINATION bin )
+SETIFEMPTY( INSTALL_LIBRARY_DESTINATION lib )
+SETIFEMPTY( INSTALL_ARCHIVE_DESTINATION lib )
+
+set(${LOCAL_PROJECT_NAME}_DEPENDENCIES "")
+set(LIST_TOOLS "")
+
+#------------------------------------------------------------------------------
+# Configure tools paths
+#------------------------------------------------------------------------------
+option(CONFIGURE_TOOLS_PATHS "Use CMake to find where the tools are and hard-code their path in the executable" ON)
+if( NOT CONFIGURE_TOOLS_PATHS )
+  foreach( var ${LIST_TOOLS})
+    mark_as_advanced( FORCE ${var}TOOL)
+  endforeach()
+else()
+  foreach( var ${LIST_TOOLS})
+    mark_as_advanced(CLEAR ${var}TOOL)
+  endforeach()
+endif()
+
+# COMPILE_EXTERNAL_TOOLS( TOOL_NAMES dtiprocess TOOL_PROJECT_NAME DTIProcess)
+# COMPILE_EXTERNAL_TOOLS( TOOL_NAMES ITKTransformTools TOOL_PROJECT_NAME ITKTransformTools)
+# COMPILE_EXTERNAL_TOOLS( TOOL_NAMES ResampleDTIlogEuclidean TOOL_PROJECT_NAME ResampleDTIlogEuclidean)
+# COMPILE_EXTERNAL_TOOLS( TOOL_NAMES BRAINSFit BRAINSDemonWarp TOOL_PROJECT_NAME BRAINSTools)
+# COMPILE_EXTERNAL_TOOLS( TOOL_NAMES ANTS TOOL_PROJECT_NAME ANTs)
+
+if( NOT ${LOCAL_PROJECT_NAME}_BUILD_SLICER_EXTENSION )
+  # Do not configure external tools paths: extension will be run on a different computer,
+  # we don't need to find the tools on the computer on which the extension is built
+  include(FindExternalTools)
+endif()
 
 option(USE_SYSTEM_ITK "Build using an externally defined version of ITK" OFF)
 option(USE_SYSTEM_SlicerExecutionModel "Build using an externally defined version of SlicerExecutionModel"  OFF)
-option(USE_SYSTEM_VTK "Build using an externally defined version of VTK" OFF)
-option(USE_SYSTEM_DCMTK "Build using an externally defined version of DCMTK" OFF)
-option(USE_SYSTEM_Teem "Build using external Teem" OFF)
-option(USE_SYSTEM_zlib "Build using external zlib" OFF)
-option(USE_ANTs "Build BRAINSTools with ANTs" OFF)
-option(${PROJECT_NAME}_BUILD_FFTW_SUPPORT "Build external FFTW" OFF)
+option(USE_SYSTEM_BatchMake "Build using an externally defined version of BatchMake" OFF)
+option(USE_SYSTEM_ANTs "Build using an externally defined version of ANTs" OFF)
+option(${PROJECT_NAME}_BUILD_FFTW_SUPPORT "Build external FFTW" ON)
 option(USE_SYSTEM_DTIProcess "Build using external DTIProcess" OFF)
 option(USE_SYSTEM_niral_utilities "Build using external niral_utilities" OFF)
-#option(${PROJECT_NAME}_BUILD_DICOM_SUPPORT "Build Dicom Support" ON)
+option(${PROJECT_NAME}_USE_QT "Use Qt" ON)
 
 #------------------------------------------------------------------------------
 # ${LOCAL_PROJECT_NAME} dependency list
 #------------------------------------------------------------------------------
-set( ${LOCAL_PROJECT_NAME}_DEPENDENCIES VTK DCMTK ITKv4 SlicerExecutionModel DTIProcess niral_utilities)
+
+list( APPEND ${LOCAL_PROJECT_NAME}_DEPENDENCIES VTK DCMTK FFTW ITKv4 SlicerExecutionModel DTIProcess niral_utilities)
 if( NOT DTIPrep_BUILD_SLICER_EXTENSION )
   list(APPEND ${LOCAL_PROJECT_NAME}_DEPENDENCIES
     BRAINSTools
     )
 endif()
-set( ${PROJECT_NAME}_BUILD_DICOM_SUPPORT ON )
-set( ${PROJECT_NAME}_BUILD_ZLIB_SUPPORT ON )
-if( UNIX )
-  set( ${PROJECT_NAME}_BUILD_TIFF_SUPPORT ON )
-  set( ${PROJECT_NAME}_BUILD_JPEG_SUPPORT ON )
-endif()
+
+set(USE_ITK_Module_MGHIO TRUE)
+#set(${PROJECT_NAME}_BUILD_DICOM_SUPPORT TRUE )
+set(${PROJECT_NAME}_BUILD_ZLIB_SUPPORT TRUE )
 
 #-----------------------------------------------------------------------------
 # Define Superbuild global variables
@@ -213,7 +229,6 @@ list(APPEND ${CMAKE_PROJECT_NAME}_SUPERBUILD_EP_VARS
   MAKECOMMAND:STRING
   CMAKE_SKIP_RPATH:BOOL
   CMAKE_BUILD_TYPE:STRING
-  CMAKE_MODULE_PATH:PATH
   BUILD_SHARED_LIBS:BOOL
   CMAKE_CXX_COMPILER:PATH
   CMAKE_CXX_FLAGS_RELEASE:STRING
@@ -228,10 +243,6 @@ list(APPEND ${CMAKE_PROJECT_NAME}_SUPERBUILD_EP_VARS
   CMAKE_MODULE_LINKER_FLAGS:STRING
   CMAKE_GENERATOR:STRING
   CMAKE_EXTRA_GENERATOR:STRING
-  CMAKE_INSTALL_PREFIX:PATH
-  CMAKE_LIBRARY_OUTPUT_DIRECTORY:PATH
-  CMAKE_ARCHIVE_OUTPUT_DIRECTORY:PATH
-  CMAKE_RUNTIME_OUTPUT_DIRECTORY:PATH
   CMAKE_BUNDLE_OUTPUT_DIRECTORY:PATH
   CTEST_NEW_FORMAT:BOOL
   MEMORYCHECK_COMMAND_OPTIONS:STRING
@@ -239,29 +250,11 @@ list(APPEND ${CMAKE_PROJECT_NAME}_SUPERBUILD_EP_VARS
   SITE:STRING
   BUILDNAME:STRING
   ${PROJECT_NAME}_BUILD_DICOM_SUPPORT:BOOL
-  USE_ANTS:BOOL
-  ANTs_SOURCE_DIR:PATH
-  ANTs_LIBRARY_DIR:PATH
-  BOOST_INCLUDE_DIR:PATH
-  BOOST_ROOT:PATH
-  Subversion_SVN_EXECUTABLE:FILEPATH
-  GIT_EXECUTABLE:FILEPATH
+  CMAKE_MODULE_PATH:PATH
+  INSTALL_RUNTIME_DESTINATION:PATH
+  INSTALL_LIBRARY_DESTINATION:PATH
+  INSTALL_ARCHIVE_DESTINATION:PATH
   )
-
-if(${LOCAL_PROJECT_NAME}_USE_QT)
-  list(APPEND ${CMAKE_PROJECT_NAME}_SUPERBUILD_EP_VARS
-    ${LOCAL_PROJECT_NAME}_USE_QT:BOOL
-    QT_QMAKE_EXECUTABLE:PATH
-    QT_MOC_EXECUTABLE:PATH
-    QT_UIC_EXECUTABLE:PATH
-    )
-endif()
-
-# Disable the "You are in 'detached HEAD' state." warning.
-set(git_config_arg)
-if(CMAKE_VERSION VERSION_GREATER "3.7.2")
-  set(git_config_arg GIT_CONFIG "advice.detachedHead=false")
-endif()
 
 _expand_external_project_vars()
 set(COMMON_EXTERNAL_PROJECT_ARGS ${${CMAKE_PROJECT_NAME}_SUPERBUILD_EP_ARGS})
@@ -280,44 +273,43 @@ if(APPLE)
     -DCMAKE_OSX_DEPLOYMENT_TARGET=${CMAKE_OSX_DEPLOYMENT_TARGET})
 endif()
 
-set(${LOCAL_PROJECT_NAME}_CLI_RUNTIME_DESTINATION  bin)
-set(${LOCAL_PROJECT_NAME}_CLI_LIBRARY_DESTINATION  lib)
-set(${LOCAL_PROJECT_NAME}_CLI_ARCHIVE_DESTINATION  lib)
-
 #-----------------------------------------------------------------------------
 # Add external project CMake args
 #-----------------------------------------------------------------------------
 list(APPEND ${CMAKE_PROJECT_NAME}_SUPERBUILD_EP_VARS
   BUILD_EXAMPLES:BOOL
+  BUILD_TESTING:BOOL
   ITK_VERSION_MAJOR:STRING
   ITK_DIR:PATH
-
-  ${LOCAL_PROJECT_NAME}_CLI_LIBRARY_DESTINATION:PATH
-  ${LOCAL_PROJECT_NAME}_CLI_ARCHIVE_DESTINATION:PATH
-  ${LOCAL_PROJECT_NAME}_CLI_RUNTIME_DESTINATION:PATH
-
   VTK_DIR:PATH
+  Slicer_DIR:PATH
+  BatchMake_DIR:PATH
   GenerateCLP_DIR:PATH
   SlicerExecutionModel_DIR:PATH
+  ${LOCAL_PROJECT_NAME}_BUILD_SLICER_EXTENSION:BOOL
+  STATIC_${LOCAL_PROJECT_NAME}:BOOL
+  ${LOCAL_PROJECT_NAME}_USE_QT:BOOL
+  ANTSTOOL:PATH
   BRAINSCommonLib_DIR:PATH
   BRAINSCommonLib_HINTS_DIR:PATH
-  Teem_DIR:PATH
-  INSTALL_RUNTIME_DESTINATION:STRING
-  INSTALL_LIBRARY_DESTINATION:STRING
-  INSTALL_ARCHIVE_DESTINATION:STRING
-  SUPERBUILD_BINARY_DIR:PATH
+  ResampleDTIlogEuclideanTOOL:PATH
+  DTIProcess_DIR:PATH
+  niral_utilities_DIR:PATH 
+  DCMTK_DIR:PATH 
+  ITKTransformTools_DIR:PATH
+  ANTs_DIR:PATH
+  GLUT_DIR:PATH
+  CONFIGURE_TOOLS_PATHS:BOOL
+  JSON_DIR:PATH
   )
 
-set( SUPERBUILD_BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR} )
-if( DTIPrep_BUILD_SLICER_EXTENSION )
+foreach( VAR ${LIST_TOOLS} )
+  set( ${VAR}_INSTALL_DIRECTORY ${${VAR}_INSTALL_DIRECTORY}/${INSTALL_RUNTIME_DESTINATION}/${VAR}${fileextension} )
   list(APPEND ${CMAKE_PROJECT_NAME}_SUPERBUILD_EP_VARS
-    MIDAS_PACKAGE_API_KEY:STRING
-    MIDAS_PACKAGE_EMAIL:STRING
-    MIDAS_PACKAGE_URL:STRING
-    Slicer_DIR:PATH
-    DTIPrep_BUILD_SLICER_EXTENSION:BOOL
+    ${VAR}_INSTALL_DIRECTORY:PATH
     )
-endif()
+endforeach()
+
 _expand_external_project_vars()
 set(COMMON_EXTERNAL_PROJECT_ARGS ${${CMAKE_PROJECT_NAME}_SUPERBUILD_EP_ARGS})
 
@@ -340,32 +332,59 @@ endif()
 #------------------------------------------------------------------------------
 # Configure and build
 #------------------------------------------------------------------------------
+option(CONFIGURE_TOOLS_PATHS "Use CMake to find where the tools are and hard-code their path in the executable" ON)
+if( NOT CONFIGURE_TOOLS_PATHS )
+  foreach( var ${LIST_TOOLS})
+    mark_as_advanced( FORCE ${var}TOOL)
+  endforeach()
+else()
+  foreach( var ${LIST_TOOLS})
+    mark_as_advanced(CLEAR ${var}TOOL)
+  endforeach()
+endif()
+
 set(proj ${LOCAL_PROJECT_NAME})
-ExternalProject_Add(${proj}
+list(APPEND LIST_TOOLS ${LOCAL_PROJECT_NAME} )
+set( ${LOCAL_PROJECT_NAME}TOOL ${LOCAL_PROJECT_NAME} )
+
+if(NOT ${LOCAL_PROJECT_NAME}_INSTALL_DIRECTORY)
+  set( ${LOCAL_PROJECT_NAME}_INSTALL_DIRECTORY ${EXTERNAL_BINARY_DIRECTORY}/${LOCAL_PROJECT_NAME}-install )
+endif()
+
+set(proj_build ${proj}-build)
+
+ExternalProject_Add(${proj}-inner
   DEPENDS ${${LOCAL_PROJECT_NAME}_DEPENDENCIES}
   DOWNLOAD_COMMAND ""
   SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}
-  BINARY_DIR ${LOCAL_PROJECT_NAME}-build  
+  BINARY_DIR ${proj}-inner-build
   CMAKE_GENERATOR ${gen}
   CMAKE_ARGS
-    --no-warn-unused-cli # HACK Only expected variables should be passed down.
     ${CMAKE_OSX_EXTERNAL_PROJECT_ARGS}
     ${COMMON_EXTERNAL_PROJECT_ARGS}
     -D${LOCAL_PROJECT_NAME}_SUPERBUILD:BOOL=OFF
-    -DBUILD_TESTING:BOOL=${BUILD_TESTING}
-    -DCMAKE_INSTALL_PREFIX=${CMAKE_CURRENT_BINARY_DIR}/${LOCAL_PROJECT_NAME}-install
-    -DUSE_niral_utilities=${USE_niral_utilities}
-    -DUSE_DTIProcess=${USE_DTIProcess}
-  #INSTALL_COMMAND ""
+    -DCMAKE_INSTALL_PREFIX:PATH=${${LOCAL_PROJECT_NAME}_INSTALL_DIRECTORY}
+    -DBatchMake_SOURCE_DIR:PATH=${EXTERNAL_SOURCE_DIRECTORY}/BatchMake
+
+    -DInnerBuildCMakeLists:BOOL=ON
+    -DSlicerExecutionModel_DIR:PATH=${SlicerExecutionModel_DIR}
+    ${COMMON_BUILD_OPTIONS_FOR_EXTERNALPACKAGES}
+    -DUSE_GIT_PROTOCOL:BOOL=${USE_GIT_PROTOCOL}
+    -DITK_DIR:PATH=${ITK_DIR}
+    -DGenerateCLP_DIR:PATH=${GenerateCLP_DIR}
+    -DQT_QMAKE_EXECUTABLE:PATH=${QT_QMAKE_EXECUTABLE}
+    -DBUILD_TESTING:BOOL=ON
+    -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_CURRENT_BINARY_DIR}/${proj}-install
+    # Installation step
+    # Slicer extension
+    -DDTIAtlasBuilder_BUILD_SLICER_EXTENSION:BOOL=${DTIAtlasBuilder_BUILD_SLICER_EXTENSION}
+    -DSlicer_DIR:PATH=${Slicer_DIR}
+    -DEXTENSION_NAME:STRING=${EXTENSION_NAME}
   )
 
-## Force rebuilding of the main subproject every time building from super structure
-ExternalProject_Add_Step(${proj} forcebuild
-    COMMAND ${CMAKE_COMMAND} -E remove
-    ${CMAKE_CURRENT_BUILD_DIR}/${proj}-prefix/src/${proj}-stamp/${proj}-build
-    DEPENDEES configure
-    DEPENDERS build
-    ALWAYS 1
-  )
-
-
+if( ${LOCAL_PROJECT_NAME}_BUILD_SLICER_EXTENSION )
+  find_package(Slicer REQUIRED)
+  include(${Slicer_USE_FILE})
+  set(CPACK_INSTALL_CMAKE_PROJECTS "${CPACK_INSTALL_CMAKE_PROJECTS};${CMAKE_BINARY_DIR}/${LOCAL_PROJECT_NAME}-inner-build;${EXTENSION_NAME};ALL;/")
+  include(${Slicer_EXTENSION_CPACK})
+endif()

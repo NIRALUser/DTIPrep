@@ -1,25 +1,41 @@
 
 include(CMakeDependentOption)
+include(ExternalData)
 
+## A simple macro to set variables ONLY if it has not been set
+## This is needed when stand-alone packages are combined into
+## a larger package, and the desired behavior is that all the
+## binary results end up in the combined directory.
+if(NOT SETIFEMPTY)
+macro(SETIFEMPTY)
+  set(KEY ${ARGV0})
+  set(VALUE ${ARGV1})
+  if(NOT ${KEY})
+    set(${KEY} ${VALUE})
+  endif(NOT ${KEY})
+endmacro(SETIFEMPTY KEY VALUE)
+endif(NOT SETIFEMPTY)
+###
 
 #-----------------------------------------------------------------------------
 # Build option(s)
 #-----------------------------------------------------------------------------
-option(${LOCAL_PROJECT_NAME}_USE_QT "Find and use Qt with VTK to build GUI Tools" ON)
-mark_as_advanced(${LOCAL_PROJECT_NAME}_USE_QT)
-
-set(PRIMARY_PROJECT_NAME ${LOCAL_PROJECT_NAME})
+option(BUILD_TESTING "Build Testing" ON)
+if(BUILD_TESTING)
+  include(CTest)
+endif()
 
 option(${LOCAL_PROJECT_NAME}_INSTALL_DEVELOPMENT "Install development support include and libraries for external packages." OFF)
 mark_as_advanced(${LOCAL_PROJECT_NAME}_INSTALL_DEVELOPMENT)
 
-option(USE_DTIPrep  "Build DTIPrep"                       ON)
-
-set(ITK_VERSION_MAJOR 4 CACHE STRING "Choose the expected ITK major version to build DTIPrep (3 or 4).")
 # Set the possible values of ITK major version for cmake-gui
-set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release" "MinSizeRel" "RelWithDebInfo")
+set(ITK_VERSION_MAJOR 4 CACHE STRING "Choose the expected ITK major version to build DTIReg (3 or 4).")
 if(NOT ${ITK_VERSION_MAJOR} STREQUAL "3" AND NOT ${ITK_VERSION_MAJOR} STREQUAL "4")
   message(FATAL_ERROR "ITK_VERSION_MAJOR should be either 3 or 4")
+endif()
+# CMAKE_BUILD_TYPE is not defined on some platforms
+if( CMAKE_BUILD_TYPE )
+  set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release" "MinSizeRel" "RelWithDebInfo")
 endif()
 
 set(USE_ITKv3 OFF)
@@ -27,13 +43,6 @@ set(USE_ITKv4 ON)
 if(${ITK_VERSION_MAJOR} STREQUAL "3")
   set(USE_ITKv3 ON)
   set(USE_ITKv4 OFF)
-endif()
-
-if(${LOCAL_PROJECT_NAME}_USE_QT AND NOT DTIPrep_BUILD_SLICER_EXTENSION )
-  if(NOT QT4_FOUND)
-    find_package(Qt4 4.6 COMPONENTS QtCore QtGui QtNetwork QtXml REQUIRED)
-    include(${QT_USE_FILE})
-  endif()
 endif()
 
 #-----------------------------------------------------------------------------
@@ -50,7 +59,6 @@ set(CMAKE_MODULE_PATH
 #------------------------------------------------------------------------------
 include(PreventInSourceBuilds)
 include(PreventInBuildInstalls)
-include(SlicerExtensionsConfigureMacros)
 #-----------------------------------------------------------------------------
 # CMake Function(s) and Macro(s)
 #-----------------------------------------------------------------------------
@@ -71,7 +79,7 @@ if(PLATFORM_CHECK)
     message(FATAL_ERROR "Only Mac OSX >= 10.5 are supported !")
   endif()
 endif()
-
+include(SlicerMacroGetOperatingSystemArchitectureBitness)
 #-----------------------------------------------------------------------------
 # Set a default build type if none was specified
 if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
@@ -81,50 +89,36 @@ if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
   set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release" "MinSizeRel" "RelWithDebInfo")
 endif()
 
-#-----------------------------------------------------------------------------
-if(NOT COMMAND SETIFEMPTY)
-  macro(SETIFEMPTY)
-    set(KEY ${ARGV0})
-    set(VALUE ${ARGV1})
-    if(NOT ${KEY})
-      set(${ARGV})
-    endif()
-  endmacro()
-endif()
-
-#-----------------------------------------------------------------------------
-SETIFEMPTY(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/lib)
-SETIFEMPTY(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/lib)
-SETIFEMPTY(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/bin)
-
-#-----------------------------------------------------------------------------
-SETIFEMPTY(CMAKE_INSTALL_LIBRARY_DESTINATION lib)
-SETIFEMPTY(CMAKE_INSTALL_ARCHIVE_DESTINATION lib)
-SETIFEMPTY(CMAKE_INSTALL_RUNTIME_DESTINATION bin)
-
-#-------------------------------------------------------------------------
-SETIFEMPTY(DTIPrepTools_CLI_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_LIBRARY_OUTPUT_DIRECTORY})
-SETIFEMPTY(DTIPrepTools_CLI_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_ARCHIVE_OUTPUT_DIRECTORY})
-SETIFEMPTY(DTIPrepTools_CLI_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_LIBRARY_OUTPUT_DIRECTORY})
-
-#-------------------------------------------------------------------------
-SETIFEMPTY(DTIPrepTools_CLI_INSTALL_LIBRARY_DESTINATION ${CMAKE_INSTALL_LIBRARY_DESTINATION})
-SETIFEMPTY(DTIPrepTools_CLI_INSTALL_ARCHIVE_DESTINATION ${CMAKE_INSTALL_ARCHIVE_DESTINATION})
-SETIFEMPTY(DTIPrepTools_CLI_INSTALL_RUNTIME_DESTINATION ${CMAKE_INSTALL_RUNTIME_DESTINATION})
-
 #-------------------------------------------------------------------------
 # Augment compiler flags
 #-------------------------------------------------------------------------
 include(ITKSetStandardCompilerFlags)
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS_INIT} ${ITK_C_WARNING_FLAGS} ${C_DEBUG_DESIRED_FLAGS}" )
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS_INIT} ${ITK_CXX_WARNING_FLAGS} ${CXX_DEBUG_DESIRED_FLAGS}" )
+  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${C_DEBUG_DESIRED_FLAGS}" )
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CXX_DEBUG_DESIRED_FLAGS}" )
 else() # Release, or anything else
-  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS_INIT} ${ITK_C_WARNING_FLAGS} ${C_RELEASE_DESIRED_FLAGS}" )
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS_INIT} ${ITK_CXX_WARNING_FLAGS} ${CXX_RELEASE_DESIRED_FLAGS}" )
+  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${C_RELEASE_DESIRED_FLAGS}" )
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CXX_RELEASE_DESIRED_FLAGS}" )
 endif()
 
-set(CMAKE_POSITION_INDEPENDENT_CODE 1)
-set(CMAKE_CXX_VISIBILITY_PRESET hidden)
-set(CMAKE_VISIBILITY_INLINES_HIDDEN 1)
+#-----------------------------------------------------------------------------
+# Add needed flag for gnu on linux like enviroments to build static common libs
+# suitable for linking with shared object libs.
+if(CMAKE_SYSTEM_PROCESSOR STREQUAL "x86_64")
+  if(NOT "${CMAKE_CXX_FLAGS}" MATCHES "-fPIC")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
+  endif()
+  if(NOT "${CMAKE_C_FLAGS}" MATCHES "-fPIC")
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fPIC")
+  endif()
+endif()
 
+
+#-----------------------------------------------------------------------------
+# Extension meta-information
+
+#  set(EXTENSION_BUILD_SUBDIRECTORY DTI-Reg-build)
+set(EXTENSION_BUILD_SUBDIRECTORY . )
+set(SUPERBUILD_TOPLEVEL_PROJECT DTIPrepTools)
+set(EXTENSION_README_FILE ${CMAKE_CURRENT_SOURCE_DIR}/README.md)
+set(EXTENSION_LICENSE_FILE ${CMAKE_CURRENT_SOURCE_DIR}/License.txt)

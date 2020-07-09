@@ -1,0 +1,19 @@
+# - Config file for the DTI-Reg package
+# It defines the following variables
+#  DTI-Reg_INCLUDE_DIRS - include directories for DTI-Reg
+#  DTI-Reg_LIBRARIES    - libraries to link against
+#  DTI-Reg_EXECUTABLE   - the bar executable
+ 
+# Compute paths
+get_filename_component(DTI-Reg_CMAKE_DIR "${CMAKE_CURRENT_LIST_FILE}" PATH)
+set(DTI-Reg_INCLUDE_DIRS "@CONF_INCLUDE_DIRS@")
+include_directories(${DTI-Reg_INCLUDE_DIRS})
+ 
+# Our library dependencies (contains definitions for IMPORTED targets)
+if(EXISTS "${DTI-Reg_CMAKE_DIR}/DTI-RegTargets.cmake")
+include("${DTI-Reg_CMAKE_DIR}/DTI-RegTargets.cmake")
+endif()
+
+ 
+# These are IMPORTED targets created by DTI-RegTargets.cmake
+set(DTI-Reg_LIBRARIES "@CONF_LIBRARIES@")

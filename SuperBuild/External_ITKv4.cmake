@@ -1,6 +1,10 @@
 if( NOT EXTERNAL_SOURCE_DIRECTORY )
   set( EXTERNAL_SOURCE_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/ExternalSources )
 endif()
+if( NOT EXTERNAL_BINARY_DIRECTORY )
+  set( EXTERNAL_BINARY_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} )
+endif()
+
 
 # Make sure this file is included only once by creating globally unique varibles
 # based on the name of this included file.
@@ -147,20 +151,24 @@ if(NOT ( DEFINED "USE_SYSTEM_${extProjName}" AND "${USE_SYSTEM_${extProjName}}" 
   set(${proj}_CMAKE_OPTIONS
       -DBUILD_TESTING:BOOL=OFF
       -DBUILD_EXAMPLES:BOOL=OFF
+      -DBUILD_SHARED_LIBS:BOOL=OFF
+      -DITK_BUILD_DEFAULT_MODULES:BOOL=ON
       -DCMAKE_INSTALL_PREFIX:PATH=${${proj}_INSTALL_PATH}
+      -DITKV3_COMPATIBILITY:BOOL=OFF
       -DITK_LEGACY_REMOVE:BOOL=ON
-      -DITK_FUTURE_LEGACY_REMOVE:=BOOL=ON
-      -DITKV3_COMPATIBILITY:BOOL=ON
+      # -DITK_FUTURE_LEGACY_REMOVE:BOOL=OFF
       -DITK_USE_REVIEW:BOOL=ON
       -DModule_ITKReview:BOOL=ON
-      #-DITK_INSTALL_NO_DEVELOPMENT:BOOL=ON
-      -DITK_BUILD_DEFAULT_MODULES:BOOL=ON
+      -DModule_ITKIODCMTK:BOOL=ON
+      # -DModule_ITKIOMINC:BOOL=ON
+      # -DModule_ITKIOBruker:BOOL=ON
+      # -DModule_ITKIOPhilipsREC:BOOL=ON
+      # -DITK_INSTALL_NO_DEVELOPMENT:BOOL=ON
       -DKWSYS_USE_MD5:BOOL=ON # Required by SlicerExecutionModel
       -DITK_WRAPPING:BOOL=OFF #${BUILD_SHARED_LIBS} ## HACK:  QUICK CHANGE
       -DITK_USE_SYSTEM_DCMTK:BOOL=${${PROJECT_NAME}_BUILD_DICOM_SUPPORT}
       -DITK_USE_FFTWD:BOOL=ON
-      #-DModule_ITKIOPhilipsREC:BOOL=ON
-      -DModule_ITKVtkGlue:BOOL=ON
+      -DFFTWD_DIR=${FFTW_DIR}
       -DVTK_DIR:PATH=${VTK_DIR}
       ${${proj}_TIFF_ARGS}
       ${${proj}_JPEG_ARGS}
@@ -171,10 +179,12 @@ if(NOT ( DEFINED "USE_SYSTEM_${extProjName}" AND "${USE_SYSTEM_${extProjName}}" 
       ${${proj}_FFTWD_ARGS}
       ${${proj}_CMAKE_ADDITIONAL_OPTIONS}
     )
+
   ### --- End Project specific additions
-  set(${proj}_REPOSITORY ${git_protocol}://itk.org/ITK.git)
-  set(${proj}_GIT_TAG cdc3e570e5599f0c5bb91d1b45a1c8fc4fca6a08)
-  set(ITK_VERSION_ID ITK-4.13)
+  set(${proj}_REPOSITORY ${git_protocol}://github.com/InsightSoftwareConsortium/ITK)
+  #set(${proj}_GIT_TAG cdc3e570e5599f0c5bb91d1b45a1c8fc4fca6a08)
+  set(${proj}_GIT_TAG  v4.12.0)
+  set(ITK_VERSION_ID ITK-4.12)
 
   ExternalProject_Add(${proj}
     GIT_REPOSITORY ${${proj}_REPOSITORY}
@@ -209,6 +219,8 @@ else()
 endif()
 
 list(APPEND ${CMAKE_PROJECT_NAME}_SUPERBUILD_EP_VARS ${extProjName}_DIR:PATH)
+set(COMMON_EXTERNAL_PROJECT_ARGS ${${CMAKE_PROJECT_NAME}_SUPERBUILD_EP_ARGS})
+_expand_external_project_vars()
 
 ProjectDependancyPop(CACHED_extProjName extProjName)
 ProjectDependancyPop(CACHED_proj proj)

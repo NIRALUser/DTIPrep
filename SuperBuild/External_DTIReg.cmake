@@ -69,7 +69,8 @@ if(NOT ( DEFINED "USE_SYSTEM_${extProjName}" AND "${USE_SYSTEM_${extProjName}}" 
 
   ### --- End Project specific additions
   set( ${proj}_REPOSITORY ${git_protocol}://github.com/NIRALUser/DTI-Reg.git )
-  set( ${proj}_GIT_TAG d28f6fb7de82b964321ebabe9904821ddc5342f4 )
+  # set( ${proj}_GIT_TAG d28f6fb7de82b964321ebabe9904821ddc5342f4 )
+  set( ${proj}_GIT_TAG v1.1.12-release )
   ExternalProject_Add(${proj}
     GIT_REPOSITORY ${${proj}_REPOSITORY}
     GIT_TAG ${${proj}_GIT_TAG}

@@ -5,6 +5,7 @@ if( NOT EXTERNAL_BINARY_DIRECTORY )
   set( EXTERNAL_BINARY_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR} )
 endif()
 
+
 # Make sure this file is included only once by creating globally unique varibles
 # based on the name of this included file.
 get_filename_component(CMAKE_CURRENT_LIST_FILENAME ${CMAKE_CURRENT_LIST_FILE} NAME_WE)
@@ -33,10 +34,17 @@ set(${extProjName}_REQUIRED_VERSION "")  #If a required version is necessary, th
 #endif()
 
 # Sanity checks
+
+if(DEFINED ${extProjName}_DIR AND NOT EXISTS ${${extProjName}_DIR})
+find_package(${extProjName} ${${extProjName}_REQUIRED_VERSION} REQUIRED)
+  message(FATAL_ERROR "${extProjName}_DIR variable is defined but corresponds to non-existing directory (${${extProjName}_DIR})")
+endif()
+
 if(NOT ( DEFINED "USE_SYSTEM_${extProjName}" AND "${USE_SYSTEM_${extProjName}}" ) )
   #message(STATUS "${__indent}Adding project ${proj}")
   # Set dependency list
-  set(${proj}_DEPENDENCIES ITKv4 VTK SlicerExecutionModel niral_utilities)
+  option(USE_SYSTEM_VTK "Build using an externally defined version of VTK" OFF)
+  set(${proj}_DEPENDENCIES ITKv4 VTK DCMTK SlicerExecutionModel JPEG  niral_utilities)
   if( BUILD_DWIAtlas )
     list( APPEND ${proj}_DEPENDENCIES Boost )
   endif()
@@ -59,25 +67,35 @@ if(NOT ( DEFINED "USE_SYSTEM_${extProjName}" AND "${USE_SYSTEM_${extProjName}}" 
        )
   endif()
   ### --- Project specific additions here
+  set(CMAKE_CXX_FLAGS " -std=c++11 ${CMAKE_CXX_FLAGS}")
   set(${proj}_CMAKE_OPTIONS
     ${DWIAtlasVars}
+    -DBUILD_TESTING:BOOL=OFF
+    -DBOOST_ROOT:PATH=${BOOST_ROOT}
+    -DBOOST_INCLUDE_DIR:PATH=${BOOST_INCLUDE_DIR}
     -DUSE_SYSTEM_ITK:BOOL=ON
     -DUSE_SYSTEM_VTK:BOOL=ON
     -DUSE_SYSTEM_SlicerExecutionModel:BOOL=ON
+    -DUSE_SYSTEM_DCMTK:BOOL=ON
     -DUSE_SYSTEM_niral_utilities:BOOL=ON
-    -DITK_DIR=${ITK_DIR}
-    -DVTK_DIR=${VTK_DIR}
+    -DITK_DIR:PATH=${ITK_DIR}
+    -DVTK_DIR:PATH=${VTK_DIR}
+    -DDCMTK_DIR:PATH=${DCMTK_DIR}
     -DSlicerExecutionModel_DIR=${SlicerExecutionModel_DIR}
-    -Dniral_utilities_DIR=${niral_utilities_DIR}
+    -Dniral_utilities_DIR:PATH=${niral_utilities_DIR}
     -DDTIProcess_SUPERBUILD:BOOL=OFF
+    -DDTIProcess_BUILD_SLICER_EXTENSION:BOOL=OFF
     -DEXECUTABLES_ONLY:BOOL=ON
     -DSubversion_SVN_EXECUTABLE:PATH=${SVNCOMMAND}
-    -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_CURRENT_BINARY_DIR}/${proj}-install
+    -DBUILD_CropDTI:BOOL=OFF
+    -DBUILD_PolyDataMerge:BOOL=OFF
+    -DBUILD_PolyDataTransform:BOOL=OFF
     )
-
+  # message(FATAL_ERROR ${${proj}_CMAKE_OPTIONS}})
   ### --- End Project specific additions
   set( ${proj}_REPOSITORY ${git_protocol}://github.com/NIRALUser/DTIProcessToolkit.git)
-  set( ${proj}_GIT_TAG  release )
+  set( ${proj}_GIT_TAG  v1.0.0 )
+
   ExternalProject_Add(${proj}
     GIT_REPOSITORY ${${proj}_REPOSITORY}
     GIT_TAG ${${proj}_GIT_TAG}
@@ -94,6 +112,8 @@ if(NOT ( DEFINED "USE_SYSTEM_${extProjName}" AND "${USE_SYSTEM_${extProjName}}" 
       ${CMAKE_OSX_EXTERNAL_PROJECT_ARGS}
       ${COMMON_EXTERNAL_PROJECT_ARGS}
       ${${proj}_CMAKE_OPTIONS}      
+      -DCMAKE_INSTALL_PREFIX:PATH=${EXTERNAL_BINARY_DIRECTORY}/${proj}-install
+      -DCMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS}
     DEPENDS
       ${${proj}_DEPENDENCIES}    
   )  

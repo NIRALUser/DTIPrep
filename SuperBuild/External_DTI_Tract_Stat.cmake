@@ -67,6 +67,7 @@ if(NOT ( DEFINED "USE_SYSTEM_${extProjName}" AND "${USE_SYSTEM_${extProjName}}" 
   ### --- End Project specific additions
   set( ${proj}_REPOSITORY ${git_protocol}://github.com/NIRALUser/DTIFiberTractStatistics.git)
   set( ${proj}_GIT_TAG 853c7b603c164b1efd31328cf0ceb28f351e4193 )
+  set( ${proj}_GIT_TAG master )
   ExternalProject_Add(${proj}
     GIT_REPOSITORY ${${proj}_REPOSITORY}
     GIT_TAG ${${proj}_GIT_TAG}

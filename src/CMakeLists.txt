@@ -1,8 +1,11 @@
 #add_subdirectory(src)
 #add_subdirectory(gui)
+find_package(Qt4 REQUIRED)
 
-include_directories(${CMAKE_BINARY_DIR}/src)
-link_directories(${CMAKE_LIBRARY_OUTPUT_DIRECTORY})
+include_directories(${CMAKE_BINARY_DIR}/src ${QT_INCLUDES})
+link_directories(${CMAKE_LIBRARY_OUTPUT_DIRECTORY}
+                 ${BRAINSCommonLib_DIR}/../lib
+  )
 
 set( DTIPrep_SRCS
   main.cxx
@@ -107,6 +110,7 @@ set_source_files_properties(${DTIPrep_SRCS} PROPERTIES
 set( DTIPrep_Libs
   ModuleDescriptionParser
   ${QT_LIBRARIES}
+  QtXml
   ${QT_QTDBUS_LIBRARY}
   ${ITK_LIBRARIES}
   ${VTK_LIBRARIES}
