@@ -99,6 +99,8 @@ if(NOT ( DEFINED "USE_SYSTEM_${extProjName}" AND "${USE_SYSTEM_${extProjName}}" 
       ${${proj}_DEPENDENCIES}
   )
   set(${extProjName}_DIR ${CMAKE_BINARY_DIR}/${proj}-install/lib/Teem-1.11.1)
+  set(${extProjName}_INSTALL_DIR ${CMAKE_BINARY_DIR}/${proj}-install)
+
 else()
   if(${USE_SYSTEM_${extProjName}})
     find_package(${extProjName} ${${extProjName}_REQUIRED_VERSION} REQUIRED)
@@ -111,7 +113,9 @@ else()
   endif()
 endif()
 
+
 list(APPEND ${CMAKE_PROJECT_NAME}_SUPERBUILD_EP_VARS ${extProjName}_DIR:PATH)
+list(APPEND ${CMAKE_PROJECT_NAME}_SUPERBUILD_EP_VARS ${extProjName}_INSTALL_DIR:PATH)
 
 ProjectDependancyPop(CACHED_extProjName extProjName)
 ProjectDependancyPop(CACHED_proj proj)

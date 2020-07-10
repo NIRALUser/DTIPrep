@@ -242,3 +242,17 @@ else()
     INSTALL_EXECUTABLE( OUTPUT_DIR ${CMAKE_INSTALL_PREFIX}/bin/DTIPrep.app/Contents/ExternalBin LIST_EXEC ${NotCLIToolsList} PATHS ${ToolsPaths} )
   endif()
 endif()
+
+#--------------------------------------------------------------------------
+# install relevant tools and libraries
+#--------------------------------------------------------------------------
+
+
+set(TOOLLIST DTIProcess BRAINSTools DCMTK FFTW niral_utilities Teem)
+
+foreach(subproj IN LISTS TOOLLIST)
+  message("Installing ... : ${subproj}")
+  message("From : ${${subproj}_INSTALL_DIR}")
+  file(COPY ${${subproj}_INSTALL_DIR}/bin/ DESTINATION ${CMAKE_INSTALL_PREFIX}/bin/)
+  file(COPY ${${subproj}_INSTALL_DIR}/lib/ DESTINATION ${CMAKE_INSTALL_PREFIX}/lib/)
+endforeach()

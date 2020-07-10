@@ -138,6 +138,7 @@ if(NOT ( DEFINED "USE_SYSTEM_${extProjName}" AND "${USE_SYSTEM_${extProjName}}" 
       ${${proj}_DEPENDENCIES}
   )
   set(${extProjName}_DIR ${EXTERNAL_BINARY_DIRECTORY}/${proj}-install/lib/cmake/dcmtk)
+  set(${extProjName}_INSTALL_DIR ${EXTERNAL_BINARY_DIRECTORY}/${proj}-install)
 else()
   if(${USE_SYSTEM_${extProjName}})
     find_package(${extProjName} REQUIRED NO_MODULE)
@@ -149,8 +150,11 @@ else()
     SlicerMacroEmptyExternalProject(${proj} "${${proj}_DEPENDENCIES}")
   endif()
 endif()
+
+
 set( ${PRIMARY_PROJECT_NAME}_BUILD_DICOM_SUPPORT ON )
 list(APPEND ${CMAKE_PROJECT_NAME}_SUPERBUILD_EP_VARS ${extProjName}_DIR:PATH)
+list(APPEND ${CMAKE_PROJECT_NAME}_SUPERBUILD_EP_VARS ${extProjName}_INSTALL_DIR:PATH)
 list(APPEND ${CMAKE_PROJECT_NAME}_SUPERBUILD_EP_VARS ${PRIMARY_PROJECT_NAME}_BUILD_DICOM_SUPPORT:BOOL)
 _expand_external_project_vars()
 set(COMMON_EXTERNAL_PROJECT_ARGS ${${CMAKE_PROJECT_NAME}_SUPERBUILD_EP_ARGS})

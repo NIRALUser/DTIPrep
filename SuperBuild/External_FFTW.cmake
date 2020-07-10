@@ -77,6 +77,7 @@ endif(WIN32)
     )
   set( ${extProjName}_DIR ${EXTERNAL_BINARY_DIRECTORY}/${proj}-install )
   set( ${extProjName}_INCLUDE_PATH ${EXTERNAL_BINARY_DIRECTORY}/${proj}-install/include )
+  set( ${extProjName}_INSTALL_DIR ${EXTERNAL_BINARY_DIRECTORY}/${proj}-install)
   if(WIN32)
     set( ${extProjName}D_LIB ${EXTERNAL_BINARY_DIRECTORY}/${proj}-install/lib/fftw3.lib )
     set( ${extProjName}F_LIB ${EXTERNAL_BINARY_DIRECTORY}/${proj}-install/lib/fftw3f.lib )
@@ -98,7 +99,9 @@ else()
   SlicerMacroEmptyExternalProject(${proj} "${${proj}_DEPENDENCIES}")
 endif()
 
+
 list(APPEND ${CMAKE_PROJECT_NAME}_SUPERBUILD_EP_VARS ${extProjName}_DIR:PATH)
+list(APPEND ${CMAKE_PROJECT_NAME}_SUPERBUILD_EP_VARS ${extProjName}_INSTALL_DIR:PATH)
 _expand_external_project_vars()
 set(COMMON_EXTERNAL_PROJECT_ARGS ${${CMAKE_PROJECT_NAME}_SUPERBUILD_EP_ARGS})
 
