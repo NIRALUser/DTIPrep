@@ -19,7 +19,7 @@ $ docker run --rm -it -v $PWD/../:/work -w /work <image-name>
 
 ## Change Log:
 
-#### [v1.3.0-beta](http://github.com/NIRALUser/DTIAtlasBuilder/tree/v1.3.0-beta) (07/10/2020)
+#### [v1.3.0-beta](http://github.com/NIRALUser/DTIPrep/tree/v1.3.0-beta) (07/10/2020)
 - Superbuild script modified.
 - Dockerfile added
 
