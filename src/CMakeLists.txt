@@ -110,7 +110,8 @@ set_source_files_properties(${DTIPrep_SRCS} PROPERTIES
 set( DTIPrep_Libs
   ModuleDescriptionParser
   ${QT_LIBRARIES}
-  QtXml
+  #QtXml
+  ${QT_QTXML_LIBRARY}
   ${QT_QTDBUS_LIBRARY}
   ${ITK_LIBRARIES}
   ${VTK_LIBRARIES}

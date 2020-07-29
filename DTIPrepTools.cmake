@@ -30,7 +30,6 @@ set(CMAKE_MODULE_PATH
   )
 
 find_package(SlicerExecutionModel REQUIRED)
-
 find_package(GenerateCLP REQUIRED)
 if(GenerateCLP_FOUND)
   include(${GenerateCLP_USE_FILE})
@@ -236,23 +235,23 @@ if( DTIPrep_BUILD_SLICER_EXTENSION )
   set(CPACK_INSTALL_CMAKE_PROJECTS "${CPACK_INSTALL_CMAKE_PROJECTS};${CMAKE_BINARY_DIR};${EXTENSION_NAME};ALL;/")
   include(${Slicer_EXTENSION_CPACK})
 else()
+  #--------------------------------------------------------------------------
+  # install relevant tools and libraries
+  #--------------------------------------------------------------------------
+
+  set(TOOLLIST DTIProcess BRAINSTools DCMTK FFTW niral_utilities Teem)
+
+  foreach(subproj IN LISTS TOOLLIST)
+    message("Installing ... : ${subproj}")
+    message("From : ${${subproj}_INSTALL_DIR}")
+    file(COPY ${${subproj}_INSTALL_DIR}/bin/ DESTINATION ${CMAKE_INSTALL_PREFIX}/bin/)
+    file(COPY ${${subproj}_INSTALL_DIR}/lib/ DESTINATION ${CMAKE_INSTALL_PREFIX}/lib/)
+  endforeach()
   if( NOT APPLE )
     INSTALL_EXECUTABLE( OUTPUT_DIR bin LIST_EXEC ${NotCLIToolsList} PATHS ${ToolsPaths} )
   else()
-    INSTALL_EXECUTABLE( OUTPUT_DIR ${CMAKE_INSTALL_PREFIX}/bin/DTIPrep.app/Contents/ExternalBin LIST_EXEC ${NotCLIToolsList} PATHS ${ToolsPaths} )
+    INSTALL_EXECUTABLE( OUTPUT_DIR bin LIST_EXEC ${NotCLIToolsList} PATHS ${ToolsPaths} )
+    #INSTALL_EXECUTABLE( OUTPUT_DIR ${CMAKE_INSTALL_PREFIX}/bin/DTIPrep.app/Contents/ExternalBin LIST_EXEC ${NotCLIToolsList} PATHS ${ToolsPaths} )
   endif()
 endif()
 
-#--------------------------------------------------------------------------
-# install relevant tools and libraries
-#--------------------------------------------------------------------------
-
-
-set(TOOLLIST DTIProcess BRAINSTools DCMTK FFTW niral_utilities Teem)
-
-foreach(subproj IN LISTS TOOLLIST)
-  message("Installing ... : ${subproj}")
-  message("From : ${${subproj}_INSTALL_DIR}")
-  file(COPY ${${subproj}_INSTALL_DIR}/bin/ DESTINATION ${CMAKE_INSTALL_PREFIX}/bin/)
-  file(COPY ${${subproj}_INSTALL_DIR}/lib/ DESTINATION ${CMAKE_INSTALL_PREFIX}/lib/)
-endforeach()
