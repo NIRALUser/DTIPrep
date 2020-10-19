@@ -66,7 +66,7 @@
        <enum>QTabWidget::Rounded</enum>
       </property>
       <property name="currentIndex">
-       <number>1</number>
+       <number>0</number>
       </property>
       <property name="elideMode">
        <enum>Qt::ElideNone</enum>
@@ -99,17 +99,14 @@
         </item>
        </layout>
       </widget>
-      <widget class="QWidget" name="tab_3DView">
-       <attribute name="title">
-        <string>3D view</string>
-       </attribute>
-       <layout class="QVBoxLayout" name="verticalLayout_3">
-        <item>
-         <widget class="QVTKWidget" name="qvtkWidget_3DView" native="true"/>
-        </item>
-       </layout>
-      </widget>
      </widget>
+    </item>
+    <item>
+     <layout class="QVBoxLayout" name="verticalLayout_3">
+      <item>
+       <widget class="QVTKWidget" name="qvtkWidget_3DView" native="true"/>
+      </item>
+     </layout>
     </item>
    </layout>
   </widget>
@@ -119,7 +116,7 @@
      <x>0</x>
      <y>0</y>
      <width>1010</width>
-     <height>25</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu_File">
@@ -540,6 +537,9 @@
   </action>
   <action name="actionSphere">
    <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
     <bool>true</bool>
    </property>
    <property name="icon">

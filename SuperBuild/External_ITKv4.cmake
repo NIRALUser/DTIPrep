@@ -154,9 +154,9 @@ if(NOT ( DEFINED "USE_SYSTEM_${extProjName}" AND "${USE_SYSTEM_${extProjName}}" 
       -DBUILD_SHARED_LIBS:BOOL=OFF
       -DITK_BUILD_DEFAULT_MODULES:BOOL=ON
       -DCMAKE_INSTALL_PREFIX:PATH=${${proj}_INSTALL_PATH}
-      -DITKV3_COMPATIBILITY:BOOL=OFF
-      -DITK_LEGACY_REMOVE:BOOL=ON
-      # -DITK_FUTURE_LEGACY_REMOVE:BOOL=OFF
+      -DITKV3_COMPATIBILITY:BOOL=ON
+      -DITK_LEGACY_REMOVE:BOOL=OFF
+      -DITK_FUTURE_LEGACY_REMOVE:BOOL=ON
       -DITK_USE_REVIEW:BOOL=ON
       -DModule_ITKReview:BOOL=ON
       -DModule_ITKIODCMTK:BOOL=ON
@@ -183,7 +183,7 @@ if(NOT ( DEFINED "USE_SYSTEM_${extProjName}" AND "${USE_SYSTEM_${extProjName}}" 
   ### --- End Project specific additions
   set(${proj}_REPOSITORY ${git_protocol}://github.com/InsightSoftwareConsortium/ITK)
   #set(${proj}_GIT_TAG cdc3e570e5599f0c5bb91d1b45a1c8fc4fca6a08)
-  set(${proj}_GIT_TAG  v4.12.0)
+  set(${proj}_GIT_TAG  v4.12.2)
   set(ITK_VERSION_ID ITK-4.12)
 
   ExternalProject_Add(${proj}

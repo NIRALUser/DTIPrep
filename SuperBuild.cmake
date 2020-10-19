@@ -187,7 +187,7 @@ if( NOT DTIPrep_BUILD_SLICER_EXTENSION )
 endif()
 
 set(USE_ITK_Module_MGHIO TRUE)
-#set(${PROJECT_NAME}_BUILD_DICOM_SUPPORT TRUE )
+set(${PROJECT_NAME}_BUILD_DICOM_SUPPORT TRUE )
 set(${PROJECT_NAME}_BUILD_ZLIB_SUPPORT TRUE )
 
 #-----------------------------------------------------------------------------

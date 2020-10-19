@@ -87,13 +87,20 @@ GMainWindow::GMainWindow()
 
   // QT/VTK interact
   qvtkWidget->GetRenderWindow()->SetStereoTypeToRedBlue();
+
+
+  vtkRenderWindow *renderWindow = vtkRenderWindow::New(); 
+  qvtkWidget_3DView->SetRenderWindow(renderWindow);
   qvtkWidget_3DView->GetRenderWindow()->SetStereoTypeToRedBlue();
 
   pvtkRenderer = vtkRenderer::New();
-  pvtkRenderer->SetBackground(0.35, 0.35, 0.35);
+  //pvtkRenderer->SetBackground(0.35, 0.35, 0.35);
 
   pvtkRenderer_3DView = vtkRenderer::New();
-  pvtkRenderer_3DView->SetBackground(0.35, 0.35, 0.35);
+  //pvtkRenderer_3DView->SetBackground(0.35, 0.35, 0.35);
+  pvtkRenderer_3DView->SetViewport(0.0,0.0,1.0,1.0);
+
+
 
   qvtkWidget->GetRenderWindow()->AddRenderer(pvtkRenderer);
   qvtkWidget_3DView->GetRenderWindow()->AddRenderer(pvtkRenderer_3DView);
@@ -113,26 +120,34 @@ GMainWindow::GMainWindow()
 
   this->doubleSpinBox_SphereRadius->setMinimum(0);
   this->doubleSpinBox_SphereRadius->setMaximum(1);
+  this->doubleSpinBox_SphereRadius->setSingleStep(0.1);
+  this->doubleSpinBox_SphereRadius->setValue(1.0);
 
   this->doubleSpinBox_SphereOpacity->setMinimum(0);
   this->doubleSpinBox_SphereOpacity->setMaximum(1);
+  this->doubleSpinBox_SphereOpacity->setSingleStep(0.1);
+  this->doubleSpinBox_SphereOpacity->setValue(1.0);
 
   vtkPolyDataMapper *mapperSphere = vtkPolyDataMapper::New();
 #if (VTK_MAJOR_VERSION < 6)
   mapperSphere->SetInput( SphereSource->GetOutput() );
 #else
-  mapperSphere->SetInputData( SphereSource->GetOutput() );
+  //mapperSphere->SetInputData( SphereSource->GetOutput() );
+  mapperSphere->SetInputConnection( SphereSource->GetOutputPort() );
 #endif
 
   actorSphere  = vtkActor::New();
   actorSphere->SetMapper(mapperSphere);
   actorSphere->GetProperty()->SetColor(0.5, 0.3, 0.3);
-  actorSphere->GetProperty()->SetOpacity(0.5);
-  actorSphere->SetVisibility(0);
+  //actorSphere->GetProperty()->SetColor(1., 1., 1.);
+  actorSphere->GetProperty()->SetOpacity(1.0);
+  actorSphere->SetVisibility(2);
 
   // this->horizontalSlider_SphereRadius->setRange(0.01, 2);
 
   pvtkRenderer_3DView->AddActor(actorSphere);
+  pvtkRenderer_3DView->AddViewProp(actorSphere);
+  pvtkRenderer_3DView->ResetCamera();
 
   // qvtkWidget->GetRenderWindow()->StereoCapableWindowOn();
   // this->pvtkRenderer->GetActiveCamera()->ParallelProjectionOn();
@@ -931,6 +946,7 @@ void GMainWindow::doubleSpinBox_SphereOpacityValueChanged( double opacity)
 {
 
   this->actorSphere->GetProperty()->SetOpacity(opacity);
+  qvtkWidget_3DView->GetRenderWindow()->Render();
 
 }
 
@@ -938,7 +954,7 @@ void GMainWindow::doubleSpinBox_SphereRadiusValueChanged( double radius )
 {
 
   this->SphereSource->SetRadius(radius);
-
+  qvtkWidget_3DView->GetRenderWindow()->Render();
 }
 
 void GMainWindow::ReloadQCedDWI( QString Qqcdwiname )
