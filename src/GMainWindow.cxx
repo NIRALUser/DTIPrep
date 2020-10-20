@@ -97,7 +97,7 @@ GMainWindow::GMainWindow()
   //pvtkRenderer->SetBackground(0.35, 0.35, 0.35);
 
   pvtkRenderer_3DView = vtkRenderer::New();
-  //pvtkRenderer_3DView->SetBackground(0.35, 0.35, 0.35);
+  pvtkRenderer_3DView->SetBackground(0.35, 0.35, 0.35);
   pvtkRenderer_3DView->SetViewport(0.0,0.0,1.0,1.0);
 
 
@@ -118,12 +118,12 @@ GMainWindow::GMainWindow()
   SphereSource->SetCenter(0.0, 0.0, 0.0);
   min_length_vec = 1;
 
-  this->doubleSpinBox_SphereRadius->setMinimum(0);
-  this->doubleSpinBox_SphereRadius->setMaximum(1);
+  this->doubleSpinBox_SphereRadius->setMinimum(0.0);
+  this->doubleSpinBox_SphereRadius->setMaximum(1.0);
   this->doubleSpinBox_SphereRadius->setSingleStep(0.1);
   this->doubleSpinBox_SphereRadius->setValue(1.0);
 
-  this->doubleSpinBox_SphereOpacity->setMinimum(0);
+  this->doubleSpinBox_SphereOpacity->setMinimum(0.0);
   this->doubleSpinBox_SphereOpacity->setMaximum(1);
   this->doubleSpinBox_SphereOpacity->setSingleStep(0.1);
   this->doubleSpinBox_SphereOpacity->setValue(1.0);
@@ -1351,7 +1351,7 @@ void GMainWindow::UpdateDWIDiffusionVectorActors( DwiImageType::Pointer _DWIImag
   actorDirFile->GetParts()->RemoveAllItems();
   float  vect3d[3];
   double length = 0;
-  min_length_vec = 1;
+  min_length_vec = 1.0;
   for( ; itKey != imgMetaKeys.end(); itKey++ )
     {
     // double x,y,z;
@@ -1383,7 +1383,8 @@ void GMainWindow::UpdateDWIDiffusionVectorActors( DwiImageType::Pointer _DWIImag
 #if (VTK_MAJOR_VERSION < 6)
       TubeFilter->SetInput( LineSource->GetOutput() );
 #else
-      TubeFilter->SetInputData( LineSource->GetOutput() );
+      //TubeFilter->SetInputData( LineSource->GetOutput() );
+      TubeFilter->SetInputConnection( LineSource->GetOutputPort() );
 #endif
       TubeFilter->SetRadius(0.01);
       TubeFilter->SetNumberOfSides(10);
@@ -1395,7 +1396,8 @@ void GMainWindow::UpdateDWIDiffusionVectorActors( DwiImageType::Pointer _DWIImag
 #if (VTK_MAJOR_VERSION < 6)
       mapperLocal->SetInput( TubeFilter->GetOutput() );
 #else
-      mapperLocal->SetInputData( TubeFilter->GetOutput() );
+      //mapperLocal->SetInputData( TubeFilter->GetOutput() );
+      mapperLocal->SetInputConnection( TubeFilter->GetOutputPort() );
 #endif
 
       vtkActor *actorLocal = vtkActor::New();
@@ -1406,10 +1408,12 @@ void GMainWindow::UpdateDWIDiffusionVectorActors( DwiImageType::Pointer _DWIImag
       }
     }
   pvtkRenderer_3DView->AddActor(actorDirFile);
+  //pvtkRenderer_3DView->AddViewProp(actorDirFile);
   // std::cout << "min_length_vec " << min_length_vec << std::endl;
 
   this->doubleSpinBox_SphereRadius->setMinimum(min_length_vec);
-  SphereSource->SetRadius(min_length_vec);
+
+  //SphereSource->SetRadius(min_length_vec);
   actorDirFile->SetVisibility(1);
   pvtkRenderer_3DView->ResetCamera();
   actorDirFile->SetVisibility( actionFrom_DWI->isChecked() );
