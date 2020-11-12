@@ -25,7 +25,7 @@ typedef int ThreadIdType;
 #include "itkIntTypes.h"
 #endif
 
-#define NearZeroSmallNumber 1e-7
+#define _NearZeroSmallNumber_ 1e-7
 
 namespace itk
 {
@@ -210,6 +210,9 @@ private:
   /** Stop threshold */
   float m_StopThreshold;
 
+  /** Baseline threshold **/
+  float m_NearZeroSmallNumber=_NearZeroSmallNumber_;
+
   /** Max ineration */
   unsigned int m_MaxIteration;
 
@@ -303,13 +306,22 @@ public:
     return m_gradientNumber;
   }
 
+  inline float getB0Threshold(){
+    return m_NearZeroSmallNumber;
+  }
+
+  inline float setB0Threshold(float threshold){
+    m_NearZeroSmallNumber=threshold;
+    return m_NearZeroSmallNumber;
+  }
+
   bool GradientDirectionIsB0Image(const unsigned int DirectionIndex) const
   {
     const GradientDirectionType & currentGradient = this->m_GradientDirectionContainer->ElementAt(DirectionIndex);
 
-    return vcl_abs(currentGradient[0]) < NearZeroSmallNumber
-           && vcl_abs(currentGradient[1]) < NearZeroSmallNumber
-           && vcl_abs(currentGradient[2]) < NearZeroSmallNumber
+    return vcl_abs(currentGradient[0]) < m_NearZeroSmallNumber
+           && vcl_abs(currentGradient[1]) < m_NearZeroSmallNumber
+           && vcl_abs(currentGradient[2]) < m_NearZeroSmallNumber
     ;
   }
 
@@ -317,6 +329,7 @@ public:
   {
     return Gradient_indx_Baselines;
   }
+
 
 };
 } // end namespace itk

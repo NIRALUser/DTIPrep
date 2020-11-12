@@ -138,6 +138,7 @@ struct BaselineAverageProtocol
 
   int averageMethod;
   double stopThreshold;
+  double b0Threshold; // default is 1e-7 which is defined in itkBaselineAverager.h (change the value using DWIBaselineAverager::setB0Threshold(float))
 
   std::string outputDWIFileNameSuffix;
   std::string reportFileNameSuffix;

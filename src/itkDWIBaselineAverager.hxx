@@ -845,11 +845,11 @@ DWIBaselineAverager<TVectorImageType>
         {
         // HACK:   Should do a better comparison,  comparing floating point numbers is not reliable
         if( vcl_abs(this->m_GradientDirectionContainer->ElementAt(i)[0] - DiffusionDirections[j].gradientDir[0]) <
-            NearZeroSmallNumber
+            m_NearZeroSmallNumber
             && vcl_abs(this->m_GradientDirectionContainer->ElementAt(i)[1] - DiffusionDirections[j].gradientDir[1]) <
-            NearZeroSmallNumber
+            m_NearZeroSmallNumber
             && vcl_abs(this->m_GradientDirectionContainer->ElementAt(i)[2] - DiffusionDirections[j].gradientDir[2]) <
-            NearZeroSmallNumber )
+            m_NearZeroSmallNumber )
           {
           DiffusionDirections[j].m_repetitionNumber++;
           newDir = false;
@@ -882,9 +882,9 @@ DWIBaselineAverager<TVectorImageType>
   for( unsigned int i = 0; i < DiffusionDirections.size(); i++ )
     {
     if(
-      vcl_abs(DiffusionDirections[i].gradientDir[0]) < NearZeroSmallNumber
-      && vcl_abs(DiffusionDirections[i].gradientDir[1]) < NearZeroSmallNumber
-      && vcl_abs(DiffusionDirections[i].gradientDir[2]) < NearZeroSmallNumber
+      vcl_abs(DiffusionDirections[i].gradientDir[0]) < m_NearZeroSmallNumber
+      && vcl_abs(DiffusionDirections[i].gradientDir[1]) < m_NearZeroSmallNumber
+      && vcl_abs(DiffusionDirections[i].gradientDir[2]) < m_NearZeroSmallNumber
       )
       {
       this->m_baselineNumber = DiffusionDirections[i].m_repetitionNumber;

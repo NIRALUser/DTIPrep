@@ -1946,6 +1946,11 @@ bool CIntensityMotionCheck::BaselineAverage( DwiImageType::Pointer dwi )
       protocol->GetBaselineAverageProtocol().averageMethod );
     BaselineAverager->SetStopThreshold(
       protocol->GetBaselineAverageProtocol().stopThreshold );
+    BaselineAverager->setB0Threshold(
+      protocol->GetBaselineAverageProtocol().b0Threshold); // newly added on 11/11/2020
+
+    outfile << "B0 Threshold : " << BaselineAverager->getB0Threshold() << std::endl;
+
     BaselineAverager->SetMaxIteration( 2 );
     BaselineAverager->SetAverageInterpolationMethod( protocol->GetBaselineAverageProtocol().interpolation );
     BaselineAverager->SetReportType(protocol->GetReportType() );
@@ -6484,6 +6489,7 @@ bool CIntensityMotionCheck::MakeDefaultProtocol( Protocol *_protocol )
   _protocol->GetBaselineAverageProtocol(). bAverage = true;
   _protocol->GetBaselineAverageProtocol(). averageMethod = 1;
   _protocol->GetBaselineAverageProtocol(). stopThreshold = 0.02;
+  _protocol->GetBaselineAverageProtocol(). b0Threshold=1e-7;
   _protocol->GetBaselineAverageProtocol(). outputDWIFileNameSuffix = "";
   _protocol->GetBaselineAverageProtocol(). reportFileNameSuffix
     = "_QCReport.txt";

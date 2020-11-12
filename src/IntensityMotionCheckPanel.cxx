@@ -2199,6 +2199,7 @@ void IntensityMotionCheckPanel::UpdateProtocolToTreeWidget()
                                                                'f',
                                                                4) );
 
+
   QTreeWidgetItem *itemReportType = new QTreeWidgetItem(treeWidget);
   itemReportType->setText( 0, tr("QC_reportType") );
   itemReportType->setText( 1,
@@ -2799,6 +2800,14 @@ void IntensityMotionCheckPanel::UpdateProtocolToTreeWidget()
   itemBaselineAverageStopThreshold->setText( 1,
                                              QString::number(this->GetProtocol().GetBaselineAverageProtocol().
                                                              stopThreshold,
+                                                             'f', 4) );
+
+  QTreeWidgetItem *itemBaselineAverageB0Threshold = new QTreeWidgetItem(
+      itemBaselineAverage);
+  itemBaselineAverageB0Threshold->setText( 0, tr("BASELINE_b0Threshold") );
+  itemBaselineAverageB0Threshold->setText( 1,
+                                             QString::number(this->GetProtocol().GetBaselineAverageProtocol().
+                                                             b0Threshold,
                                                              'f', 4) );
 
   QTreeWidgetItem *itemBaselineAverageOutputDWIFileNameSuffix

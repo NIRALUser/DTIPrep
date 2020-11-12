@@ -223,6 +223,7 @@ void Protocol::initBaselineAverageProtocol()
 
   baselineAverageProtocol.averageMethod = 1; // baseline optimized
   baselineAverageProtocol.stopThreshold = 0.02;
+  baselineAverageProtocol.b0Threshold=1e-7; // same as in itkBaselineAverager.h
 
   baselineAverageProtocol.outputDWIFileNameSuffix = "";
   baselineAverageProtocol.reportFileNameSuffix = "_QCReport.txt";
@@ -1575,6 +1576,11 @@ void Protocol::Save( std::string xml)
   outfile << "        <entry parameter=\"BASELINE_stopThreshold\">" << std::endl;
   outfile << "            <value>" << GetBaselineAverageProtocol().stopThreshold << "</value>" << std::endl;
   outfile << "        </entry>" << std::endl;
+
+  outfile << "        <entry parameter=\"BASELINE_b0Threshold\">" << std::endl;
+  outfile << "            <value>" << GetBaselineAverageProtocol().b0Threshold << "</value>" << std::endl;
+  outfile << "        </entry>" << std::endl;
+
   outfile << "        <entry parameter=\"BASELINE_outputDWIFileNameSuffix\">" << std::endl;
   outfile << "            <value>" << GetBaselineAverageProtocol().outputDWIFileNameSuffix << "</value>" << std::endl;
   outfile << "        </entry>" << std::endl;
