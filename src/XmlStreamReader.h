@@ -138,6 +138,7 @@ enum ProtocolStringValue
   BASELINE_averageMethod,
   BASELINE_interpolation,
   BASELINE_stopThreshold,
+  BASELINE_b0Threshold,
   BASELINE_outputDWIFileNameSuffix,
   BASELINE_reportFileNameSuffix,
   BASELINE_reportFileMode,

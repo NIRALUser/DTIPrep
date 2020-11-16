@@ -220,6 +220,8 @@ void XmlStreamReader::InitializeProtocolStringValues()
     = BASELINE_averageMethod;
   s_mapProtocolStringValues["BASELINE_stopThreshold"]
     = BASELINE_stopThreshold;
+  s_mapProtocolStringValues["BASELINE_b0Threshold"]
+    = BASELINE_b0Threshold;
   s_mapProtocolStringValues["BASELINE_interpolation"]
     = BASELINE_interpolation;
   s_mapProtocolStringValues["BASELINE_outputDWIFileNameSuffix"]
@@ -2046,6 +2048,10 @@ void XmlStreamReader::parseXMLParametersToProtocol()
         break;
         case BASELINE_stopThreshold:
           protocol->GetBaselineAverageProtocol().stopThreshold
+            = paremeters[i].value.toDouble();
+          break;
+        case BASELINE_b0Threshold:
+          protocol->GetBaselineAverageProtocol().b0Threshold 
             = paremeters[i].value.toDouble();
           break;
         case BASELINE_outputDWIFileNameSuffix:

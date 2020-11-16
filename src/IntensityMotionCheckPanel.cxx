@@ -1584,6 +1584,7 @@ void IntensityMotionCheckPanel::DefaultProtocol()
   this->GetProtocol().GetBaselineAverageProtocol().averageMethod = 1;
   this->GetProtocol().GetBaselineAverageProtocol().interpolation = 0;
   this->GetProtocol().GetBaselineAverageProtocol().stopThreshold = 0.02;
+  this->GetProtocol().GetBaselineAverageProtocol().b0Threshold = 1e-7;
 
   this->GetProtocol().GetBaselineAverageProtocol().outputDWIFileNameSuffix
     = "";
