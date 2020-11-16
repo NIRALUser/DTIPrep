@@ -294,6 +294,7 @@ private:
   void SetInterpolationMethod(int &interpolation, int parentID, int childID, QString str_interpolation) ;
   void SetBrainMaskFileName() ;
   void CreateWarningReprocessingWindow() ;
+
   bool     bProtocol;
   Protocol protocol;
   QCResult qcResult;
@@ -336,6 +337,11 @@ private:
   DwiReaderType::Pointer QCedDwiReader;
   //Reprocessing warning window
   QWidget *m_ReprocessingWarningWindow;
+
+  // Event related variable
+
+  bool hasTreeWidgetChanged;
+  void save_protocols_if_changed();
 };
 
 #endif // INTENSITYMOTIONCHECKPANEL_H

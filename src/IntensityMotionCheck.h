@@ -406,6 +406,8 @@ private:
   std::string m_output;
   //char        m_LogFile[512];
 
+
+
 };
 
 #endif

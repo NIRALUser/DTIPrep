@@ -98,6 +98,7 @@ IntensityMotionCheckPanel::IntensityMotionCheckPanel(QMainWindow *parentNew) :
   labels << tr("Parameter") << tr("Value");
   // treeWidget->header()->setResizeMode(QHeaderView::Stretch);
   treeWidget->setHeaderLabels(labels);
+  hasTreeWidgetChanged=false;
 
   // QStringList labels_Result;
   // labels_Result << tr("Type") << tr("Result") << tr("Processing");  //Lables of Widget of QCResults tab
@@ -520,10 +521,33 @@ void IntensityMotionCheckPanel::on_treeWidget_Results_itemChanged(
 }
 
 void IntensityMotionCheckPanel::on_treeWidget_currentItemChanged(
+
   QTreeWidgetItem * /* current */,
   QTreeWidgetItem *previous)
 {
   treeWidget->closePersistentEditor(previous, 1); // does nothing if none open
+}
+
+void IntensityMotionCheckPanel::save_protocols_if_changed(){
+  if(hasTreeWidgetChanged){
+    QMessageBox m_msgBox;
+    int btn=QMessageBox::warning( this, tr("Alert") , 
+      tr("Protocol has been changed, do you like to save and update before progress ?"),
+      QMessageBox::Yes | QMessageBox::No);
+    std::cout << btn << std::endl;
+    switch(btn){
+      case QMessageBox::Yes:
+        //std::cout <<"Yes"<<std::endl;
+        on_pushButton_SaveProtocolAs_clicked();
+        break;
+      case QMessageBox::No:
+        //std::cout <<"No"<<std::endl;
+        break;
+      default:
+        break;
+        //std::cout<<"Else"<<std::endl;
+    }
+  }
 }
 
 void IntensityMotionCheckPanel::on_pushButton_RunPipeline_clicked()
@@ -534,6 +558,10 @@ void IntensityMotionCheckPanel::on_pushButton_RunPipeline_clicked()
   // IntensityMotionCheck.SetQCResult(&qcResult);
   // IntensityMotionCheck.GetImagesInformation();
   // IntensityMotionCheck.CheckByProtocol();
+
+  // Check if protocols has been changed and save&update popup
+
+  save_protocols_if_changed();
 
   bLoadDefaultQC = false;
   if( m_DwiOriginalImage->GetVectorLength() != GradientDirectionContainer->size() )
@@ -618,6 +646,7 @@ void IntensityMotionCheckPanel::on_toolButton_ProtocolFileOpen_clicked()
 {
   OpenXML();
   bProtocolTreeEditable = true;
+  hasTreeWidgetChanged=false;
 }
 
 void IntensityMotionCheckPanel::on_toolButton_ResultFileOpen_clicked()
@@ -1076,6 +1105,9 @@ void IntensityMotionCheckPanel::on_treeWidget_itemChanged(QTreeWidgetItem * /*
                                                           int /* column */)
 {
   // pushButton_Save->setEnabled(pushButton_Editable->isCheckable());
+  hasTreeWidgetChanged=true;
+  //std::cout << "Item changed" <<std::endl;
+
 }
 
 void IntensityMotionCheckPanel::on_pushButton_SaveProtocolAs_clicked()
@@ -1101,6 +1133,7 @@ void IntensityMotionCheckPanel::on_pushButton_SaveProtocolAs_clicked()
     }
 
   bProtocol = true;
+  hasTreeWidgetChanged=false;
 }
 
 void IntensityMotionCheckPanel::on_pushButton_Save_clicked()
@@ -1144,6 +1177,7 @@ void IntensityMotionCheckPanel::on_pushButton_Save_clicked()
 
   emit ProtocolChanged();
   bProtocol = true;
+  hasTreeWidgetChanged=false;
 }
 
 void IntensityMotionCheckPanel::UpdatePanelDWI()
@@ -1280,6 +1314,7 @@ void IntensityMotionCheckPanel::on_pushButton_DefaultProtocol_clicked()
 
   emit ProtocolChanged();
   bProtocolTreeEditable = true;
+  hasTreeWidgetChanged=false;
 }
 
 // old
