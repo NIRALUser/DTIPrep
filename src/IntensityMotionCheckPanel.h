@@ -295,6 +295,8 @@ private:
   void SetBrainMaskFileName() ;
   void CreateWarningReprocessingWindow() ;
 
+  bool     check_if_dwi_loaded(); //check if images are loaded
+
   bool     bProtocol;
   Protocol protocol;
   QCResult qcResult;

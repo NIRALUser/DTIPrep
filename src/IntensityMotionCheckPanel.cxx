@@ -68,7 +68,6 @@ IntensityMotionCheckPanel::IntensityMotionCheckPanel(QMainWindow *parentNew) :
   bDwiLoaded = false;
   bDwi_VisualCheckLoad = false;
   bProtocol = false;
-
   bCancel_QC = false;
 
   bLoadDefaultQC = false;
@@ -550,6 +549,10 @@ void IntensityMotionCheckPanel::save_protocols_if_changed(){
   }
 }
 
+bool IntensityMotionCheckPanel::check_if_dwi_loaded(){
+  return bDwiLoaded;
+}
+
 void IntensityMotionCheckPanel::on_pushButton_RunPipeline_clicked()
 {
   // CIntensityMotionCheck
@@ -562,6 +565,10 @@ void IntensityMotionCheckPanel::on_pushButton_RunPipeline_clicked()
   // Check if protocols has been changed and save&update popup
 
   save_protocols_if_changed();
+  if(not check_if_dwi_loaded()){
+    QMessageBox::critical( this,tr("DWI Missing"), tr("DWI has not been loaded, please load dwi first"));
+    return;
+  }
 
   bLoadDefaultQC = false;
   if( m_DwiOriginalImage->GetVectorLength() != GradientDirectionContainer->size() )
