@@ -115,8 +115,11 @@ DWIBaselineAverager<TVectorImageType>
   this->parseGradientDirections();
   this->collectDiffusionStatistics();
   this->average();
+
   this->AverageDoneOn();
+
   this->writeReport();
+
 
   if( getBaselineNumber() == 0 )
     {
@@ -134,7 +137,7 @@ DWIBaselineAverager<TVectorImageType>
   std::vector<std::string> imgMetaKeys
     = imgMetaDictionary.GetKeys();
   std::string metaString;
-
+  
   //  measurement frame
   if( imgMetaDictionary.HasKey("NRRD_measurement frame") )
     {
@@ -285,6 +288,7 @@ DWIBaselineAverager<TVectorImageType>
       }
     }
   outputPtr->SetMetaDataDictionary(outputMetaDictionary);
+  std::cout << "GenerateOutputInformation() Done " <<__FILE__ << " Line" << __LINE__ << std::endl;
 }
 
 /**
@@ -304,7 +308,20 @@ DWIBaselineAverager<TVectorImageType>
     }
   else
     {
+    //begin : to be deleted
     InputImageConstPointer inputPtr = this->GetInput();
+    int blnumber=0;
+    for (unsigned int i=0; i< inputPtr->GetVectorLength(); i++){
+      if(this->GradientDirectionIsB0Image(i) == true){
+        blnumber++;
+      }
+    }
+    this->setBaselineNumber(blnumber);
+    std::cout << "Number of baseline found (m_baselineNumber) : " << getBaselineNumber() << std::endl;
+    std::cout << "B0 Image threshold : "<< getB0Threshold() << std::endl;
+    std::cout << "m_b0 : " << m_b0 << std::endl;
+    //end
+    
     m_averagedBaseline = floatImageType::New();
     m_averagedBaseline->CopyInformation(inputPtr);
     m_averagedBaseline->SetRegions( inputPtr->GetLargestPossibleRegion() );
@@ -366,13 +383,13 @@ DWIBaselineAverager<TVectorImageType>
                 Gradient_indx_Baselines.push_back( false );
                 }
               }
-            if( FoundBaselines != this->getBaselineNumber() )
-              {
-              std::cout << "WRONG NUMBER OF BASELINES FOUND: "
-                        << this->getBaselineNumber() << " != " << FoundBaselines << std::endl;
-              std::cout << "FAILURE IN:" <<  __FILE__ << " at " <<  __LINE__ << std::endl;
-              exit(-1);
-              }
+            // if( FoundBaselines != this->getBaselineNumber() )
+            //   {
+            //   std::cout << "WRONG NUMBER OF BASELINES FOUND: "
+            //             << this->getBaselineNumber() << " != " << FoundBaselines << std::endl;
+            //   std::cout << "FAILURE IN:" <<  __FILE__ << " at " <<  __LINE__ << std::endl;
+            //   exit(-1);
+            //   }
             }
           std::cout << "BSplineOptimized" << std::endl;
           MultiImageRegistrationFilter::Pointer registration = MultiImageRegistrationFilter::New();
@@ -435,14 +452,14 @@ DWIBaselineAverager<TVectorImageType>
                 Gradient_indx_Baselines.push_back( false );
                 }
               }
-            if( FoundBaselines != this->getBaselineNumber() )
-              {
-              std::cout << "WRONG NUMBER OF BASELINES FOUND: "
-                        << this->getBaselineNumber() << " != " << FoundBaselines << std::endl;
-              std::cout << "FAILURE IN:" <<  __FILE__ << " at " <<  __LINE__ << std::endl;
-              exit(-1);
-              return;
-              }
+            // if( FoundBaselines != this->getBaselineNumber() )
+            //   {
+            //   std::cout << "WRONG NUMBER OF BASELINES FOUND: "
+            //             << this->getBaselineNumber() << " != " << FoundBaselines << std::endl;
+            //   std::cout << "FAILURE IN:" <<  __FILE__ << " at " <<  __LINE__ << std::endl;
+            //   exit(-1);
+            //   return;
+            //   }
             }
           std::cout << "BaselineOptimized" << std::endl;
           if( BaselineOptimizedAverage<UnsignedImageType>(baselineContainer, this->m_averagedBaseline,
@@ -468,12 +485,49 @@ DWIBaselineAverager<TVectorImageType>
         case DWIBaselineAverager::Direct:
         default:
           std::cout << "Direct" << std::endl;
+          std::vector<UnsignedImageType::Pointer> baselineContainer;
+          unsigned int FoundBaselines = 0;
+          for( unsigned int i = 0; i < inputPtr->GetVectorLength(); i++ )
+            {
+
+            if( this->GradientDirectionIsB0Image(i) == true )
+              {
+              Gradient_indx_Baselines.push_back( true );
+              // TODO:  This should use the extract vector element filter.
+                {
+                std::cout << "Extracting element " << i << std::endl;
+                typedef typename itk::VectorIndexSelectionCastImageFilter<TVectorImageType,
+                                                                          UnsignedImageType>
+                ExtractBaselineFilterType;
+                typename ExtractBaselineFilterType::Pointer componentExtractor = ExtractBaselineFilterType::New();
+                componentExtractor->SetInput(inputPtr);
+                componentExtractor->SetIndex( i );
+                try
+                  {
+                  componentExtractor->Update();
+                  }
+                catch( itk::ExceptionObject & err )
+                  {
+                  std::cout << err.GetDescription() << std::endl;
+                  throw;
+                  }
+                typename UnsignedImageType::Pointer baseline = componentExtractor->GetOutput();
+                baselineContainer.push_back(baseline);
+                }
+              FoundBaselines++;
+              }
+            else if(  this->GradientDirectionIsB0Image(i) == false )
+              {
+              Gradient_indx_Baselines.push_back( false );
+              }
+            }
           DirectAverage();
           this->computeIDWI();
           break;
         }
       }
     }
+  std::cout << "average() Done " << __FILE__ << " LINE " << __LINE__ <<std::endl;
   return;
 }
 
@@ -505,8 +559,10 @@ DWIBaselineAverager<TVectorImageType>
     unsigned int             FoundBaselines = 0;
     for( unsigned int i = 0; i < inputPtr->GetVectorLength(); i++ )
       {
+        
       if( this->GradientDirectionIsB0Image(i) == true )
         {
+        std::cout << i << ": bvalue = " << l2norm(getGradient(i))*m_b0 << "[" << getGradient(i)[0] << " " << getGradient(i)[1] << " " << getGradient(i)[2] << "]" << std::endl;
         aIt.GoToBegin();
         while( !aIt.IsAtEnd() )
           {
@@ -517,7 +573,7 @@ DWIBaselineAverager<TVectorImageType>
         FoundBaselines++;
         }
       }
-    if( this->getBaselineNumber() != FoundBaselines )
+    if(this->getBaselineNumber() != FoundBaselines )
       {
       std::cout << "ERROR:  Number of baselines found does not match previous estimates!"
                 << this->getBaselineNumber() << " != " << FoundBaselines << std::endl;
@@ -844,12 +900,15 @@ DWIBaselineAverager<TVectorImageType>
       for( unsigned int j = 0; j < DiffusionDirections.size(); j++ )
         {
         // HACK:   Should do a better comparison,  comparing floating point numbers is not reliable
-        if( vcl_abs(this->m_GradientDirectionContainer->ElementAt(i)[0] - DiffusionDirections[j].gradientDir[0]) <
-            m_NearZeroSmallNumber
-            && vcl_abs(this->m_GradientDirectionContainer->ElementAt(i)[1] - DiffusionDirections[j].gradientDir[1]) <
-            m_NearZeroSmallNumber
-            && vcl_abs(this->m_GradientDirectionContainer->ElementAt(i)[2] - DiffusionDirections[j].gradientDir[2]) <
-            m_NearZeroSmallNumber )
+        if( 
+            // vcl_abs(this->m_GradientDirectionContainer->ElementAt(i)[0] - DiffusionDirections[j].gradientDir[0]) <
+            // m_B0ThresholdValue
+            // && vcl_abs(this->m_GradientDirectionContainer->ElementAt(i)[1] - DiffusionDirections[j].gradientDir[1]) <
+            // m_B0ThresholdValue
+            // && vcl_abs(this->m_GradientDirectionContainer->ElementAt(i)[2] - DiffusionDirections[j].gradientDir[2]) <
+            // m_B0ThresholdValue 
+            this->GradientDirectionIsB0Image(i)
+            )
           {
           DiffusionDirections[j].m_repetitionNumber++;
           newDir = false;
@@ -882,9 +941,10 @@ DWIBaselineAverager<TVectorImageType>
   for( unsigned int i = 0; i < DiffusionDirections.size(); i++ )
     {
     if(
-      vcl_abs(DiffusionDirections[i].gradientDir[0]) < m_NearZeroSmallNumber
-      && vcl_abs(DiffusionDirections[i].gradientDir[1]) < m_NearZeroSmallNumber
-      && vcl_abs(DiffusionDirections[i].gradientDir[2]) < m_NearZeroSmallNumber
+      // vcl_abs(DiffusionDirections[i].gradientDir[0]) < m_B0ThresholdValue
+      // && vcl_abs(DiffusionDirections[i].gradientDir[1]) < m_B0ThresholdValue
+      // && vcl_abs(DiffusionDirections[i].gradientDir[2]) < m_B0ThresholdValue
+      this->GradientDirectionIsB0Image(i)
       )
       {
       this->m_baselineNumber = DiffusionDirections[i].m_repetitionNumber;
@@ -1107,6 +1167,7 @@ void
 DWIBaselineAverager<TVectorImageType>
 ::computeIDWI()
 {
+  std::cout << "computeDWI begins..." << __LINE__ << std::endl;
   InputImageConstPointer inputPtr = this->GetInput();
 
   idwi = UnsignedImageType::New();
@@ -1135,6 +1196,7 @@ DWIBaselineAverager<TVectorImageType>
                   vcl_pow( pixelValue, 1.0 / this->getGradientNumber() ) ) );
     ++idwiIt;
     }
+  std::cout << "computeIDWI Done" << std::endl; 
 }
 
 }

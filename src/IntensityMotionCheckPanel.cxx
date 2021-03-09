@@ -634,6 +634,7 @@ void IntensityMotionCheckPanel::on_pushButton_RunPipeline_clicked()
 
   bResultTreeEditable = false;
   // pushButton_SaveDWIAs->setEnabled( 0 );
+  std::cout << "RunPipeline() Done" << __FILE__ << " Line " << __LINE__ << std::endl;
 
 }
 
@@ -3709,9 +3710,9 @@ void IntensityMotionCheckPanel::QCedResultUpdate()
     }
   //
   // ..................................................................................................................................................
-  for( unsigned int i = 0; i < t_Original_ForcedConformance_Mapping.size(); i++ )
+  int n_baseline=t_Original_ForcedConformance_Mapping[0].index_original.size();
+  for( unsigned int i = 0; i < t_Original_ForcedConformance_Mapping.size()-n_baseline; i++ )
     {
-
     QTreeWidgetItem *gradient = new QTreeWidgetItem(
         itemIntensityMotionInformation);
 
@@ -3780,7 +3781,6 @@ void IntensityMotionCheckPanel::QCedResultUpdate()
       itemQCIndex->setText(0, tr("Original_Index") );
       itemQCIndex->setText(1, QString("%1").arg( (t_Original_ForcedConformance_Mapping[i].index_original)[0] ) );
       }
-
     }
 
     //When the QC is loaded then we set the variable has computed to indicate that a processing has been done before. 

@@ -18,6 +18,7 @@ Author:    Zhexing Liu (liuzhexing@gmail.com)
 #include "itkVectorContainer.h"
 #include "itkVersorRigid3DTransform.h"
 #include "itkNumberToString.h"
+#include <cmath>
 
 #if (ITK_VERSION_MAJOR < 4)
 typedef int ThreadIdType;
@@ -25,7 +26,7 @@ typedef int ThreadIdType;
 #include "itkIntTypes.h"
 #endif
 
-#define _NearZeroSmallNumber_ 1e-7
+#define _B0ThresholdValue_ 1e-7
 
 namespace itk
 {
@@ -211,7 +212,7 @@ private:
   float m_StopThreshold;
 
   /** Baseline threshold **/
-  float m_NearZeroSmallNumber=_NearZeroSmallNumber_;
+  float m_B0ThresholdValue=_B0ThresholdValue_;
 
   /** Max ineration */
   unsigned int m_MaxIteration;
@@ -286,6 +287,9 @@ public:
     return m_GradientDirectionContainer;
   }
 
+  inline void setBaselineNumber(int n){
+    m_baselineNumber=n;
+  }
   inline unsigned int getBaselineNumber()
   {
     return m_baselineNumber;
@@ -307,23 +311,43 @@ public:
   }
 
   inline float getB0Threshold(){
-    return m_NearZeroSmallNumber;
+    return m_B0ThresholdValue;
   }
 
   inline float setB0Threshold(float threshold){
-    m_NearZeroSmallNumber=threshold;
-    return m_NearZeroSmallNumber;
+    m_B0ThresholdValue=threshold;
+    return m_B0ThresholdValue;
+  }
+
+  inline float l2norm(const GradientDirectionType& gradient) const // it's L2 norm, not l2 norm
+  {
+    double x1=gradient[0];
+    double x2=gradient[1];
+    double x3=gradient[2];
+    return x1*x1+x2*x2+x3*x3;
+  }
+
+  inline GradientDirectionType& getGradient(const unsigned int DirectionIndex) const
+  {
+    return this->m_GradientDirectionContainer->ElementAt(DirectionIndex);
   }
 
   bool GradientDirectionIsB0Image(const unsigned int DirectionIndex) const
   {
     const GradientDirectionType & currentGradient = this->m_GradientDirectionContainer->ElementAt(DirectionIndex);
 
-    return vcl_abs(currentGradient[0]) < m_NearZeroSmallNumber
-           && vcl_abs(currentGradient[1]) < m_NearZeroSmallNumber
-           && vcl_abs(currentGradient[2]) < m_NearZeroSmallNumber
-    ;
+    return l2norm(currentGradient)*m_b0 < m_B0ThresholdValue;
   }
+
+  // bool GradientDirectionIsB0Image_obsolete(const unsigned int DirectionIndex) const
+  // {
+  //   const GradientDirectionType & currentGradient = this->m_GradientDirectionContainer->ElementAt(DirectionIndex);
+
+  //   return vcl_abs(currentGradient[0]) < m_B0ThresholdValue
+  //          && vcl_abs(currentGradient[1]) < m_B0ThresholdValue
+  //          && vcl_abs(currentGradient[2]) < m_B0ThresholdValue
+  //   ;
+  // }
 
   inline std::vector<bool> getGradient_indx_Baselines()
   {
