@@ -781,6 +781,8 @@ void Protocol::printBaselineAverageProtocol()
             << std::endl;
   std::cout << "\treportFileNameSuffix: "
             <<  GetBaselineAverageProtocol().reportFileNameSuffix << std::endl;
+  std::cout << "\tB0Threshold: " 
+            << GetBaselineAverageProtocol().b0Threshold << std::endl;
 
   if( GetBaselineAverageProtocol().reportFileMode == 0 )
     {

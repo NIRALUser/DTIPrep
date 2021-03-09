@@ -1966,7 +1966,6 @@ bool CIntensityMotionCheck::BaselineAverage( DwiImageType::Pointer dwi )
       }
 
     Setm_DwiForcedConformanceImage(BaselineAverager->GetOutput() );
-    std::cout << "BaselineAverager() " <<__FILE__ << " Line" << __LINE__ << std::endl;
     // .......Mapping between input gradeints and DWIForcedComformance gradeints
     // New : jun 2011
     if( BaselineAverager->getBaselineNumber() > 1 )  // multiple baselines
@@ -1999,7 +1998,6 @@ bool CIntensityMotionCheck::BaselineAverage( DwiImageType::Pointer dwi )
       m_Original_ForcedConformance_Mapping.insert( m_Original_ForcedConformance_Mapping.begin(), m_B0s );
       }
 
-    std::cout << "BaselineAverager() " <<__FILE__ << " Line" << __LINE__ << std::endl;
     // .....
 
     // Updating qcResult
@@ -2057,7 +2055,6 @@ bool CIntensityMotionCheck::BaselineAverage( DwiImageType::Pointer dwi )
       outfile << "Baseline average NOT set." << std::endl;
   }
   outfile.close();
-  std::cout << "BaselineAverager() Done" <<__FILE__ << " Line" << __LINE__ << std::endl;
   return true;
 }
 

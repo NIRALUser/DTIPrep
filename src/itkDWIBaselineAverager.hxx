@@ -288,7 +288,7 @@ DWIBaselineAverager<TVectorImageType>
       }
     }
   outputPtr->SetMetaDataDictionary(outputMetaDictionary);
-  std::cout << "GenerateOutputInformation() Done " <<__FILE__ << " Line" << __LINE__ << std::endl;
+
 }
 
 /**
@@ -527,7 +527,6 @@ DWIBaselineAverager<TVectorImageType>
         }
       }
     }
-  std::cout << "average() Done " << __FILE__ << " LINE " << __LINE__ <<std::endl;
   return;
 }
 
